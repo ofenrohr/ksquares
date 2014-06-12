@@ -11,8 +11,7 @@
 #define AICONTROLLER_H
 
 #include <QList>
-
-namespace KSquares {enum Direction {HORIZONTAL, VERTICAL};}
+#include "board.h"
 
 /**
  * @short AI Controller for KSquares

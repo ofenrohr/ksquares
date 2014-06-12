@@ -97,7 +97,7 @@ void KSquaresDemoWindow::playerTakeTurn(KSquaresPlayer* currentPlayer)
 
 void KSquaresDemoWindow::aiChooseLine()
 {
-	aiController ai(sGame->currentPlayerId(), sGame->lines(), sGame->squares(), sGame->boardWidth(), sGame->boardHeight());
+	aiController ai(sGame->currentPlayerId(), sGame->board()->lines(), sGame->board()->squares(), sGame->board()->width(), sGame->board()->height());
 	sGame->addLineToIndex(ai.chooseLine());
 }
 

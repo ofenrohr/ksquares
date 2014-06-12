@@ -44,6 +44,14 @@ class KSquaresWindow : public KXmlGuiWindow
 		void gameNew();
 		///Start a new game with the same settings (read from KConfig Settings)
 		void gameReset();
+    ///Resize the visible board
+    void resetBoard(int width, int height);
+    ///Load game from file
+    void loadGame();
+    ///Save game to file
+    void saveGame();
+    ///Save game to specific file
+    void saveGameAs();
 
 	private slots:
 		void aiChooseLine(); // testing only
@@ -74,6 +82,7 @@ class KSquaresWindow : public KXmlGuiWindow
 
 		//KToggleAction *m_toolbarAction;
 		//KToggleAction *m_statusbarAction;
+    void connectSignalsAndSlots();
 };
 
 #endif // KSQUARESWINDOW_H

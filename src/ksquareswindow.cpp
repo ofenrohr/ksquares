@@ -24,6 +24,7 @@
 #include <KStandardGameAction>
 #include <KStatusBar>
 #include <KAction>
+#include <KFileDialog>
 
 //generated
 #include "settings.h"
@@ -31,6 +32,7 @@
 //classes
 #include "aicontroller.h"
 #include "gameboardview.h"
+#include "ksquaresio.h"
 
 //ui
 #include "newgamedialog.h"
@@ -142,52 +144,20 @@ void KSquaresWindow::gameNew()
 
 void KSquaresWindow::gameReset()
 {
-	//create players
-	QVector<KSquaresPlayer> playerList;
-	for(int i=0; i<Settings::numOfPlayers(); i++)
-	{
-		QColor color;
-		switch(i)
-		{
-			case 0: //Red
-				color = QColor(191,3,3); //or darker: (156,15,15);
-				break;
-			case 1: //Blue
-				color = QColor(0,67,138); //or darker: (0,49,110);
-				break;
-			case 2: //Green
-				color = QColor(0,137,44); //or darker: (0,110,41);
-				break;
-			case 3: //Yellow
-				color = QColor(243,195,0); //or darker: (227,173,0);
-				break;
-			default:
-				kError() << "KSquaresGame::playerSquareComplete(); currentPlayerId() != 0|1|2|3";
-		}
-		playerList.append(KSquaresPlayer(Settings::playerNames().at(i), color, Settings::humanList().at(i)));
-	}
+  //create players
+	QVector<KSquaresPlayer> playerList = KSquaresGame::createPlayers(Settings::numOfPlayers(), Settings::humanList());
 
-	//create physical board
-	GameBoardScene* temp = m_scene;
-	m_scene = new GameBoardScene(Settings::boardWidth(), Settings::boardHeight());
-
-	m_view->setScene(m_scene);
-	delete temp;
-
-	m_view->setBoardSize();	//refresh board zooming
+  //reset visible board
+	resetBoard(Settings::boardWidth(), Settings::boardHeight());
 
 	//start game etc.
 	sGame->createGame(playerList, Settings::boardWidth(), Settings::boardHeight());
-	connect(m_scene, SIGNAL(lineDrawn(int)), sGame, SLOT(addLineToIndex(int)));
-	connect(m_scene, SIGNAL(signalMoveRequest(int,int,int,int)), SLOT(slotMoveRequest(int,int,int,int)));
-	connect(sGame, SIGNAL(drawLine(int,QColor)), m_scene, SLOT(drawLine(int,QColor)));
-	connect(sGame, SIGNAL(highlightMove(int)), m_scene, SLOT(highlightLine(int)));
-	connect(sGame, SIGNAL(drawSquare(int,QColor)), m_scene, SLOT(drawSquare(int,QColor)));
+  connectSignalsAndSlots();
 
 	if (Settings::quickStart() == 2)
 	{
 		//This is being done before sGame->start(); to avoid the players cycling
-		aiController ai(-1, sGame->lines(), QList<int>(), sGame->boardWidth(), sGame->boardHeight());
+		aiController ai(-1, sGame->board()->lines(), QList<int>(), sGame->board()->width(), sGame->board()->height());
 		QList<int> lines = ai.autoFill(8);	//There will be 8 possible safe move for the players
 		QListIterator<int> i(lines);
 		while (i.hasNext())
@@ -196,6 +166,27 @@ void KSquaresWindow::gameReset()
 		}
 	}
 	sGame->start();
+}
+
+void KSquaresWindow::connectSignalsAndSlots()
+{
+  connect(m_scene, SIGNAL(lineDrawn(int)), sGame, SLOT(addLineToIndex(int)));
+  connect(m_scene, SIGNAL(signalMoveRequest(int,int,int,int)), SLOT(slotMoveRequest(int,int,int,int)));
+  connect(sGame, SIGNAL(drawLine(int,QColor)), m_scene, SLOT(drawLine(int,QColor)));
+  connect(sGame, SIGNAL(highlightMove(int)), m_scene, SLOT(highlightLine(int)));
+  connect(sGame, SIGNAL(drawSquare(int,QColor)), m_scene, SLOT(drawSquare(int,QColor)));
+}
+
+void KSquaresWindow::resetBoard(int width, int height)
+{
+  //create physical board
+  GameBoardScene* temp = m_scene;
+  m_scene = new GameBoardScene(width, height);
+
+  m_view->setScene(m_scene);
+  delete temp;
+
+  m_view->setBoardSize(); //refresh board zooming
 }
 
 void KSquaresWindow::gameOver(const QVector<KSquaresPlayer> &_playerList)
@@ -227,7 +218,7 @@ void KSquaresWindow::gameOver(const QVector<KSquaresPlayer> &_playerList)
 	}
 
 	scoresDialog.scoreTable->setModel(scoreTableModel);
-        scoresDialog.scoreTable->resizeColumnsToContents();
+	scoresDialog.scoreTable->resizeColumnsToContents();
 	scoresDialog.exec();
 
 	if(playerList.at(0).isHuman())
@@ -289,21 +280,52 @@ void KSquaresWindow::playerTakeTurn(KSquaresPlayer* currentPlayer)
 	}
 }
 
+void KSquaresWindow::loadGame() {
+  kDebug() << "loadGame";
+  QString filename = KFileDialog::getOpenFileName(KUrl("kfiledialog:///ksquares"));
+  if (filename.isEmpty())
+  {
+    return;
+  }
+  QList<int> lines;
+  KSquaresIO::loadGame(filename, sGame, &lines);
+  resetBoard(sGame->board()->width(), sGame->board()->height());
+  connectSignalsAndSlots();
+  sGame->start();
+  for (int i = 0; i < lines.size(); i++)
+  {
+    sGame->addLineToIndex(lines.at(i));
+  }
+}
+
+void KSquaresWindow::saveGame() {
+  kDebug() << "saveGame";
+}
+
+void KSquaresWindow::saveGameAs() {
+  kDebug() << "saveGameAs";
+}
+
 // testing only
 void KSquaresWindow::aiChooseLine()
 {
-	aiController ai(sGame->currentPlayerId(), sGame->lines(), sGame->squares(), sGame->boardWidth(), sGame->boardHeight());
+	aiController ai(sGame->currentPlayerId(), sGame->board()->lines(), sGame->board()->squares(), sGame->board()->width(), sGame->board()->height());
 	sGame->addLineToIndex(ai.chooseLine());
 }
 
 void KSquaresWindow::setupActions()
 {
+  kDebug() << "Am I doing this right?";
 	KStandardGameAction::gameNew(this, SLOT(gameNew()), actionCollection());
 	KAction *resetGame = KStandardGameAction::restart(this, SLOT(gameReset()), actionCollection());
 	resetGame->setStatusTip(i18n("Start a new game with the current settings"));
 
 	KStandardGameAction::highscores(this, SLOT(showHighscores()), actionCollection());
 	KStandardGameAction::quit(this, SLOT(close()), actionCollection());
+  
+  KStandardGameAction::load(this, SLOT(loadGame()), actionCollection());
+  KStandardGameAction::save(this, SLOT(saveGame()), actionCollection());
+  KStandardGameAction::saveAs(this, SLOT(saveGameAs()), actionCollection());
 	
 	// Preferences
 	KStandardAction::preferences(this, SLOT(optionsPreferences()), actionCollection());

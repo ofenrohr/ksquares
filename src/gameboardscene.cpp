@@ -84,6 +84,7 @@ void GameBoardScene::drawLine(int index, const QColor &colour)
 	QGraphicsLineItem* line = new QGraphicsLineItem(lineFromIndex(index));
 	line->setZValue(10);
 	line->setPen(QPen(QBrush(colour), 2.5));
+  line->setToolTip(QString("%1").arg(index));
 	addItem(line);	//draw new line
 	lineList[index] = true;	//keep this table in sync
 	indicatorLine->hide();
