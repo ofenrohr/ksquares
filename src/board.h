@@ -96,6 +96,11 @@ class Board : public QObject
 		 */
 		KSquares::Direction lineDirection(int lineIndex) const;
 		
+		/**
+		 * @param playerIndex the index of the player
+		 */
+		void setCurrentPlayer(int playerIndex);
+		
 		//getters
 		/**
 		 * @return the table of currently owned squares

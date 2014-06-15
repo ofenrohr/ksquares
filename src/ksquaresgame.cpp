@@ -73,81 +73,8 @@ void KSquaresGame::createGame(const QVector<KSquaresPlayer> &startPlayers, int s
 	
 	kDebug() << "Game Starting";
 	
-	connect(&board_, SIGNAL(squareComplete(int, int)), this, SLOT(playerSquareComplete(int, int)));
-	//nextPlayer();
-}
-
-/*
-void KSquaresGame::switchPlayer()
-{
-	//anotherGo = false;
-	currentPlayerId() >= (players.size()-1) ? i_currentPlayerId = 0 : i_currentPlayerId++;
-}
-*/
-
-/*
-int KSquaresGame::nextPlayer()
-{
-	//anotherGo = false;	//just to reset the variable
-	currentPlayerId() >= (players.size()-1) ? i_currentPlayerId = 0 : i_currentPlayerId++;
-	kDebug()<< "- Moving to next player:" << currentPlayer()->name() << "(" << currentPlayerId() << ")";
-	kDebug() << "-";
 	emit takeTurnSig(currentPlayer());
-	
-	return currentPlayerId();
 }
-*/
-
-
-void KSquaresGame::playerSquareComplete(int index, int playerIndex)
-{
-	kDebug() << "- - " << currentPlayer()->name() << "(" << currentPlayerId() << ") has completed a square";
-	//anotherGo = true;
-	
-	//board_.squares()[index] = currentPlayerId();	//add square to index
-	emit drawSquare(index, players.at(playerIndex).colour());
-	players[playerIndex].incScore();
-	
-	/*
-	int totalPoints=0;
-	for (int i=0; i < players.size(); i++)
-	{
-		totalPoints += players.at(i).score();
-	}
-	kDebug() << "- - Square Completed";
-	if (totalPoints >= board_.width()*board_.height())	//if the board is full
-	{
-		kDebug() << "Game Over";
-		gameInProgress = false;
-		emit gameOver(players);
-	}
-	*/
-}
-/*
-void KSquaresGame::tryEndGo()
-{
-	kDebug() << "- - Trying to end go";
-	if (anotherGo)
-	{
-		if(gameInProgress)
-		{
-			kDebug() << "- - - Having another go";
-			kDebug() << "-";
-			anotherGo = false;
-			emit takeTurnSig(currentPlayer());
-		}
-	}
-	else
-	{
-		kDebug() << "- - - Go ending";
-		if (!currentPlayer()->isHuman())
-		{
-			emit highlightMove(lastLine);
-		}
-		nextPlayer();
-	}
-}
-*/
 
 void KSquaresGame::resetEverything()
 {
@@ -165,18 +92,35 @@ void KSquaresGame::addLineToIndex(int index)
 	bool boardFilled;
 	QList<int> completedSquares;
 	int drawingPlayerIndex = currentPlayerId();
+	
+	// try to add the line
 	if (!board_.addLine(index, &nextPlayer, &boardFilled, &completedSquares))
 	{
+		kDebug() << "Warning: tryied to add invalid / already taken line with index " << index;
 		return;
 	}
+	kDebug() << "added line. index: " << index << ", next player: " << nextPlayer << ", board filled: " << boardFilled << ", completed squares count: " << completedSquares.size();
+	// draw the completed squares
+	for (int i = 0; i < completedSquares.size(); i++)
+	{
+		players[drawingPlayerIndex].incScore();
+		emit drawSquare(completedSquares.at(i), players.at(drawingPlayerIndex).colour());
+	}
+	// check if game is over
 	if (boardFilled && gameInProgress)
 	{
+		if (gameInProgress)
+		{
+			emit gameOver(players);
+		}
 		gameInProgress = false;
-		emit gameOver(players);
 	}
+	// draw the line
 	emit drawLine(index, Settings::lineColor());
+	
 	if (nextPlayer)
 	{
+		// the player's turn is over
 		if (!players.at(drawingPlayerIndex).isHuman())
 		{
 			emit highlightMove(index);
@@ -188,56 +132,11 @@ void KSquaresGame::addLineToIndex(int index)
 	}
 	else
 	{
-		for (int i = 0; i < completedSquares.size(); i++)
-		{
-			emit drawSquare(completedSquares.at(i), players.at(drawingPlayerIndex).colour());
-		}
 		if (gameInProgress)
 		{
 			emit takeTurnSig(currentPlayer());
 		}
 	}
-	/*
-	if (board_.lines()[index] == true)	//if there is already a line
-	{
-		kWarning() << "KSquaresGame::addLineToIndex():" 
-				   << "trying to add line already there!";
-		return;
-	}
-	board_.lines()[index] = true;
-	lastLine = index;
-	
-	emit drawLine(index, Settings::lineColor());
-	
-	if (gameInProgress)
-		checkForNewSquares();
-	*/
 }
-
-/*
- * TODO: this should be done in the board
-void KSquaresGame::checkForNewSquares()
-{
-	for(int i=0; i < (board_.width()*board_.height()); i++)	//cycle through every box..
-	{
-		if (board_.squares().at(i) == -1)	//..checking it if there is no current owner
-		{
-			//indices of the lines surrounding the box; Correlates to "QVector<bool> lineList"
-			int index1 = (i/board_.width()) * ((2*board_.width()) + 1) + (i%board_.width());
-			int index2 = index1 + board_.width();
-			int index3 = index2 + 1;
-			int index4 = index3 + board_.width();
-			//cout << index1 << "," << index2 << "," << index3 << "," << index4 << " - " << lineList.size() << endl;
-			if (board_.lines().at(index1) && board_.lines().at(index2) && board_.lines().at(index3) && board_.lines().at(index4))
-			{
-				kDebug() << "- - Square" << i << "completed.";
-				playerSquareComplete(i);
-			}
-		}
-	}
-	//emit lineDrawnSig();
-	tryEndGo();
-}
-*/
 
 #include "ksquaresgame.moc"

@@ -166,6 +166,8 @@ void KSquaresWindow::gameReset()
 		}
 	}
 	sGame->start();
+	
+	playerTakeTurn(sGame->currentPlayer());
 }
 
 void KSquaresWindow::connectSignalsAndSlots()
@@ -315,7 +317,6 @@ void KSquaresWindow::aiChooseLine()
 
 void KSquaresWindow::setupActions()
 {
-  kDebug() << "Am I doing this right?";
 	KStandardGameAction::gameNew(this, SLOT(gameNew()), actionCollection());
 	KAction *resetGame = KStandardGameAction::restart(this, SLOT(gameReset()), actionCollection());
 	resetGame->setStatusTip(i18n("Start a new game with the current settings"));
