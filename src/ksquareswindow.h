@@ -83,6 +83,9 @@ class KSquaresWindow : public KXmlGuiWindow
 		//KToggleAction *m_toolbarAction;
 		//KToggleAction *m_statusbarAction;
     void connectSignalsAndSlots();
+		
+		// path to the last saved game
+		QString savegamePath;
 };
 
 #endif // KSQUARESWINDOW_H

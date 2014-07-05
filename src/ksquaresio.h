@@ -20,12 +20,13 @@
 
 class KSquaresIO : public QObject 
 {
-  Q_OBJECT
-  
+	Q_OBJECT
+	
 public:
-  
-  static bool loadGame(QString filename, KSquaresGame *sGame, QList<int> *lines);
-  
+	
+	static bool loadGame(QString filename, KSquaresGame *sGame, QList<int> *lines);
+	static bool saveGame(QString filename, KSquaresGame *sgame);
+	
 };
   
 #endif // KSQUARESIO_H

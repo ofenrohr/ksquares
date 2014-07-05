@@ -282,9 +282,10 @@ void KSquaresWindow::playerTakeTurn(KSquaresPlayer* currentPlayer)
 	}
 }
 
-void KSquaresWindow::loadGame() {
+void KSquaresWindow::loadGame()
+{
   kDebug() << "loadGame";
-  QString filename = KFileDialog::getOpenFileName(KUrl("kfiledialog:///ksquares"));
+  QString filename = KFileDialog::getOpenFileName(KUrl("kfiledialog:///ksquares"), "*.dbl|Dabble savegames\n*.ksq|KSquares savegames");
   if (filename.isEmpty())
   {
     return;
@@ -300,12 +301,25 @@ void KSquaresWindow::loadGame() {
   }
 }
 
-void KSquaresWindow::saveGame() {
+void KSquaresWindow::saveGame() 
+{
   kDebug() << "saveGame";
+	if (savegamePath.isEmpty())
+	{
+		saveGameAs();
+		return;
+	}
+	KSquaresIO::saveGame(savegamePath, sGame);
 }
 
-void KSquaresWindow::saveGameAs() {
+void KSquaresWindow::saveGameAs() 
+{
   kDebug() << "saveGameAs";
+	savegamePath = KFileDialog::getSaveFileName(KUrl("kfiledialog:///ksquares"), "*.dbl|Dabble savegames\n*.ksq|KSquares savegames");
+	if (!savegamePath.isEmpty())
+	{
+		saveGame();
+	}
 }
 
 // testing only

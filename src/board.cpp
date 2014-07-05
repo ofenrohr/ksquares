@@ -98,44 +98,44 @@ int Board::pointsToIndex(QPoint p1, QPoint p2)
 
 int Board::pointsToIndex(QPoint p1, QPoint p2, int w, int h)
 {
-  int ret = -1;
-  if ( (p1-p2).manhattanLength() != 1)
-  {
-    kDebug() << "KSquaresIO::pointsToIndex error: manhattanLength != 1";
-    return ret;
-  }
-  if (p1.x() > w || p1.y() > h || p2.x() > w || p2.y() > h ||
-      p1.x() < 0 || p1.y() < 0 || p2.x() < 0 || p2.y() < 0
-  )
-  {
-    kDebug() << "KSquaresIO::pointsToIndex error: invalid points";
-    return ret;
-  }
-  
-  QPoint pa, pb; // pa is the smaller point, pb the bigger
-  if (p1.manhattanLength() > p2.manhattanLength())
-  {
-    pa = p2;
-    pb = p1;
-  }
-  else
-  {
-    pa = p1;
-    pb = p2;
-  }
-  
-  if (pb.x() == pa.x())
-  {
-    // vertical line
-    ret = w * pb.y() + (h+1) * pa.y() + pa.x();
-  }
-  else 
-  {
-    // horizontal line
-    ret = w * pa.y() + (h+1) * pa.y() + pa.x();
-  }
-  
-  return ret;
+	int ret = -1;
+	if ( (p1-p2).manhattanLength() != 1)
+	{
+		kDebug() << "KSquaresIO::pointsToIndex error: manhattanLength != 1";
+		return ret;
+	}
+	if (p1.x() > w || p1.y() > h || p2.x() > w || p2.y() > h ||
+			p1.x() < 0 || p1.y() < 0 || p2.x() < 0 || p2.y() < 0
+	)
+	{
+		kDebug() << "KSquaresIO::pointsToIndex error: invalid points";
+		return ret;
+	}
+	
+	QPoint pa, pb; // pa is the smaller point, pb the bigger
+	if (p1.manhattanLength() > p2.manhattanLength())
+	{
+		pa = p2;
+		pb = p1;
+	}
+	else
+	{
+		pa = p1;
+		pb = p2;
+	}
+	
+	if (pb.x() == pa.x())
+	{
+		// vertical line
+		ret = w * pb.y() + (h+1) * pa.y() + pa.x();
+	}
+	else 
+	{
+		// horizontal line
+		ret = w * pa.y() + (h+1) * pa.y() + pa.x();
+	}
+	
+	return ret;
 }
 
 void Board::linesFromSquare(QList<int> *linesFromSquare, int squareIndex) const

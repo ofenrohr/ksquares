@@ -52,14 +52,14 @@ class KSquaresGame : public QObject
 		KSquaresGame();
 		~KSquaresGame();
 		
-    /**
-     * Creates a list of players
-     * 
-     * @param cnt number of players
-     * @param isHuman list of (non)human players
-     * @return list of players
-     */
-    static QVector<KSquaresPlayer> createPlayers(int cnt, QList<int> isHuman);
+		/**
+		 * Creates a list of players
+		 * 
+		 * @param cnt number of players
+		 * @param isHuman list of (non)human players
+		 * @return list of players
+		 */
+		static QVector<KSquaresPlayer> createPlayers(int cnt, QList<int> isHuman);
 		/**
 		 * Create a new game
 		 * 
