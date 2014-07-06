@@ -38,6 +38,14 @@ class Board : public QObject
 		 * @return true if line was added, false otherwise
 		 */
 		bool addLine(int lineIndex, bool *nextPlayer, bool *boardFilled, QList<int> *completedSquares);
+
+    /**
+     * Undo last move.
+     * @param skipOverAi undoes moves until a move of a human player was undone
+     * @param nextPlayer index of current player after undo
+     * @return true if one or more lines were undone
+     */
+    bool undo(bool skipOverAi, int *nextPlayer);
 		
 		/**
 		 * @return true if the line completes at least one square, false otherwise
@@ -139,5 +147,15 @@ class Board : public QObject
 		QList<int> squareOwnerTable_;
 		///List of the lines and whether they're drawn
 		QList<bool> lineList_;
+
+    typedef struct Move_t
+    {
+      int line;
+      int player;
+      bool human;
+      QList<int> squares;
+    } Move;
+    ///History of drawn lines
+    QList<Move> lineHistory_;
 };
 #endif // BOARD_H

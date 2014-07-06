@@ -100,6 +100,8 @@ void KSquaresGame::addLineToIndex(int index)
 		return;
 	}
 	kDebug() << "added line. index: " << index << ", next player: " << nextPlayer << ", board filled: " << boardFilled << ", completed squares count: " << completedSquares.size();
+	// draw the line
+	emit drawLine(index, Settings::lineColor());
 	// draw the completed squares
 	for (int i = 0; i < completedSquares.size(); i++)
 	{
@@ -115,8 +117,6 @@ void KSquaresGame::addLineToIndex(int index)
 		}
 		gameInProgress = false;
 	}
-	// draw the line
-	emit drawLine(index, Settings::lineColor());
 	
 	if (nextPlayer)
 	{
