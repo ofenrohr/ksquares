@@ -47,11 +47,19 @@ bool Board::addLine(int lineIndex, bool *nextPlayer, bool *boardFilled, QList<in
 	}
 	*nextPlayer = !lineCompletesSquare(lineIndex, completedSquares); // check for completed squares first!
 	lineList_[lineIndex] = true; // draw line
-	for (int i = 0; i < completedSquares->size(); i++) // update square owner table
+  // remember move
+  Board::Move move;
+  move.line = lineIndex;
+  move.player = currentPlayerId_;
+  move.squares = *completedSquares;
+  lineHistory_.append(move);
+  // update square owner table
+	for (int i = 0; i < completedSquares->size(); i++)
 	{
 		squareOwnerTable_[completedSquares->at(i)] = currentPlayerId_;
 	}
-	if (*nextPlayer) // switch player?
+  // switch player?
+	if (*nextPlayer) 
 	{
 		if (currentPlayerId_ >= numOfPlayers_-1)
 		{
@@ -136,6 +144,26 @@ int Board::pointsToIndex(QPoint p1, QPoint p2, int w, int h)
 	}
 	
 	return ret;
+}
+
+bool Board::indexToPoints(const int lineIndex, QPoint *p1, QPoint *p2)
+{
+  int index2 = lineIndex % ( ( 2 * width_ ) + 1 );
+  p1->setY( lineIndex / ( ( 2 * width_ ) + 1) );
+  KSquares::Direction dir = lineDirection(lineIndex);
+  if (dir == KSquares::HORIZONTAL)
+  {
+    p1->setX(index2);
+    p2->setY(p1->y());
+    p2->setX(p1->x() + 1);
+  }
+  else 
+  {
+    p1->setX(index2 - width_);
+    p2->setY(p1->y() + 1);
+    p2->setX(p1->x());
+  }
+  return true;
 }
 
 void Board::linesFromSquare(QList<int> *linesFromSquare, int squareIndex) const

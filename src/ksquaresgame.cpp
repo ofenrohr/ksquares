@@ -9,7 +9,7 @@
 
 #include "ksquaresgame.h"
 
-#include <kdebug.h>
+#include <KDebug>
 
 //generated
 #include "settings.h"

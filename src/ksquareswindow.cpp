@@ -156,6 +156,7 @@ void KSquaresWindow::gameReset()
 
 	if (Settings::quickStart() == 2)
 	{
+    disconnect(sGame, SIGNAL(highlightMove(int)), m_scene, SLOT(highlightLine(int)));
 		//This is being done before sGame->start(); to avoid the players cycling
 		aiController ai(-1, sGame->board()->lines(), QList<int>(), sGame->board()->width(), sGame->board()->height());
 		QList<int> lines = ai.autoFill(8);	//There will be 8 possible safe move for the players
@@ -164,6 +165,7 @@ void KSquaresWindow::gameReset()
 		{
 			sGame->addLineToIndex(i.next());
 		}
+    connect(sGame, SIGNAL(highlightMove(int)), m_scene, SLOT(highlightLine(int)));
 	}
 	sGame->start();
 	

@@ -252,5 +252,34 @@ bool KSquaresIO::loadGame(QString filename, KSquaresGame *sGame, QList<int> *lin
 
 bool KSquaresIO::saveGame(QString filename, KSquaresGame *sGame)
 {
-	return false;
+  // open the file
+	QFile file(filename);
+	if (!file.open(QIODevice::ReadWrite))
+	{
+		kDebug() << "KSquaresIO::saveGame error: Can't open file";
+		return false;
+	}
+	
+	QTextStream outStream(&file);
+
+  outStream << sGame->board()->width() << "\n";
+  outStream << sGame->board()->height() << "\n";
+  QList<Board::Move> history = sGame->board()->getLineHistory();
+
+  for (int i = 0; i < history.size(); i++) 
+  {
+    QPoint p1;
+    QPoint p2;
+    if (!sGame->board()->indexToPoints(history[i].line, &p1, &p2))
+    {
+      kDebug() << "KSquaresIO::saveGame error: invalid line in history";
+      file.close();
+      return false;
+    }
+    outStream << "(" << p1.x() << "," << p1.y() << ") - (" << p2.x() << "," << p2.y() << ")\n";
+  } 
+
+  file.close();
+
+  return true;
 }

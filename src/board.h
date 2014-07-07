@@ -24,7 +24,14 @@ class Board : public QObject
 	public:
 		Board();
 		Board(int numOfPlayers, int width, int height);
-		
+	
+    typedef struct Move_t
+    {
+      int line;
+      int player;
+      QList<int> squares;
+    } Move;	
+
 		/**
 		 * resets the board
 		 */
@@ -41,11 +48,10 @@ class Board : public QObject
 
     /**
      * Undo last move.
-     * @param skipOverAi undoes moves until a move of a human player was undone
      * @param nextPlayer index of current player after undo
      * @return true if one or more lines were undone
      */
-    bool undo(bool skipOverAi, int *nextPlayer);
+    bool undo(int *nextPlayer);
 		
 		/**
 		 * @return true if the line completes at least one square, false otherwise
@@ -67,6 +73,14 @@ class Board : public QObject
 		 * @return -1 if the points don't specify a valid line, index of line otherwise
 		 */
 		static int pointsToIndex(QPoint p1, QPoint p2, int w, int h);
+
+    /**
+     * @param lineIndex the index of the line
+     * @param p1 the first resulting point of the line
+     * @param p2 the second resulting point of the line
+     * @return true if conversion was successful, false otherwise
+     */
+    bool indexToPoints(const int lineIndex, QPoint *p1, QPoint *p2);
 		
 		/**
 		 * @param sidesOfSquare output parameter: the indices of the four lines surrounding the square
@@ -130,6 +144,10 @@ class Board : public QObject
 		 * @return the id of the current player
 		 */
 		int currentPlayer() const {return currentPlayerId_;}
+    /**
+     * @return the history of drawn lines
+     */
+    QList<Move> getLineHistory() const {return lineHistory_;}
 
 		//setters
 		void setNumOfPlayers(int numOfPlayers) {numOfPlayers_ = numOfPlayers;}
@@ -148,13 +166,6 @@ class Board : public QObject
 		///List of the lines and whether they're drawn
 		QList<bool> lineList_;
 
-    typedef struct Move_t
-    {
-      int line;
-      int player;
-      bool human;
-      QList<int> squares;
-    } Move;
     ///History of drawn lines
     QList<Move> lineHistory_;
 };
