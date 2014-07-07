@@ -262,8 +262,7 @@ bool KSquaresIO::saveGame(QString filename, KSquaresGame *sGame)
 	
 	QTextStream outStream(&file);
 
-  outStream << sGame->board()->width() << "\n";
-  outStream << sGame->board()->height() << "\n";
+  outStream << sGame->board()->width() << "," <<  sGame->board()->height() << "\n";
   QList<Board::Move> history = sGame->board()->getLineHistory();
 
   for (int i = 0; i < history.size(); i++) 
@@ -276,7 +275,7 @@ bool KSquaresIO::saveGame(QString filename, KSquaresGame *sGame)
       file.close();
       return false;
     }
-    outStream << "(" << p1.x() << "," << p1.y() << ") - (" << p2.x() << "," << p2.y() << ")\n";
+    outStream << "(" << p1.x() << ", " << p1.y() << ") - (" << p2.x() << ", " << p2.y() << ")\n";
   } 
 
   file.close();
