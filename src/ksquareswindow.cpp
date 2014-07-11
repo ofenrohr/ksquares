@@ -144,6 +144,8 @@ void KSquaresWindow::gameNew()
 
 void KSquaresWindow::gameReset()
 {
+	savegamePath = "";
+	
   //create players
 	QVector<KSquaresPlayer> playerList = KSquaresGame::createPlayers(Settings::numOfPlayers(), Settings::humanList());
 
