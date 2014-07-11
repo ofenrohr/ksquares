@@ -16,7 +16,7 @@
 
 #include "settings.h"
 
-aiController::aiController(int newPlayerId, const QList<bool> &newLines, const QList<int> &newSquareOwners, int newWidth, int newHeight) : squareOwners(newSquareOwners), playerId(newPlayerId), width(newWidth), height(newHeight)
+aiController::aiController(int newPlayerId, const QList<bool> &newLines, const QList<int> &newSquareOwners, int newWidth, int newHeight) :  aiFunctions(newWidth, newHeight), squareOwners(newSquareOwners), playerId(newPlayerId)
 {
 	linesSize = newLines.count();
 	lines = new bool[linesSize];
@@ -485,81 +485,4 @@ QList<int> aiController::chooseLeastDamaging(const QList<int> &choiceList) const
 	// fallback to middle ai move
 	QList<int> bestMoves = linePointDamage.values(linePointDamage.begin().key());	//this is a list of the indices of the lines that are the least damaging. linePointDamage.begin() returns the 1st pair in the QMap, sorted in ascending order by Key (damage of move)
 	return bestMoves;
-}
-
-int aiController::countBorderLines(int *sidesOfSquare, int squareIndex, const bool *linesList) const
-{
-	int count = 0;
-	
-	linesFromSquare(sidesOfSquare, squareIndex);
-	
-	//TODO: replace this with a QList 'count' type function?
-	if(linesList[sidesOfSquare[0]] == true)
-		count++;
-	if(linesList[sidesOfSquare[1]] == true)
-		count++;
-	if(linesList[sidesOfSquare[2]] == true)
-		count++;
-	if(linesList[sidesOfSquare[3]] == true)
-		count++;
-	//kDebug() << "AI: Square" << squareIndex << "is bordered by" << count << "lines";
-	return count;
-}
-
-int aiController::countBorderLines(int squareIndex, const bool *linesList) const
-{
-	int tempLineList[4];
-	return countBorderLines(tempLineList, squareIndex, linesList);
-}
-
-QList<int> aiController::squaresFromLine(int lineIndex) const
-{
-	//kDebug() << "Line:" << lineIndex;
-	QList<int> squareList;
-	if (lineDirection(lineIndex) == KSquares::HORIZONTAL)
-	{
-		squareList.append(lineIndex - ( (width+1) * (lineIndex/((width*2)+1)) ));
-		squareList.append(squareList.at(0) - width);
-		if(squareList.at(1) < 0)
-			squareList.removeAt(1);
-		if(squareList.at(0) >= (width*height))
-			squareList.removeAt(0);
-			
-	}
-	else if (lineDirection(lineIndex) == KSquares::VERTICAL)
-	{
-		squareList.append(lineIndex - ( (lineIndex/((width*2)+1))*width + (lineIndex/((width*2)+1)) + width ));
-		squareList.append(squareList.at(0) - 1);
-		if(lineIndex%((2*width)+1) == width)
-			squareList.removeAt(1);
-		if(lineIndex%((2*width)+1) == 2*width)
-			squareList.removeAt(0);
-	}
-	//kDebug() << "Size:" << squareList.size();
-	//kDebug() << "squares:" << squareList.at(0) << " " << squareList.at(1);
-	return squareList;
-}
-
-void aiController::linesFromSquare(int *linesFromSquare, int squareIndex) const
-{
-	int index1 = (squareIndex/width) * ((2*width) + 1) + (squareIndex%width);
-	int index2 = index1 + width;
-	int index3 = index2 + 1;
-	int index4 = index3 + width;
-	linesFromSquare[0] = index1;
-	linesFromSquare[1] = index2;
-	linesFromSquare[2] = index3;
-	linesFromSquare[3] = index4;
-}
-
-KSquares::Direction aiController::lineDirection(int lineIndex) const
-{
-	int index2 = lineIndex % ((2*width) + 1);
-	KSquares::Direction dir;
-	if(index2 < width)
-		dir = KSquares::HORIZONTAL;
-	else
-		dir = KSquares::VERTICAL;
-	
-	return dir;
 }

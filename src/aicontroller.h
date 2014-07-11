@@ -11,8 +11,7 @@
 #define AICONTROLLER_H
 
 #include <QList>
-
-namespace KSquares {enum Direction {HORIZONTAL, VERTICAL};}
+#include "aifunctions.h"
 
 /**
  * @short AI Controller for KSquares
@@ -28,7 +27,7 @@ namespace KSquares {enum Direction {HORIZONTAL, VERTICAL};}
  * @author Tom Vincent Peters <kde@vincent-peters.de>
  */
 
-class aiController
+class aiController : public aiFunctions
 {
 	public:
 		/**
@@ -72,38 +71,6 @@ class aiController
 		 * @return list of indices (of lines) which would be the least damaging in the short term
 		 */
 		QList<int> chooseLeastDamaging(const QList<int> &choiceList) const;
-		/**
-		 * @param squareIndex the index of the square (relates to @ref squareOwners )
-		 * @param linesList the linesList you want to work from
-		 *
-		 * @return the number of lines currently drawn around a specific square
-		 */
-		int countBorderLines(int squareIndex, const bool *linesList) const;
-		/**
-		 * @param sidesOfSquare output parameter: the indices of the four lines surrounding the square
-		 * @param squareIndex the index of the square (relates to @ref squareOwners )
-		 * @param linesList the linesList you want to work from
-		 *
-		 * @return the number of lines currently drawn around a specific square
-		 */
-		int countBorderLines(int *sidesOfSquare, int squareIndex, const bool *linesList) const;
-		/**
-		 * @param lineIndex the index of the line (relates to @ref lines )
-		 *
-		 * @return the (one or two) squares abutting a line
-		 */
-		QList<int> squaresFromLine(int lineIndex) const;
-		/**
-		 * @param sidesOfSquare output parameter: the indices of the four lines surrounding the square
-		 * @param squareIndex the index of the square (relates to @ref squareOwners )
-		 */
-		void linesFromSquare(int *sidesOfSquare, int squareIndex) const;
-		/**
-		 * @param lineIndex the index of the line (relates to @ref lines )
-		 *
-		 * @return the direction of the line
-		 */
-		KSquares::Direction lineDirection(int lineIndex) const;
 		
 		/// List of the owners of each square
 		QList<int> squareOwners;
@@ -112,10 +79,6 @@ class aiController
 		bool *lines;
 		/// The ID of the player this AI belongs to
 		int playerId;
-		/// Width of the game board
-		int width;
-		/// Height of the game board
-		int height;
 };
 
 #endif // KSQUARES_H
