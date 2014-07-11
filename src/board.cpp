@@ -29,6 +29,7 @@ void Board::reset()
 {
 	lineList_.clear();
 	squareOwnerTable_.clear();
+	lineHistory_.clear();
 	numOfPlayers_ = 0;
 	width_ = 0;
 	height_ = 0;
