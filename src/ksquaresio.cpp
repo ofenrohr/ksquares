@@ -254,7 +254,7 @@ bool KSquaresIO::saveGame(QString filename, KSquaresGame *sGame)
 {
   // open the file
 	QFile file(filename);
-	if (!file.open(QIODevice::ReadWrite))
+	if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate))
 	{
 		kDebug() << "KSquaresIO::saveGame error: Can't open file";
 		return false;
@@ -262,22 +262,67 @@ bool KSquaresIO::saveGame(QString filename, KSquaresGame *sGame)
 	
 	QTextStream outStream(&file);
 
-  outStream << sGame->board()->width() << "," <<  sGame->board()->height() << "\n";
-  QList<Board::Move> history = sGame->board()->getLineHistory();
+	if (filename.endsWith(".dbl"))
+	{
+		// save in dabble format
+		outStream << sGame->board()->width() << "," <<  sGame->board()->height() << "\n";
+		QList<Board::Move> history = sGame->board()->getLineHistory();
 
-  for (int i = 0; i < history.size(); i++) 
-  {
-    QPoint p1;
-    QPoint p2;
-    if (!sGame->board()->indexToPoints(history[i].line, &p1, &p2))
-    {
-      kDebug() << "KSquaresIO::saveGame error: invalid line in history";
-      file.close();
-      return false;
-    }
-    outStream << "(" << p1.x() << ", " << p1.y() << ") - (" << p2.x() << ", " << p2.y() << ")\n";
-  } 
-
+		for (int i = 0; i < history.size(); i++) 
+		{
+			QPoint p1;
+			QPoint p2;
+			if (!sGame->board()->indexToPoints(history[i].line, &p1, &p2))
+			{
+				kDebug() << "KSquaresIO::saveGame error: invalid line in history";
+				file.close();
+				return false;
+			}
+			outStream << "(" << p1.x() << ", " << p1.y() << ") - (" << p2.x() << ", " << p2.y() << ")\n";
+		} 
+	}
+	else if (filename.endsWith(".ksq"))
+	{
+		// save in ksquares format
+		// TODO: implement saving as ksq
+	}
+	else if (filename.endsWith(".tex"))
+	{
+		// save in tex format
+		outStream << "\\begin{pgfpicture}\n";
+		outStream << "  \\pgfsetlinewidth{1pt}\n";
+		for (int x = 0; x <= sGame->board()->width(); x++)
+		{
+			for (int y = 0; y <= sGame->board()->height(); y++)
+			{
+				outStream << "  \\pgfcircle[fill]{\\pgfxy(" << x << "," << y << ")}{3pt}\n";
+			}
+		}
+		for (int i = 0; i < sGame->board()->getLineHistory().size(); i++)
+		{
+			QPoint p1;
+			QPoint p2;
+			if (!sGame->board()->indexToPoints(sGame->board()->getLineHistory()[i].line, &p1, &p2))
+			{
+				kDebug() << "KSquaresIO::saveGame error: iQIODevice::Truncatenvalid line in history";
+				file.close();
+				return false;
+			}
+			outStream << "  \\pgfxyline(" << p1.x() << ", " << ( sGame->board()->height() - p1.y() ) << ")(" << p2.x() << ", " << ( sGame->board()->height() - p2.y() ) << ")\n";
+		}
+		for (int i = 0; i < sGame->board()->squares().size(); i++)
+		{
+			if (sGame->board()->squares()[i] >= 0)
+			{
+				outStream << "  \\pgfputat{\\pgfxy(" << ( i % sGame->board()->width() ) << ".5," << ( sGame->board()->height() - 1 - i / sGame->board()->height() ) << ".5)}{\\pgfbox[center,center]{{\\LARGE " << (char)(sGame->board()->squares()[i] + 'A') << "}}}\n";
+			}
+		}
+		outStream << "\\end{pgfpicture}\n";
+	}
+	else
+	{
+		// TODO: error message: unknown filetype
+	}
   file.close();
 
   return true;

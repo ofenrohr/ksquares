@@ -317,7 +317,7 @@ void KSquaresWindow::saveGame()
 void KSquaresWindow::saveGameAs() 
 {
   kDebug() << "saveGameAs";
-	savegamePath = KFileDialog::getSaveFileName(KUrl("kfiledialog:///ksquares"), "*.dbl|Dabble savegames\n*.ksq|KSquares savegames");
+	savegamePath = KFileDialog::getSaveFileName(KUrl("kfiledialog:///ksquares"), "*.dbl|Dabble savegames\n*.ksq|KSquares savegames\n*.tex|LaTeX Picture");
 	if (!savegamePath.isEmpty())
 	{
 		saveGame();
