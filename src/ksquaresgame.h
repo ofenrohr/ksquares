@@ -12,8 +12,10 @@
 
 #include <QObject>
 #include <QVector>
+#include <QList>
 
 #include "ksquaresplayer.h"
+#include "board.h"
 
 class QColor;
 
@@ -51,9 +53,17 @@ class KSquaresGame : public QObject
 		~KSquaresGame();
 		
 		/**
+		 * Creates a list of players
+		 * 
+		 * @param cnt number of players
+		 * @param isHuman list of (non)human players
+		 * @return list of players
+		 */
+		static QVector<KSquaresPlayer> createPlayers(int cnt, QList<int> isHuman);
+		/**
 		 * Create a new game
 		 * 
-		 * @param startPlayers liat of the players in the game
+		 * @param startPlayers list of the players in the game
 		 * @param startWidth the width of the game board
 		 * @param startHeight the height of the game board
 		 */
@@ -73,29 +83,16 @@ class KSquaresGame : public QObject
 		/**
 		 * @return the id of the current player. 0 >= id \< number of players
 		 */
-		int currentPlayerId() const {return i_currentPlayerId;}
+		int currentPlayerId() const {return board_.currentPlayer();}
 		/**
 		 * @return the current player
 		 */
 		KSquaresPlayer* currentPlayer() {return &players[currentPlayerId()];}
+		/**
+		 * @return the game board
+		 */
+		Board* board() {return &board_;}
 		
-		//getters
-		/**
-		 * @return the table of currently owned squares
-		 */
-		QList<int> squares() const {return squareOwnerTable;}
-		/**
-		 * @return the list of lines
-		 */
-		QList<bool> lines() const {return lineList;}
-		/**
-		 * @return the width of the game board
-		 */
-		int boardWidth() const {return width;}
-		/**
-		 * @return the height of the game board
-		 */
-		int boardHeight() const {return height;}
 
 	public Q_SLOTS:
 		/**
@@ -121,30 +118,18 @@ class KSquaresGame : public QObject
 		 * A player completed a square. Emits the lineDrawn() signal. Checks to see if the game is over.
 		 *
 		 * @param index the index of the square which was completed
+		 * @param playerIndex the index of the player who completed the square
 		 */
-		void playerSquareComplete(int index);
+		void playerSquareComplete(int index, int playerIndex);
 		
 		// Static throughout each game
-		///Number of players in this game
-		int numOfPlayers;
-		///Width of the game board
-		int width;
-		/// Height of the game board
-		int height;
-		///List of the squares and their owners
-		QList<int> squareOwnerTable;
-		///List of the lines and whether they're drawn
-		QList<bool> lineList;
+		Board board_;
 		
 		// Updated as the game progresses
 		///List of all the players in the game
 		QVector<KSquaresPlayer> players;
 		
 		// Probably changes every go
-		///Id of the current player
-		int i_currentPlayerId;
-		/// Should the current player have another go
-		bool anotherGo;
 		/// is there currently a game in progress
 		bool gameInProgress;
 		/// last line added

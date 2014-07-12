@@ -68,6 +68,13 @@ class KSquaresPlayer
 		bool isHuman() const {return human;}
 		
 		/**
+     * Sets the player type to ai or human
+     * 
+     * @param h human player
+     */
+		void setHuman(bool h) {human = h;}
+		
+		/**
 		 * @return the player's chosen display colour
 		 */
 		QColor colour() const {return playerColour;}

@@ -12,6 +12,7 @@
 
 #include <QList>
 #include "aifunctions.h"
+#include "board.h"
 
 /**
  * @short AI Controller for KSquares
