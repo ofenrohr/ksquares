@@ -90,3 +90,53 @@ KSquares::Direction aiFunctions::lineDirection(int lineIndex) const
 	
 	return dir;
 }
+
+/*=========================================*/
+
+QList<int> aiFunctions::findLinesCompletingBoxes(int linesSize, const bool *lines) const
+{
+	QList<int> choiceList;
+	for(int i=0; i<linesSize; i++)	//trying to get points. looking for squares with 3 lines
+	{
+		if(!lines[i])
+		{
+			QList<int> adjacentSquares = squaresFromLine(i);
+			for(int j=0; j<adjacentSquares.size(); j++)
+			{
+				
+				if(countBorderLines(adjacentSquares.at(j), lines) == 3)	//if 3 lines, draw there to get points!
+				{
+					choiceList.append(i);
+					//kDebug() << "AI: 1. Adding" << i << "to choices";
+				}
+			}
+		}
+	}
+	return choiceList;
+}
+
+QList<int> aiFunctions::safeMoves(int linesSize, const bool *lines) const
+{
+	QList<int> safeLines;
+	for(int i=0; i<linesSize; i++)	//finding totally safe moves. avoiding squares with 2 lines
+	{
+		if(!lines[i])
+		{
+			QList<int> adjacentSquares = squaresFromLine(i);
+			int badCount = 0;
+			for(int j=0; j<adjacentSquares.size(); j++)
+			{
+				if(countBorderLines(adjacentSquares.at(j), lines) == 2)	//don't want to make 3 lines around a square
+				{
+					badCount++;
+				}
+			}
+			if(badCount == 0)
+			{
+				safeLines.append(i);
+				//kDebug() << "AI: 2. Adding" << i << "to choices";
+			}
+		}
+	}
+	return safeLines;
+}

@@ -51,6 +51,14 @@ class aiFunctions {
 		 */
 		KSquares::Direction lineDirection(int lineIndex) const;
 		
+		/*=========================================*/
+		// TODO: add doc
+		QList<int> findLinesCompletingBoxes(int linesSize, const bool *lines) const;
+		/**
+		 * @return list of moves that are safe (squares surrounded by 2 lines are avoided)
+		 */
+		QList<int> safeMoves(int linesSize, const bool *lines) const;
+		
 		/// Width of the game board
 		int width;
 		/// Height of the game board

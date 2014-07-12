@@ -62,10 +62,6 @@ class aiController : public aiFunctions
 
 	protected:
 		/**
-		 * @return list of moves that are safe (squares surrounded by 2 lines are avoided)
-		 */
-		QList<int> safeMoves() const;
-		/**
 		 * @param choiceList list of indices (of lines) which have squares next to them with two lines drawn (relates to @ref lines )
 		 *
 		 * @return list of indices (of lines) which would be the least damaging in the short term

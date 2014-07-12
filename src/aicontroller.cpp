@@ -37,7 +37,7 @@ QList<int> aiController::autoFill(int safeMovesLeft)
 	// add a random safe moves while there are safe moves left
 	QList<int> next;
 	//kDebug() << safeMoves().isEmpty();
-	while( !( (next = safeMoves()).isEmpty() ) )
+	while( !( (next = safeMoves(linesSize, lines)).isEmpty() ) )
 	{
 		int nextLine = next[rand() % next.size()];
 		lines[nextLine] = true;
@@ -58,26 +58,10 @@ QList<int> aiController::autoFill(int safeMovesLeft)
 
 int aiController::chooseLine() const
 {
-	QList<int> choiceList;
-	for(int i=0; i<linesSize; i++)	//trying to get points. looking for squares with 3 lines
-	{
-		if(!lines[i])
-		{
-			QList<int> adjacentSquares = squaresFromLine(i);
-			for(int j=0; j<adjacentSquares.size(); j++)
-			{
-				
-				if(countBorderLines(adjacentSquares.at(j), lines) == 3)	//if 3 lines, draw there to get points!
-				{
-					choiceList.append(i);
-					//kDebug() << "AI: 1. Adding" << i << "to choices";
-				}
-			}
-		}
-	}
+	QList<int> choiceList = findLinesCompletingBoxes(linesSize, lines);
 	if(choiceList.size() != 0)
 	{
-		if(Settings::difficulty() == 2) // to play good ai has to look into the future game
+		if(Settings::difficulty() >= 2) // to play good ai has to look into the future game
 		{
 			QList<int> openLines; // list of not yet drawn lines
 			for(int i = 0; i < linesSize; i++)
@@ -100,7 +84,7 @@ int aiController::chooseLine() const
 		return choiceList.at(randChoice);
 	}
 	
-	choiceList = safeMoves();
+	choiceList = safeMoves(linesSize, lines);
 	
 	if(choiceList.size() != 0)
 	{
@@ -147,32 +131,6 @@ int aiController::chooseLine() const
 		return choiceList.at(randChoice);
 	}
         return 0;
-}
-
-QList<int> aiController::safeMoves() const
-{
-	QList<int> safeLines;
-	for(int i=0; i<linesSize; i++)	//finding totally safe moves. avoiding squares with 2 lines
-	{
-		if(!lines[i])
-		{
-			QList<int> adjacentSquares = squaresFromLine(i);
-			int badCount = 0;
-			for(int j=0; j<adjacentSquares.size(); j++)
-			{
-				if(countBorderLines(adjacentSquares.at(j), lines) == 2)	//don't want to make 3 lines around a square
-				{
-					badCount++;
-				}
-			}
-			if(badCount == 0)
-			{
-				safeLines.append(i);
-				//kDebug() << "AI: 2. Adding" << i << "to choices";
-			}
-		}
-	}
-	return safeLines;
 }
 
 QList<int> aiController::chooseLeastDamaging(const QList<int> &choiceList) const
@@ -387,7 +345,7 @@ QList<int> aiController::chooseLeastDamaging(const QList<int> &choiceList) const
 		&&
 		longChains > 0 // only do it if there is at least one chain to steal
 		&&
-		safeMoves().size() == 0 // only do it in endgames
+		safeMoves(linesSize, lines).size() == 0 // only do it in endgames
 	  )
 	{
 		kDebug() << "HAHA, our chance to do the evil thing!";
