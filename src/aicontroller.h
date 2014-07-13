@@ -39,8 +39,9 @@ class aiController : public aiFunctions
 		 * @param newSquareOwners list of squares and their owners
 		 * @param newWidth height of the current gameboard
 		 * @param newHeight width of the current gameboard
+		 * @param newLevel level of the ai
 		 */
-		aiController(int newPlayerId, const QList<bool> &newLines, const QList<int> &newSquareOwners, int newWidth, int newHeight);
+		aiController(int newPlayerId, const QList<bool> &newLines, const QList<int> &newSquareOwners, int newWidth, int newHeight, int newLevel);
 		
 		~aiController();
 		
@@ -76,6 +77,8 @@ class aiController : public aiFunctions
 		bool *lines;
 		/// The ID of the player this AI belongs to
 		int playerId;
+		/// The strength of the ai
+		int level;
 };
 
 #endif // KSQUARES_H

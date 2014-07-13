@@ -21,6 +21,9 @@
 #include <KLocale>
 #include <kstandardgameaction.h>
 
+//generated
+#include "settings.h"
+
 //classes
 #include "aicontroller.h"
 #include "gameboardview.h"
@@ -97,7 +100,7 @@ void KSquaresDemoWindow::playerTakeTurn(KSquaresPlayer* currentPlayer)
 
 void KSquaresDemoWindow::aiChooseLine()
 {
-	aiController ai(sGame->currentPlayerId(), sGame->board()->lines(), sGame->board()->squares(), sGame->board()->width(), sGame->board()->height());
+	aiController ai(sGame->currentPlayerId(), sGame->board()->lines(), sGame->board()->squares(), sGame->board()->width(), sGame->board()->height(), Settings::difficulty());
 	sGame->addLineToIndex(ai.chooseLine());
 }
 

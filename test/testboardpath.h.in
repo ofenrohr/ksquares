@@ -1,0 +1,7 @@
+#ifndef BOARDPATH_CONFIG_H
+#define BOARDPATH_CONFIG_H
+
+// define your version_libinterface
+#define TESTBOARDPATH @TESTBOARDPATH@
+
+#endif // VERSION_CONFIG_H

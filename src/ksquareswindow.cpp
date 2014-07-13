@@ -160,7 +160,7 @@ void KSquaresWindow::gameReset()
 	{
     disconnect(sGame, SIGNAL(highlightMove(int)), m_scene, SLOT(highlightLine(int)));
 		//This is being done before sGame->start(); to avoid the players cycling
-		aiController ai(-1, sGame->board()->lines(), QList<int>(), sGame->board()->width(), sGame->board()->height());
+		aiController ai(-1, sGame->board()->lines(), QList<int>(), sGame->board()->width(), sGame->board()->height(),0);
 		QList<int> lines = ai.autoFill(8);	//There will be 8 possible safe move for the players
 		QListIterator<int> i(lines);
 		while (i.hasNext())
@@ -329,7 +329,7 @@ void KSquaresWindow::saveGameAs()
 // testing only
 void KSquaresWindow::aiChooseLine()
 {
-	aiController ai(sGame->currentPlayerId(), sGame->board()->lines(), sGame->board()->squares(), sGame->board()->width(), sGame->board()->height());
+	aiController ai(sGame->currentPlayerId(), sGame->board()->lines(), sGame->board()->squares(), sGame->board()->width(), sGame->board()->height(), Settings::difficulty());
 	sGame->addLineToIndex(ai.chooseLine());
 }
 

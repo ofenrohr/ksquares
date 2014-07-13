@@ -1,55 +1,35 @@
 #include <QtTest>
+#include <QtCore>
 
-class testDate: public QObject
+#include "aicontroller.h"
+#include "ksquaresgame.h"
+#include "ksquaresio.h"
 
+// generated
+#include "testboardpath.h"
+
+// kde
+#include <KDebug>
+
+// other
+#include <iostream>
+
+class testRegression: public QObject
 {
-
-    Q_OBJECT
-
-private slots:
-
-    void testValidity();
-
-    void testMonth();
-
+	Q_OBJECT
+	private slots:
+		void testBoard001();
 };
-
  
-
-void testDate::testValidity()
-
+void testRegression::testBoard001()
 {
-
-    // 11 March 1967
-
-    QDate date( 1967, 3, 11 );
-
-    QVERIFY( date.isValid() );
-
+	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+	QScopedPointer< QList<int> > lines(new QList<int>());
+	QWARN(QString(QString(TESTBOARDPATH) + "/4x4-test1.dbl").toLatin1().data());
+	QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/4x4-test1.dbl", sGame.data(), lines.data()));
+	//aiController ai(-1, sGame->board()->lines(), QList<int>(), sGame->board()->width(), sGame->board()->height(), 2);
+	QVERIFY( true );
 }
 
- 
-
-void testDate::testMonth()
-
-{
-
-    // 11 March 1967
-
-    QDate date;
-
-    date.setYMD( 1967, 3, 11 );
-
-    QCOMPARE( date.month(), 3 );
-
-    QCOMPARE( QDate::longMonthName(date.month()),
-
-              QString("March") );
-
-}
-
- 
-
- 
-
-QTEST_MAIN(testDate)
+QTEST_MAIN(testRegression)
+#include "regression.moc"

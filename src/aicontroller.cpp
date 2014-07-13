@@ -16,13 +16,13 @@
 
 #include "settings.h"
 
-aiController::aiController(int newPlayerId, const QList<bool> &newLines, const QList<int> &newSquareOwners, int newWidth, int newHeight) :  aiFunctions(newWidth, newHeight), squareOwners(newSquareOwners), playerId(newPlayerId)
+aiController::aiController(int newPlayerId, const QList<bool> &newLines, const QList<int> &newSquareOwners, int newWidth, int newHeight, int newLevel) :  aiFunctions(newWidth, newHeight), squareOwners(newSquareOwners), playerId(newPlayerId), level(newLevel)
 {
 	linesSize = newLines.count();
 	lines = new bool[linesSize];
 	for (int i = 0; i < linesSize; ++i) lines[i] = newLines[i];
 	srand( (unsigned)time( NULL ) );
-	kDebug() << "AI: Starting AI level" << Settings::difficulty();
+	kDebug() << "AI: Starting AI level" << level;
 }
 
 aiController::~aiController()
@@ -61,7 +61,7 @@ int aiController::chooseLine() const
 	QList<int> choiceList = findLinesCompletingBoxes(linesSize, lines);
 	if(choiceList.size() != 0)
 	{
-		if(Settings::difficulty() >= 2) // to play good ai has to look into the future game
+		if(level >= 2) // to play good ai has to look into the future game
 		{
 			QList<int> openLines; // list of not yet drawn lines
 			for(int i = 0; i < linesSize; i++)
@@ -111,7 +111,7 @@ int aiController::chooseLine() const
 			}
 		}
 	}
-	if(Settings::difficulty() >= 1) //Hard(2/3)	//do some damage control :)
+	if(level >= 1) //Hard(2/3)	//do some damage control :)
 	{
 		QList<int> goodChoiceList = chooseLeastDamaging(choiceList);
 		if(goodChoiceList.size() != 0)
@@ -148,7 +148,7 @@ QList<int> aiController::chooseLeastDamaging(const QList<int> &choiceList) const
 	int ownLinesCnt = 0; // count of how many lines ai will take in this run
 	int ownSquaresCnt = 0; // count of how many squares ai will get in this run
 
-	if (Settings::difficulty() > 1)
+	if (level > 1)
 	{
 		memcpy(myLines.data(), lines, linesSize); // lines --> myLines (complete own chains) --> linesCopy (analyze damage/chains for next runs)
 		bool chainFound;
@@ -232,7 +232,7 @@ QList<int> aiController::chooseLeastDamaging(const QList<int> &choiceList) const
 		QList<int> squaresCopy = squareOwners;	//make temporary local copies of lists
 		QSet<int> chain; // set of lines that are given to opponent by move choiceList.at(i)
 		
-		if (Settings::difficulty() > 1)
+		if (level > 1)
 		{
 			memcpy(linesCopy.data(), myLines.data(), linesSize);	//make temporary local copies of lists
 			if (linesCopy[choiceList.at(i)]) continue; // already covered. ai will get this line
@@ -257,7 +257,7 @@ QList<int> aiController::chooseLeastDamaging(const QList<int> &choiceList) const
 					
 					for(int sideOfSquare=0; sideOfSquare<=3; sideOfSquare++)	//make the square complete in linesCopy
 					{
-						if(Settings::difficulty() > 1 && !linesCopy[sidesOfSquare[sideOfSquare]])
+						if(level > 1 && !linesCopy[sidesOfSquare[sideOfSquare]])
 						{
 							chain.insert(sidesOfSquare[sideOfSquare]);
 							QList<int> adjacentSquares = squaresFromLine(sidesOfSquare[sideOfSquare]);
@@ -286,7 +286,7 @@ QList<int> aiController::chooseLeastDamaging(const QList<int> &choiceList) const
 	
 	//kDebug() << "linePointDamage:" << linePointDamage;
 	
-	if(Settings::difficulty() < 2) // middle ai won't analyze the game further
+	if(level < 2) // middle ai won't analyze the game further
 	{
 		QList<int> bestMoves = linePointDamage.values(linePointDamage.begin().key());	//this is a list of the indices of the lines that are the least damaging. linePointDamage.begin() returns the 1st pair in the QMap, sorted in ascending order by Key (damage of move)
 		return bestMoves;

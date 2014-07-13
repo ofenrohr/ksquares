@@ -1,5 +1,7 @@
 PROJECT(ksquares)
 
+ENABLE_TESTING()
+
 if(NOT COMPILING_KDEGAMES)
 	find_package(KDE4 REQUIRED)
 	include(KDE4Defaults)
