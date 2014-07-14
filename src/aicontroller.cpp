@@ -14,8 +14,6 @@
 
 #include <QSet>
 
-#include "settings.h"
-
 aiController::aiController(int newPlayerId, const QList<bool> &newLines, const QList<int> &newSquareOwners, int newWidth, int newHeight, int newLevel) :  aiFunctions(newWidth, newHeight), squareOwners(newSquareOwners), playerId(newPlayerId), level(newLevel)
 {
 	linesSize = newLines.count();
