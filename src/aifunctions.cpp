@@ -140,3 +140,68 @@ QList<int> aiFunctions::safeMoves(int linesSize, const bool *lines) const
 	}
 	return safeLines;
 }
+
+void aiFunctions::findOwnChains(const QList<int> *lines, int linesSize, int width, int height, QList<QList<int> > *ownChains)
+{
+	int sidesOfSquare[4];
+	QScopedArrayPointer<bool> myLines(new bool[linesSize]); //make temporary local copies of lists
+	int ownLinesCnt = 0; // count of how many lines ai will take in this run
+	int ownSquaresCnt = 0; // count of how many squares ai will get in this run
+	memcpy(myLines.data(), lines, linesSize); // lines --> myLines (complete own chains) --> linesCopy (analyze damage/chains for next runs)
+	bool chainFound;
+	// since chooseLeastDamaging will be called early during the game if playing against hard ai, we need to finish open chains in linesCopy before computing the number of residual chains
+	do // this loop completes all chains the opponent gave to ai
+	{
+		chainFound = false;
+		for(int curSquare = 0; curSquare < width*height; curSquare++) // walk through squares and search for start of chain
+		{
+			QList<int> ownChain; // remember completed chain lines
+			int chainSquare = curSquare;
+			bool squareFound;
+			do { // this loop walks through a chain square by square
+				squareFound = false;
+				if(countBorderLines(sidesOfSquare, chainSquare, &(*myLines)) == 3) // found a square for ai
+				{
+					for(int sideOfSquare = 0; sideOfSquare <= 3; sideOfSquare++)
+					{
+						if(!myLines[sidesOfSquare[sideOfSquare]]) // found missing line of square
+						{
+							ownLinesCnt++;
+							
+							int nextSquareFound=-1;
+							QList<int> adjacentSquares = squaresFromLine(sidesOfSquare[sideOfSquare]);
+							for(int i = 0; i < adjacentSquares.size(); i++)
+							{
+								int chainSquareBorderCnt = countBorderLines(adjacentSquares.at(i), &(*myLines));
+								if(chainSquare != adjacentSquares.at(i) &&
+										chainSquareBorderCnt == 3)	// check if a second square will be completed by this line
+								{
+									ownSquaresCnt++; // add extra square
+								}
+								if(chainSquareBorderCnt == 2)	// look for next square in chain
+								{
+									nextSquareFound = adjacentSquares.at(i);
+								}
+									
+							}
+							myLines[sidesOfSquare[sideOfSquare]] = true; // complete line
+							if(nextSquareFound >= 0)
+							{
+								chainSquare = nextSquareFound;
+							}
+							ownChain.append(sidesOfSquare[sideOfSquare]);
+						}
+					}
+					squareFound = true;
+					chainFound = true;
+					ownSquaresCnt++;
+				}
+			} while(squareFound);
+			if(chainFound)
+			{
+				ownChains->append(ownChain);
+				break;
+			}
+		}
+	} while (chainFound);
+}

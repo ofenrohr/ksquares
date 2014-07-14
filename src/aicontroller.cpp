@@ -150,6 +150,7 @@ QList<int> aiController::chooseLeastDamaging(const QList<int> &choiceList) const
 
 	if (level > 1)
 	{
+		/* ---snip--- */
 		memcpy(myLines.data(), lines, linesSize); // lines --> myLines (complete own chains) --> linesCopy (analyze damage/chains for next runs)
 		bool chainFound;
 		// since chooseLeastDamaging will be called early during the game if playing against hard ai, we need to finish open chains in linesCopy before computing the number of residual chains
@@ -207,6 +208,7 @@ QList<int> aiController::chooseLeastDamaging(const QList<int> &choiceList) const
 				}
 			}
 		} while (chainFound);
+		/* ---snip--- */
 		//kDebug() << "ownChains:" << ownChains;
 
 		// complete the shortest chain first if there is more than one chain. this is needed to stop alternating between two chains because that works against the hard ai move which takes the next chain by sacrificing 2/4 squares. when alternating between two chains it's possible that there are 3 remaining open lines in both chains combined which triggers the evil move too late because the chains were completed in the wrong order

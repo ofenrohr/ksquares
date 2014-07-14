@@ -13,6 +13,7 @@
 #include <QList>
 #include "board.h"
 
+// TODO: use static functions, provide non-static functions with less parameters
 class aiFunctions {
 	public:
 		aiFunctions(int w, int h);
@@ -57,6 +58,19 @@ class aiFunctions {
 		 * @return list of moves that are safe (squares surrounded by 2 lines are avoided)
 		 */
 		QList<int> safeMoves(int linesSize, const bool *lines) const;
+		/**
+		 * Finds chains on board
+		 * @param lines lines of the board
+		 * @param width width of board in boxes
+		 * @param height height of board in boxes
+		 * @param ownChains returns the chains the current player can score
+		 */
+		void findOwnChains(const QList<int> *lines, int linesSize, int width, int height, QList<QList<int> > *ownChains);
+		/**
+		 * @param chainLines list of lines the chain is made up of
+		 * @return 0: long chain, 1: short chain, 2: loop chain
+		 */
+		int classifyChain(const QList<int> chainLines);
 		
 		/// Width of the game board
 		int width;

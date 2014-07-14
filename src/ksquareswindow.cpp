@@ -281,7 +281,7 @@ void KSquaresWindow::playerTakeTurn(KSquaresPlayer* currentPlayer)
 		setCursor(Qt::WaitCursor);
 		m_scene->disableEvents();
 		
-		QTimer::singleShot(200, this, SLOT(aiChooseLine()));
+		QTimer::singleShot(2000, this, SLOT(aiChooseLine()));
 		setCursor(Qt::ArrowCursor);
 	}
 }
