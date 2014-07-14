@@ -88,6 +88,7 @@ int aiController::chooseLine() const
 	{
 		float randomFloat = ((float) rand()/(RAND_MAX + 1.0))*(choiceList.size()-1);
 		int randChoice = (short)(randomFloat)/1;
+		kDebug() << "choiceList: " << choiceList;
 		kDebug() << "AI: 2. Drawing line at index:" << choiceList.at(randChoice);
 		return choiceList.at(randChoice);
 	}
