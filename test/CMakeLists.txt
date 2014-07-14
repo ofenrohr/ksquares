@@ -17,12 +17,12 @@ kde4_add_kcfg_files(ksquarestest_SRCS GENERATE_MOC settings.kcfgc) #GENERATE_MOC
 
 include_directories( ../src )
 
+
+set(TESTBOARDPATH "${CMAKE_CURRENT_SOURCE_DIR}/boards")
+
 configure_file( testboardpath.h.in ${CMAKE_CURRENT_BINARY_DIR}/generated/testboardpath.h )
 include_directories( ${CMAKE_CURRENT_BINARY_DIR}/generated/ )
 
-add_definitions( -DTESTBOARDPATH="${CMAKE_CURRENT_SOURCE_DIR}/boards")
-
-message("TESTBOARDPATH = " ${TESTBOARDPATH})
 
 kde4_add_unit_test( ksquarestest
   TESTNAME regression-ksquarestest
