@@ -298,11 +298,15 @@ void KSquaresWindow::loadGame()
   KSquaresIO::loadGame(filename, sGame, &lines);
   resetBoard(sGame->board()->width(), sGame->board()->height());
   connectSignalsAndSlots();
-  sGame->start();
-  for (int i = 0; i < lines.size(); i++)
+  for (int i = 0; i < lines.size()-1; i++)
   {
     sGame->addLineToIndex(lines.at(i));
   }
+  sGame->start();
+	if (lines.size() > 0)
+	{
+		sGame->addLineToIndex(lines.at(lines.size()-1));
+	}
 }
 
 void KSquaresWindow::saveGame() 
