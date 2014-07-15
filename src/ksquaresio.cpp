@@ -50,7 +50,7 @@ bool KSquaresIO::loadGame(QString filename, KSquaresGame *sGame, QList<int> *lin
 		//KMessageBox::questionYesNo(NULL, i18n("Is the first dabble player human?"), i18n("Human player?"));
 		isHuman.append(1); // TODO: use result of question
 		//KMessageBox::questionYesNo(NULL, i18n("Is the second dabble player human?"), i18n("Human player?"));
-		isHuman.append(0); // TODO: use result of question
+		isHuman.append(1); // TODO: use result of question
 		players = KSquaresGame::createPlayers(2,isHuman);
 		KSquaresPlayer p1 = players.at(0);
 		p1.setName(i18n("Player 1"));

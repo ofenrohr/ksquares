@@ -141,8 +141,10 @@ int Board::pointsToIndex(QPoint p1, QPoint p2, int w, int h)
 	else 
 	{
 		// horizontal line
-		ret = w * pa.y() + (h+1) * pa.y() + pa.x();
+		ret = pa.y() * h + pa.y() * (h+1) + pa.x();
 	}
+	
+	kDebug() << p1 << " - " << p2 << " = " << ret;
 	
 	return ret;
 }

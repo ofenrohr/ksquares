@@ -8,13 +8,14 @@
 // generated
 #include "testboardpath.h"
 
-class testRegression: public QObject
+class hardAi: public QObject
 {
 	Q_OBJECT
 	private slots:
 		void testBoard001();
 		void testBoard002();
 		void testBoard003();
+		void testBoard005();
 };
 
 /**
@@ -23,7 +24,7 @@ class testRegression: public QObject
  * Expectation: take short chain and open second short chain with hard hearted
  * handout
  */
-void testRegression::testBoard001()
+void hardAi::testBoard001()
 {
 	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
 	QList<int> lines;
@@ -43,7 +44,7 @@ void testRegression::testBoard001()
  * Expectation: take short chain and open second short chain with hard hearted
  * handout
  */
-void testRegression::testBoard002()
+void hardAi::testBoard002()
 {
 	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
 	QList<int> lines;
@@ -58,11 +59,11 @@ void testRegression::testBoard002()
 }
 
 /**
- * hard aiTest that
+ * hard ai
  * One short chain, one long chain
  * Expectation: ai does a hard hearted handout
  */
-void testRegression::testBoard003()
+void hardAi::testBoard003()
 {
 	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
 	QList<int> lines;
@@ -76,5 +77,24 @@ void testRegression::testBoard003()
 	QCOMPARE( aiLine, 5 );
 }
 
-QTEST_MAIN(testRegression)
-#include "regression.moc"
+/**
+ * hard ai
+ * One short chain, one long chain
+ * Expectation: ai does a hard hearted handout
+ */
+void hardAi::testBoard005()
+{
+	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+	QList<int> lines;
+	QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/3x2-test5.dbl", sGame.data(), &lines));
+	for (int i = 0; i < lines.size(); i++)
+	{
+		sGame->addLineToIndex(lines.at(i));
+	}
+	aiController ai(-1, sGame->board()->lines(), sGame->board()->squares(), sGame->board()->width(), sGame->board()->height(), 2);
+	int aiLine = ai.chooseLine();
+	QCOMPARE( aiLine, 5 );
+}
+
+QTEST_MAIN(hardAi)
+#include "hardAi.moc"

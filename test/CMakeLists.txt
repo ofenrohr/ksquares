@@ -5,7 +5,6 @@ FIND_PACKAGE( Qt4 REQUIRED QT_USE_QT* )
 INCLUDE( ${QT_USE_FILE} )
 
 set( ksquarestest_SRCS 
-	regression.cpp
 	../src/ksquaresgame.cpp
 	../src/aicontroller.cpp
 	../src/aifunctions.cpp
@@ -24,12 +23,36 @@ configure_file( testboardpath.h.in ${CMAKE_CURRENT_BINARY_DIR}/generated/testboa
 include_directories( ${CMAKE_CURRENT_BINARY_DIR}/generated/ )
 
 
-kde4_add_unit_test( ksquarestest
-  TESTNAME regression-ksquarestest
+kde4_add_unit_test( test-hardai
+  TESTNAME hardai
   ${ksquarestest_SRCS}
+  hardAi.cpp
+)
+target_link_libraries( test-hardai
+  ${KDE4_KDECORE_LIBS}
+  ${QT_QTTEST_LIBRARY}
+  ${KDE4_KDEUI_LIBS}
+  kdegames
 )
 
-target_link_libraries( ksquarestest
+kde4_add_unit_test( test-middleai
+  TESTNAME middleai
+  ${ksquarestest_SRCS}
+  middleAi.cpp
+)
+target_link_libraries( test-middleai
+  ${KDE4_KDECORE_LIBS}
+  ${QT_QTTEST_LIBRARY}
+  ${KDE4_KDEUI_LIBS}
+  kdegames
+)
+
+kde4_add_unit_test( test-load
+  TESTNAME load
+  ${ksquarestest_SRCS}
+  load.cpp
+)
+target_link_libraries( test-load
   ${KDE4_KDECORE_LIBS}
   ${QT_QTTEST_LIBRARY}
   ${KDE4_KDEUI_LIBS}
