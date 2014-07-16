@@ -37,6 +37,10 @@ void load::testBoard005()
 	{
 		QVERIFY(lines.contains(expectedLines.at(i)));
 	}
+	for (int i = 0; i < lines.size(); i++)
+	{
+		QVERIFY(expectedLines.contains(lines.at(i)));
+	}
 }
 
 QTEST_MAIN(load)

@@ -136,12 +136,12 @@ int Board::pointsToIndex(QPoint p1, QPoint p2, int w, int h)
 	if (pb.x() == pa.x())
 	{
 		// vertical line
-		ret = w * pb.y() + (h+1) * pa.y() + pa.x();
+		ret = w * pb.y() + (w+1) * pa.y() + pa.x();
 	}
 	else 
 	{
 		// horizontal line
-		ret = pa.y() * h + pa.y() * (h+1) + pa.x();
+		ret = pa.y() * w + pa.y() * (w+1) + pa.x();
 	}
 	
 	kDebug() << p1 << " - " << p2 << " = " << ret;
@@ -149,6 +149,7 @@ int Board::pointsToIndex(QPoint p1, QPoint p2, int w, int h)
 	return ret;
 }
 
+// TODO: invert y axis?
 bool Board::indexToPoints(const int lineIndex, QPoint *p1, QPoint *p2)
 {
   int index2 = lineIndex % ( ( 2 * width_ ) + 1 );

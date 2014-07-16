@@ -278,7 +278,7 @@ bool KSquaresIO::saveGame(QString filename, KSquaresGame *sGame)
 				file.close();
 				return false;
 			}
-			outStream << "(" << p1.x() << ", " << p1.y() << ") - (" << p2.x() << ", " << p2.y() << ")\n";
+			outStream << "(" << p1.x() << ", " << (sGame->board()->height() - p1.y()) << ") - (" << p2.x() << ", " << (sGame->board()->height() - p2.y()) << ")\n";
 		} 
 	}
 	else if (filename.endsWith(".ksq"))
