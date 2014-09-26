@@ -25,6 +25,7 @@ class aiFunctions {
 		 * @return the number of lines currently drawn around a specific square
 		 */
 		int countBorderLines(int squareIndex, const bool *linesList) const;
+		static int countBorderLines(int width, int height, int squareIndex, const bool *linesList);
 		/**
 		 * @param sidesOfSquare output parameter: the indices of the four lines surrounding the square
 		 * @param squareIndex the index of the square (relates to @ref squareOwners )
@@ -33,31 +34,37 @@ class aiFunctions {
 		 * @return the number of lines currently drawn around a specific square
 		 */
 		int countBorderLines(int *sidesOfSquare, int squareIndex, const bool *linesList) const;
+		static int countBorderLines(int width, int height, int *sidesOfSquare, int squareIndex, const bool *linesList);
 		/**
 		 * @param lineIndex the index of the line (relates to @ref lines )
 		 *
 		 * @return the (one or two) squares abutting a line
 		 */
 		QList<int> squaresFromLine(int lineIndex) const;
+		static QList<int> squaresFromLine(int width, int height, int lineIndex);
 		/**
 		 * @param sidesOfSquare output parameter: the indices of the four lines surrounding the square
 		 * @param squareIndex the index of the square (relates to @ref squareOwners )
 		 */
 		void linesFromSquare(int *sidesOfSquare, int squareIndex) const;
+		static void linesFromSquare(int width, int height, int *sidesOfSquare, int squareIndex);
 		/**
 		 * @param lineIndex the index of the line (relates to @ref lines )
 		 *
 		 * @return the direction of the line
 		 */
 		KSquares::Direction lineDirection(int lineIndex) const;
+		static KSquares::Direction lineDirection(int width, int height, int lineIndex);
 		
 		/*=========================================*/
 		// TODO: add doc
 		QList<int> findLinesCompletingBoxes(int linesSize, const bool *lines) const;
+		static QList<int> findLinesCompletingBoxes(int width, int height, int linesSize, const bool *lines);
 		/**
 		 * @return list of moves that are safe (squares surrounded by 2 lines are avoided)
 		 */
 		QList<int> safeMoves(int linesSize, const bool *lines) const;
+		static QList<int> safeMoves(int width, int height, int linesSize, const bool *lines);
 		/**
 		 * Finds chains on board
 		 * @param lines lines of the board

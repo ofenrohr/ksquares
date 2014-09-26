@@ -33,10 +33,24 @@ int aiFunctions::countBorderLines(int *sidesOfSquare, int squareIndex, const boo
 	return count;
 }
 
+// static variant
+int aiFunctions::countBorderLines(int width, int height, int *sidesOfSquare, int squareIndex, const bool *linesList)
+{
+	aiFunctions aif(width, height);
+	return aif.countBorderLines(sidesOfSquare, squareIndex, linesList);
+}
+
 int aiFunctions::countBorderLines(int squareIndex, const bool *linesList) const
 {
 	int tempLineList[4];
 	return countBorderLines(tempLineList, squareIndex, linesList);
+}
+
+// static variant
+int aiFunctions::countBorderLines(int width, int height, int squareIndex, const bool *linesList)
+{
+	aiFunctions aif(width, height);
+	return aif.countBorderLines(squareIndex, linesList);
 }
 
 QList<int> aiFunctions::squaresFromLine(int lineIndex) const
@@ -67,6 +81,13 @@ QList<int> aiFunctions::squaresFromLine(int lineIndex) const
 	return squareList;
 }
 
+// static variant
+QList<int> aiFunctions::squaresFromLine(int width, int height, int lineIndex)
+{
+	aiFunctions aif(width, height);
+	return aif.squaresFromLine(lineIndex);
+}
+
 void aiFunctions::linesFromSquare(int *linesFromSquare, int squareIndex) const
 {
 	int index1 = (squareIndex/width) * ((2*width) + 1) + (squareIndex%width);
@@ -77,6 +98,13 @@ void aiFunctions::linesFromSquare(int *linesFromSquare, int squareIndex) const
 	linesFromSquare[1] = index2;
 	linesFromSquare[2] = index3;
 	linesFromSquare[3] = index4;
+}
+
+// static variant
+void aiFunctions::linesFromSquare(int width, int height, int *linesFromSquare, int squareIndex)
+{
+	aiFunctions aif(width, height);
+	return aif.linesFromSquare(linesFromSquare, squareIndex);
 }
 
 KSquares::Direction aiFunctions::lineDirection(int lineIndex) const
@@ -91,6 +119,13 @@ KSquares::Direction aiFunctions::lineDirection(int lineIndex) const
 	return dir;
 }
 
+// static variant
+KSquares::Direction aiFunctions::lineDirection(int width, int height, int lineIndex)
+{
+	aiFunctions aif(width, height);
+	return aif.lineDirection(lineIndex);
+}
+
 /*=========================================*/
 
 QList<int> aiFunctions::findLinesCompletingBoxes(int linesSize, const bool *lines) const
@@ -103,7 +138,6 @@ QList<int> aiFunctions::findLinesCompletingBoxes(int linesSize, const bool *line
 			QList<int> adjacentSquares = squaresFromLine(i);
 			for(int j=0; j<adjacentSquares.size(); j++)
 			{
-				
 				if(countBorderLines(adjacentSquares.at(j), lines) == 3)	//if 3 lines, draw there to get points!
 				{
 					choiceList.append(i);
@@ -113,6 +147,13 @@ QList<int> aiFunctions::findLinesCompletingBoxes(int linesSize, const bool *line
 		}
 	}
 	return choiceList;
+}
+
+// static variant
+QList<int> aiFunctions::findLinesCompletingBoxes(int width, int height, int linesSize, const bool *lines)
+{
+	aiFunctions aif(width, height);
+	return aif.findLinesCompletingBoxes(linesSize, lines);
 }
 
 QList<int> aiFunctions::safeMoves(int linesSize, const bool *lines) const
@@ -139,6 +180,12 @@ QList<int> aiFunctions::safeMoves(int linesSize, const bool *lines) const
 		}
 	}
 	return safeLines;
+}
+
+QList<int> aiFunctions::safeMoves(int width, int height, int linesSize, const bool *lines)
+{
+	aiFunctions aif(width, height);
+	return aif.safeMoves(linesSize, lines);
 }
 
 void aiFunctions::findOwnChains(const QList<int> *lines, int linesSize, int width, int height, QList<QList<int> > *ownChains)
