@@ -13,6 +13,7 @@ set(ksquares_SRCS
 	aifunctions.cpp
 	ksquaresio.cpp
 	board.cpp
+	dbgame.cpp
 )
 
 include_directories(${CMAKE_SOURCE_DIR}/libkdegames/highscore)
