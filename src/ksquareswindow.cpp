@@ -92,6 +92,11 @@ void KSquaresWindow::gameNew()
 	humanCheckBoxList.append(dialog.playerTwoHuman);
 	humanCheckBoxList.append(dialog.playerThreeHuman);
 	humanCheckBoxList.append(dialog.playerFourHuman);
+	QList<QComboBox*> aiLevelList;
+	aiLevelList.append(dialog.playerOneAiLevel);
+	aiLevelList.append(dialog.playerTwoAiLevel);
+	aiLevelList.append(dialog.playerThreeAiLevel);
+	aiLevelList.append(dialog.playerFourAiLevel);
 
 	//get settings from file
 	for(int i=0; i<Settings::playerNames().size(); i++)
@@ -101,10 +106,21 @@ void KSquaresWindow::gameNew()
 	for(int i=0; i<Settings::playerNames().size(); i++)
 	{
 		if (Settings::humanList().at(i) == 2)
+		{
 			humanCheckBoxList.at(i)->setCheckState(Qt::Checked);
+			aiLevelList.at(i)->setDisabled(true);
+		}
 		else
+		{
 			humanCheckBoxList.at(i)->setCheckState(Qt::Unchecked);
+			aiLevelList.at(i)->setDisabled(false);
+		}
 	}
+	aiLevelList.at(0)->setCurrentIndex(Settings::playerOneAi());
+	aiLevelList.at(1)->setCurrentIndex(Settings::playerTwoAi());
+	aiLevelList.at(2)->setCurrentIndex(Settings::playerThreeAi());
+	aiLevelList.at(3)->setCurrentIndex(Settings::playerFourAi());
+
 	dialog.spinNumOfPlayers->setValue(Settings::numOfPlayers());
 	dialog.spinHeight->setValue(Settings::boardHeight());
 	dialog.spinWidth->setValue(Settings::boardWidth());
@@ -133,6 +149,11 @@ void KSquaresWindow::gameNew()
 		tempHuman.append(humanCheckBoxList.at(i)->checkState());
 	}
 	Settings::setHumanList(tempHuman);
+	
+	Settings::setPlayerOneAi(aiLevelList.at(0)->currentIndex());
+	Settings::setPlayerTwoAi(aiLevelList.at(1)->currentIndex());
+	Settings::setPlayerThreeAi(aiLevelList.at(2)->currentIndex());
+	Settings::setPlayerFourAi(aiLevelList.at(3)->currentIndex());
 
 	Settings::setBoardHeight(dialog.spinHeight->value());
 	Settings::setBoardWidth(dialog.spinWidth->value());
@@ -227,12 +248,13 @@ void KSquaresWindow::gameOver(const QVector<KSquaresPlayer> &_playerList)
 	scoresDialog.scoreTable->resizeColumnsToContents();
 	scoresDialog.exec();
 
-	if(playerList.at(0).isHuman())
+	// TODO: enable highscore if second player is human!
+	if(playerList.at(0).isHuman() && playerList.size() == 2)
 	{
 		int score = (int)(static_cast<double>(playerList.at(0).score()) - (static_cast<double>(Settings::boardWidth()*Settings::boardHeight()) / static_cast<double>(playerList.size())));
 		
 		KScoreDialog ksdialog(KScoreDialog::Name, this);
-		switch(Settings::difficulty())
+		switch(Settings::playerTwoAi())
 		{
 			case 0:
 				ksdialog.setConfigGroup(qMakePair(QByteArray("Easy"), i18n("Easy")));
@@ -333,7 +355,15 @@ void KSquaresWindow::saveGameAs()
 // testing only
 void KSquaresWindow::aiChooseLine()
 {
-	aiController ai(sGame->currentPlayerId(), sGame->board()->lines(), sGame->board()->squares(), sGame->board()->width(), sGame->board()->height(), Settings::difficulty());
+	int aiLevel=0;
+	switch(sGame->currentPlayerId())
+	{
+		case 0: aiLevel = Settings::playerOneAi(); break;
+		case 1: aiLevel = Settings::playerTwoAi(); break;
+		case 2: aiLevel = Settings::playerThreeAi(); break;
+		case 3: aiLevel = Settings::playerFourAi(); break;
+	}
+	aiController ai(sGame->currentPlayerId(), sGame->board()->lines(), sGame->board()->squares(), sGame->board()->width(), sGame->board()->height(), aiLevel);
 	sGame->addLineToIndex(ai.chooseLine());
 }
 
@@ -364,9 +394,9 @@ void KSquaresWindow::optionsPreferences()
 	ui_prefs_display.setupUi(displaySettingsDialog);
 	dialog->addPage(displaySettingsDialog, i18n("Display"), "preferences-desktop-display");
 
-	QWidget *aiSettingsDialog = new QWidget;
-	ui_prefs_ai.setupUi(aiSettingsDialog);
-	dialog->addPage(aiSettingsDialog, i18n("Computer Player"), "games-difficult");
+	//QWidget *aiSettingsDialog = new QWidget;
+	//ui_prefs_ai.setupUi(aiSettingsDialog);
+	//dialog->addPage(aiSettingsDialog, i18n("Computer Player"), "games-difficult");
 
 	connect(dialog, SIGNAL(settingsChanged(QString)), m_view, SLOT(setBoardSize()));
 	dialog->show();

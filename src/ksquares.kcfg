@@ -31,9 +31,24 @@ http://www.kde.org/standards/kcfg/1.0/kcfg.xsd" >
 		</entry>
 	</group>
 	<group name="AI">
-		<entry name="Difficulty" type="Int">
-			<label>Difficulty</label>
-			<whatsthis>How difficult the AI should be</whatsthis>
+		<entry name="PlayerOneAi" type="Int">
+			<label>Difficulty Player One</label>
+			<whatsthis>How difficult the AI should be for player one</whatsthis>
+			<default>0</default>
+		</entry>
+		<entry name="PlayerTwoAi" type="Int">
+			<label>Difficulty Player Two</label>
+			<whatsthis>How difficult the AI should be for player two</whatsthis>
+			<default>0</default>
+		</entry>
+		<entry name="PlayerThreeAi" type="Int">
+			<label>Difficulty Player Three</label>
+			<whatsthis>How difficult the AI should be for player three</whatsthis>
+			<default>0</default>
+		</entry>
+		<entry name="PlayerFourAi" type="Int">
+			<label>Difficulty Player Four</label>
+			<whatsthis>How difficult the AI should be for player four</whatsthis>
 			<default>0</default>
 		</entry>
 	</group>

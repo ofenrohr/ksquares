@@ -100,7 +100,15 @@ void KSquaresDemoWindow::playerTakeTurn(KSquaresPlayer* currentPlayer)
 
 void KSquaresDemoWindow::aiChooseLine()
 {
-	aiController ai(sGame->currentPlayerId(), sGame->board()->lines(), sGame->board()->squares(), sGame->board()->width(), sGame->board()->height(), Settings::difficulty());
+	int aiLevel=0;
+	switch(sGame->currentPlayerId())
+	{
+		case 0: aiLevel = Settings::playerOneAi(); break;
+		case 1: aiLevel = Settings::playerTwoAi(); break;
+		case 2: aiLevel = Settings::playerThreeAi(); break;
+		case 3: aiLevel = Settings::playerFourAi(); break;
+	}
+	aiController ai(sGame->currentPlayerId(), sGame->board()->lines(), sGame->board()->squares(), sGame->board()->width(), sGame->board()->height(), aiLevel);
 	sGame->addLineToIndex(ai.chooseLine());
 }
 
