@@ -66,13 +66,13 @@ class aiFunctions {
 		QList<int> safeMoves(int linesSize, const bool *lines) const;
 		static QList<int> safeMoves(int width, int height, int linesSize, const bool *lines);
 		/**
-		 * Finds chains on board
+		 * Finds chains on board that can be taken by the player to move
 		 * @param lines lines of the board
 		 * @param width width of board in boxes
 		 * @param height height of board in boxes
 		 * @param ownChains returns the chains the current player can score
 		 */
-		void findOwnChains(const QList<int> *lines, int linesSize, int width, int height, QList<QList<int> > *ownChains);
+		void findOwnChains(bool *lines, int linesSize, int width, int height, QList<QList<int> > *ownChains) const;
 		/**
 		 * @param chainLines list of lines the chain is made up of
 		 * @return 0: long chain, 1: short chain, 2: loop chain

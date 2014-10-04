@@ -188,7 +188,7 @@ QList<int> aiFunctions::safeMoves(int width, int height, int linesSize, const bo
 	return aif.safeMoves(linesSize, lines);
 }
 
-void aiFunctions::findOwnChains(const QList<int> *lines, int linesSize, int width, int height, QList<QList<int> > *ownChains)
+void aiFunctions::findOwnChains(bool *lines, int linesSize, int width, int height, QList<QList<int> > *ownChains) const
 {
 	int sidesOfSquare[4];
 	QScopedArrayPointer<bool> myLines(new bool[linesSize]); //make temporary local copies of lists

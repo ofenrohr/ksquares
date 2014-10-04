@@ -149,65 +149,7 @@ QList<int> aiController::chooseLeastDamaging(const QList<int> &choiceList) const
 
 	if (level > 1)
 	{
-		/* ---snip--- */
-		memcpy(myLines.data(), lines, linesSize); // lines --> myLines (complete own chains) --> linesCopy (analyze damage/chains for next runs)
-		bool chainFound;
-		// since chooseLeastDamaging will be called early during the game if playing against hard ai, we need to finish open chains in linesCopy before computing the number of residual chains
-		do // this loop completes all chains the opponent gave to ai
-		{
-			chainFound = false;
-			for(int curSquare = 0; curSquare < squareOwners.size(); curSquare++) // walk through squares and search for start of chain
-			{
-				QList<int> ownChain; // remember completed chain lines
-				int chainSquare = curSquare;
-				bool squareFound;
-				do { // this loop walks through a chain square by square
-					squareFound = false;
-					if(countBorderLines(sidesOfSquare, chainSquare, &(*myLines)) == 3) // found a square for ai
-					{
-						for(int sideOfSquare = 0; sideOfSquare <= 3; sideOfSquare++)
-						{
-							if(!myLines[sidesOfSquare[sideOfSquare]]) // found missing line of square
-							{
-								ownLinesCnt++;
-								
-								int nextSquareFound=-1;
-								QList<int> adjacentSquares = squaresFromLine(sidesOfSquare[sideOfSquare]);
-								for(int i = 0; i < adjacentSquares.size(); i++)
-								{
-									int chainSquareBorderCnt = countBorderLines(adjacentSquares.at(i), &(*myLines));
-									if(chainSquare != adjacentSquares.at(i) &&
-									    chainSquareBorderCnt == 3)	// check if a second square will be completed by this line
-									{
-										ownSquaresCnt++; // add extra square
-									}
-									if(chainSquareBorderCnt == 2)	// look for next square in chain
-									{
-										nextSquareFound = adjacentSquares.at(i);
-									}
-										
-								}
-								myLines[sidesOfSquare[sideOfSquare]] = true; // complete line
-								if(nextSquareFound >= 0)
-								{
-									chainSquare = nextSquareFound;
-								}
-								ownChain.append(sidesOfSquare[sideOfSquare]);
-							}
-						}
-						squareFound = true;
-						chainFound = true;
-						ownSquaresCnt++;
-					}
-				} while(squareFound);
-				if(chainFound)
-				{
-					ownChains.append(ownChain);
-					break;
-				}
-			}
-		} while (chainFound);
-		/* ---snip--- */
+		findOwnChains(lines, linesSize, width, height, &ownChains);
 		//kDebug() << "ownChains:" << ownChains;
 
 		// complete the shortest chain first if there is more than one chain. this is needed to stop alternating between two chains because that works against the hard ai move which takes the next chain by sacrificing 2/4 squares. when alternating between two chains it's possible that there are 3 remaining open lines in both chains combined which triggers the evil move too late because the chains were completed in the wrong order
