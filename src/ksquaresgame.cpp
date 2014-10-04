@@ -73,7 +73,7 @@ void KSquaresGame::createGame(const QVector<KSquaresPlayer> &startPlayers, int s
 	
 	kDebug() << "Game Starting";
 	
-	emit takeTurnSig(currentPlayer());
+	//emit takeTurnSig(currentPlayer());
 }
 
 void KSquaresGame::resetEverything()
@@ -118,24 +118,19 @@ void KSquaresGame::addLineToIndex(int index)
 		gameInProgress = false;
 	}
 	
+	// check if the player's turn is over
 	if (nextPlayer)
 	{
-		// the player's turn is over
 		if (!players.at(drawingPlayerIndex).isHuman())
 		{
 			emit highlightMove(index);
 		}
-		if (gameInProgress)
-		{
-			emit takeTurnSig(currentPlayer());
-		}
 	}
-	else
+	
+	// announce the current player
+	if (gameInProgress)
 	{
-		if (gameInProgress)
-		{
-			emit takeTurnSig(currentPlayer());
-		}
+		emit takeTurnSig(currentPlayer());
 	}
 }
 
