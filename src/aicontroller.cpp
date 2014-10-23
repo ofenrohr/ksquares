@@ -64,7 +64,7 @@ int aiController::chooseLine() const
 			QList<int> openLines; // list of not yet drawn lines
 			for(int i = 0; i < linesSize; i++)
 			{
-				if(!lines[i])
+				if(!lines[i] && !choiceList.contains(i))
 				{
 					openLines.append(i);
 				}
@@ -134,7 +134,8 @@ int aiController::chooseLine() const
 
 QList<int> aiController::chooseLeastDamaging(const QList<int> &choiceList) const
 {
-	//kDebug() << "AI: Checking" << choiceList.size() << "possible moves";
+	kDebug() << "AI: Checking" << choiceList.size() << "possible moves";
+	kDebug() << "choiceList: " << choiceList;
 	QMap<int,int> linePointDamage;	//this will be a list of how damaging a certain move will be. Key = damage of move, Value = index of line
 	QScopedArrayPointer<bool> linesCopy(new bool[linesSize]); //make temporary local copies of lists
 	int sidesOfSquare[4];
@@ -150,7 +151,7 @@ QList<int> aiController::chooseLeastDamaging(const QList<int> &choiceList) const
 	if (level > 1)
 	{
 		findOwnChains(lines, linesSize, width, height, &ownChains);
-		//kDebug() << "ownChains:" << ownChains;
+		kDebug() << "ownChains:" << ownChains;
 
 		// complete the shortest chain first if there is more than one chain. this is needed to stop alternating between two chains because that works against the hard ai move which takes the next chain by sacrificing 2/4 squares. when alternating between two chains it's possible that there are 3 remaining open lines in both chains combined which triggers the evil move too late because the chains were completed in the wrong order
 		int minChain=-1;
@@ -167,7 +168,7 @@ QList<int> aiController::chooseLeastDamaging(const QList<int> &choiceList) const
 		{
 			ownMoves=ownChains.at(minChain);
 		}
-		//kDebug() << "ownMoves:" << ownMoves;
+		kDebug() << "ownMoves:" << ownMoves;
 	}
 	
 	for(int i = 0; i < choiceList.size(); i++)	//cycle through all the possible moves
@@ -189,6 +190,18 @@ QList<int> aiController::chooseLeastDamaging(const QList<int> &choiceList) const
 		int count = 0;	//this is how many points the next player will ge if you draw a line at choiceList.at(i)
 		bool squareFound = false;
 		chain.insert(choiceList.at(i));
+		QList<QList<int> > enemyChains;
+		findOwnChains(linesCopy.data(), linesSize, width, height, &enemyChains);
+		for (int j = 0; j < enemyChains.size(); j++)
+		{
+			kDebug() << "enemyChains[" << j << "]: " << enemyChains.at(j);
+			count += enemyChains.at(j).size();
+			for (int k = 0; k < enemyChains.at(j).size(); k++)
+			{
+				chain.insert(enemyChains.at(j).at(k));
+			}
+		}
+		/*
 		do
 		{
 			for(int currentSquare=0; currentSquare<squaresCopy.size(); currentSquare++)	//cycle through the grid (by squares):
@@ -223,11 +236,12 @@ QList<int> aiController::chooseLeastDamaging(const QList<int> &choiceList) const
 				}
 			}
 		} while(squareFound == true);	//while we're still finding squares
+		*/
 		linePointDamage.insertMulti(count, choiceList.at(i));	//insert a pair with Key=count, Value=i
 		chains.insert(choiceList.at(i), chain);
 	}
 	
-	//kDebug() << "linePointDamage:" << linePointDamage;
+	kDebug() << "linePointDamage:" << linePointDamage;
 	
 	if(level < 2) // middle ai won't analyze the game further
 	{
@@ -259,7 +273,7 @@ QList<int> aiController::chooseLeastDamaging(const QList<int> &choiceList) const
 			chainSet.insert(j.key(), chainCheck);
 		}
 	}
-	//kDebug() << "chainSet:" << chainSet;
+	kDebug() << "chainSet:" << chainSet;
 
 	// analyze chains
 	// TODO: find loop chains to calculate sacrifices (loopChains are a subset of longChains)
@@ -278,7 +292,7 @@ QList<int> aiController::chooseLeastDamaging(const QList<int> &choiceList) const
 			longChains++;
 		}
 	}
-	//kDebug() << "short chains:" << shortChains << ", long chains: " << longChains;
+	kDebug() << "short chains:" << shortChains << ", long chains: " << longChains;
 
 	if(
 		(
@@ -376,7 +390,7 @@ QList<int> aiController::chooseLeastDamaging(const QList<int> &choiceList) const
 		}
 		if(handoutLine >= 0)
 		{
-			//kDebug() << "Hard hearted handout at" << opponentChain.at(handoutLine);
+			kDebug() << "Hard hearted handout at" << opponentChain.at(handoutLine);
 			QList<int> retMove;
 			retMove.append(opponentChain.at(handoutLine));
 			return retMove;

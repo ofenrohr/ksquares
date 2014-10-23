@@ -1,3 +1,4 @@
+ENABLE_TESTING()
 cmake_minimum_required(VERSION 2.8)
 
 FIND_PACKAGE( Qt4 REQUIRED QT_USE_QT* )
@@ -53,6 +54,18 @@ kde4_add_unit_test( test-load
   load.cpp
 )
 target_link_libraries( test-load
+  ${KDE4_KDECORE_LIBS}
+  ${QT_QTTEST_LIBRARY}
+  ${KDE4_KDEUI_LIBS}
+  kdegames
+)
+
+kde4_add_unit_test( test-refactor
+  TESTNAME refactor
+  ${ksquarestest_SRCS}
+  refactor.cpp
+)
+target_link_libraries( test-refactor
   ${KDE4_KDECORE_LIBS}
   ${QT_QTTEST_LIBRARY}
   ${KDE4_KDEUI_LIBS}

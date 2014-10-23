@@ -8,6 +8,7 @@
  ***************************************************************************/
 
 #include "aifunctions.h"
+#include <KDebug>
 
 aiFunctions::aiFunctions(int w, int h) : width(w), height(h)
 {
@@ -140,8 +141,11 @@ QList<int> aiFunctions::findLinesCompletingBoxes(int linesSize, const bool *line
 			{
 				if(countBorderLines(adjacentSquares.at(j), lines) == 3)	//if 3 lines, draw there to get points!
 				{
-					choiceList.append(i);
-					//kDebug() << "AI: 1. Adding" << i << "to choices";
+					if (!choiceList.contains(i))
+					{
+						choiceList.append(i);
+						//kDebug() << "AI: 1. Adding" << i << "to choices";
+					}
 				}
 			}
 		}
@@ -190,6 +194,11 @@ QList<int> aiFunctions::safeMoves(int width, int height, int linesSize, const bo
 
 void aiFunctions::findOwnChains(bool *lines, int linesSize, int width, int height, QList<QList<int> > *ownChains) const
 {
+	kDebug() << "find own chains" << linesSize << ", " << width << ", " << height;
+	QString linesStr;
+	for (int i = 0; i < linesSize; i++)
+		linesStr += lines[i]?"1":"0";
+	kDebug() << "lines:" <<linesStr;
 	int sidesOfSquare[4];
 	QScopedArrayPointer<bool> myLines(new bool[linesSize]); //make temporary local copies of lists
 	int ownLinesCnt = 0; // count of how many lines ai will take in this run
@@ -209,6 +218,7 @@ void aiFunctions::findOwnChains(bool *lines, int linesSize, int width, int heigh
 				squareFound = false;
 				if(countBorderLines(sidesOfSquare, chainSquare, &(*myLines)) == 3) // found a square for ai
 				{
+					kDebug() << "found square:" << chainSquare;
 					for(int sideOfSquare = 0; sideOfSquare <= 3; sideOfSquare++)
 					{
 						if(!myLines[sidesOfSquare[sideOfSquare]]) // found missing line of square

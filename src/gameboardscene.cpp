@@ -53,6 +53,28 @@ GameBoardScene::GameBoardScene(int newWidth, int newHeight, QObject *parent) : Q
 		addLine(QLineF(0, spacing*iHeight, spacing*width, spacing*iHeight), feintPen);
 	}
 	
+	for(int i = 0; i < (2*width*height + width + height); i++)
+	{
+		// used for debugging ai
+		QGraphicsTextItem* txt = new QGraphicsTextItem(QString::number(i));
+		QPointF txtPos;
+		QLineF linePos = lineFromIndex(i);
+		if (linePos.p1().x() == linePos.p2().x())
+		{
+			//txtPos = linePos.p2(); //+ ( linePos.p2() - linePos.p1() );
+			txtPos.setX(linePos.p2().x() - ( linePos.p2().y() - linePos.p1().y() ) / 2);
+			txtPos.setY(linePos.p2().y() - ( linePos.p2().y() - linePos.p1().y() ) / 2);
+		}
+		else
+		{
+			txtPos = linePos.p1();
+		}
+		txt->setPos(txtPos);
+		txt->setZValue(1);
+		addItem(txt);
+		update(txt->boundingRect());
+	}
+	
 	setBackgroundBrush(QBrush(Qt::white));
 	
 	indicatorLine = new QGraphicsLineItem(1,1,1,1);
