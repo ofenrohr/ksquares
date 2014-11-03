@@ -56,6 +56,7 @@ QList<int> aiController::autoFill(int safeMovesLeft)
 
 int aiController::chooseLine() const
 {
+	kDebug() << boardToString(lines, linesSize, width, height);
 	QList<int> choiceList = findLinesCompletingBoxes(linesSize, lines);
 	if(choiceList.size() != 0)
 	{
@@ -186,7 +187,7 @@ QList<int> aiController::chooseLeastDamaging(const QList<int> &choiceList) const
 		
 		linesCopy[choiceList.at(i)] = true;	//we're going to try drawing a line here
 		
-		kDebug() << boardToString(linesCopy.data(), linesSize, width, height);
+		//kDebug() << boardToString(linesCopy.data(), linesSize, width, height);
 		
 		//now it would be the next player's turn so we're going to count how many squares they would be able to get.
 		int count = 0;	//this is how many points the next player will ge if you draw a line at choiceList.at(i)

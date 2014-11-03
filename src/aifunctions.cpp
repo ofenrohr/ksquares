@@ -265,53 +265,29 @@ void aiFunctions::findOwnChains(bool *lines, int linesSize, int width, int heigh
 
 QString aiFunctions::boardToString(bool *lines, int linesSize, int width, int height)
 {
-	QString ret = "+";
-	bool v = false;
-	int w,h = 0;
+	QString ret = "\n+";
+	
 	for (int i = 0; i < linesSize; i++)
 	{
-		if (v)
+		KSquares::Direction iDirection = lineDirection(width, height, i);
+		KSquares::Direction nextDirection = lineDirection(width, height, i+1);
+		if (iDirection != nextDirection && nextDirection == KSquares::VERTICAL)
 		{
-			h++;
-			if (h == width)
-			{
-				w = 0;
-				v = !v;
-				ret.append("\n+");
-			}
+			//ret.append("\n");
+		}
+		if (iDirection == KSquares::HORIZONTAL)
+		{
+			ret.append(lines[i] ? "--+" : "  +");
 		}
 		else
 		{
-			h++;
-			if (h == width+1)
-			{
-				h = 0;
-				v = !v;
-				ret.append("\n");
-			}
+			ret.append(lines[i] ? "|  " : "   ");
 		}
-		if (lines[i])
+		if (iDirection != nextDirection)
 		{
-			if (lineDirection(width, height, i) == KSquares::HORIZONTAL)
-			{
-				ret.append("--+");
-			}
-			else
-			{
-				ret.append("|  ");
-			}
-		}
-		else
-		{
-			if (lineDirection(width, height, i) == KSquares::HORIZONTAL)
-			{
-				ret.append("  +");
-			}
-			else
-			{
-				ret.append("|  ");
-			}
+			ret.append(nextDirection == KSquares::HORIZONTAL ? "\n+" : "\n");
 		}
 	}
+	
 	return ret;
 }
