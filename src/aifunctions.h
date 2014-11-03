@@ -11,9 +11,20 @@
 #define AIFUNCTIONS_H
 
 #include <QList>
+#include <QString>
+#include <QSharedPointer>
 #include "board.h"
 
 // TODO: use static functions, provide non-static functions with less parameters
+class aiBoard {
+	public:
+		typedef QSharedPointer<aiBoard> Ptr;
+		bool *lines_;
+		int linesSize_; 
+		int width_;
+		int height_;
+};
+
 class aiFunctions {
 	public:
 		aiFunctions(int w, int h);
@@ -78,6 +89,9 @@ class aiFunctions {
 		 * @return 0: long chain, 1: short chain, 2: loop chain
 		 */
 		int classifyChain(const QList<int> chainLines);
+		
+		/* Debugging */
+		static QString boardToString(bool *lines, int linesSize, int width, int height);
 		
 		/// Width of the game board
 		int width;

@@ -262,3 +262,56 @@ void aiFunctions::findOwnChains(bool *lines, int linesSize, int width, int heigh
 		}
 	} while (chainFound);
 }
+
+QString aiFunctions::boardToString(bool *lines, int linesSize, int width, int height)
+{
+	QString ret = "+";
+	bool v = false;
+	int w,h = 0;
+	for (int i = 0; i < linesSize; i++)
+	{
+		if (v)
+		{
+			h++;
+			if (h == width)
+			{
+				w = 0;
+				v = !v;
+				ret.append("\n+");
+			}
+		}
+		else
+		{
+			h++;
+			if (h == width+1)
+			{
+				h = 0;
+				v = !v;
+				ret.append("\n");
+			}
+		}
+		if (lines[i])
+		{
+			if (lineDirection(width, height, i) == KSquares::HORIZONTAL)
+			{
+				ret.append("--+");
+			}
+			else
+			{
+				ret.append("|  ");
+			}
+		}
+		else
+		{
+			if (lineDirection(width, height, i) == KSquares::HORIZONTAL)
+			{
+				ret.append("  +");
+			}
+			else
+			{
+				ret.append("|  ");
+			}
+		}
+	}
+	return ret;
+}

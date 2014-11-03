@@ -64,11 +64,12 @@ int aiController::chooseLine() const
 			QList<int> openLines; // list of not yet drawn lines
 			for(int i = 0; i < linesSize; i++)
 			{
-				if(!lines[i] && !choiceList.contains(i))
+				if(!lines[i])
 				{
 					openLines.append(i);
 				}
 			}
+			kDebug() << "choosing from all possible lines";
 			QList<int> choices=chooseLeastDamaging(openLines); // run extended damage control
 			if(choices.size() > 0)
 			{
@@ -101,11 +102,10 @@ int aiController::chooseLine() const
 			QList<int> adjacentSquares = squaresFromLine(i);
 			for(int j=0; j<adjacentSquares.size(); j++)
 			{
-				
-				if(countBorderLines(adjacentSquares.at(j), lines) == 2)	//if 2 lines (they're all that's left!)
+				if(countBorderLines(adjacentSquares.at(j), lines) == 2 && !choiceList.contains(i))	//if 2 lines (they're all that's left!)
 				{
 					choiceList.append(i);
-					//kDebug() << "AI: 3. Adding" << i << "to choices";
+					kDebug() << "AI: 3. Adding" << i << "to choices";
 				}
 			}
 		}
@@ -185,6 +185,8 @@ QList<int> aiController::chooseLeastDamaging(const QList<int> &choiceList) const
 		}
 		
 		linesCopy[choiceList.at(i)] = true;	//we're going to try drawing a line here
+		
+		kDebug() << boardToString(linesCopy.data(), linesSize, width, height);
 		
 		//now it would be the next player's turn so we're going to count how many squares they would be able to get.
 		int count = 0;	//this is how many points the next player will ge if you draw a line at choiceList.at(i)
