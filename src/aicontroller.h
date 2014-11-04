@@ -72,8 +72,6 @@ class aiController : public aiFunctions
 		
 		/// List of the owners of each square
 		QList<int> squareOwners;
-		/// List of which lines are complete
-		int linesSize;
 		bool *lines;
 		/// The ID of the player this AI belongs to
 		int playerId;

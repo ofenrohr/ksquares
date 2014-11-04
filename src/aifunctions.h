@@ -92,11 +92,16 @@ class aiFunctions {
 		
 		/* Debugging */
 		static QString boardToString(bool *lines, int linesSize, int width, int height);
+    QString boardToString(bool *lines) const;
+    static QString linelistToString(const QList<int> list, int linesSize, int width, int height);
+    QString linelistToString(const QList<int> list) const;
 		
 		/// Width of the game board
 		int width;
 		/// Height of the game board
 		int height;
+    /// List of which lines are complete
+    int linesSize;
 };
 
 #endif // AIFUNCTIONS_H

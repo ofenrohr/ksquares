@@ -56,8 +56,9 @@ QList<int> aiController::autoFill(int safeMovesLeft)
 
 int aiController::chooseLine() const
 {
-	kDebug() << boardToString(lines, linesSize, width, height);
+	kDebug() << "incoming board:" << boardToString(lines, linesSize, width, height);
 	QList<int> choiceList = findLinesCompletingBoxes(linesSize, lines);
+  kDebug() << "finLinesCompletingBoxes returned: " << choiceList;
 	if(choiceList.size() != 0)
 	{
 		if(level >= 2) // to play good ai has to look into the future game
@@ -85,6 +86,7 @@ int aiController::chooseLine() const
 	}
 	
 	choiceList = safeMoves(linesSize, lines);
+  kDebug() << "safeMoves:" << linelistToString(choiceList);
 	
 	if(choiceList.size() != 0)
 	{
@@ -106,7 +108,7 @@ int aiController::chooseLine() const
 				if(countBorderLines(adjacentSquares.at(j), lines) == 2 && !choiceList.contains(i))	//if 2 lines (they're all that's left!)
 				{
 					choiceList.append(i);
-					kDebug() << "AI: 3. Adding" << i << "to choices";
+					//kDebug() << "AI: 3. Adding" << i << "to choices";
 				}
 			}
 		}
@@ -114,6 +116,7 @@ int aiController::chooseLine() const
 	if(level >= 1) //Hard(2/3)	//do some damage control :)
 	{
 		QList<int> goodChoiceList = chooseLeastDamaging(choiceList);
+    kDebug() << "goodChoiceList: " << linelistToString(goodChoiceList);
 		if(goodChoiceList.size() != 0)
 		{
 			float randomFloat = ((float) rand()/(RAND_MAX + 1.0))*(goodChoiceList.size()-1);
@@ -136,7 +139,7 @@ int aiController::chooseLine() const
 QList<int> aiController::chooseLeastDamaging(const QList<int> &choiceList) const
 {
 	kDebug() << "AI: Checking" << choiceList.size() << "possible moves";
-	kDebug() << "choiceList: " << choiceList;
+	kDebug() << "choiceList: " << linelistToString(choiceList, linesSize, width, height);
 	QMap<int,int> linePointDamage;	//this will be a list of how damaging a certain move will be. Key = damage of move, Value = index of line
 	QScopedArrayPointer<bool> linesCopy(new bool[linesSize]); //make temporary local copies of lists
 	int sidesOfSquare[4];
@@ -153,12 +156,18 @@ QList<int> aiController::chooseLeastDamaging(const QList<int> &choiceList) const
 	{
 		findOwnChains(lines, linesSize, width, height, &ownChains);
 		kDebug() << "ownChains:" << ownChains;
+    
+    memcpy(myLines.data(), lines, linesSize);
 
 		// complete the shortest chain first if there is more than one chain. this is needed to stop alternating between two chains because that works against the hard ai move which takes the next chain by sacrificing 2/4 squares. when alternating between two chains it's possible that there are 3 remaining open lines in both chains combined which triggers the evil move too late because the chains were completed in the wrong order
 		int minChain=-1;
 		int tmp=width*height*10;
 		for(int i = 0; i < ownChains.size(); i++)
 		{
+      for (int j = 0; j < ownChains.at(i).size(); j++)
+      {
+        myLines[ownChains.at(i).at(j)] = true;
+      }
 			if(tmp > ownChains.at(i).size())
 			{
 				tmp = ownChains.at(i).size();
@@ -204,6 +213,9 @@ QList<int> aiController::chooseLeastDamaging(const QList<int> &choiceList) const
 				chain.insert(enemyChains.at(j).at(k));
 			}
 		}
+		kDebug() << "lines: " << boardToString(lines);
+		kDebug() << "linesCopy: " << boardToString(linesCopy.data());
+    kDebug() << "chains in linesCopy: " << linelistToString(chain.toList());
 		/*
 		do
 		{

@@ -93,7 +93,7 @@ void hardAi::testBoard005()
 	}
 	aiController ai(-1, sGame->board()->lines(), sGame->board()->squares(), sGame->board()->width(), sGame->board()->height(), 2);
 	int aiLine = ai.chooseLine();
-	QCOMPARE( aiLine, 5 );
+	QCOMPARE( aiLine, 9 );
 }
 
 QTEST_MAIN(hardAi)

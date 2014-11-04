@@ -291,3 +291,30 @@ QString aiFunctions::boardToString(bool *lines, int linesSize, int width, int he
 	
 	return ret;
 }
+
+QString aiFunctions::boardToString(bool *lines) const
+{
+  return boardToString(lines, linesSize, width, height);
+}
+
+QString aiFunctions::linelistToString(const QList<int> list, int linesSize, int width, int height)
+{
+  bool lines[linesSize];
+  for (int i = 0; i < linesSize; i++)
+  {
+    if (list.contains(i))
+    {
+      lines[i] = true;
+    }
+    else
+    {
+      lines[i] = false;
+    }
+  }
+  return boardToString(lines, linesSize, width, height);
+}
+
+QString aiFunctions::linelistToString(const QList<int> list) const
+{
+  return linelistToString(list, linesSize, width, height);
+}
