@@ -20,19 +20,32 @@ public:
 	{
 		findOwnChains(lines, linesSize, width, height, ownChains);
 	}
+	int classifyChainTest(const QList<int> chain, bool *lines) const
+	{
+    return classifyChain(chain, lines);
+  }
+  QString boardToStringTest(bool *lines)
+  {
+    return boardToString(lines);
+  }
+  QString linelistToStringTest(QList<int> lines)
+  {
+    return linelistToString(lines);
+  }
 };
 
 class refactor : public QObject
 {
 	Q_OBJECT
 	private slots:
-		void testBoard001();
+		void testFindOwnChains001();
+    void testClassifyChain002();
 };
 
 /**
  * test findOwnChains
  */
-void refactor::testBoard001()
+void refactor::testFindOwnChains001()
 {
 	QList<int> lines;
 	bool linesb[24];
@@ -62,6 +75,25 @@ void refactor::testBoard001()
 	QVERIFY(chainLengths.contains(1));
 	QVERIFY(chainLengths.contains(2));
 	QVERIFY(chainLengths.contains(6));
+}
+
+/**
+ * test classifyChain
+ */
+void refactor::testClassifyChain002()
+{
+  QList<int> lines;
+  QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+  kDebug() << "loading: " << QString(TESTBOARDPATH) << "/4x4-classify.dbl";
+  QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/4x4-classify.dbl", sGame.data(), &lines));
+  QString tmpstr = "";
+  for (int i = 0; i < lines.size(); i++)
+  {
+    kDebug() << lines.at(i);
+  }
+  aiFunctionsTest aift(4,4);
+  kDebug() << "input board: " << aift.linelistToStringTest(lines);
+  QVERIFY(true);
 }
 
 QTEST_MAIN(refactor)

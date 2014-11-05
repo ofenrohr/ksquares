@@ -85,10 +85,10 @@ class aiFunctions {
 		 */
 		void findOwnChains(bool *lines, int linesSize, int width, int height, QList<QList<int> > *ownChains) const;
 		/**
-		 * @param chainLines list of lines the chain is made up of
-		 * @return 0: long chain, 1: short chain, 2: loop chain
+		 * @param chain list of lines the chain is made up of
+		 * @return 0: long chain, 1: short chain, 2: loop chain, -1: no chain
 		 */
-		int classifyChain(const QList<int> chainLines);
+		int classifyChain(const QList<int> chain, bool *lines) const;
 		
 		/* Debugging */
 		static QString boardToString(bool *lines, int linesSize, int width, int height);

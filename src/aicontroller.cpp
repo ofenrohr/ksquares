@@ -142,7 +142,6 @@ QList<int> aiController::chooseLeastDamaging(const QList<int> &choiceList) const
 	kDebug() << "choiceList: " << linelistToString(choiceList, linesSize, width, height);
 	QMap<int,int> linePointDamage;	//this will be a list of how damaging a certain move will be. Key = damage of move, Value = index of line
 	QScopedArrayPointer<bool> linesCopy(new bool[linesSize]); //make temporary local copies of lists
-	int sidesOfSquare[4];
 	
 	QMap<int, QSet<int> > chains; // this is a raw list of chains (which are sets of lines). key = random element of chain
 	QMap<int, QSet<int> > chainSet; // same thing as chains but with unique chains
@@ -200,58 +199,21 @@ QList<int> aiController::chooseLeastDamaging(const QList<int> &choiceList) const
 		
 		//now it would be the next player's turn so we're going to count how many squares they would be able to get.
 		int count = 0;	//this is how many points the next player will ge if you draw a line at choiceList.at(i)
-		bool squareFound = false;
 		chain.insert(choiceList.at(i));
 		QList<QList<int> > enemyChains;
 		findOwnChains(linesCopy.data(), linesSize, width, height, &enemyChains);
 		for (int j = 0; j < enemyChains.size(); j++)
 		{
-			kDebug() << "enemyChains[" << j << "]: " << enemyChains.at(j);
+			//kDebug() << "enemyChains[" << j << "]: " << enemyChains.at(j);
 			count += enemyChains.at(j).size();
 			for (int k = 0; k < enemyChains.at(j).size(); k++)
 			{
 				chain.insert(enemyChains.at(j).at(k));
 			}
 		}
-		kDebug() << "lines: " << boardToString(lines);
-		kDebug() << "linesCopy: " << boardToString(linesCopy.data());
-    kDebug() << "chains in linesCopy: " << linelistToString(chain.toList());
-		/*
-		do
-		{
-			for(int currentSquare=0; currentSquare<squaresCopy.size(); currentSquare++)	//cycle through the grid (by squares):
-			{
-				if(countBorderLines(sidesOfSquare, currentSquare, &(*linesCopy)) == 3)	//if we've found a square with three sides drawn:
-				{
-					count++;
-					squareFound = true;	//we found a square so we will look again for the next
-					
-					for(int sideOfSquare=0; sideOfSquare<=3; sideOfSquare++)	//make the square complete in linesCopy
-					{
-						if(level > 1 && !linesCopy[sidesOfSquare[sideOfSquare]])
-						{
-							chain.insert(sidesOfSquare[sideOfSquare]);
-							QList<int> adjacentSquares = squaresFromLine(sidesOfSquare[sideOfSquare]);
-							for(int adjsq = 0; adjsq < adjacentSquares.size(); adjsq++)
-							{
-								if(currentSquare == adjacentSquares.at(adjsq)) continue;
-								if(countBorderLines(adjacentSquares.at(adjsq), &(*myLines)) == 3)
-								{	// line will complete two squares
-									count++;
-								}
-							}
-						}
-						linesCopy[sidesOfSquare[sideOfSquare]] = true;	//draw at this squares
-					}	//now current square is completed by the second player.
-					break;	//since we found a square with 3 sides completed (now = 4), we break the 'for(currentSquare)' loop
-				}
-				else
-				{
-					squareFound = false;	//we couldn't find a square this time round so we'll try the next 'i'
-				}
-			}
-		} while(squareFound == true);	//while we're still finding squares
-		*/
+		//kDebug() << "lines: " << boardToString(lines);
+		//kDebug() << "linesCopy: " << boardToString(linesCopy.data());
+    //kDebug() << "chains in linesCopy: " << linelistToString(chain.toList());
 		linePointDamage.insertMulti(count, choiceList.at(i));	//insert a pair with Key=count, Value=i
 		chains.insert(choiceList.at(i), chain);
 	}
@@ -299,6 +261,7 @@ QList<int> aiController::chooseLeastDamaging(const QList<int> &choiceList) const
 	{
 		chainSetIt.next();
 		QSet<int> chainSetI = chainSetIt.value();
+    kDebug() << "analysing chain " << chainSetI << ": " << classifyChain(chainSetI.toList(), lines);
 		if (chainSetI.size() <= 3)
 		{
 			shortChains++;

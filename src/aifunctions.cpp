@@ -194,11 +194,13 @@ QList<int> aiFunctions::safeMoves(int width, int height, int linesSize, const bo
 
 void aiFunctions::findOwnChains(bool *lines, int linesSize, int width, int height, QList<QList<int> > *ownChains) const
 {
+  /*
 	kDebug() << "find own chains" << linesSize << ", " << width << ", " << height;
 	QString linesStr;
 	for (int i = 0; i < linesSize; i++)
 		linesStr += lines[i]?"1":"0";
 	kDebug() << "lines:" <<linesStr;
+  */
 	int sidesOfSquare[4];
 	QScopedArrayPointer<bool> myLines(new bool[linesSize]); //make temporary local copies of lists
 	int ownLinesCnt = 0; // count of how many lines ai will take in this run
@@ -218,7 +220,7 @@ void aiFunctions::findOwnChains(bool *lines, int linesSize, int width, int heigh
 				squareFound = false;
 				if(countBorderLines(sidesOfSquare, chainSquare, &(*myLines)) == 3) // found a square for ai
 				{
-					kDebug() << "found square:" << chainSquare;
+					//kDebug() << "found square:" << chainSquare;
 					for(int sideOfSquare = 0; sideOfSquare <= 3; sideOfSquare++)
 					{
 						if(!myLines[sidesOfSquare[sideOfSquare]]) // found missing line of square
@@ -317,4 +319,65 @@ QString aiFunctions::linelistToString(const QList<int> list, int linesSize, int 
 QString aiFunctions::linelistToString(const QList<int> list) const
 {
   return linelistToString(list, linesSize, width, height);
+}
+
+// @return 0: long chain, 1: short chain, 2: loop chain, -1: no chain
+int aiFunctions::classifyChain(const QList<int> chain, bool *lines) const
+{
+  if (chain.size() <= 0)
+  {
+    return -1;
+  }
+  QScopedArrayPointer<bool> squareVisited(new bool[width * height]);
+  for (int i = 0; i < width * height; i++)
+  {
+    squareVisited[i] = false;
+  }
+  QList<int> squareQueue;
+  int squaresVisitedCount = 0;
+  squareQueue.append(squaresFromLine(chain[0]));
+  while (squareQueue.size() > 0)
+  {
+    int curSquare = squareQueue.takeLast();
+    if (squareVisited[curSquare])
+    {
+      return 2; // loop chain
+    }
+    int squareLines[4];
+    int valence = countBorderLines(squareLines, curSquare, lines);
+    if (valence == 2)
+    {
+      // look for surrounding squares
+      for (int i = 0; i < 4; i++)
+      {
+        if (!lines[squareLines[i]])
+        {
+          QList<int> surroundingSquares = squaresFromLine(squareLines[i]);
+          for (int j = 0; j < surroundingSquares.size(); j++)
+          {
+            if (squareQueue.contains(surroundingSquares.at(j)))
+              continue;
+            squareQueue.append(surroundingSquares.at(j));
+          }
+        }
+      }
+      // add square to visited list
+      squareVisited[curSquare] = true;
+      squaresVisitedCount++;
+    }
+    if (valence == 3)
+    {
+      if (squareVisited[curSquare])
+      {
+        kDebug() << "Something went wrong with classifying a chain!";
+      }
+      squareVisited[curSquare] = true;
+      squaresVisitedCount++;
+    }
+  }
+  if (squaresVisitedCount <= 2)
+  {
+    return 1; // short chain
+  }
+  return 0; // long chain
 }
