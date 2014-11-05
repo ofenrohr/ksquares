@@ -57,9 +57,9 @@ void middleAi::testMiddle001()
 	aiController ai(-1, sGame->board()->lines(), sGame->board()->squares(), sGame->board()->width(), sGame->board()->height(), 1);
 	int aiLine = ai.chooseLine();
 	QList<int> goodLines;
-	goodLines.append(2);
-	goodLines.append(9);
-	goodLines.append(13);
+  goodLines.append(13);
+	goodLines.append(16);
+	goodLines.append(23);
 	QVERIFY( goodLines.contains(aiLine) );
 }
 
