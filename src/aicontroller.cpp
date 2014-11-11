@@ -257,6 +257,9 @@ QList<int> aiController::chooseLeastDamaging(const QList<int> &choiceList) const
 	int shortChainCnt = 0; // chains <= 2 lines
 	int longChainCnt = 0; // exploitable chains
 	int loopChainCnt = 0; // also exploitable, but more costly
+	QList<QSet<int> > shortChains;
+  QList<QSet<int> > longChains;
+  QList<QSet<int> > loopChains;
 	QMapIterator<int, QSet<int> > chainSetIt(chainSet);
 	while(chainSetIt.hasNext())
 	{
@@ -268,18 +271,21 @@ QList<int> aiController::chooseLeastDamaging(const QList<int> &choiceList) const
 		{
       case 0: 
         longChainCnt++;
+        longChains.append(chainSetI);
       break;
       case 1:
         shortChainCnt++;
+        shortChains.append(chainSetI);
       break;
       case 2:
         loopChainCnt++;
+        loopChains.append(chainSetI);
       break;
       default:
         kDebug() << "unknown chain type " << classification;
     }
 	}
-	kDebug() << "short chains:" << shortChainCnt << ", long chains: " << longChainCnt << ", loop chains: " << loopChainCnt;
+	kDebug() << "short chains:" << shortChainCnt << ", long chains: " << longChainCnt << ", loop chains: " << loopChainCnt << ", ownLinesCnt: " << ownLinesCnt << ", ownSquaresCnt: " << ownSquaresCnt;
 
 	if(
 		(

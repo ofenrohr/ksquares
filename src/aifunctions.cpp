@@ -236,6 +236,7 @@ int aiFunctions::findOwnChains(bool *lines, int linesSize, int width, int height
 								if(chainSquare != adjacentSquares.at(i) &&
 										chainSquareBorderCnt == 3)	// check if a second square will be completed by this line
 								{
+                  kDebug() << "found double cross";
 									ownSquaresCnt++; // add extra square
 								}
 								if(chainSquareBorderCnt == 2)	// look for next square in chain
@@ -375,7 +376,7 @@ int aiFunctions::classifyChain(const QList<int> chain, bool *lines) const
       squares.append(curSquares[j]);
     }
   }
-  printSquares(squares, width, height);
+  //printSquares(squares, width, height);
   
   // no squares -> no chain
   if (squares.size() < 1)

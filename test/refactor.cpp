@@ -16,9 +16,9 @@ class aiFunctionsTest : public aiFunctions
 public:
 	aiFunctionsTest(int w, int h) : aiFunctions(w,h) {}
 	~aiFunctionsTest() {}
-	void findOwnChainsTest(bool *lines, int linesSize, int width, int height, QList<QList<int> > *ownChains) const
+	int findOwnChainsTest(bool *lines, int linesSize, int width, int height, QList<QList<int> > *ownChains) const
 	{
-		findOwnChains(lines, linesSize, width, height, ownChains);
+		return findOwnChains(lines, linesSize, width, height, ownChains);
 	}
 	int classifyChainTest(const QList<int> chain, bool *lines) const
 	{
@@ -41,6 +41,7 @@ class refactor : public QObject
 		void testFindOwnChains001();
     void testClassifyChain002();
     void testClassifyChain003();
+    void testFindOwnChains004();
 };
 
 /**
@@ -172,6 +173,43 @@ void refactor::testClassifyChain003()
   result = aift.classifyChainTest(shortChain2, linesb);
   kDebug() << "shortChain2 result: " << result;
   QVERIFY(result == 1);
+}
+
+/**
+ * test findOwnChains
+ */
+void refactor::testFindOwnChains004()
+{
+  QList<int> lines;
+  int linesSize = 2 * 4 * 4 + 4 + 4;
+  bool linesb[linesSize];
+  for (int i = 0; i < linesSize; i++)
+  {
+    linesb[i] = false;
+  }
+  QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+  kDebug() << "loading: " << QString(TESTBOARDPATH) << "/4x4-chaintest.dbl";
+  QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/4x4-chaintest.dbl", sGame.data(), &lines));
+  kDebug() << "drawn lines: " << lines;
+  for (int i = 0; i < lines.size(); i++)
+  {
+    linesb[lines.at(i)] = true;
+  }
+  QList<QList<int> > ownChains;
+  aiFunctionsTest aift(4,4);
+  int squaresCnt = aift.findOwnChainsTest(linesb, linesSize, 4, 4, &ownChains);
+  kDebug() << "ownChains.size() = " << ownChains.size();
+  kDebug() << "input board: " << aift.boardToStringTest(linesb);
+  QList<int> chainLengths;
+  for (int i = 0; i < ownChains.size(); i++)
+  {
+    //kDebug() << "  " << ownChains.at(i);
+    chainLengths.append(ownChains.at(i).size());
+    kDebug() << "board " << i << ": " << aift.linelistToStringTest(ownChains.at(i));
+  }
+  QVERIFY(chainLengths.size()==1);
+  QVERIFY(chainLengths.contains(3));
+  QVERIFY(squaresCnt == 4);
 }
 
 QTEST_MAIN(refactor)
