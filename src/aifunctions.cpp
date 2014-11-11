@@ -368,6 +368,8 @@ int aiFunctions::classifyChain(const QList<int> chain, bool *lines) const
     {
       if (squares.contains(curSquares[j]))
         continue;
+      if (countBorderLines(curSquares[j], lines) < 2)
+        continue;
       squares.append(curSquares[j]);
     }
   }
@@ -417,6 +419,8 @@ int aiFunctions::classifyChain(const QList<int> chain, bool *lines) const
       {
         // check if the square isn't the one we are expanding
         if (curSquare == curLineSquares[j]) 
+          continue;
+        if (countBorderLines(curLineSquares[j], lines) < 2)
           continue;
         squareQueue.push(curLineSquares[j]);
       }

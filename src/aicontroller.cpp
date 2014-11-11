@@ -253,24 +253,32 @@ QList<int> aiController::chooseLeastDamaging(const QList<int> &choiceList) const
 	kDebug() << "chainSet:" << chainSet;
 
 	// analyze chains
-	// TODO: find loop chains to calculate sacrifices (loopChains are a subset of longChains)
-	int shortChains = 0; // chains <= 2 lines
-	int longChains = 0; // exploitable chains
+	int shortChainCnt = 0; // chains <= 2 lines
+	int longChainCnt = 0; // exploitable chains
+	int loopChainCnt = 0; // also exploitable, but more costly
 	QMapIterator<int, QSet<int> > chainSetIt(chainSet);
 	while(chainSetIt.hasNext())
 	{
 		chainSetIt.next();
 		QSet<int> chainSetI = chainSetIt.value();
-    kDebug() << "analysing chain " << chainSetI << ": " << classifyChain(chainSetI.toList(), lines);
-		if (chainSetI.size() <= 3)
+    int classification = classifyChain(chainSetI.toList(), lines);
+    kDebug() << "analysing chain " << chainSetI << ": " << classification;
+		switch (classification)
 		{
-			shortChains++;
-		} else
-		{
-			longChains++;
-		}
+      case 0: 
+        longChainCnt++;
+      break;
+      case 1:
+        shortChainCnt++;
+      break;
+      case 2:
+        loopChainCnt++;
+      break;
+      default:
+        kDebug() << "unknown chain type " << classification;
+    }
 	}
-	kDebug() << "short chains:" << shortChains << ", long chains: " << longChains;
+	kDebug() << "short chains:" << shortChainCnt << ", long chains: " << longChainCnt << ", loop chains: " << loopChainCnt;
 
 	if(
 		(
@@ -278,7 +286,7 @@ QList<int> aiController::chooseLeastDamaging(const QList<int> &choiceList) const
 		    (ownLinesCnt == 3 && ownSquaresCnt == 4) // this is for loop chains which require a sacrifice of 4 squares
 		) 
 		&&
-		longChains > 0 // only do it if there is at least one chain to steal
+		longChainCnt + loopChainCnt > 0 // only do it if there is at least one chain to steal
 		&&
 		safeMoves(linesSize, lines).size() == 0 // only do it in endgames
 	  )

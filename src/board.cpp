@@ -167,6 +167,8 @@ bool Board::indexToPoints(const int lineIndex, QPoint *p1, QPoint *p2)
     p2->setY(p1->y() + 1);
     p2->setX(p1->x());
   }
+  p1->setY(height_ - p1->y());
+  p2->setY(height_ - p2->y());
   return true;
 }
 
