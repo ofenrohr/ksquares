@@ -9,10 +9,11 @@
 
 #include "aifunctions.h"
 #include <KDebug>
+#include <QStack>
 
 aiFunctions::aiFunctions(int w, int h) : width(w), height(h)
 {
-	
+	linesSize = 2 * width * height + width + height;
 }
 
 int aiFunctions::countBorderLines(int *sidesOfSquare, int squareIndex, const bool *linesList) const
@@ -321,63 +322,120 @@ QString aiFunctions::linelistToString(const QList<int> list) const
   return linelistToString(list, linesSize, width, height);
 }
 
+void printVisitedSquares(bool *squares, int width, int height)
+{
+  QString board = "";
+  for (int i = 0; i < width * height; i++)
+  {
+    board.append(i % width == 0?"\n":"");
+    board.append(squares[i]?"x":"o");
+  }
+  kDebug() << "Visited squares: " << board;
+}
+
+void printSquares(QList<int> squares, int width, int height)
+{
+  QString board ="";
+  for (int i = 0; i < width * height; i++)
+  {
+    board.append(i % width == 0?"\n":"");
+    board.append(squares.contains(i) ? "x":"o");
+  }
+  kDebug() << "Squares: " << board;
+}
+
+// @param chain: chain lines
 // @return 0: long chain, 1: short chain, 2: loop chain, -1: no chain
 int aiFunctions::classifyChain(const QList<int> chain, bool *lines) const
 {
   if (chain.size() <= 0)
   {
+    kDebug() << "ERROR: classifyChain called with no chain lines";
     return -1;
   }
-  QScopedArrayPointer<bool> squareVisited(new bool[width * height]);
-  for (int i = 0; i < width * height; i++)
+  
+  // get all squares of the chain
+  QList<int> squares;
+  for (int i = 0; i < chain.size(); i++)
   {
-    squareVisited[i] = false;
+    if (lines[chain[i]])
+    {
+      kDebug() << "ERROR: classifyChain called with incorrect chain parameter (line " << chain[i] << " is drawn!)";
+      return -1;
+    }
+    QList<int> curSquares = squaresFromLine(chain[i]);
+    for (int j = 0; j < curSquares.size(); j++)
+    {
+      if (squares.contains(curSquares[j]))
+        continue;
+      squares.append(curSquares[j]);
+    }
   }
-  QList<int> squareQueue;
-  int squaresVisitedCount = 0;
-  squareQueue.append(squaresFromLine(chain[0]));
+  printSquares(squares, width, height);
+  
+  // no squares -> no chain
+  if (squares.size() < 1)
+  {
+    return 0;
+  }
+  
+  // look for square loops
+  QStack<int> squareQueue;
+  QList<int> squareVisited;
+  QList<int> linesVisited;
+  
+  squareQueue.push(squares.at(0));
   while (squareQueue.size() > 0)
   {
-    int curSquare = squareQueue.takeLast();
-    if (squareVisited[curSquare])
+    int curSquare = squareQueue.pop();
+    
+    // has square already been visited?
+    if (squareVisited.contains(curSquare))
     {
-      return 2; // loop chain
+      //kDebug() << "visiting an square that has already been visited! (" << curSquare << ", queue = " << squareVisited << ")";
+      return 2;
     }
-    int squareLines[4];
-    int valence = countBorderLines(squareLines, curSquare, lines);
-    if (valence == 2)
+    squareVisited.append(curSquare);
+    
+    // find connected squares for curSquare
+    int curLines[4];
+    linesFromSquare(curLines, curSquare);
+    for (int i = 0; i < 4; i++)
     {
-      // look for surrounding squares
-      for (int i = 0; i < 4; i++)
+      int curLine = curLines[i];
+      // check if curLine is part of chain (can't be drawn due to previous check)
+      if (!chain.contains(curLine))
+        continue;
+      
+      if (linesVisited.contains(curLine))
+        continue;
+      linesVisited.append(curLine);
+      
+      // get the bordering squares of curLine
+      QList<int> curLineSquares = squaresFromLine(curLine);
+      for (int j = 0; j < curLineSquares.size(); j++)
       {
-        if (!lines[squareLines[i]])
-        {
-          QList<int> surroundingSquares = squaresFromLine(squareLines[i]);
-          for (int j = 0; j < surroundingSquares.size(); j++)
-          {
-            if (squareQueue.contains(surroundingSquares.at(j)))
-              continue;
-            squareQueue.append(surroundingSquares.at(j));
-          }
-        }
+        // check if the square isn't the one we are expanding
+        if (curSquare == curLineSquares[j]) 
+          continue;
+        squareQueue.push(curLineSquares[j]);
       }
-      // add square to visited list
-      squareVisited[curSquare] = true;
-      squaresVisitedCount++;
-    }
-    if (valence == 3)
-    {
-      if (squareVisited[curSquare])
-      {
-        kDebug() << "Something went wrong with classifying a chain!";
-      }
-      squareVisited[curSquare] = true;
-      squaresVisitedCount++;
     }
   }
-  if (squaresVisitedCount <= 2)
+  
+  // did we visit all squares?
+  if (squares.size() != squareVisited.size())
   {
-    return 1; // short chain
+    kDebug() << "ERROR: didn't visit all squares (squares cnt = " << squares.size() << ", squares visited cnt = " << squareVisited.size() << ")";
+    return -1;
   }
-  return 0; // long chain
+  
+  // how many chains did we visit? two or less = short chain
+  if (squareVisited.size() <= 2)
+  {
+    return 1;
+  }
+  
+  // long chain
+  return 0; 
 }
