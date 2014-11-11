@@ -82,8 +82,9 @@ class aiFunctions {
 		 * @param width width of board in boxes
 		 * @param height height of board in boxes
 		 * @param ownChains returns the chains the current player can score
+     * @return number of squares taken
 		 */
-		void findOwnChains(bool *lines, int linesSize, int width, int height, QList<QList<int> > *ownChains) const;
+		int findOwnChains(bool *lines, int linesSize, int width, int height, QList<QList<int> > *ownChains) const;
 		/**
 		 * @param chain list of lines the chain is made up of
      * @param lines lines of the board

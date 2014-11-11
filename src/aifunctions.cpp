@@ -193,7 +193,7 @@ QList<int> aiFunctions::safeMoves(int width, int height, int linesSize, const bo
 	return aif.safeMoves(linesSize, lines);
 }
 
-void aiFunctions::findOwnChains(bool *lines, int linesSize, int width, int height, QList<QList<int> > *ownChains) const
+int aiFunctions::findOwnChains(bool *lines, int linesSize, int width, int height, QList<QList<int> > *ownChains) const
 {
   /*
 	kDebug() << "find own chains" << linesSize << ", " << width << ", " << height;
@@ -264,6 +264,8 @@ void aiFunctions::findOwnChains(bool *lines, int linesSize, int width, int heigh
 			}
 		}
 	} while (chainFound);
+  
+  return ownLinesCnt;
 }
 
 QString aiFunctions::boardToString(bool *lines, int linesSize, int width, int height)

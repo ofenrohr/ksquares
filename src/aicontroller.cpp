@@ -153,7 +153,7 @@ QList<int> aiController::chooseLeastDamaging(const QList<int> &choiceList) const
 
 	if (level > 1)
 	{
-		findOwnChains(lines, linesSize, width, height, &ownChains);
+		ownSquaresCnt = findOwnChains(lines, linesSize, width, height, &ownChains);
 		kDebug() << "ownChains:" << ownChains;
     
     memcpy(myLines.data(), lines, linesSize);
@@ -165,6 +165,7 @@ QList<int> aiController::chooseLeastDamaging(const QList<int> &choiceList) const
 		{
       for (int j = 0; j < ownChains.at(i).size(); j++)
       {
+        ownLinesCnt++;
         myLines[ownChains.at(i).at(j)] = true;
       }
 			if(tmp > ownChains.at(i).size())
