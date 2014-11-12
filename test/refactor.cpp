@@ -198,6 +198,7 @@ void refactor::testFindOwnChains004()
   QList<QList<int> > ownChains;
   aiFunctionsTest aift(4,4);
   int squaresCnt = aift.findOwnChainsTest(linesb, linesSize, 4, 4, &ownChains);
+  kDebug() << "returned squaresCnt = " << squaresCnt;
   kDebug() << "ownChains.size() = " << ownChains.size();
   kDebug() << "input board: " << aift.boardToStringTest(linesb);
   QList<int> chainLengths;

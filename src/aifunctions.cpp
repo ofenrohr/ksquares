@@ -236,7 +236,7 @@ int aiFunctions::findOwnChains(bool *lines, int linesSize, int width, int height
 								if(chainSquare != adjacentSquares.at(i) &&
 										chainSquareBorderCnt == 3)	// check if a second square will be completed by this line
 								{
-                  kDebug() << "found double cross";
+                  //kDebug() << "found double cross between " << chainSquare << " and " << adjacentSquares.at(i);
 									ownSquaresCnt++; // add extra square
 								}
 								if(chainSquareBorderCnt == 2)	// look for next square in chain
@@ -266,7 +266,7 @@ int aiFunctions::findOwnChains(bool *lines, int linesSize, int width, int height
 		}
 	} while (chainFound);
   
-  return ownLinesCnt;
+  return ownSquaresCnt;
 }
 
 QString aiFunctions::boardToString(bool *lines, int linesSize, int width, int height)
