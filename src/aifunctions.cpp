@@ -243,7 +243,6 @@ int aiFunctions::findOwnChains(bool *lines, int linesSize, int width, int height
 								{
 									nextSquareFound = adjacentSquares.at(i);
 								}
-									
 							}
 							myLines[sidesOfSquare[sideOfSquare]] = true; // complete line
 							if(nextSquareFound >= 0)

@@ -308,7 +308,7 @@ bool KSquaresIO::saveGame(QString filename, KSquaresGame *sGame)
 				file.close();
 				return false;
 			}
-			outStream << "  \\pgfxyline(" << p1.x() << ", " << ( sGame->board()->height() - p1.y() ) << ")(" << p2.x() << ", " << ( sGame->board()->height() - p2.y() ) << ")\n";
+			outStream << "  \\pgfxyline(" << p1.x() << ", " << p1.y() << ")(" << p2.x() << ", " << p2.y() << ")\n";
 		}
 		for (int i = 0; i < sGame->board()->squares().size(); i++)
 		{
