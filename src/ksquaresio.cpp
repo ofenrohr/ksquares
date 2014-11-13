@@ -314,7 +314,7 @@ bool KSquaresIO::saveGame(QString filename, KSquaresGame *sGame)
 		{
 			if (sGame->board()->squares()[i] >= 0)
 			{
-				outStream << "  \\pgfputat{\\pgfxy(" << ( i % sGame->board()->width() ) << ".5," << ( sGame->board()->height() - 1 - i / sGame->board()->height() ) << ".5)}{\\pgfbox[center,center]{{\\LARGE " << (char)(sGame->board()->squares()[i] + 'A') << "}}}\n";
+				outStream << "  \\pgfputat{\\pgfxy(" << ( i % sGame->board()->width() ) << ".5," << (sGame->board()->height() - ( i / sGame->board()->height() ) -1 ) << ".5)}{\\pgfbox[center,center]{{\\LARGE " << (char)(sGame->board()->squares()[i] + 'A') << "}}}\n";
 			}
 		}
 		outStream << "\\end{pgfpicture}\n";
