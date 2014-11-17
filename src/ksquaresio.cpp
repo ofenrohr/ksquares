@@ -286,6 +286,116 @@ bool KSquaresIO::saveGame(QString filename, KSquaresGame *sGame)
 		// save in ksquares format
 		// TODO: implement saving as ksq
 	}
+	else if (filename.endsWith(".sc.tex"))
+	{
+		// save in tex format
+		outStream << "\\begin{pgfpicture}\n";
+		outStream << "  \\pgfsetlinewidth{1pt}\n";
+		int squareIndex = 0;
+		for (int y = sGame->board()->height() - 1; y >= 0; y--)
+		{
+			for (int x = 0; x < sGame->board()->width(); x++)
+			{
+				if (sGame->board()->squares()[squareIndex] == -1)
+					outStream << "  \\pgfcircle[stroked]{\\pgfxy(" << x << ".5," << y << ".5)}{6pt}\n";
+				squareIndex++;
+			}
+		}
+		int width = sGame->board()->width();
+		int height = sGame->board()->height();
+		int linesSize = 2 * width * height + width + height;
+		for (int i = 0; i < linesSize; i++)
+		{
+			bool lineDrawn = false;
+			for (int j = 0; j < sGame->board()->getLineHistory().size(); j++)
+			{
+				if (sGame->board()->getLineHistory()[j].line == i)
+				{
+					lineDrawn = true;
+				}
+			}
+			if (lineDrawn)
+			{
+				continue;
+			}
+			QPoint p1;
+			QPoint p2;
+			if (!sGame->board()->indexToPoints(i, &p1, &p2))
+			{
+				kDebug() << "KSquaresIO::saveGame error: invalid line in history";
+				// TODO: remove unfinished file?
+				file.close();
+				return false;
+			}
+			float p1x = p1.x();
+			float p1y = p1.y();
+			float p2x = p2.x();
+			float p2y = p2.y();
+			if (sGame->board()->lineDirection(i) == KSquares::VERTICAL)
+			{
+				p1x -= 0.5;
+				p1y -= 0.5;
+				p2x += 0.5;
+				p2y += 0.5;
+				if (p1x < 0)
+					p1x = 0;
+				else
+					p1x += 0.2;
+				if (p2x > width)
+					p2x = width;
+				else
+					p2x -= 0.2;
+			}
+			else
+			{
+				p1x += 0.5;
+				p1y += 0.5;
+				p2x -= 0.5;
+				p2y -= 0.5;
+				/*
+				if (p2y < 0)
+					p2y = 0;
+				else
+					p2y += 0.3;
+				if (p1y < 0)
+					p1y = 0;
+				else
+					p1y -= 0.3;
+				*/
+				
+				if (p1y > height || p2y > height)
+				{
+					p1y = height;
+					p2y = height - 0.3;
+				}
+				else if ( p1y < 0 || p2y < 0)
+				{
+					p1y = 0;
+					p2y = 0.3;
+				}
+				else
+				{
+					p1y -= 0.2;
+					p2y += 0.2;
+				}
+				/*
+				if (p2y > height)
+					p2y = height;
+				else
+					p2y += 0.3;
+				*/
+			}
+			outStream << "  \\pgfxyline(" << p1x << ", " << p1y << ")(" << p2x << ", " << p2y << ")\n";
+		}
+		for (int i = 0; i < sGame->board()->squares().size(); i++)
+		{
+			if (sGame->board()->squares()[i] >= 0)
+			{
+				outStream << "  \\pgfputat{\\pgfxy(" << ( i % sGame->board()->width() ) << ".5," << ( sGame->board()->height() - i / sGame->board()->width() - 1 ) << ".5)}{\\pgfbox[center,center]{{\\LARGE " << (char)(sGame->board()->squares()[i] + 'A') << "}}} %" << i << ", " << sGame->board()->height() << "\n";
+			}
+		}
+		outStream << "\\end{pgfpicture}\n";
+	}
 	else if (filename.endsWith(".tex"))
 	{
 		// save in tex format
@@ -304,7 +414,7 @@ bool KSquaresIO::saveGame(QString filename, KSquaresGame *sGame)
 			QPoint p2;
 			if (!sGame->board()->indexToPoints(sGame->board()->getLineHistory()[i].line, &p1, &p2))
 			{
-				kDebug() << "KSquaresIO::saveGame error: iQIODevice::Truncatenvalid line in history";
+				kDebug() << "KSquaresIO::saveGame error: invalid line in history";
 				file.close();
 				return false;
 			}
@@ -314,7 +424,7 @@ bool KSquaresIO::saveGame(QString filename, KSquaresGame *sGame)
 		{
 			if (sGame->board()->squares()[i] >= 0)
 			{
-				outStream << "  \\pgfputat{\\pgfxy(" << ( i % sGame->board()->width() ) << ".5," << (sGame->board()->height() - ( i / sGame->board()->height() ) -1 ) << ".5)}{\\pgfbox[center,center]{{\\LARGE " << (char)(sGame->board()->squares()[i] + 'A') << "}}}\n";
+				outStream << "  \\pgfputat{\\pgfxy(" << ( i % sGame->board()->width() ) << ".5," << ( sGame->board()->height() - i / sGame->board()->width() - 1 ) << ".5)}{\\pgfbox[center,center]{{\\LARGE " << (char)(sGame->board()->squares()[i] + 'A') << "}}}\n";
 			}
 		}
 		outStream << "\\end{pgfpicture}\n";

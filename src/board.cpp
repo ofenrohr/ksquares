@@ -149,7 +149,6 @@ int Board::pointsToIndex(QPoint p1, QPoint p2, int w, int h)
 	return ret;
 }
 
-// TODO: invert y axis?
 bool Board::indexToPoints(const int lineIndex, QPoint *p1, QPoint *p2)
 {
   int index2 = lineIndex % ( ( 2 * width_ ) + 1 );
