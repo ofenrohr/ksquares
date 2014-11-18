@@ -1,5 +1,6 @@
 /***************************************************************************
  *   Copyright (C) 2006 by Matthew Williams    <matt@milliams.com>         *
+ *   Copyright (C) 2014 by Tom Vincent Peters  <kde@vincent-peters.de>     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -11,6 +12,7 @@
 #define AICONTROLLER_H
 
 #include <QList>
+#include <QSharedPointer>
 #include "aifunctions.h"
 #include "board.h"
 
@@ -28,9 +30,21 @@
  * @author Tom Vincent Peters <kde@vincent-peters.de>
  */
 
-class aiController : public aiFunctions
+class KSquaresAi
 {
 	public:
+		typedef QSharedPointer<KSquaresAi> Ptr;
+		virtual ~KSquaresAi() {}
+		// call constructor with width, height, playerId, aiLevel
+		//virtual ~KSquaresAi() = 0; 
+		virtual int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners) const = 0;
+};
+
+class aiController
+{
+	public:
+		typedef QSharedPointer<aiController> Ptr;
+		
 		/**
 		 * Create a new AI controller
 		 *
@@ -41,7 +55,7 @@ class aiController : public aiFunctions
 		 * @param newHeight width of the current gameboard
 		 * @param newLevel level of the ai
 		 */
-		aiController(int newPlayerId, const QList<bool> &newLines, const QList<int> &newSquareOwners, int newWidth, int newHeight, int newLevel);
+		aiController(int newPlayerId, int newWidth, int newHeight, int newLevel);
 		
 		~aiController();
 		
@@ -53,30 +67,29 @@ class aiController : public aiFunctions
 		 *
 		 * @return The index of the line from "QVector<bool> lines"
 		 */
-		int chooseLine() const;
+		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners) const;
 		/**
 		 * Finds lines that can be filled without causing squares to be surrounded by 3 lines as a result.
 		 * @param safeMovesLeft number of safe moves that can be performed after those returned by the function are drawn (note: the number is valid only for a certain sequence, for other sequences they could either be more or less)
 		 * 
 		 * @return the list of lines that can be safely drawn
 		 */
-		QList<int> autoFill(int safeMovesLeft);
+		static QList<int> autoFill(int safeMovesLeft, int width, int height);
 
 	protected:
-		/**
-		 * @param choiceList list of indices (of lines) which have squares next to them with two lines drawn (relates to @ref lines )
-		 *
-		 * @return list of indices (of lines) which would be the least damaging in the short term
-		 */
-		QList<int> chooseLeastDamaging(const QList<int> &choiceList) const;
 		
-		/// List of the owners of each square
-		QList<int> squareOwners;
-		bool *lines;
+		KSquaresAi::Ptr getAi() const;
+		
 		/// The ID of the player this AI belongs to
 		int playerId;
+		/// board width in squares
+		int width;
+		/// board height in squares
+		int height;
 		/// The strength of the ai
 		int level;
+		/// number of lines on board
+		//int linesSize;
 };
 
 #endif // KSQUARES_H

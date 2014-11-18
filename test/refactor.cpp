@@ -10,30 +10,6 @@
 // generated
 #include "testboardpath.h"
 
-
-class aiFunctionsTest : public aiFunctions
-{
-public:
-	aiFunctionsTest(int w, int h) : aiFunctions(w,h) {}
-	~aiFunctionsTest() {}
-	int findOwnChainsTest(bool *lines, int linesSize, int width, int height, QList<QList<int> > *ownChains) const
-	{
-		return findOwnChains(lines, linesSize, width, height, ownChains);
-	}
-	int classifyChainTest(const QList<int> chain, bool *lines) const
-	{
-    return classifyChain(chain, lines);
-  }
-  QString boardToStringTest(bool *lines)
-  {
-    return boardToString(lines);
-  }
-  QString linelistToStringTest(QList<int> lines)
-  {
-    return linelistToString(lines);
-  }
-};
-
 class refactor : public QObject
 {
 	Q_OBJECT
@@ -64,8 +40,8 @@ void refactor::testFindOwnChains001()
 		linesb[lines.at(i)] = true;
 	}
 	QList<QList<int> > ownChains;
-	aiFunctionsTest aift(3,3);
-	aift.findOwnChainsTest(linesb, 24, 3, 3, &ownChains);
+	aiFunctions aift(3,3);
+	aift.findOwnChains(linesb, 24, 3, 3, &ownChains);
 	kDebug() << "ownChains.size() = " << ownChains.size();
 	QList<int> chainLengths;
 	for (int i = 0; i < ownChains.size(); i++)
@@ -100,16 +76,16 @@ void refactor::testClassifyChain002()
     linesb[lines.at(i)] = true;
     kDebug() << lines.at(i);
   }
-  aiFunctionsTest aift(4,4);
-  kDebug() << "input board: " << aift.linelistToStringTest(lines);
-  //kDebug() << "input board: " << aift.boardToStringTest(linesb);
+  aiFunctions aift(4,4);
+  kDebug() << "input board: " << aift.linelistToString(lines);
+  //kDebug() << "input board: " << aift.boardToString(linesb);
   
   int result;
   
   QList<int> singleChain;
   singleChain.append(0);
   singleChain.append(4);
-  result = aift.classifyChainTest(singleChain, linesb);
+  result = aift.classifyChain(singleChain, linesb);
   kDebug() << "single chain result: " << result;
   QVERIFY(result == 1);
   
@@ -118,7 +94,7 @@ void refactor::testClassifyChain002()
   longChain1.append(18);
   longChain1.append(27);
   longChain1.append(31);
-  result = aift.classifyChainTest(longChain1, linesb);
+  result = aift.classifyChain(longChain1, linesb);
   kDebug() << "long chain (shorter one) result: " << result;
   QVERIFY(result == 0);
   
@@ -127,7 +103,7 @@ void refactor::testClassifyChain002()
   quad.append(10);
   quad.append(11);
   quad.append(15);
-  result = aift.classifyChainTest(quad, linesb);
+  result = aift.classifyChain(quad, linesb);
   kDebug() << "quad result: " << result;
   QVERIFY(result == 2);
 }
@@ -153,9 +129,9 @@ void refactor::testClassifyChain003()
     linesb[lines.at(i)] = true;
     kDebug() << lines.at(i);
   }
-  aiFunctionsTest aift(4,4);
-  kDebug() << "input board: " << aift.linelistToStringTest(lines);
-  //kDebug() << "input board: " << aift.boardToStringTest(linesb);
+  aiFunctions aift(4,4);
+  kDebug() << "input board: " << aift.linelistToString(lines);
+  //kDebug() << "input board: " << aift.boardToString(linesb);
   
   int result;
   
@@ -163,14 +139,14 @@ void refactor::testClassifyChain003()
   shortChain1.append(0);
   shortChain1.append(9);
   shortChain1.append(13);
-  result = aift.classifyChainTest(shortChain1, linesb);
+  result = aift.classifyChain(shortChain1, linesb);
   kDebug() << "shortChain1 result: " << result;
   QVERIFY(result == 1);
   
   QList<int> shortChain2;
   shortChain2.append(24);
   shortChain2.append(29);
-  result = aift.classifyChainTest(shortChain2, linesb);
+  result = aift.classifyChain(shortChain2, linesb);
   kDebug() << "shortChain2 result: " << result;
   QVERIFY(result == 1);
 }
@@ -196,17 +172,17 @@ void refactor::testFindOwnChains004()
     linesb[lines.at(i)] = true;
   }
   QList<QList<int> > ownChains;
-  aiFunctionsTest aift(4,4);
-  int squaresCnt = aift.findOwnChainsTest(linesb, linesSize, 4, 4, &ownChains);
+  aiFunctions aift(4,4);
+  int squaresCnt = aift.findOwnChains(linesb, linesSize, 4, 4, &ownChains);
   kDebug() << "returned squaresCnt = " << squaresCnt;
   kDebug() << "ownChains.size() = " << ownChains.size();
-  kDebug() << "input board: " << aift.boardToStringTest(linesb);
+  kDebug() << "input board: " << aift.boardToString(linesb);
   QList<int> chainLengths;
   for (int i = 0; i < ownChains.size(); i++)
   {
     //kDebug() << "  " << ownChains.at(i);
     chainLengths.append(ownChains.at(i).size());
-    kDebug() << "board " << i << ": " << aift.linelistToStringTest(ownChains.at(i));
+    kDebug() << "board " << i << ": " << aift.linelistToString(ownChains.at(i));
   }
   QVERIFY(chainLengths.size()==1);
   QVERIFY(chainLengths.contains(3));

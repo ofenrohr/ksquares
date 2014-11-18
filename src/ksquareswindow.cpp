@@ -30,7 +30,6 @@
 #include "settings.h"
 
 //classes
-#include "aicontroller.h"
 #include "gameboardview.h"
 #include "ksquaresio.h"
 
@@ -173,6 +172,15 @@ void KSquaresWindow::gameReset()
   //reset visible board
 	resetBoard(Settings::boardWidth(), Settings::boardHeight());
 
+	// create ai
+	ais.clear();
+	for (int i = 0; i < Settings::numOfPlayers(); i++)
+	{
+		int aiLevel = getAiLevel(i);
+		// TODO: don't create ai for human players
+		ais.append(aiController::Ptr(new aiController(i, Settings::boardWidth(), Settings::boardHeight(), aiLevel)));
+	}
+
 	//start game etc.
 	sGame->createGame(playerList, Settings::boardWidth(), Settings::boardHeight());
   connectSignalsAndSlots();
@@ -181,8 +189,7 @@ void KSquaresWindow::gameReset()
 	{
     disconnect(sGame, SIGNAL(highlightMove(int)), m_scene, SLOT(highlightLine(int)));
 		//This is being done before sGame->start(); to avoid the players cycling
-		aiController ai(-1, sGame->board()->lines(), QList<int>(), sGame->board()->width(), sGame->board()->height(),0);
-		QList<int> lines = ai.autoFill(8);	//There will be 8 possible safe move for the players
+		QList<int> lines = aiController::autoFill(8, sGame->board()->width(), sGame->board()->height());	//There will be 8 possible safe move for the players
 		QListIterator<int> i(lines);
 		while (i.hasNext())
 		{
@@ -293,12 +300,13 @@ void KSquaresWindow::playerTakeTurn(KSquaresPlayer* currentPlayer)
 	if(currentPlayer->isHuman())
 	{
 		//Let the human player interact with the board through the GameBoardView
-		
+		kDebug() << "human turn";
 		setCursor(Qt::ArrowCursor);
 		m_scene->enableEvents();
 	}
 	else	//AI
 	{
+		kDebug() << "ai turn";
 		//lock the view to let the AI do it's magic
 		setCursor(Qt::WaitCursor);
 		m_scene->disableEvents();
@@ -352,19 +360,24 @@ void KSquaresWindow::saveGameAs()
 	}
 }
 
-// testing only
-void KSquaresWindow::aiChooseLine()
+int KSquaresWindow::getAiLevel(int playerId)
 {
 	int aiLevel=0;
-	switch(sGame->currentPlayerId())
+	switch(playerId)
 	{
 		case 0: aiLevel = Settings::playerOneAi(); break;
 		case 1: aiLevel = Settings::playerTwoAi(); break;
 		case 2: aiLevel = Settings::playerThreeAi(); break;
 		case 3: aiLevel = Settings::playerFourAi(); break;
 	}
-	aiController ai(sGame->currentPlayerId(), sGame->board()->lines(), sGame->board()->squares(), sGame->board()->width(), sGame->board()->height(), aiLevel);
-	sGame->addLineToIndex(ai.chooseLine());
+	return aiLevel;
+}
+
+// testing only
+void KSquaresWindow::aiChooseLine()
+{
+	kDebug() << "choosing line...";
+	sGame->addLineToIndex(ais.at(sGame->currentPlayerId())->chooseLine(sGame->board()->lines(), sGame->board()->squares()));
 }
 
 void KSquaresWindow::setupActions()

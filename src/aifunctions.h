@@ -28,7 +28,8 @@ class aiBoard {
 class aiFunctions {
 	public:
 		aiFunctions(int w, int h);
-	protected:
+		
+		static int toLinesSize(int w, int h);
 		/**
 		 * @param squareIndex the index of the square (relates to @ref squareOwners )
 		 * @param linesList the linesList you want to work from
@@ -98,6 +99,7 @@ class aiFunctions {
     static QString linelistToString(const QList<int> list, int linesSize, int width, int height);
     QString linelistToString(const QList<int> list) const;
 		
+	protected:
 		/// Width of the game board
 		int width;
 		/// Height of the game board

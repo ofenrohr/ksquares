@@ -10,9 +10,12 @@
 #ifndef KSQUARESWINDOW_H
 #define KSQUARESWINDOW_H
 
+#include <QList>
+
 #include <KXmlGuiWindow>
 
 #include "ksquaresgame.h"
+#include "aicontroller.h"
 #include "ui_prefs_ai.h"
 #include "ui_prefs_display.h"
 
@@ -52,6 +55,8 @@ class KSquaresWindow : public KXmlGuiWindow
     void saveGame();
     ///Save game to specific file
     void saveGameAs();
+		///Get Level of Ai for player id
+		int getAiLevel(int playerId);
 
 	private slots:
 		void aiChooseLine(); // testing only
@@ -83,9 +88,12 @@ class KSquaresWindow : public KXmlGuiWindow
 		//KToggleAction *m_toolbarAction;
 		//KToggleAction *m_statusbarAction;
     void connectSignalsAndSlots();
-		
+
 		// path to the last saved game
 		QString savegamePath;
+
+		// ais for players
+		QList<aiController::Ptr> ais;
 };
 
 #endif // KSQUARESWINDOW_H

@@ -13,7 +13,12 @@
 
 aiFunctions::aiFunctions(int w, int h) : width(w), height(h)
 {
-	linesSize = 2 * width * height + width + height;
+	linesSize = toLinesSize(width, height);
+}
+
+int aiFunctions::toLinesSize(int w, int h)
+{
+	return 2 * w * h + w + h;
 }
 
 int aiFunctions::countBorderLines(int *sidesOfSquare, int squareIndex, const bool *linesList) const
