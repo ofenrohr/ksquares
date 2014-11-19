@@ -289,7 +289,7 @@ bool KSquaresIO::saveGame(QString filename, KSquaresGame *sGame)
 	else if (filename.endsWith(".sc.tex"))
 	{
 		// save in tex format
-		outStream << "\\begin{pgfpicture}\n";
+		outStream << "\\begin{tikzpicture}\n";
 		outStream << "  \\pgfsetlinewidth{1pt}\n";
 		int squareIndex = 0;
 		for (int y = sGame->board()->height() - 1; y >= 0; y--)
@@ -297,7 +297,7 @@ bool KSquaresIO::saveGame(QString filename, KSquaresGame *sGame)
 			for (int x = 0; x < sGame->board()->width(); x++)
 			{
 				if (sGame->board()->squares()[squareIndex] == -1)
-					outStream << "  \\pgfcircle[stroked]{\\pgfxy(" << x << ".5," << y << ".5)}{6pt}\n";
+					outStream << "  \\draw (" << x << ".5," << y << ".5) circle (6pt);\n";
 				squareIndex++;
 			}
 		}
@@ -385,16 +385,16 @@ bool KSquaresIO::saveGame(QString filename, KSquaresGame *sGame)
 					p2y += 0.3;
 				*/
 			}
-			outStream << "  \\pgfxyline(" << p1x << ", " << p1y << ")(" << p2x << ", " << p2y << ")\n";
+			outStream << "  \\draw (" << p1x << ", " << p1y << ") -- (" << p2x << ", " << p2y << ");\n";
 		}
 		for (int i = 0; i < sGame->board()->squares().size(); i++)
 		{
 			if (sGame->board()->squares()[i] >= 0)
 			{
-				outStream << "  \\pgfputat{\\pgfxy(" << ( i % sGame->board()->width() ) << ".5," << ( sGame->board()->height() - i / sGame->board()->width() - 1 ) << ".5)}{\\pgfbox[center,center]{{\\LARGE " << (char)(sGame->board()->squares()[i] + 'A') << "}}} %" << i << ", " << sGame->board()->height() << "\n";
+				outStream << "  \\node[draw] at (" << ( i % sGame->board()->width() ) << ".5," << ( sGame->board()->height() - i / sGame->board()->width() - 1 ) << ".5) {" << (char)(sGame->board()->squares()[i] + 'A') << "};\n";
 			}
 		}
-		outStream << "\\end{pgfpicture}\n";
+		outStream << "\\end{tikzpicture}\n";
 	}
 	else if (filename.endsWith(".tex"))
 	{

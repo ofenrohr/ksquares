@@ -23,7 +23,7 @@ int aiEasyMediumHard::chooseLine(const QList<bool> &newLines, const QList<int> &
 {
 	if (newLines.size() != linesSize)
 	{
-		kFatal() << "something went terribly wrong";
+		kFatal() << "something went terribly wrong: newLines.size() != linesSize";
 	}
 	// put lines into local board representation
 	for (int i = 0; i < linesSize; ++i) lines[i] = newLines[i];
