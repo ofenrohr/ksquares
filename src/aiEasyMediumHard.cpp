@@ -9,7 +9,7 @@
 
 #include "aiEasyMediumHard.h"
 
-#include <kdebug.h>
+#include <KDebug>
 
 aiEasyMediumHard::aiEasyMediumHard(int newPlayerId, int newWidth, int newHeight, int newLevel) : aiFunctions(newWidth, newHeight), playerId(newPlayerId), level(newLevel)
 {
@@ -268,6 +268,8 @@ QList<int> aiEasyMediumHard::chooseLeastDamaging(const QList<int> &choiceList) c
 		) 
 		&&
 		longChainCnt + loopChainCnt > 0 // only do it if there is at least one chain to steal
+		&& 
+		shortChainCnt != 1 // if there is another short chain just take the own chain and do a hard hearted handout in the chain left
 		&&
 		safeMoves(linesSize, lines).size() == 0 // only do it in endgames
 	  )

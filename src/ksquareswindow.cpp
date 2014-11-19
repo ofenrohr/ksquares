@@ -72,6 +72,7 @@ void KSquaresWindow::showHighscores()
 	ksdialog.addLocalizedConfigGroupName(qMakePair(QByteArray("Easy"), i18n("Easy")));
 	ksdialog.addLocalizedConfigGroupName(qMakePair(QByteArray("Medium"), i18n("Medium")));
 	ksdialog.addLocalizedConfigGroupName(qMakePair(QByteArray("Hard"), i18n("Hard")));
+	ksdialog.addLocalizedConfigGroupName(qMakePair(QByteArray("MiniMax"), i18n("MiniMax")));
 	ksdialog.exec();
 }
 

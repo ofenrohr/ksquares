@@ -15,6 +15,7 @@ set(ksquares_SRCS
 	board.cpp
 	dbgame.cpp
 	aiEasyMediumHard.cpp
+	aiMiniMax.cpp
 )
 
 include_directories(${CMAKE_SOURCE_DIR}/libkdegames/highscore)

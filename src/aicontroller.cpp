@@ -11,6 +11,7 @@
 #include "aicontroller.h"
 
 #include "aiEasyMediumHard.h"
+#include "aiMiniMax.h"
 
 #include <ctime>
 #include <kdebug.h>
@@ -75,13 +76,17 @@ KSquaresAi::Ptr aiController::getAi() const
 	KSquaresAi::Ptr ai;
 	switch (level)
 	{
+		default:
+			kDebug() << "Unknown ai level " << level;
 		case 0:
 		case 1:
 		case 2:
-		default:
 			kDebug() << "creating aiEasyMediumHard: w = " << width << ", h = " << height;
 			ai = KSquaresAi::Ptr(new aiEasyMediumHard(playerId, width, height, level));
 		break;
+		case 3:
+			kDebug() << "creating aiMiniMax";
+			ai = KSquaresAi::Ptr(new aiMiniMax(playerId, width, height, level));
 	}
 	return ai;
 }
