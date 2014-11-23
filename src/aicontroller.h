@@ -17,6 +17,7 @@
 #include "board.h"
 
 /**
+ * TODO: move this comment to aiEasyMediumHard and write correct comment.
  * @short AI Controller for KSquares
  *
  * When playing a game of squares there are a number of stages the game goes through:
@@ -30,14 +31,15 @@
  * @author Tom Vincent Peters <kde@vincent-peters.de>
  */
 
-class KSquaresAi
+class KSquaresAi : public aiFunctions
 {
 	public:
 		typedef QSharedPointer<KSquaresAi> Ptr;
+		KSquaresAi(int w, int h) : aiFunctions(w, h) {}
 		virtual ~KSquaresAi() {}
 		// call constructor with width, height, playerId, aiLevel
 		//virtual ~KSquaresAi() = 0; 
-		virtual int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners) const = 0;
+		virtual int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners) = 0;
 };
 
 class aiController
@@ -67,7 +69,7 @@ class aiController
 		 *
 		 * @return The index of the line from "QVector<bool> lines"
 		 */
-		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners) const;
+		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners);
 		/**
 		 * Finds lines that can be filled without causing squares to be surrounded by 3 lines as a result.
 		 * @param safeMovesLeft number of safe moves that can be performed after those returned by the function are drawn (note: the number is valid only for a certain sequence, for other sequences they could either be more or less)
@@ -75,10 +77,10 @@ class aiController
 		 * @return the list of lines that can be safely drawn
 		 */
 		static QList<int> autoFill(int safeMovesLeft, int width, int height);
-
-	protected:
 		
 		KSquaresAi::Ptr getAi() const;
+
+	protected:
 		
 		/// The ID of the player this AI belongs to
 		int playerId;

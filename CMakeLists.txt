@@ -1,6 +1,7 @@
 PROJECT(ksquares)
 
 ENABLE_TESTING()
+set(CMAKE_CXX_FLAGS "-Wno-cpp") # don't use this on release, added to disable warnings about some deprecated stuff
 
 if(NOT COMPILING_KDEGAMES)
 	find_package(KDE4 REQUIRED)

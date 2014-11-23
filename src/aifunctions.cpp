@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006 by Tom Vincent Peters   <kde@vincent-peters.de>    *
+ *   Copyright (C) 2014 by Tom Vincent Peters   <kde@vincent-peters.de>    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -10,6 +10,7 @@
 #include "aifunctions.h"
 #include <KDebug>
 #include <QStack>
+#include <QMap>
 
 aiFunctions::aiFunctions(int w, int h) : width(w), height(h)
 {
@@ -271,6 +272,57 @@ int aiFunctions::findOwnChains(bool *lines, int linesSize, int width, int height
 	} while (chainFound);
   
   return ownSquaresCnt;
+}
+
+QList<int> aiFunctions::getFreeLines(bool *lines, int linesSize)
+{
+	QList<int> freeLines;
+	for (int i = 0; i < linesSize; i++)
+	{
+		if (!lines[i])
+			freeLines.append(i);
+	}
+	return freeLines;
+}
+
+
+/**
+* Determines which player has the most squares
+* @return playerId of player with most squares, -1 if no squares are drawn, -2 if draw, -3 if sth went wrong
+*/
+int aiFunctions::getLeader(QList<int> squareOwners)
+{
+	QMap<int, int> scores; // index = player id, value = number of squares
+	for (int i = 0; i < squareOwners.size(); i++)
+	{
+		if (scores.contains(squareOwners[i]))
+			scores[squareOwners[i]] ++;
+		else
+			scores[squareOwners[i]] = 1;
+	}
+	if (scores.contains(-1) && scores.keys().size() == 1) // no squares are drawn
+		return -1;
+	int bestId = -3;
+	int bestScore = 0;
+	bool draw = false;
+	for (int i = 0; i < scores.keys().size(); i++)
+	{
+		if (scores.keys()[i] == -1) // square not taken
+			continue;
+		if (scores[scores.keys()[i]] > bestScore)
+		{
+			draw = false;
+			bestId = scores.keys()[i];
+			bestScore = scores[scores.keys()[i]];
+		}
+		if (scores[scores.keys()[i]] == bestScore)
+			draw = true;
+	}
+	if (bestId == -3)
+		kDebug() << "sth went wrong when calculating the board leader!";
+	if (draw)
+		return -2;
+	return bestId;
 }
 
 QString aiFunctions::boardToString(bool *lines, int linesSize, int width, int height)

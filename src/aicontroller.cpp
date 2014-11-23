@@ -64,7 +64,7 @@ QList<int> aiController::autoFill(int safeMovesLeft, int width, int height)
 	return fillLines;
 }
 
-int aiController::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners) const
+int aiController::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners)
 {
 	KSquaresAi::Ptr ai = getAi();
 	

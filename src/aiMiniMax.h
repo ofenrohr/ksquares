@@ -9,13 +9,19 @@
 
 #include "aicontroller.h"
 #include "aifunctions.h"
+#include "aiBoard.h"
 
-class aiMiniMax : public KSquaresAi, public aiFunctions
+
+class aiMiniMax : public KSquaresAi
 {
 	public:
 		aiMiniMax(int newPlayerId, int newWidth, int newHeight, int newLevel);
-		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners) const;
+		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners);
+		
 	protected:
+		float minimax(aiBoard::Ptr board, int linesSize, int depth, int ownPlayerId, int playerId, int *line);
+		float evaluate(aiBoard::Ptr board);
+		
 		/// The ID of the player this AI belongs to
 		int playerId;
 		/// board width in squares

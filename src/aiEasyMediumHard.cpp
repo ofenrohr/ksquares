@@ -11,7 +11,7 @@
 
 #include <KDebug>
 
-aiEasyMediumHard::aiEasyMediumHard(int newPlayerId, int newWidth, int newHeight, int newLevel) : aiFunctions(newWidth, newHeight), playerId(newPlayerId), level(newLevel)
+aiEasyMediumHard::aiEasyMediumHard(int newPlayerId, int newWidth, int newHeight, int newLevel) : KSquaresAi(newWidth, newHeight), playerId(newPlayerId), level(newLevel)
 {
 	width = newWidth;
 	height = newHeight;
@@ -19,7 +19,7 @@ aiEasyMediumHard::aiEasyMediumHard(int newPlayerId, int newWidth, int newHeight,
 	lines = new bool[linesSize];
 }
 
-int aiEasyMediumHard::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners) const
+int aiEasyMediumHard::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners)
 {
 	if (newLines.size() != linesSize)
 	{
@@ -38,13 +38,7 @@ int aiEasyMediumHard::chooseLine(const QList<bool> &newLines, const QList<int> &
 		if(level >= 2) // to play good ai has to look into the future game
 		{
 			QList<int> openLines; // list of not yet drawn lines
-			for(int i = 0; i < linesSize; i++)
-			{
-				if(!lines[i])
-				{
-					openLines.append(i);
-				}
-			}
+			openLines = aiFunctions::getFreeLines(lines, linesSize);
 			kDebug() << "choosing from all possible lines";
 			QList<int> choices=chooseLeastDamaging(openLines); // run extended damage control
 			if(choices.size() > 0)

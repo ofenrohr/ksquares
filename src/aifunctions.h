@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2006 by Tom Vincent Peters   <kde@vincent-peters.de>    *
+ *   Copyright (C) 2014 by Tom Vincent Peters   <kde@vincent-peters.de>    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -15,15 +15,6 @@
 #include <QSharedPointer>
 #include "board.h"
 
-// TODO: use static functions, provide non-static functions with less parameters
-class aiBoard {
-	public:
-		typedef QSharedPointer<aiBoard> Ptr;
-		bool *lines_;
-		int linesSize_; 
-		int width_;
-		int height_;
-};
 
 class aiFunctions {
 	public:
@@ -80,6 +71,7 @@ class aiFunctions {
 		/**
 		 * Finds chains on board that can be taken by the player to move
 		 * @param lines lines of the board
+		 * @param linesSize number of lines on the board
 		 * @param width width of board in boxes
 		 * @param height height of board in boxes
 		 * @param ownChains returns the chains the current player can score
@@ -87,11 +79,25 @@ class aiFunctions {
 		 */
 		int findOwnChains(bool *lines, int linesSize, int width, int height, QList<QList<int> > *ownChains) const;
 		/**
+		 * Classifies a given chain as short, long or loop chain.
 		 * @param chain list of lines the chain is made up of
      * @param lines lines of the board
 		 * @return 0: long chain, 1: short chain, 2: loop chain, -1: no chain
 		 */
 		int classifyChain(const QList<int> chain, bool *lines) const;
+		/**
+		 * TODO: move to aiBoard
+		 * Gets lines that are not drawn
+		 * @param lines lines of the board
+		 * @param linesSize number of lines on the board
+		 */
+		static QList<int> getFreeLines(bool *lines, int linesSize);
+		/**
+		 * TODO: move to aiBoard
+		 * Determines which player has the most squares
+		 * @return playerId of player with most squares, -1 if no squares are drawn, -2 if draw
+		 */
+		static int getLeader(QList<int> squareOwners);
 		
 		/* Debugging */
 		static QString boardToString(bool *lines, int linesSize, int width, int height);
@@ -104,7 +110,7 @@ class aiFunctions {
 		int width;
 		/// Height of the game board
 		int height;
-    /// List of which lines are complete
+    /// Size of list of which lines are complete
     int linesSize;
 };
 
