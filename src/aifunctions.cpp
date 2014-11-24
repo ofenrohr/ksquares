@@ -414,7 +414,7 @@ void printSquares(QList<int> squares, int width, int height)
 
 // @param chain: chain lines
 // @return 0: long chain, 1: short chain, 2: loop chain, -1: no chain
-int aiFunctions::classifyChain(const QList<int> chain, bool *lines) const
+int aiFunctions::classifyChain(int width, int height, const QList<int> &chain, bool *lines)
 {
   if (chain.size() <= 0)
   {
@@ -431,12 +431,12 @@ int aiFunctions::classifyChain(const QList<int> chain, bool *lines) const
       kDebug() << "ERROR: classifyChain called with incorrect chain parameter (line " << chain[i] << " is drawn!)";
       return -1;
     }
-    QList<int> curSquares = squaresFromLine(chain[i]);
+    QList<int> curSquares = squaresFromLine(width, height, chain[i]);
     for (int j = 0; j < curSquares.size(); j++)
     {
       if (squares.contains(curSquares[j]))
         continue;
-      if (countBorderLines(curSquares[j], lines) < 2)
+      if (countBorderLines(width, height, curSquares[j], lines) < 2)
         continue;
       squares.append(curSquares[j]);
     }
@@ -469,7 +469,7 @@ int aiFunctions::classifyChain(const QList<int> chain, bool *lines) const
     
     // find connected squares for curSquare
     int curLines[4];
-    linesFromSquare(curLines, curSquare);
+    linesFromSquare(width, height, curLines, curSquare);
     for (int i = 0; i < 4; i++)
     {
       int curLine = curLines[i];
@@ -482,13 +482,13 @@ int aiFunctions::classifyChain(const QList<int> chain, bool *lines) const
       linesVisited.append(curLine);
       
       // get the bordering squares of curLine
-      QList<int> curLineSquares = squaresFromLine(curLine);
+      QList<int> curLineSquares = squaresFromLine(width, height, curLine);
       for (int j = 0; j < curLineSquares.size(); j++)
       {
         // check if the square isn't the one we are expanding
         if (curSquare == curLineSquares[j]) 
           continue;
-        if (countBorderLines(curLineSquares[j], lines) < 2)
+        if (countBorderLines(width, height, curLineSquares[j], lines) < 2)
           continue;
         squareQueue.push(curLineSquares[j]);
       }
@@ -510,4 +510,9 @@ int aiFunctions::classifyChain(const QList<int> chain, bool *lines) const
   
   // long chain
   return 0; 
+}
+
+int aiFunctions::classifyChain(const QList<int> &chain, bool *lines) const
+{
+	return classifyChain(width, height, chain, lines);
 }

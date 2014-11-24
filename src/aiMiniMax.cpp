@@ -176,7 +176,6 @@ float aiMiniMax::evaluate(aiBoard::Ptr board, int playerId)
 	squaresCnt = aiFunctions::findOwnChains(board->lines, board->linesSize, board->width, board->height, &chains);
 	
 	// analyze chains
-	/*
 	int shortChainCnt = 0; // chains <= 2 lines
 	int longChainCnt = 0; // exploitable chains
 	int loopChainCnt = 0; // also exploitable, but more costly
@@ -187,7 +186,7 @@ float aiMiniMax::evaluate(aiBoard::Ptr board, int playerId)
 	for (int i = 0; i < chains.size(); i++)
 	{
 		QList<int> chain = chains[i];
-    int classification = classifyChain(chain, board->lines);
+    int classification = aiFunctions::classifyChain(board->width, board->height, chain, board->lines);
     //kDebug() << "analysing chain " << chain << ": " << classification;
 		switch (classification)
 		{
@@ -207,14 +206,16 @@ float aiMiniMax::evaluate(aiBoard::Ptr board, int playerId)
         kDebug() << "unknown chain type " << classification;
     }
 	}
-	kDebug() << "short chains:" << shortChainCnt << ", long chains: " << longChainCnt << ", loop chains: " << loopChainCnt << "ownSquaresCnt: " << ownSquaresCnt;
-	*/
+	//kDebug() << "short chains:" << shortChainCnt << ", long chains: " << longChainCnt << ", loop chains: " << loopChainCnt << "ownSquaresCnt: " << ownSquaresCnt;
 	int score = 0;
 	QMap<int, int> scores = aiFunctions::getScoreMap(board->squareOwners);
 	if (scores.contains(playerId))
 		score = scores[playerId];
 	
-	return score; //- squaresCnt;
+	// long chain rule: dots + long chains % 2 even for A, odd for B
+	int dots = (board->width + 1) * (board->height + 1);
+	int lcr = (dots + longChainCnt) % 2 ? -dots : dots;
+	return score + lcr; //- squaresCnt;
 }
 
 void aiMiniMax::setDebug(bool val)

@@ -87,7 +87,8 @@ class aiFunctions {
      * @param lines lines of the board
 		 * @return 0: long chain, 1: short chain, 2: loop chain, -1: no chain
 		 */
-		int classifyChain(const QList<int> chain, bool *lines) const;
+		int classifyChain(const QList<int> &chain, bool *lines) const;
+		static int classifyChain(int width, int height, const QList<int> &chain, bool *lines);
 		/**
 		 * TODO: move to aiBoard
 		 * Gets lines that are not drawn
