@@ -27,6 +27,9 @@ class aiMiniMax : public KSquaresAi
 		QString getDebugDot();
 		
 	protected:
+		float minimax(bool *lines, int depth, bool maximizingPlayer);
+		float heuristic(bool *lines, bool maximizingPlayer);
+		
 		/// The ID of the player this AI belongs to
 		int playerId;
 		/// board width in squares

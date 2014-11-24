@@ -9,6 +9,7 @@
 
 #include "aiMiniMax.h"
 
+#include <limits>
 #include <KDebug>
 #include <cmath>
 
