@@ -10,7 +10,6 @@
 #include "aifunctions.h"
 #include <KDebug>
 #include <QStack>
-#include <QMap>
 
 aiFunctions::aiFunctions(int w, int h) : width(w), height(h)
 {
@@ -199,7 +198,7 @@ QList<int> aiFunctions::safeMoves(int width, int height, int linesSize, const bo
 	return aif.safeMoves(linesSize, lines);
 }
 
-int aiFunctions::findOwnChains(bool *lines, int linesSize, int width, int height, QList<QList<int> > *ownChains) const
+int aiFunctions::findOwnChains(bool *lines, int linesSize, int width, int height, QList<QList<int> > *ownChains)
 {
   /*
 	kDebug() << "find own chains" << linesSize << ", " << width << ", " << height;
@@ -225,7 +224,7 @@ int aiFunctions::findOwnChains(bool *lines, int linesSize, int width, int height
 			bool squareFound;
 			do { // this loop walks through a chain square by square
 				squareFound = false;
-				if(countBorderLines(sidesOfSquare, chainSquare, &(*myLines)) == 3) // found a square for ai
+				if(countBorderLines(width, height, sidesOfSquare, chainSquare, &(*myLines)) == 3) // found a square for ai
 				{
 					//kDebug() << "found square:" << chainSquare;
 					for(int sideOfSquare = 0; sideOfSquare <= 3; sideOfSquare++)
@@ -235,10 +234,10 @@ int aiFunctions::findOwnChains(bool *lines, int linesSize, int width, int height
 							ownLinesCnt++;
 							
 							int nextSquareFound=-1;
-							QList<int> adjacentSquares = squaresFromLine(sidesOfSquare[sideOfSquare]);
+							QList<int> adjacentSquares = squaresFromLine(width, height, sidesOfSquare[sideOfSquare]);
 							for(int i = 0; i < adjacentSquares.size(); i++)
 							{
-								int chainSquareBorderCnt = countBorderLines(adjacentSquares.at(i), &(*myLines));
+								int chainSquareBorderCnt = countBorderLines(width, height, adjacentSquares.at(i), &(*myLines));
 								if(chainSquare != adjacentSquares.at(i) &&
 										chainSquareBorderCnt == 3)	// check if a second square will be completed by this line
 								{
@@ -265,12 +264,15 @@ int aiFunctions::findOwnChains(bool *lines, int linesSize, int width, int height
 			} while(squareFound);
 			if(chainFound)
 			{
-				ownChains->append(ownChain);
+				qSort(ownChain);
+				if (!ownChains->contains(ownChain))
+					ownChains->append(ownChain);
 				break;
 			}
 		}
 	} while (chainFound);
   
+	//qSort(ownChains);
   return ownSquaresCnt;
 }
 
@@ -285,12 +287,7 @@ QList<int> aiFunctions::getFreeLines(bool *lines, int linesSize)
 	return freeLines;
 }
 
-
-/**
-* Determines which player has the most squares
-* @return playerId of player with most squares, -1 if no squares are drawn, -2 if draw, -3 if sth went wrong
-*/
-int aiFunctions::getLeader(QList<int> squareOwners)
+QMap<int, int> aiFunctions::getScoreMap(QList<int> &squareOwners)
 {
 	QMap<int, int> scores; // index = player id, value = number of squares
 	for (int i = 0; i < squareOwners.size(); i++)
@@ -300,6 +297,17 @@ int aiFunctions::getLeader(QList<int> squareOwners)
 		else
 			scores[squareOwners[i]] = 1;
 	}
+	return scores;
+}
+
+/**
+* Determines which player has the most squares
+* @return playerId of player with most squares, -1 if no squares are drawn, -2 if draw, -3 if sth went wrong
+*/
+int aiFunctions::getLeader(QList<int> &squareOwners)
+{
+	QMap<int, int> scores; // index = player id, value = number of squares
+	scores = getScoreMap(squareOwners);
 	if (scores.contains(-1) && scores.keys().size() == 1) // no squares are drawn
 		return -1;
 	int bestId = -3;

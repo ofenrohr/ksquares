@@ -36,7 +36,23 @@ int aiMiniMax::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 	// do sth smart
 	aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(lines, linesSize, width, height, squareOwners));
 	
-	return 0;
+	int line;
+	minimax(board, 4, playerId, playerId, &line);
+	
+	if (line < 0 || line >= linesSize)
+	{
+		kDebug() << "minimax didn't return a correct line: " << line;
+		kDebug() << "coosing random valid move";
+		QList<int> freeLines = aiFunctions::getFreeLines(lines, linesSize);
+		if (freeLines.size() <= 0)
+		{
+			kDebug() << "no valid lines left!";
+			return 0;
+		}
+		return freeLines.at(qrand() % freeLines.size());
+	}
+	
+	return line;
 }
 
 /*
@@ -62,12 +78,13 @@ function minimax(node, depth, maximizingPlayer)
 minimax(origin, depth, TRUE)
 */
 
-float aiMiniMax::minimax(aiBoard::Ptr board, int linesSize, int depth, int playerId, int ownPlayerId, int *line)
+float aiMiniMax::minimax(aiBoard::Ptr board, int depth, int playerId, int ownPlayerId, int *line)
 {
 	QList<int> freeLines = aiFunctions::getFreeLines(board->lines, board->linesSize);
 	
 	if (freeLines.size() == 0) // game is over
 	{
+		kDebug() << "terminal node";
 		int winner = aiFunctions::getLeader(board->squareOwners);
 		if (winner == -2) // draw
 			return 0;
@@ -78,7 +95,13 @@ float aiMiniMax::minimax(aiBoard::Ptr board, int linesSize, int depth, int playe
 	}
 	
 	if (depth == 0)
-		return evaluate(board);
+	{
+		kDebug() << "evaluating board:" << boardToString(board->lines, board->linesSize, board->width, board->height);
+		int eval = evaluate(board, playerId);
+		eval = (playerId == ownPlayerId) ? eval : -eval;
+		kDebug() << "result: " << eval;
+		return eval;
+	}
 	
 	if (playerId == ownPlayerId)
 	{
@@ -87,7 +110,7 @@ float aiMiniMax::minimax(aiBoard::Ptr board, int linesSize, int depth, int playe
 		{
 			// TODO: enable more than 2 player game!
 			board->doMove(freeLines[i], 1 - playerId);
-			float val = minimax(board, linesSize, depth - 1, 1 - playerId, ownPlayerId, NULL);
+			float val = minimax(board, depth - 1, 1 - playerId, ownPlayerId, NULL);
 			board->undoMove(freeLines[i]);
 			if (val > bestValue)
 			{
@@ -105,7 +128,7 @@ float aiMiniMax::minimax(aiBoard::Ptr board, int linesSize, int depth, int playe
 		{
 			// TODO: enable more than 2 player game!
 			board->doMove(freeLines[i], 1 - playerId);
-			float val = minimax(board, linesSize, depth - 1, 1 - playerId, ownPlayerId, NULL);
+			float val = minimax(board, depth - 1, 1 - playerId, ownPlayerId, NULL);
 			board->undoMove(freeLines[i]);
 			if (val < bestValue)
 			{
@@ -120,7 +143,52 @@ float aiMiniMax::minimax(aiBoard::Ptr board, int linesSize, int depth, int playe
 	return 0.0;
 }
 
-float aiMiniMax::evaluate(aiBoard::Ptr board)
+float aiMiniMax::evaluate(aiBoard::Ptr board, int playerId)
 {
-	return 0.0;
+	int squaresCnt = 0;
+	QList<QList<int> > chains;
+	QList<QSet<int> > chainSet;
+	
+	squaresCnt = aiFunctions::findOwnChains(board->lines, board->linesSize, board->width, board->height, &chains);
+	
+	// analyze chains
+	/*
+	int shortChainCnt = 0; // chains <= 2 lines
+	int longChainCnt = 0; // exploitable chains
+	int loopChainCnt = 0; // also exploitable, but more costly
+	QList<QList<int> > shortChains;
+  QList<QList<int> > longChains;
+  QList<QList<int> > loopChains;
+	
+	for (int i = 0; i < chains.size(); i++)
+	{
+		QList<int> chain = chains[i];
+    int classification = classifyChain(chain, board->lines);
+    //kDebug() << "analysing chain " << chain << ": " << classification;
+		switch (classification)
+		{
+      case 0: 
+        longChainCnt++;
+        longChains.append(chain);
+      break;
+      case 1:
+        shortChainCnt++;
+        shortChains.append(chain);
+      break;
+      case 2:
+        loopChainCnt++;
+        loopChains.append(chain);
+      break;
+      default:
+        kDebug() << "unknown chain type " << classification;
+    }
+	}
+	kDebug() << "short chains:" << shortChainCnt << ", long chains: " << longChainCnt << ", loop chains: " << loopChainCnt << "ownSquaresCnt: " << ownSquaresCnt;
+	*/
+	int score = 0;
+	QMap<int, int> scores = aiFunctions::getScoreMap(board->squareOwners);
+	if (scores.contains(playerId))
+		score = scores[playerId];
+	
+	return score; //- squaresCnt;
 }

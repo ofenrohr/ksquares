@@ -74,3 +74,15 @@ target_link_libraries( test-refactor
   ${KDE4_KDEUI_LIBS}
   kdegames
 )
+
+kde4_add_unit_test( test-minimax
+  TESTNAME minimax
+  ${ksquarestest_SRCS}
+  minimax.cpp
+)
+target_link_libraries( test-minimax
+  ${KDE4_KDECORE_LIBS}
+  ${QT_QTTEST_LIBRARY}
+  ${KDE4_KDEUI_LIBS}
+  kdegames
+)

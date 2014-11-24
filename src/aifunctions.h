@@ -13,6 +13,8 @@
 #include <QList>
 #include <QString>
 #include <QSharedPointer>
+#include <QMap>
+
 #include "board.h"
 
 
@@ -77,7 +79,8 @@ class aiFunctions {
 		 * @param ownChains returns the chains the current player can score
      * @return number of squares taken
 		 */
-		int findOwnChains(bool *lines, int linesSize, int width, int height, QList<QList<int> > *ownChains) const;
+		static int findOwnChains(bool *lines, int linesSize, int width, int height, QList<QList<int> > *ownChains);
+		
 		/**
 		 * Classifies a given chain as short, long or loop chain.
 		 * @param chain list of lines the chain is made up of
@@ -93,11 +96,16 @@ class aiFunctions {
 		 */
 		static QList<int> getFreeLines(bool *lines, int linesSize);
 		/**
+		 * TODO
+		 * @return index = player id, value = number of squares
+		 */
+		static QMap<int, int> getScoreMap(QList<int> &squareOwners);
+		/**
 		 * TODO: move to aiBoard
 		 * Determines which player has the most squares
 		 * @return playerId of player with most squares, -1 if no squares are drawn, -2 if draw
 		 */
-		static int getLeader(QList<int> squareOwners);
+		static int getLeader(QList<int> &squareOwners);
 		
 		/* Debugging */
 		static QString boardToString(bool *lines, int linesSize, int width, int height);
