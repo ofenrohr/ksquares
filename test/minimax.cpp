@@ -37,6 +37,8 @@ void minimax::testMiniMax001()
 	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
 	kDebug() << "loading: " << QString(TESTBOARDPATH) << "/2x1-minimax.dbl";
 	QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/2x1-minimax.dbl", sGame.data(), &lines));
+  aiFunctions aift(width,height);
+  kDebug() << "input board: " << aift.linelistToString(lines);
 	
 	for (int i = 0; i < lines.size(); i++) linesb[lines.at(i)] = true;
 	QList<int> squareOwners;
@@ -51,8 +53,9 @@ void minimax::testMiniMax001()
 	int line = -2;
 	float res = ai.minimax(board, 4, 0, 0, &line);
 	kDebug() << "pid 0: minimax result: " << res << ", line: " << line;
+	board->doMove(2, 0);
 	res = ai.minimax(board, 4, 1, 0, &line);
-	kDebug() << "pid 0: minimax result: " << res << ", line: " << line;
+	kDebug() << "pid 1: minimax result: " << res << ", line: " << line;
 }
 
 /**
@@ -63,32 +66,31 @@ void minimax::testMiniMax002()
 	QList<int> squareOwners;
 	squareOwners.append(-1);
 	squareOwners.append(-1);
-	QVERIFY(aiFunctions::getLeader(squareOwners) == -1);
+	QCOMPARE(aiFunctions::getLeader(squareOwners), -1);
 	
 	squareOwners.clear();
 	squareOwners.append(0);
 	squareOwners.append(-1);
-	QVERIFY(aiFunctions::getLeader(squareOwners) == 0);
+	QCOMPARE(aiFunctions::getLeader(squareOwners), 0);
 	
 	squareOwners.clear();
 	squareOwners.append(-1);
 	squareOwners.append(0);
-	QVERIFY(aiFunctions::getLeader(squareOwners) == 0);
+	QCOMPARE(aiFunctions::getLeader(squareOwners), 0);
 	
 	squareOwners.clear();
 	squareOwners.append(-1);
 	squareOwners.append(0);
 	squareOwners.append(0);
 	squareOwners.append(1);
-	QVERIFY(aiFunctions::getLeader(squareOwners) == 0);
-	
+	QCOMPARE(aiFunctions::getLeader(squareOwners), 0);
 	
 	squareOwners.clear();
 	squareOwners.append(1);
 	squareOwners.append(0);
 	squareOwners.append(0);
 	squareOwners.append(1);
-	QVERIFY(aiFunctions::getLeader(squareOwners) == -2);
+	QCOMPARE(aiFunctions::getLeader(squareOwners), -2);
 }
 
 QTEST_MAIN(minimax)

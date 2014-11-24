@@ -84,7 +84,7 @@ float aiMiniMax::minimax(aiBoard::Ptr board, int depth, int playerId, int ownPla
 	
 	if (freeLines.size() == 0) // game is over
 	{
-		kDebug() << "terminal node";
+		//kDebug() << "terminal node";
 		int winner = aiFunctions::getLeader(board->squareOwners);
 		if (winner == -2) // draw
 			return 0;

@@ -308,6 +308,7 @@ int aiFunctions::getLeader(QList<int> &squareOwners)
 {
 	QMap<int, int> scores; // index = player id, value = number of squares
 	scores = getScoreMap(squareOwners);
+	//kDebug() << "score map: " << scores;
 	if (scores.contains(-1) && scores.keys().size() == 1) // no squares are drawn
 		return -1;
 	int bestId = -3;
@@ -317,14 +318,14 @@ int aiFunctions::getLeader(QList<int> &squareOwners)
 	{
 		if (scores.keys()[i] == -1) // square not taken
 			continue;
+		if (scores[scores.keys()[i]] == bestScore)
+			draw = true;
 		if (scores[scores.keys()[i]] > bestScore)
 		{
 			draw = false;
 			bestId = scores.keys()[i];
 			bestScore = scores[scores.keys()[i]];
 		}
-		if (scores[scores.keys()[i]] == bestScore)
-			draw = true;
 	}
 	if (bestId == -3)
 		kDebug() << "sth went wrong when calculating the board leader!";
