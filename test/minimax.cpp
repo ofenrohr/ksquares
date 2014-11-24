@@ -19,6 +19,8 @@ class minimax : public QObject
 		void testMiniMax001();
 		void testMiniMax002();
 		void testMiniMax003();
+		void testMiniMax004();
+		void testMiniMax005();
 		
 		void testBerlekamp001(); // 16
 		void testBerlekamp002(); // 17, 21
@@ -49,7 +51,6 @@ void minimax::testMiniMax001()
 	kDebug() << "loading: " << QString(TESTBOARDPATH) << "/2x1-minimax.dbl";
 	QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/2x1-minimax.dbl", sGame.data(), &lines));
   aiFunctions aift(width,height);
-  kDebug() << "input board: " << aift.linelistToString(lines);
 	
 	for (int i = 0; i < lines.size(); i++)
 	{
@@ -139,6 +140,92 @@ void minimax::testMiniMax003()
 	
 	QTextStream outStream(&file);
 	outStream << "graph {\n" << ai.getDebugDot() << "}";
+}
+
+/**
+ * test minimax in general
+ * board:
+ * +  +
+ * |     
+ * +  +
+ *    |  
+ * +  +
+ */
+void minimax::testMiniMax004()
+{
+	int width = 1;
+	int height = 2;
+	QList<int> lines;
+	QList<bool> linesbl;
+  int linesSize = 2 * width * height + width + height;
+  bool linesb[linesSize];
+  for (int i = 0; i < linesSize; i++)
+  {
+    linesb[i] = false;
+		linesbl.append(false);
+  }
+	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+	kDebug() << "loading: " << QString(TESTBOARDPATH) << "/1x2-minimax.dbl";
+	QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/1x2-minimax.dbl", sGame.data(), &lines));
+  aiFunctions aift(width,height);
+	
+	for (int i = 0; i < lines.size(); i++)
+	{
+		linesb[lines.at(i)] = true;
+		linesbl[lines.at(i)] = true;
+	}
+	QList<int> squareOwners;
+	squareOwners.append(-1);
+	squareOwners.append(-1);
+	
+	aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(linesb, linesSize, width, height, squareOwners));
+	kDebug() << "evaluation pid 0 = " << aiMiniMax::evaluate(board, 0);
+	kDebug() << "evaluation pid 1 = " << aiMiniMax::evaluate(board, 1);
+	
+	aiMiniMax ai(0, width, height, -1);
+	int line = ai.chooseLine(linesbl, squareOwners);
+	QCOMPARE(line, 3);
+}
+
+/**
+ * test minimax in general
+ * board:
+
+ */
+void minimax::testMiniMax005()
+{
+	int width = 2;
+	int height = 2;
+	QList<int> lines;
+	QList<bool> linesbl;
+  int linesSize = 2 * width * height + width + height;
+  bool linesb[linesSize];
+  for (int i = 0; i < linesSize; i++)
+  {
+    linesb[i] = false;
+		linesbl.append(false);
+  }
+	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+	kDebug() << "loading: " << QString(TESTBOARDPATH) << "/2x2-minimax.dbl";
+	QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/2x2-minimax.dbl", sGame.data(), &lines));
+  aiFunctions aift(width,height);
+	
+	for (int i = 0; i < lines.size(); i++)
+	{
+		linesb[lines.at(i)] = true;
+		linesbl[lines.at(i)] = true;
+	}
+	QList<int> squareOwners;
+	squareOwners.append(-1);
+	squareOwners.append(-1);
+	
+	aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(linesb, linesSize, width, height, squareOwners));
+	kDebug() << "evaluation pid 0 = " << aiMiniMax::evaluate(board, 0);
+	kDebug() << "evaluation pid 1 = " << aiMiniMax::evaluate(board, 1);
+	
+	aiMiniMax ai(0, width, height, -1);	
+	int line = ai.chooseLine(linesbl, squareOwners);
+	QCOMPARE(line, 6);
 }
 
 /**

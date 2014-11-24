@@ -415,7 +415,7 @@ p, li { white-space: pre-wrap; }
          </sizepolicy>
         </property>
         <property name="minimum">
-         <number>2</number>
+         <number>1</number>
         </property>
         <property name="maximum">
          <number>50</number>

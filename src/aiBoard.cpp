@@ -17,6 +17,11 @@ aiBoard::aiBoard(bool *newLines, int newLinesSize, int newWidth, int newHeight, 
 	
 }
 
+aiBoard::~aiBoard()
+{
+	
+}
+
 void aiBoard::doMove(int line, int playerId)
 {
 	// TODO: remove this check

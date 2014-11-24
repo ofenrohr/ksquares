@@ -19,6 +19,7 @@ public:
 	typedef QSharedPointer<aiBoard> Ptr;
 	
 	aiBoard(bool *newLines, int newLinesSize, int newWidth, int newHeight, const QList<int> &newSquareOwners);
+	~aiBoard();
 	
 	void doMove(int line, int playerId);
 	void undoMove(int line);
