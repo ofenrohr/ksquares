@@ -119,10 +119,10 @@ float aiMiniMax::minimax(aiBoard::Ptr board, int depth, int playerId, int ownPla
 	
 	if (depth == 0)
 	{
-		kDebug() << "evaluating board:" << boardToString(board->lines, board->linesSize, board->width, board->height);
+		//kDebug() << "evaluating board:" << boardToString(board->lines, board->linesSize, board->width, board->height);
 		int eval = evaluate(board, playerId);
 		eval = (playerId == ownPlayerId) ? eval : -eval;
-		kDebug() << "result: " << eval;
+		//kDebug() << "result: " << eval;
 		return eval;
 	}
 	
