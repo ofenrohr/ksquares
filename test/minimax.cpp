@@ -18,6 +18,7 @@ class minimax : public QObject
 	private slots:
 		void testMiniMax001();
 		void testMiniMax002();
+		void testMiniMax003();
 };
 
 /**
@@ -91,6 +92,36 @@ void minimax::testMiniMax002()
 	squareOwners.append(0);
 	squareOwners.append(1);
 	QCOMPARE(aiFunctions::getLeader(squareOwners), -2);
+}
+
+/**
+ * test minimax in general
+ */
+void minimax::testMiniMax003()
+{
+	int width = 2;
+	int height = 1;
+	QList<int> lines;
+  int linesSize = 2 * width * height + width + height;
+  bool linesb[linesSize];
+  for (int i = 0; i < linesSize; i++)
+  {
+    linesb[i] = false;
+  }
+	QList<int> squareOwners;
+	squareOwners.append(-1);
+	squareOwners.append(-1);
+  aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(linesb, linesSize, width, height, squareOwners));
+	aiMiniMax ai(0, width, height, -1);
+	ai.setDebug(true);
+	int line = -10;
+	float res = ai.minimax(board, 2, 0, 0, &line);
+	
+	QFile file("/tmp/minimax.dot");
+	QVERIFY(file.open(QIODevice::ReadWrite | QIODevice::Truncate));
+	
+	QTextStream outStream(&file);
+	outStream << "graph {\n" << ai.getDebugDot() << "}";
 }
 
 QTEST_MAIN(minimax)

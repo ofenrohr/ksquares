@@ -78,9 +78,32 @@ function minimax(node, depth, maximizingPlayer)
 minimax(origin, depth, TRUE)
 */
 
-float aiMiniMax::minimax(aiBoard::Ptr board, int depth, int playerId, int ownPlayerId, int *line)
+float aiMiniMax::minimax(aiBoard::Ptr board, int depth, int playerId, int ownPlayerId, int *line, int parentNode)
 {
 	QList<int> freeLines = aiFunctions::getFreeLines(board->lines, board->linesSize);
+	
+	int thisNode = debugNodeCnt;
+	debugNodeCnt++;
+	if (debug)
+	{
+		QString boardStr = aiFunctions::boardToString(board->lines, board->linesSize, board->width, board->height);
+		boardStr.replace(QString("\n"), QString("\\n"));
+		//QString debugDot = "";
+		debugDot.append("  n");
+		debugDot.append(QString::number(thisNode));
+		debugDot.append("[label=\"");
+		debugDot.append(boardStr);
+		debugDot.append("\"];\n");
+		if (parentNode != -1)
+		{
+			//kDebug() << debugDot;
+			debugDot.append("  n");
+			debugDot.append(QString::number(thisNode));
+			debugDot.append(" -- n");
+			debugDot.append(QString::number(parentNode));
+			debugDot.append(";\n");
+		}
+	}
 	
 	if (freeLines.size() == 0) // game is over
 	{
@@ -110,7 +133,7 @@ float aiMiniMax::minimax(aiBoard::Ptr board, int depth, int playerId, int ownPla
 		{
 			// TODO: enable more than 2 player game!
 			board->doMove(freeLines[i], 1 - playerId);
-			float val = minimax(board, depth - 1, 1 - playerId, ownPlayerId, NULL);
+			float val = minimax(board, depth - 1, 1 - playerId, ownPlayerId, NULL, thisNode);
 			board->undoMove(freeLines[i]);
 			if (val > bestValue)
 			{
@@ -128,7 +151,7 @@ float aiMiniMax::minimax(aiBoard::Ptr board, int depth, int playerId, int ownPla
 		{
 			// TODO: enable more than 2 player game!
 			board->doMove(freeLines[i], 1 - playerId);
-			float val = minimax(board, depth - 1, 1 - playerId, ownPlayerId, NULL);
+			float val = minimax(board, depth - 1, 1 - playerId, ownPlayerId, NULL, thisNode);
 			board->undoMove(freeLines[i]);
 			if (val < bestValue)
 			{
@@ -191,4 +214,16 @@ float aiMiniMax::evaluate(aiBoard::Ptr board, int playerId)
 		score = scores[playerId];
 	
 	return score; //- squaresCnt;
+}
+
+void aiMiniMax::setDebug(bool val)
+{
+	debug = val;
+	debugDot = "";
+	debugNodeCnt = 0;
+}
+
+QString aiMiniMax::getDebugDot()
+{
+	return debugDot;
 }

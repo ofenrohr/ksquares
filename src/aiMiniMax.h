@@ -11,6 +11,8 @@
 #include "aifunctions.h"
 #include "aiBoard.h"
 
+#include <QString>
+
 
 class aiMiniMax : public KSquaresAi
 {
@@ -18,8 +20,11 @@ class aiMiniMax : public KSquaresAi
 		aiMiniMax(int newPlayerId, int newWidth, int newHeight, int newLevel);
 		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners);
 		
-		float minimax(aiBoard::Ptr board, int depth, int ownPlayerId, int playerId, int *line);
+		float minimax(aiBoard::Ptr board, int depth, int ownPlayerId, int playerId, int *line, int parentNode = -1);
 		static float evaluate(aiBoard::Ptr board, int playerId);
+		
+		void setDebug(bool val);
+		QString getDebugDot();
 		
 	protected:
 		/// The ID of the player this AI belongs to
@@ -36,4 +41,9 @@ class aiMiniMax : public KSquaresAi
 		QList<int> squareOwners;
 		/// Array of the lines on the board
 		bool *lines;
+		
+		/// enable debugging
+		bool debug;
+		QString debugDot;
+		int debugNodeCnt;
 };
