@@ -57,7 +57,7 @@ class aiController
 		 * @param newHeight width of the current gameboard
 		 * @param newLevel level of the ai
 		 */
-		aiController(int newPlayerId, int newWidth, int newHeight, int newLevel);
+		aiController(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel);
 		
 		~aiController();
 		
@@ -84,6 +84,8 @@ class aiController
 		
 		/// The ID of the player this AI belongs to
 		int playerId;
+		/// number of players - 1
+		int maxPlayerId;
 		/// board width in squares
 		int width;
 		/// board height in squares

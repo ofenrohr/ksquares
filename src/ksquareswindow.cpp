@@ -179,7 +179,7 @@ void KSquaresWindow::gameReset()
 	{
 		int aiLevel = getAiLevel(i);
 		// TODO: don't create ai for human players
-		ais.append(aiController::Ptr(new aiController(i, Settings::boardWidth(), Settings::boardHeight(), aiLevel)));
+		ais.append(aiController::Ptr(new aiController(i, playerList.size()-1, Settings::boardWidth(), Settings::boardHeight(), aiLevel)));
 	}
 
 	//start game etc.

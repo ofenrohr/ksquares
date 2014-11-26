@@ -18,10 +18,10 @@ class aiBoard
 public:
 	typedef QSharedPointer<aiBoard> Ptr;
 	
-	aiBoard(bool *newLines, int newLinesSize, int newWidth, int newHeight, const QList<int> &newSquareOwners);
+	aiBoard(bool *newLines, int newLinesSize, int newWidth, int newHeight, const QList<int> newSquareOwners, int playerId, int maxPlayerId);
 	~aiBoard();
 	
-	void doMove(int line, int playerId);
+	void doMove(int line);
 	void undoMove(int line);
 	
 	bool *lines;
@@ -29,6 +29,8 @@ public:
 	int width;
 	int height;
 	QList<int> squareOwners;
+	int playerId;
+	int maxPlayerId;
 };
 
 #endif

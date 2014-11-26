@@ -108,7 +108,7 @@ void KSquaresDemoWindow::aiChooseLine()
 		case 2: aiLevel = Settings::playerThreeAi(); break;
 		case 3: aiLevel = Settings::playerFourAi(); break;
 	}
-	aiController ai(sGame->currentPlayerId(), sGame->board()->width(), sGame->board()->height(), aiLevel);
+	aiController ai(sGame->currentPlayerId(), Settings::numOfPlayers() - 1, sGame->board()->width(), sGame->board()->height(), aiLevel);
 	sGame->addLineToIndex(ai.chooseLine(sGame->board()->lines(), sGame->board()->squares()));
 }
 

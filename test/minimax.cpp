@@ -57,23 +57,13 @@ void minimax::testMiniMax001()
 		linesb[lines.at(i)] = true;
 		linesbl[lines.at(i)] = true;
 	}
+	
 	QList<int> squareOwners;
 	squareOwners.append(-1);
 	squareOwners.append(-1);
 	
-	aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(linesb, linesSize, width, height, squareOwners));
-	kDebug() << "evaluation pid 0 = " << aiMiniMax::evaluate(board, 0);
-	kDebug() << "evaluation pid 1 = " << aiMiniMax::evaluate(board, 1);
-	
-	aiMiniMax ai(0, width, height, -1);
-	int line = -2;
-	float res = ai.minimax(board, 4, 0, 0, &line);
-	kDebug() << "pid 0: minimax result: " << res << ", line: " << line;
-	board->doMove(2, 0);
-	res = ai.minimax(board, 4, 1, 0, &line);
-	kDebug() << "pid 1: minimax result: " << res << ", line: " << line;
-	
-	line = ai.chooseLine(linesbl, squareOwners);
+	aiMiniMax ai(0, 1, width, height, -1);
+	int line = ai.chooseLine(linesbl, squareOwners);
 	QCOMPARE(line, 3);
 }
 
@@ -113,7 +103,7 @@ void minimax::testMiniMax002()
 }
 
 /**
- * test minimax in general
+ * generate dot file of search tree
  */
 void minimax::testMiniMax003()
 {
@@ -129,11 +119,11 @@ void minimax::testMiniMax003()
 	QList<int> squareOwners;
 	squareOwners.append(-1);
 	squareOwners.append(-1);
-  aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(linesb, linesSize, width, height, squareOwners));
-	aiMiniMax ai(0, width, height, -1);
+  aiBoard board(linesb, linesSize, width, height, squareOwners, 0, 1);
+	aiMiniMax ai(0, 1, width, height, -1);
 	ai.setDebug(true);
 	int line = -10;
-	float res = ai.minimax(board, 2, 0, 0, &line);
+	float res = ai.minimax(board, 2, &line);
 	
 	QFile file("/tmp/minimax.dot");
 	QVERIFY(file.open(QIODevice::ReadWrite | QIODevice::Truncate));
@@ -174,15 +164,12 @@ void minimax::testMiniMax004()
 		linesb[lines.at(i)] = true;
 		linesbl[lines.at(i)] = true;
 	}
+	
 	QList<int> squareOwners;
 	squareOwners.append(-1);
 	squareOwners.append(-1);
 	
-	aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(linesb, linesSize, width, height, squareOwners));
-	kDebug() << "evaluation pid 0 = " << aiMiniMax::evaluate(board, 0);
-	kDebug() << "evaluation pid 1 = " << aiMiniMax::evaluate(board, 1);
-	
-	aiMiniMax ai(0, width, height, -1);
+	aiMiniMax ai(0, 1, width, height, -1);
 	int line = ai.chooseLine(linesbl, squareOwners);
 	QCOMPARE(line, 3);
 }
@@ -215,16 +202,28 @@ void minimax::testMiniMax005()
 		linesb[lines.at(i)] = true;
 		linesbl[lines.at(i)] = true;
 	}
+	
 	QList<int> squareOwners;
 	squareOwners.append(-1);
 	squareOwners.append(-1);
+	squareOwners.append(-1);
+	squareOwners.append(-1);
 	
-	aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(linesb, linesSize, width, height, squareOwners));
-	kDebug() << "evaluation pid 0 = " << aiMiniMax::evaluate(board, 0);
-	kDebug() << "evaluation pid 1 = " << aiMiniMax::evaluate(board, 1);
+	aiMiniMax ai(0, 1, width, height, -1);	
 	
-	aiMiniMax ai(0, width, height, -1);	
-	int line = ai.chooseLine(linesbl, squareOwners);
+  aiBoard board(linesb, linesSize, width, height, squareOwners, 0, 1);
+	ai.setDebug(true);
+	int line = -10;
+	float res = ai.minimax(board, 2, &line);
+	
+	QFile file("/tmp/minimax2.dot");
+	QVERIFY(file.open(QIODevice::ReadWrite | QIODevice::Truncate));
+	
+	QTextStream outStream(&file);
+	outStream << "graph {\n" << ai.getDebugDot() << "}";
+	
+	
+	//line = ai.chooseLine(linesbl, squareOwners);
 	QCOMPARE(line, 6);
 }
 
@@ -242,7 +241,7 @@ void minimax::testBerlekamp001()
 		QList<int> completedSquares;
 		sGame->board()->addLine(lines[i], &nextPlayer, &boardFilled, &completedSquares);
 	}
-	aiMiniMax ai(lines.size() % 2, sGame->board()->width(), sGame->board()->height(), -1);
+	aiMiniMax ai(lines.size() % 2, 1, sGame->board()->width(), sGame->board()->height(), -1);
 	int aiLine = ai.chooseLine(sGame->board()->lines(), sGame->board()->squares());
 	
 	QCOMPARE(aiLine, 16);
@@ -262,7 +261,7 @@ void minimax::testBerlekamp002()
 		QList<int> completedSquares;
 		sGame->board()->addLine(lines[i], &nextPlayer, &boardFilled, &completedSquares);
 	}
-	aiMiniMax ai(lines.size() % 2, sGame->board()->width(), sGame->board()->height(), -1);
+	aiMiniMax ai(lines.size() % 2, 1, sGame->board()->width(), sGame->board()->height(), -1);
 	int aiLine = ai.chooseLine(sGame->board()->lines(), sGame->board()->squares());
 	
 	QList<int> validLines;
@@ -286,7 +285,7 @@ void minimax::testBerlekamp003()
 		QList<int> completedSquares;
 		sGame->board()->addLine(lines[i], &nextPlayer, &boardFilled, &completedSquares);
 	}
-	aiMiniMax ai(lines.size() % 2, sGame->board()->width(), sGame->board()->height(), -1);
+	aiMiniMax ai(lines.size() % 2, 1, sGame->board()->width(), sGame->board()->height(), -1);
 	int aiLine = ai.chooseLine(sGame->board()->lines(), sGame->board()->squares());
 	
 	QCOMPARE(aiLine, 7);

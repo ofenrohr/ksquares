@@ -12,17 +12,15 @@
 
 #include <KDebug>
 
-aiBoard::aiBoard(bool *newLines, int newLinesSize, int newWidth, int newHeight, const QList<int> &newSquareOwners) : lines(newLines), linesSize(newLinesSize), width(newWidth), height(newHeight), squareOwners(newSquareOwners)
+aiBoard::aiBoard(bool *newLines, int newLinesSize, int newWidth, int newHeight, const QList<int> newSquareOwners, int newPlayerId, int newMaxPlayerId) : lines(newLines), linesSize(newLinesSize), width(newWidth), height(newHeight), squareOwners(newSquareOwners), playerId(newPlayerId), maxPlayerId(newMaxPlayerId)
 {
-	
 }
 
 aiBoard::~aiBoard()
 {
-	
 }
 
-void aiBoard::doMove(int line, int playerId)
+void aiBoard::doMove(int line)
 {
 	// TODO: remove this check
 	if (lines[line] || line < 0 || line >= linesSize)
@@ -40,8 +38,18 @@ void aiBoard::doMove(int line, int playerId)
 		int borderLines = aiFunctions::countBorderLines(width, height, squares[i], lines);
 		if (borderLines == 4) // found completed square
 		{
-			squareOwners[squares[i]] = playerId;
+			if (squares[i] >= 0 && squares[i] < squareOwners.size())
+				squareOwners[squares[i]] = playerId;
+			else
+				kDebug() << "invalid write to square owners at index " << squares[i] << ", w = " << width << ", h = " << height << ", squareOwners = " << squareOwners;
 		}
+	}
+	
+	// cycle players
+	if (squares.size() == 0)
+	{
+		playerId++;
+		if (playerId > maxPlayerId) playerId = 0;
 	}
 }
 
@@ -61,9 +69,9 @@ void aiBoard::undoMove(int line)
 	for (int i = 0; i < squares.size(); i++)
 	{
 		int borderLines = aiFunctions::countBorderLines(width, height, squares[i], lines);
-		if (borderLines == 3) // found now uncomplete square
+		if (borderLines == 3) // found now incomplete square
 		{
-			squareOwners[squares[i]] = -1;
+			squareOwners[squares[i]]= -1;
 		}
 	}
 }

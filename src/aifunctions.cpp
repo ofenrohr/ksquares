@@ -264,7 +264,7 @@ int aiFunctions::findOwnChains(bool *lines, int linesSize, int width, int height
 			} while(squareFound);
 			if(chainFound)
 			{
-				qSort(ownChain);
+				//qSort(ownChain);
 				if (!ownChains->contains(ownChain))
 					ownChains->append(ownChain);
 				break;
@@ -360,6 +360,7 @@ QString aiFunctions::boardToString(bool *lines, int linesSize, int width, int he
 		}
 	}
 	
+	ret.replace("  \n", "\n");
 	return ret;
 }
 

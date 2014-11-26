@@ -37,7 +37,7 @@ void hardAi::testBoard001()
 	{
 		sGame->addLineToIndex(lines.at(i));
 	}
-	aiController ai(-1, sGame->board()->width(), sGame->board()->height(), 2);
+	aiController ai(-1, 1, sGame->board()->width(), sGame->board()->height(), 2);
 	int aiLine = ai.chooseLine(sGame->board()->lines(), sGame->board()->squares());
 	QCOMPARE( aiLine, 18 );
 }
@@ -57,7 +57,7 @@ void hardAi::testBoard002()
 	{
 		sGame->addLineToIndex(lines.at(i));
 	}
-	aiController ai(-1, sGame->board()->width(), sGame->board()->height(), 2);
+	aiController ai(-1, 1, sGame->board()->width(), sGame->board()->height(), 2);
 	int aiLine = ai.chooseLine(sGame->board()->lines(), sGame->board()->squares());
 	QCOMPARE( aiLine, 15 );
 }
@@ -76,7 +76,7 @@ void hardAi::testBoard003()
 	{
 		sGame->addLineToIndex(lines.at(i));
 	}
-	aiController ai(-1, sGame->board()->width(), sGame->board()->height(), 2);
+	aiController ai(-1, 1, sGame->board()->width(), sGame->board()->height(), 2);
 	int aiLine = ai.chooseLine(sGame->board()->lines(), sGame->board()->squares());
 	QCOMPARE( aiLine, 5 );
 }
@@ -95,7 +95,7 @@ void hardAi::testBoard005()
 	{
 		sGame->addLineToIndex(lines.at(i));
 	}
-	aiController ai(-1, sGame->board()->width(), sGame->board()->height(), 2);
+	aiController ai(-1, 1, sGame->board()->width(), sGame->board()->height(), 2);
 	int aiLine = ai.chooseLine(sGame->board()->lines(), sGame->board()->squares());
 	QCOMPARE( aiLine, 9 );
 }

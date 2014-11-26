@@ -17,21 +17,22 @@
 class aiMiniMax : public KSquaresAi
 {
 	public:
-		aiMiniMax(int newPlayerId, int newWidth, int newHeight, int newLevel);
+		aiMiniMax(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel);
+		~aiMiniMax();
+		
 		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners);
 		
-		float minimax(aiBoard::Ptr board, int depth, int ownPlayerId, int playerId, int *line, int parentNode = -1);
-		static float evaluate(aiBoard::Ptr board, int playerId);
+		float minimax(aiBoard &board, int depth, int *line, int parentNode = -1);
+		static float evaluate(aiBoard &board);
 		
 		void setDebug(bool val);
 		QString getDebugDot();
 		
 	protected:
-		float minimax(bool *lines, int depth, bool maximizingPlayer);
-		float heuristic(bool *lines, bool maximizingPlayer);
-		
 		/// The ID of the player this AI belongs to
 		int playerId;
+		/// number of players - 1
+		int maxPlayerId;
 		/// board width in squares
 		int width;
 		/// board height in squares

@@ -18,7 +18,7 @@
 
 #include <QSet>
 
-aiController::aiController(int newPlayerId, int newWidth, int newHeight, int newLevel) : playerId(newPlayerId), width(newWidth), height(newHeight), level(newLevel)
+aiController::aiController(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel) : playerId(newPlayerId), maxPlayerId(newMaxPlayerId), width(newWidth), height(newHeight), level(newLevel)
 {
 	kDebug() << "aiController init: nw = " << newWidth << ", nh = " << newHeight << ", w = " << width << ", h = " << height;
 	//linesSize = aiFunctions::toLinesSize(width, height);
@@ -86,7 +86,7 @@ KSquaresAi::Ptr aiController::getAi() const
 		break;
 		case 3:
 			kDebug() << "creating aiMiniMax";
-			ai = KSquaresAi::Ptr(new aiMiniMax(playerId, width, height, level));
+			ai = KSquaresAi::Ptr(new aiMiniMax(playerId, maxPlayerId, width, height, level));
 	}
 	return ai;
 }

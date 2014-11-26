@@ -30,7 +30,7 @@ void middleAi::testBoard004()
 	{
 		sGame->addLineToIndex(lines.at(i));
 	}
-	aiController ai(-1, sGame->board()->width(), sGame->board()->height(), 1);
+	aiController ai(-1, 1, sGame->board()->width(), sGame->board()->height(), 1);
 	int aiLine = ai.chooseLine(sGame->board()->lines(), sGame->board()->squares());
 	QList<int> goodLines;
 	goodLines.append(17);
@@ -54,7 +54,7 @@ void middleAi::testMiddle001()
 	{
 		sGame->addLineToIndex(lines.at(i));
 	}
-	aiController ai(-1, sGame->board()->width(), sGame->board()->height(), 1);
+	aiController ai(-1, 1, sGame->board()->width(), sGame->board()->height(), 1);
 	int aiLine = ai.chooseLine(sGame->board()->lines(), sGame->board()->squares());
 	QList<int> goodLines;
   goodLines.append(13);
