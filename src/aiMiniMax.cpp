@@ -98,7 +98,9 @@ float aiMiniMax::minimax(aiBoard &board, int depth, int *line, int parentNode)
 		//QString debugDot = "";
 		debugDot.append("  n");
 		debugDot.append(QString::number(thisNode));
-		debugDot.append("[label=\"");
+		debugDot.append("[label=\"p:");
+		debugDot.append(QString::number(board.playerId));
+		debugDot.append("\\l");
 		debugDot.append(boardStr);
 		debugDot.append("\"];\n");
 		if (parentNode != -1)
@@ -227,11 +229,11 @@ float aiMiniMax::evaluate(aiBoard &board)
 	int score = 0;
 	int enemyScore = 0;
 	QMap<int, int> scores = aiFunctions::getScoreMap(board.squareOwners);
-	if (scores.contains(board.playerId))
-		score = scores[board.playerId];
+	if (scores.contains(playerId))
+		score = scores[playerId];
 	for (int i = 0; i <= board.maxPlayerId; i++)
 	{
-		if (i == board.playerId)
+		if (i == playerId)
 			continue;
 		if (scores.contains(i))
 			enemyScore += scores[i];

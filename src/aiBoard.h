@@ -10,6 +10,8 @@
 #ifndef AIBOARD_H
 #define AIBOARD_H
 
+#include "board.h"
+
 #include <QList>
 #include <QSharedPointer>
 

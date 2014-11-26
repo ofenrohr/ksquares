@@ -86,3 +86,15 @@ target_link_libraries( test-minimax
   ${KDE4_KDEUI_LIBS}
   kdegames
 )
+
+kde4_add_unit_test( test-aiboard
+  TESTNAME aiboard
+  ${ksquarestest_SRCS}
+  aiboard.cpp
+)
+target_link_libraries( test-aiboard
+  ${KDE4_KDECORE_LIBS}
+  ${QT_QTTEST_LIBRARY}
+  ${KDE4_KDEUI_LIBS}
+  kdegames
+)

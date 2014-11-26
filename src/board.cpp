@@ -85,7 +85,6 @@ bool Board::lineCompletesSquare(int lineIndex, QList<int> *completedSquares)
 	{
 		borderLineCount.append(countBorderLines(adjacentSquares.at(i), &lineList_));
 	}
-	QList<bool> lineListWithNewLine = lineList_;
 	lineList_[lineIndex] = true;
 	for (int i = 0; i < adjacentSquares.size(); i++)
 	{

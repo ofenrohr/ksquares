@@ -29,24 +29,31 @@ void aiBoard::doMove(int line)
 		//return;
 	}
 	
+	// check adjacent squares
+	bool squareCompleted = false;
+	QList<int> squares = aiFunctions::squaresFromLine(width, height, line);
+	QList<int> prevBorderLines;
+	for (int i = 0; i < squares.size(); i++)
+	{
+		prevBorderLines.append(aiFunctions::countBorderLines(width, height, squares[i], lines));
+	}
+	
+	// add the line
 	lines[line] = true;
 	
 	// check for completed squares
-	QList<int> squares = aiFunctions::squaresFromLine(width, height, line);
 	for (int i = 0; i < squares.size(); i++)
 	{
 		int borderLines = aiFunctions::countBorderLines(width, height, squares[i], lines);
-		if (borderLines == 4) // found completed square
+		if (borderLines == 4 && borderLines > prevBorderLines[i]) // found completed square
 		{
-			if (squares[i] >= 0 && squares[i] < squareOwners.size())
-				squareOwners[squares[i]] = playerId;
-			else
-				kDebug() << "invalid write to square owners at index " << squares[i] << ", w = " << width << ", h = " << height << ", squareOwners = " << squareOwners;
+			squareCompleted = true;
+			squareOwners[squares[i]] = playerId;
 		}
 	}
 	
 	// cycle players
-	if (squares.size() == 0)
+	if (!squareCompleted)
 	{
 		playerId++;
 		if (playerId > maxPlayerId) playerId = 0;
@@ -62,16 +69,32 @@ void aiBoard::undoMove(int line)
 		//return;
 	}
 	
+	// check adjacent squares
+	bool squareUnompleted = false;
+	QList<int> squares = aiFunctions::squaresFromLine(width, height, line);
+	QList<int> prevBorderLines;
+	for (int i = 0; i < squares.size(); i++)
+	{
+		prevBorderLines.append(aiFunctions::countBorderLines(width, height, squares[i], lines));
+	}
+	
+	// remove line
 	lines[line] = false;
 	
-	// check for completed squares
-	QList<int> squares = aiFunctions::squaresFromLine(width, height, line);
+	// check for now incomplete squares
 	for (int i = 0; i < squares.size(); i++)
 	{
 		int borderLines = aiFunctions::countBorderLines(width, height, squares[i], lines);
-		if (borderLines == 3) // found now incomplete square
+		if (borderLines == 3 && prevBorderLines[i] > borderLines) // found now incomplete square
 		{
 			squareOwners[squares[i]]= -1;
 		}
+	}
+	
+	// cycle players
+	if (!squareUnompleted)
+	{
+		playerId--;
+		if (playerId < 0) playerId = maxPlayerId;
 	}
 }
