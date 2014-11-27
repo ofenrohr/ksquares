@@ -70,7 +70,7 @@ void aiBoard::undoMove(int line)
 	}
 	
 	// check adjacent squares
-	bool squareUnompleted = false;
+	bool squareUncompleted = false;
 	QList<int> squares = aiFunctions::squaresFromLine(width, height, line);
 	QList<int> prevBorderLines;
 	for (int i = 0; i < squares.size(); i++)
@@ -88,11 +88,12 @@ void aiBoard::undoMove(int line)
 		if (borderLines == 3 && prevBorderLines[i] > borderLines) // found now incomplete square
 		{
 			squareOwners[squares[i]]= -1;
+			squareUncompleted = true;
 		}
 	}
 	
 	// cycle players
-	if (!squareUnompleted)
+	if (!squareUncompleted)
 	{
 		playerId--;
 		if (playerId < 0) playerId = maxPlayerId;
