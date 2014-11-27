@@ -119,7 +119,7 @@ void minimax::testMiniMax003()
 	QList<int> squareOwners;
 	squareOwners.append(-1);
 	squareOwners.append(-1);
-  aiBoard board(linesb, linesSize, width, height, squareOwners, 0, 1);
+  aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(linesb, linesSize, width, height, squareOwners, 0, 1));
 	aiMiniMax ai(0, 1, width, height, -1);
 	ai.setDebug(true);
 	int line = -10;
@@ -211,7 +211,7 @@ void minimax::testMiniMax005()
 	
 	aiMiniMax ai(0, 1, width, height, -1);	
 	
-  aiBoard board(linesb, linesSize, width, height, squareOwners, 0, 1);
+  aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(linesb, linesSize, width, height, squareOwners, 0, 1));
 	ai.setDebug(true);
 	int line = -10;
 	float res = ai.minimax(board, 2, &line);
