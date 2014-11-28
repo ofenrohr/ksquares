@@ -10,6 +10,7 @@
 #include "aifunctions.h"
 #include <KDebug>
 #include <QStack>
+#include <algorithm>
 
 aiFunctions::aiFunctions(int w, int h) : width(w), height(h)
 {
@@ -264,8 +265,9 @@ int aiFunctions::findOwnChains(bool *lines, int linesSize, int width, int height
 			} while(squareFound);
 			if(chainFound)
 			{
+				//std::sort(ownChain.begin(), ownChain.end());
 				//qSort(ownChain);
-				if (!ownChains->contains(ownChain))
+				//if (!ownChains->contains(ownChain))
 					ownChains->append(ownChain);
 				break;
 			}
@@ -273,8 +275,16 @@ int aiFunctions::findOwnChains(bool *lines, int linesSize, int width, int height
 	} while (chainFound);
   
 	//qSort(ownChains);
+	//kDebug() << "findOwnChains returns: " << *ownChains;
   return ownSquaresCnt;
 }
+
+
+int aiFunctions::findChains(bool *lines, int linesSize, int width, int height, QList<KSquares::Chain> *chains)
+{
+	return 0;
+}
+
 
 QList<int> aiFunctions::getFreeLines(bool *lines, int linesSize)
 {

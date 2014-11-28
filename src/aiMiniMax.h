@@ -24,6 +24,8 @@ class aiMiniMax : public KSquaresAi
 		
 		float minimax(aiBoard::Ptr board, int depth, int *line, int parentNode = -1);
 		float evaluate(aiBoard::Ptr board);
+		float evaluate1(aiBoard::Ptr board);
+		float evaluate2(aiBoard::Ptr board);
 		
 		void setDebug(bool val);
 		QString getDebugDot();

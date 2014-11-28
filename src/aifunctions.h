@@ -17,8 +17,19 @@
 
 #include "board.h"
 
+namespace KSquares
+{
+	typedef struct Chain_t
+	{
+		QList<int> lines;
+		QList<int> squares;
+		int type;
+	} Chain;
+}
 
-class aiFunctions {
+
+class aiFunctions 
+{
 	public:
 		aiFunctions(int w, int h);
 		
@@ -80,7 +91,15 @@ class aiFunctions {
      * @return number of squares taken
 		 */
 		static int findOwnChains(bool *lines, int linesSize, int width, int height, QList<QList<int> > *ownChains);
-		
+		/**
+		 * Find chains on board
+		 * @param lines lines of the board
+		 * @param linesSize number of lines on the board
+		 * @param width width of board in boxes
+		 * @param height height of board in boxes
+		 * @param ownChains returns the chains on the board
+		 */
+		static int findChains(bool *lines, int linesSize, int width, int height, QList<KSquares::Chain> *chains);
 		/**
 		 * Classifies a given chain as short, long or loop chain.
 		 * @param chain list of lines the chain is made up of
