@@ -24,11 +24,13 @@ aiMiniMax::aiMiniMax(int newPlayerId, int newMaxPlayerId, int newWidth, int newH
 	debug = false;
 	maxEvalTime = 0;
 	minimaxTimeout = 5000; // 5 sec timeout
+	heuristic = new aiHeuristic(true, true, true);
 }
 
 aiMiniMax::~aiMiniMax()
 {
 	delete[] lines;
+	delete heuristic;
 }
 
 int aiMiniMax::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners)
@@ -67,26 +69,9 @@ int aiMiniMax::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 }
 
 /*
- * From: http://en.wikipedia.org/wiki/Minimax#Minimax_algorithm_with_alternate_moves
- * 
-function minimax(node, depth, maximizingPlayer)
-    if depth = 0 or node is a terminal node
-        return the heuristic value of node
-    if maximizingPlayer
-        bestValue := -∞
-        for each child of node
-            val := minimax(child, depth - 1, FALSE)
-            bestValue := max(bestValue, val)
-        return bestValue
-    else
-        bestValue := +∞
-        for each child of node
-            val := minimax(child, depth - 1, TRUE)
-            bestValue := min(bestValue, val)
-        return bestValue
-
-(* Initial call for maximizing player *)
-minimax(origin, depth, TRUE)
+ * Sources:
+ * http://en.wikipedia.org/wiki/Minimax#Minimax_algorithm_with_alternate_moves
+ * http://www.fierz.ch/strategy1.htm
 */
 
 float aiMiniMax::minimax(aiBoard::Ptr board, int depth, int *line, int parentNode)
@@ -215,196 +200,12 @@ float aiMiniMax::evaluate(aiBoard::Ptr board)
 {
 	QElapsedTimer evalTimer;
 	evalTimer.start();
-	float ret = evaluate2(board);
+	//float ret = evaluate2(board);
+	float ret = heuristic->evaluate(board, playerId);
 	long evalTime = evalTimer.elapsed();
 	if (evalTime > maxEvalTime)
 		evalTime = maxEvalTime;
 	return ret;
-}
-
-float aiMiniMax::evaluate1(aiBoard::Ptr board)
-{
-	int squaresCnt = 0;
-	QList<QList<int> > chains;
-	QList<QSet<int> > chainSet;
-	
-	squaresCnt = aiFunctions::findOwnChains(board->lines, board->linesSize, board->width, board->height, &chains);
-	
-	// analyze chains
-	int shortChainCnt = 0; // chains <= 2 lines
-	int longChainCnt = 0; // exploitable chains
-	int loopChainCnt = 0; // also exploitable, but more costly
-	QList<QList<int> > shortChains;
-  QList<QList<int> > longChains;
-  QList<QList<int> > loopChains;
-	
-	for (int i = 0; i < chains.size(); i++)
-	{
-		QList<int> chain = chains[i];
-    int classification = aiFunctions::classifyChain(board->width, board->height, chain, board->lines);
-    //kDebug() << "analysing chain " << chain << ": " << classification;
-		switch (classification)
-		{
-      case 0: 
-        longChainCnt++;
-        longChains.append(chain);
-      break;
-      case 1:
-        shortChainCnt++;
-        shortChains.append(chain);
-      break;
-      case 2:
-        loopChainCnt++;
-        loopChains.append(chain);
-      break;
-      default:
-        kDebug() << "unknown chain type " << classification;
-    }
-	}
-	//kDebug() << "short chains:" << shortChainCnt << ", long chains: " << longChainCnt << ", loop chains: " << loopChainCnt << "ownSquaresCnt: " << ownSquaresCnt;
-	
-	// scores
-	int score = 0;
-	int enemyScore = 0;
-	QMap<int, int> scores = aiFunctions::getScoreMap(board->squareOwners);
-	if (scores.contains(playerId))
-		score = scores[playerId];
-	for (int i = 0; i <= board->maxPlayerId; i++)
-	{
-		if (i == playerId)
-			continue;
-		if (scores.contains(i))
-			enemyScore += scores[i];
-	}
-	
-	// long chain rule: dots + long chains % 2 even for A, odd for B
-	int dots = (board->width + 1) * (board->height + 1);
-	// TODO: this only works for 2 player games
-	int lcr = (dots + longChainCnt) % 2 == board->playerId ? -dots : dots;
-	
-	return - squaresCnt - enemyScore + score + lcr;
-}
-
-float aiMiniMax::evaluate2(aiBoard::Ptr board)
-{
-	QList<QList<int> > ownChains;
-	int squaresCnt = aiFunctions::findOwnChains(board->lines, board->linesSize, board->width, board->height, &ownChains);
-	for (int i = 0; i < ownChains.size(); i++)
-	{
-		for (int j = 0; j < ownChains[i].size(); j++)
-		{
-			board->lines[ownChains[i][j]] = true;
-		}
-	}
-	
-	// ----------------------
-	QList<int> freeLines = aiFunctions::getFreeLines(board->lines, board->linesSize);
-	QList<QList<int> > chains;
-	QList<QList<int> > chainList;
-	QList<QList<int> > chainSet;
-	
-	while (!freeLines.isEmpty())
-	{
-		int line = freeLines.takeLast();
-		board->lines[line] = true;
-		chains.clear();
-		aiFunctions::findOwnChains(board->lines, board->linesSize, board->width, board->height, &chains);
-		
-		for (int i = 0; i < chains.size(); i++)
-		{
-			/*
-			for (int j = 0; j < chains[i].size(); j++)
-			{
-				freeLines.removeAll(chains[i][j]);
-			}
-			*/
-			chains[i].append(line);
-			std::sort(chains[i].begin(), chains[i].end());
-			chainList.append(chains[i]);
-			//kDebug() << "chain: " << chains[i];
-		}
-		
-		board->lines[line] = false;
-	}
-	
-	for (int i = 0; i < chainList.size(); i++)
-	{
-		bool newChain = true;
-		QList<int> chainCheck = chainList[i]; // this is the chain we might add
-		for (int j = 0; j < chainSet.size(); j++)
-		{
-			if(chainSet[j] == chainCheck) // found chainCheck in chainSet, don't add
-			{
-				newChain = false;
-				break;
-			}
-		}
-		if (newChain) // chainCheck not in chainSet
-		{
-			chainSet.append(chainCheck);
-		}
-	}
-	
-	int shortChainCnt = 0; // chains <= 2 lines
-	int longChainCnt = 0; // exploitable chains
-	int loopChainCnt = 0; // also exploitable, but more costly
-	QList<QList<int> > shortChains;
-  QList<QList<int> > longChains;
-  QList<QList<int> > loopChains;
-	
-	for (int i = 0; i < chainSet.size(); i++)
-	{
-		QList<int> chain = chainSet[i];
-    int classification = aiFunctions::classifyChain(board->width, board->height, chain, board->lines);
-    //kDebug() << "analysing chain " << chain << ": " << classification;
-		switch (classification)
-		{
-      case 0: 
-        longChainCnt++;
-        longChains.append(chain);
-      break;
-      case 1:
-        shortChainCnt++;
-        shortChains.append(chain);
-      break;
-      case 2:
-        loopChainCnt++;
-        loopChains.append(chain);
-      break;
-      default:
-        kDebug() << "unknown chain type " << classification;
-				kDebug() << "board: " << aiFunctions::boardToString(board->lines, board->linesSize, board->width, board->height);
-				kDebug() << "chain: " << aiFunctions::linelistToString(chain, board->linesSize, board->width, board->height);
-    }
-	}
-	
-	int dots = (board->width + 1) * (board->height + 1);
-	int lcr = (dots + longChainCnt) % 2 == board->playerId ? -dots : dots;
-	
-	// scores
-	int score = 0;
-	int enemyScore = 0;
-	QMap<int, int> scores = aiFunctions::getScoreMap(board->squareOwners);
-	if (scores.contains(playerId))
-		score = scores[playerId];
-	for (int i = 0; i <= board->maxPlayerId; i++)
-	{
-		if (i == playerId)
-			continue;
-		if (scores.contains(i))
-			enemyScore += scores[i];
-	}
-	
-	// cleanup - undo ownChain!
-	for (int i = 0; i < ownChains.size(); i++)
-	{
-		for (int j = 0; j < ownChains[i].size(); j++)
-		{
-			board->lines[ownChains[i][j]] = false;
-		}
-	}
-	
-	return lcr + squaresCnt + score - enemyScore;
 }
 
 void aiMiniMax::setTimeout(long timeout)

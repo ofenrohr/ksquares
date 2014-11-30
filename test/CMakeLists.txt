@@ -14,6 +14,7 @@ set( ksquarestest_SRCS
 	../src/aiEasyMediumHard.cpp
 	../src/aiMiniMax.cpp
 	../src/aiBoard.cpp
+	../src/aiHeuristic.cpp
 )
 
 kde4_add_kcfg_files(ksquarestest_SRCS GENERATE_MOC settings.kcfgc) #GENERATE_MOC is not needed but it doesn't work without it for some reason :S
@@ -25,18 +26,17 @@ set(TESTBOARDPATH "${CMAKE_CURRENT_SOURCE_DIR}/boards")
 
 configure_file( testboardpath.h.in ${CMAKE_CURRENT_BINARY_DIR}/generated/testboardpath.h )
 include_directories( ${CMAKE_CURRENT_BINARY_DIR}/generated/ )
-
+link_libraries(
+  ${KDE4_KDECORE_LIBS}
+  ${QT_QTTEST_LIBRARY}
+  ${KDE4_KDEUI_LIBS}
+  kdegames
+)
 
 kde4_add_unit_test( test-hardai
   TESTNAME hardai
   ${ksquarestest_SRCS}
   hardAi.cpp
-)
-target_link_libraries( test-hardai
-  ${KDE4_KDECORE_LIBS}
-  ${QT_QTTEST_LIBRARY}
-  ${KDE4_KDEUI_LIBS}
-  kdegames
 )
 
 kde4_add_unit_test( test-middleai
@@ -44,23 +44,11 @@ kde4_add_unit_test( test-middleai
   ${ksquarestest_SRCS}
   middleAi.cpp
 )
-target_link_libraries( test-middleai
-  ${KDE4_KDECORE_LIBS}
-  ${QT_QTTEST_LIBRARY}
-  ${KDE4_KDEUI_LIBS}
-  kdegames
-)
 
 kde4_add_unit_test( test-load
   TESTNAME load
   ${ksquarestest_SRCS}
   load.cpp
-)
-target_link_libraries( test-load
-  ${KDE4_KDECORE_LIBS}
-  ${QT_QTTEST_LIBRARY}
-  ${KDE4_KDEUI_LIBS}
-  kdegames
 )
 
 kde4_add_unit_test( test-refactor
@@ -68,33 +56,15 @@ kde4_add_unit_test( test-refactor
   ${ksquarestest_SRCS}
   refactor.cpp
 )
-target_link_libraries( test-refactor
-  ${KDE4_KDECORE_LIBS}
-  ${QT_QTTEST_LIBRARY}
-  ${KDE4_KDEUI_LIBS}
-  kdegames
-)
 
 kde4_add_unit_test( test-minimax
   TESTNAME minimax
   ${ksquarestest_SRCS}
   minimax.cpp
 )
-target_link_libraries( test-minimax
-  ${KDE4_KDECORE_LIBS}
-  ${QT_QTTEST_LIBRARY}
-  ${KDE4_KDEUI_LIBS}
-  kdegames
-)
 
 kde4_add_unit_test( test-aiboard
   TESTNAME aiboard
   ${ksquarestest_SRCS}
   aiboard.cpp
-)
-target_link_libraries( test-aiboard
-  ${KDE4_KDECORE_LIBS}
-  ${QT_QTTEST_LIBRARY}
-  ${KDE4_KDEUI_LIBS}
-  kdegames
 )

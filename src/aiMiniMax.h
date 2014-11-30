@@ -7,9 +7,13 @@
  *   (at your option) any later version.                                   *
  ***************************************************************************/
 
+#ifndef AIMINIMAX_H
+#define AIMINIMAX_H
+
 #include "aicontroller.h"
 #include "aifunctions.h"
 #include "aiBoard.h"
+#include "aiHeuristic.h"
 
 #include <QString>
 #include <QElapsedTimer>
@@ -25,8 +29,8 @@ class aiMiniMax : public KSquaresAi
 		
 		float minimax(aiBoard::Ptr board, int depth, int *line, int parentNode = -1);
 		float evaluate(aiBoard::Ptr board);
-		float evaluate1(aiBoard::Ptr board);
-		float evaluate2(aiBoard::Ptr board);
+		//float evaluate1(aiBoard::Ptr board);
+		//float evaluate2(aiBoard::Ptr board);
 		
 		void setTimeout(long timeout);
 		long getTimeout();
@@ -51,6 +55,8 @@ class aiMiniMax : public KSquaresAi
 		QList<int> squareOwners;
 		/// Array of the lines on the board
 		bool *lines;
+		/// used to analyse boards
+		aiHeuristic *heuristic;
 		
 		/// enable debugging
 		bool debug;
@@ -61,3 +67,5 @@ class aiMiniMax : public KSquaresAi
 		QElapsedTimer minimaxTimer;
 		long minimaxTimeout;
 };
+
+#endif
