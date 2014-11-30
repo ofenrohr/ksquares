@@ -7,6 +7,7 @@
 #include "aiBoard.h"
 #include "aiMiniMax.h"
 
+#include <QElapsedTimer>
 #include <KDebug>
 
 // generated

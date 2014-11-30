@@ -12,6 +12,7 @@
 #include "aiBoard.h"
 
 #include <QString>
+#include <QElapsedTimer>
 
 
 class aiMiniMax : public KSquaresAi
@@ -26,6 +27,9 @@ class aiMiniMax : public KSquaresAi
 		float evaluate(aiBoard::Ptr board);
 		float evaluate1(aiBoard::Ptr board);
 		float evaluate2(aiBoard::Ptr board);
+		
+		void setTimeout(long timeout);
+		long getTimeout();
 		
 		void setDebug(bool val);
 		QString getDebugDot();
@@ -52,4 +56,8 @@ class aiMiniMax : public KSquaresAi
 		bool debug;
 		QString debugDot;
 		int debugNodeCnt;
+		long maxEvalTime;
+		long lastEvalTime;
+		QElapsedTimer minimaxTimer;
+		long minimaxTimeout;
 };

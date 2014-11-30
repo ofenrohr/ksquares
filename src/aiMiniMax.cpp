@@ -13,6 +13,7 @@
 #include <KDebug>
 #include <cmath>
 #include <algorithm>
+#include <QElapsedTimer>
 
 aiMiniMax::aiMiniMax(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel) : KSquaresAi(newWidth, newHeight), playerId(newPlayerId), maxPlayerId(newMaxPlayerId), level(newLevel)
 {
@@ -21,6 +22,8 @@ aiMiniMax::aiMiniMax(int newPlayerId, int newMaxPlayerId, int newWidth, int newH
 	linesSize = toLinesSize(width, height);
 	lines = new bool[linesSize];
 	debug = false;
+	maxEvalTime = 0;
+	minimaxTimeout = 5000; // 5 sec timeout
 }
 
 aiMiniMax::~aiMiniMax()
@@ -88,6 +91,19 @@ minimax(origin, depth, TRUE)
 
 float aiMiniMax::minimax(aiBoard::Ptr board, int depth, int *line, int parentNode)
 {
+	if (line != NULL)
+	{
+		if (!minimaxTimer.isValid())
+		{
+			kDebug() << "starting minimax timer";
+			minimaxTimer.start();
+		}
+		else
+		{
+			kDebug() << "restarting minimax timer";
+			minimaxTimer.restart();
+		}
+	}
 	QList<int> freeLines = aiFunctions::getFreeLines(board->lines, board->linesSize);
 	
 	int thisNode = debugNodeCnt;
@@ -127,7 +143,14 @@ float aiMiniMax::minimax(aiBoard::Ptr board, int depth, int *line, int parentNod
 			return INFINITY;
 	}
 	
-	if (depth == 0)
+	bool terminalNode = false;
+	if (depth == 0) terminalNode = true;
+	if (line == NULL && minimaxTimer.hasExpired(minimaxTimeout)) 
+	{
+		terminalNode = true;
+		kDebug() << "minimax timeout reached, not going deeper";
+	}
+	if (terminalNode)
 	{
 		//kDebug() << "evaluating board:" << boardToString(board->lines, board->linesSize, board->width, board->height);
 		int eval = evaluate(board);
@@ -138,6 +161,9 @@ float aiMiniMax::minimax(aiBoard::Ptr board, int depth, int *line, int parentNod
 			debugDot.append(QString::number(thisNode));
 			debugDot.append("[label=\"");
 			debugDot.append(QString::number(eval));
+			debugDot.append("\\n");
+			debugDot.append(QString::number(lastEvalTime));
+			debugDot.append(" ms");
 			debugDot.append("\"];\n  e");
 			debugDot.append(QString::number(thisNode));
 			debugDot.append(" -- n");
@@ -152,7 +178,6 @@ float aiMiniMax::minimax(aiBoard::Ptr board, int depth, int *line, int parentNod
 		float bestValue = -INFINITY;
 		for (int i = 0; i < freeLines.size(); i++)
 		{
-			// TODO: enable more than 2 player game!
 			board->doMove(freeLines[i]);
 			float val = minimax(board, depth - 1, NULL, thisNode);
 			board->undoMove(freeLines[i]);
@@ -170,7 +195,6 @@ float aiMiniMax::minimax(aiBoard::Ptr board, int depth, int *line, int parentNod
 		float bestValue = INFINITY;
 		for (int i = 0; i < freeLines.size(); i++)
 		{
-			// TODO: enable more than 2 player game!
 			board->doMove(freeLines[i]);
 			float val = minimax(board, depth - 1, NULL, thisNode);
 			board->undoMove(freeLines[i]);
@@ -189,7 +213,13 @@ float aiMiniMax::minimax(aiBoard::Ptr board, int depth, int *line, int parentNod
 
 float aiMiniMax::evaluate(aiBoard::Ptr board)
 {
-	return evaluate2(board);
+	QElapsedTimer evalTimer;
+	evalTimer.start();
+	float ret = evaluate2(board);
+	long evalTime = evalTimer.elapsed();
+	if (evalTime > maxEvalTime)
+		evalTime = maxEvalTime;
+	return ret;
 }
 
 float aiMiniMax::evaluate1(aiBoard::Ptr board)
@@ -257,6 +287,17 @@ float aiMiniMax::evaluate1(aiBoard::Ptr board)
 
 float aiMiniMax::evaluate2(aiBoard::Ptr board)
 {
+	QList<QList<int> > ownChains;
+	int squaresCnt = aiFunctions::findOwnChains(board->lines, board->linesSize, board->width, board->height, &ownChains);
+	for (int i = 0; i < ownChains.size(); i++)
+	{
+		for (int j = 0; j < ownChains[i].size(); j++)
+		{
+			board->lines[ownChains[i][j]] = true;
+		}
+	}
+	
+	// ----------------------
 	QList<int> freeLines = aiFunctions::getFreeLines(board->lines, board->linesSize);
 	QList<QList<int> > chains;
 	QList<QList<int> > chainList;
@@ -280,7 +321,7 @@ float aiMiniMax::evaluate2(aiBoard::Ptr board)
 			chains[i].append(line);
 			std::sort(chains[i].begin(), chains[i].end());
 			chainList.append(chains[i]);
-			kDebug() << "chain: " << chains[i];
+			//kDebug() << "chain: " << chains[i];
 		}
 		
 		board->lines[line] = false;
@@ -292,7 +333,7 @@ float aiMiniMax::evaluate2(aiBoard::Ptr board)
 		QList<int> chainCheck = chainList[i]; // this is the chain we might add
 		for (int j = 0; j < chainSet.size(); j++)
 		{
-			if(chainSet[i] == chainCheck) // found chainCheck in chainSet, don't add
+			if(chainSet[j] == chainCheck) // found chainCheck in chainSet, don't add
 			{
 				newChain = false;
 				break;
@@ -332,13 +373,48 @@ float aiMiniMax::evaluate2(aiBoard::Ptr board)
       break;
       default:
         kDebug() << "unknown chain type " << classification;
+				kDebug() << "board: " << aiFunctions::boardToString(board->lines, board->linesSize, board->width, board->height);
+				kDebug() << "chain: " << aiFunctions::linelistToString(chain, board->linesSize, board->width, board->height);
     }
 	}
 	
 	int dots = (board->width + 1) * (board->height + 1);
 	int lcr = (dots + longChainCnt) % 2 == board->playerId ? -dots : dots;
 	
-	return lcr;
+	// scores
+	int score = 0;
+	int enemyScore = 0;
+	QMap<int, int> scores = aiFunctions::getScoreMap(board->squareOwners);
+	if (scores.contains(playerId))
+		score = scores[playerId];
+	for (int i = 0; i <= board->maxPlayerId; i++)
+	{
+		if (i == playerId)
+			continue;
+		if (scores.contains(i))
+			enemyScore += scores[i];
+	}
+	
+	// cleanup - undo ownChain!
+	for (int i = 0; i < ownChains.size(); i++)
+	{
+		for (int j = 0; j < ownChains[i].size(); j++)
+		{
+			board->lines[ownChains[i][j]] = false;
+		}
+	}
+	
+	return lcr + squaresCnt + score - enemyScore;
+}
+
+void aiMiniMax::setTimeout(long timeout)
+{
+	minimaxTimeout = timeout;
+}
+
+long aiMiniMax::getTimeout()
+{
+	return minimaxTimeout;
 }
 
 void aiMiniMax::setDebug(bool val)
