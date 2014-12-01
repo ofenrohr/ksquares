@@ -101,26 +101,28 @@ NimString::NimString( ifstream &infile )
 
 int NimString::getNimber( aiBoard::Ptr board )
 {
+	if (board->width > MAX_COLS || board->height > MAX_ROWS)
+	{
+		kDebug() << "can't calculate nimber for board > " << MAX_ROWS << " x " << MAX_COLS;
+		return -123456;
+	}
+	
 	htable = new HT();
 
 	WallNode = new Node();
 	WallNode->ground = true;
 
 	// TODO: read_input from aiboard
-	/*
 	last_row = -1;
 	last_col = -1;
 
 	char c;
-	for (int i = 0; ! infile.eof(); i++)
+	//for (int i = 0; ! infile.eof(); i++)
+	for (int i = 0; i < board->height; i++)
 	{
-		for (int j = 0; infile.get( c ), ! infile.eof(); j++)
+		//for (int j = 0; infile.get( c ), ! infile.eof(); j++)
+		for (int j = 0; j < board->width; j++)
 		{
-			if (c == '\n')
-			{
-				line[i][j] = '\0';
-				break;
-			}
 
 			line[i][j] = c;
 
@@ -130,11 +132,16 @@ int NimString::getNimber( aiBoard::Ptr board )
 				if (last_row < i) last_row = i;
 			}
 		}
+		
+		if (c == '\n')
+		{
+			line[i][j] = '\0';
+			break;
+		}
 	}
-	*/
 
-	cols = (last_col-1) / 2 + 1;
-	rows = (last_row-1) / 2 + 1;
+	cols = board->height;//(last_col-1) / 2 + 1;
+	rows = board->width;//(last_row-1) / 2 + 1;
 
 	rectangular = is_rectangular();
 
