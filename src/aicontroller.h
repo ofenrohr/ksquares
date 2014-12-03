@@ -40,6 +40,7 @@ class KSquaresAi : public aiFunctions
 		// call constructor with width, height, playerId, aiLevel
 		//virtual ~KSquaresAi() = 0; 
 		virtual int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners) = 0;
+		virtual QString getName() = 0;
 };
 
 class aiController
@@ -79,6 +80,7 @@ class aiController
 		static QList<int> autoFill(int safeMovesLeft, int width, int height);
 		
 		KSquaresAi::Ptr getAi() const;
+		static int getMaxAiLevel() { return 3; }
 
 	protected:
 		

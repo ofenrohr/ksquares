@@ -16,6 +16,7 @@ class aiEasyMediumHard : public KSquaresAi
 		aiEasyMediumHard(int newPlayerId, int newWidth, int newHeight, int newLevel);
 		//~aiEasyMediumHard();
 		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners);
+		QString getName();
 	protected:
 		/**
 			* @param choiceList list of indices (of lines) which have squares next to them with two lines drawn (relates to @ref lines )

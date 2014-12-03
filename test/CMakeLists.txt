@@ -68,3 +68,9 @@ kde4_add_unit_test( test-aiboard
   ${ksquarestest_SRCS}
   aiboard.cpp
 )
+
+kde4_add_unit_test( test-berlekamp
+  TESTNAME berlekamp
+  ${ksquarestest_SRCS}
+  berlekamp.cpp
+)

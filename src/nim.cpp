@@ -113,6 +113,7 @@ int NimString::getNimber( aiBoard::Ptr board )
 	WallNode->ground = true;
 
 	// TODO: read_input from aiboard
+	/*
 	last_row = -1;
 	last_col = -1;
 
@@ -142,7 +143,7 @@ int NimString::getNimber( aiBoard::Ptr board )
 
 	cols = board->height;//(last_col-1) / 2 + 1;
 	rows = board->width;//(last_row-1) / 2 + 1;
-
+	*/
 	rectangular = is_rectangular();
 
 	make_neighbors();

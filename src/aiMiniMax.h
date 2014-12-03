@@ -26,6 +26,7 @@ class aiMiniMax : public KSquaresAi
 		~aiMiniMax();
 		
 		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners);
+		QString getName() { return "minimax"; }
 		
 		float minimax(aiBoard::Ptr board, int depth, int *line, int parentNode = -1);
 		float evaluate(aiBoard::Ptr board);

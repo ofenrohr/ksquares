@@ -19,6 +19,17 @@ aiEasyMediumHard::aiEasyMediumHard(int newPlayerId, int newWidth, int newHeight,
 	lines = new bool[linesSize];
 }
 
+QString aiEasyMediumHard::getName()
+{
+	switch (level)
+	{
+		case 0: return "easy";
+		case 1: return "medium";
+		case 2: return "hard";
+		default: return "aiEasyMediumHard";
+	}
+}
+
 int aiEasyMediumHard::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners)
 {
 	if (newLines.size() != linesSize)
