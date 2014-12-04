@@ -12,6 +12,7 @@
 
 #include "aiEasyMediumHard.h"
 #include "aiMiniMax.h"
+#include "aiAlphaBeta.h"
 
 #include <ctime>
 #include <kdebug.h>
@@ -71,9 +72,8 @@ int aiController::chooseLine(const QList<bool> &newLines, const QList<int> &newS
 	return ai->chooseLine(newLines, newSquareOwners);
 }
 
-KSquaresAi::Ptr aiController::getAi() const
+KSquaresAi::Ptr aiController::getAi()
 {
-	KSquaresAi::Ptr ai;
 	switch (level)
 	{
 		default:
@@ -86,7 +86,14 @@ KSquaresAi::Ptr aiController::getAi() const
 		break;
 		case 3:
 			kDebug() << "creating aiMiniMax";
-			ai = KSquaresAi::Ptr(new aiMiniMax(playerId, maxPlayerId, width, height, level));
+			if (ai.isNull())
+				ai = KSquaresAi::Ptr(new aiMiniMax(playerId, maxPlayerId, width, height, level));
+		break;
+		case 4:
+			kDebug() << "creating aiAlphaBeta";
+			if (ai.isNull())
+				ai = KSquaresAi::Ptr(new aiAlphaBeta(playerId, maxPlayerId, width, height, level));
+		break;
 	}
 	return ai;
 }

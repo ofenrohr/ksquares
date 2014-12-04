@@ -19,6 +19,7 @@ set(ksquares_SRCS
 	aiBoard.cpp
 	aiHeuristic.cpp
 	nim.cpp
+	aiAlphaBeta.cpp
 )
 
 include_directories(${CMAKE_SOURCE_DIR}/libkdegames/highscore)

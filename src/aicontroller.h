@@ -79,8 +79,8 @@ class aiController
 		 */
 		static QList<int> autoFill(int safeMovesLeft, int width, int height);
 		
-		KSquaresAi::Ptr getAi() const;
-		static int getMaxAiLevel() { return 3; }
+		KSquaresAi::Ptr getAi();
+		static int getMaxAiLevel() { return 4; }
 
 	protected:
 		
@@ -96,6 +96,7 @@ class aiController
 		int level;
 		/// number of lines on board
 		//int linesSize;
+		KSquaresAi::Ptr ai;
 };
 
 #endif // KSQUARES_H
