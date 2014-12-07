@@ -131,15 +131,15 @@ void aiHeuristic::analyseChains(aiBoard::Ptr board)
     //kDebug() << "analysing chain " << chain << ": " << classification;
 		switch (classification)
 		{
-      case 0: 
+			case KSquares::CHAIN_LONG: 
         longChainCnt++;
         longChains.append(chain);
       break;
-      case 1:
+			case KSquares::CHAIN_SHORT:
         shortChainCnt++;
         shortChains.append(chain);
       break;
-      case 2:
+			case KSquares::CHAIN_LOOP:
         loopChainCnt++;
         loopChains.append(chain);
       break;

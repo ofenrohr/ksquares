@@ -19,11 +19,13 @@
 
 namespace KSquares
 {
+	enum ChainType {CHAIN_SHORT, CHAIN_LONG, CHAIN_LOOP, CHAIN_UNKNOWN};
 	typedef struct Chain_t
 	{
 		QList<int> lines;
 		QList<int> squares;
-		int type;
+		ChainType type;
+		bool ownChain;
 	} Chain;
 }
 
@@ -99,15 +101,15 @@ class aiFunctions
 		 * @param height height of board in boxes
 		 * @param ownChains returns the chains on the board
 		 */
-		static int findChains(bool *lines, int linesSize, int width, int height, QList<KSquares::Chain> *chains);
+		static void findChains(bool *lines, int linesSize, int width, int height, QList<KSquares::Chain> *chains);
 		/**
 		 * Classifies a given chain as short, long or loop chain.
 		 * @param chain list of lines the chain is made up of
      * @param lines lines of the board
 		 * @return 0: long chain, 1: short chain, 2: loop chain, -1: no chain
 		 */
-		int classifyChain(const QList<int> &chain, bool *lines) const;
-		static int classifyChain(int width, int height, const QList<int> &chain, bool *lines);
+		KSquares::ChainType classifyChain(const QList<int> &chain, bool *lines) const;
+		static KSquares::ChainType classifyChain(int width, int height, const QList<int> &chain, bool *lines);
 		/**
 		 * TODO: move to aiBoard
 		 * Gets lines that are not drawn

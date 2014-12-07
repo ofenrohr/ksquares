@@ -29,9 +29,15 @@ class aiAlphaBeta : public KSquaresAi
 		QString getName() { return "alphabeta"; }
 		
 		float alphabeta(aiBoard::Ptr board, int depth, int *line, int parentNode = -1);
+		/**
+		 * Calls evaluation from aiHeuristic
+		 */
 		float evaluate(aiBoard::Ptr board);
-		//float evaluate1(aiBoard::Ptr board);
-		//float evaluate2(aiBoard::Ptr board);
+		/**
+		 * Generates a move list. Chains are returned twice if applicable:
+		 * one sequence with chain fully taken and one with double dealing.
+		 */
+		QList<QList<int> > getMoveSequences(aiBoard::Ptr board);
 		
 		void setTimeout(long timeout);
 		long getTimeout();

@@ -200,11 +200,21 @@ float aiAlphaBeta::evaluate(aiBoard::Ptr board)
 {
 	QElapsedTimer evalTimer;
 	evalTimer.start();
-	//float ret = evaluate2(board);
 	float ret = heuristic->evaluate(board, playerId);
 	long evalTime = evalTimer.elapsed();
 	if (evalTime > maxEvalTime)
 		evalTime = maxEvalTime;
+	return ret;
+}
+
+QList<QList<int> > getMoveSequence(aiBoard::Ptr board)
+{
+	QList<int> freeLines = aiFunctions::getFreeLines(board->lines, board->linesSize);
+	while (freeLines.size() > 0)
+	{
+		int line = freeLines.takeLast();
+	}
+	QList<QList<int> > ret;
 	return ret;
 }
 

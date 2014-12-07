@@ -280,9 +280,108 @@ int aiFunctions::findOwnChains(bool *lines, int linesSize, int width, int height
 }
 
 
-int aiFunctions::findChains(bool *lines, int linesSize, int width, int height, QList<KSquares::Chain> *chains)
+void aiFunctions::findChains(bool *lines, int linesSize, int width, int height, QList<KSquares::Chain> *foundChains)
 {
-	return 0;
+	QList<QList<int> > ownChains;
+	// find opened chains
+	aiFunctions::findOwnChains(lines, linesSize, width, height, &ownChains);
+	for (int i = 0; i < ownChains.size(); i++)
+	{
+		KSquares::Chain foundChain;
+		foundChain.lines = ownChains[i];
+		foundChain.squares = // TODO
+		foundChain.type = classifyChain(// TODO
+		foundChain.ownChain = true;
+		
+		for (int j = 0; j < ownChains[i].size(); j++)
+		{
+			lines[ownChains[i][j]] = true;
+		}
+	}
+	
+	// find chains
+	QList<int> freeLines = aiFunctions::getFreeLines(lines, linesSize);
+	QList<QList<int> > chains;
+	QList<QList<int> > chainList;
+	QList<QList<int> > chainSet;
+	
+	while (!freeLines.isEmpty())
+	{
+		int line = freeLines.takeLast();
+		lines[line] = true;
+		chains.clear();
+		aiFunctions::findOwnChains(lines, linesSize, width, height, &chains);
+		
+		for (int i = 0; i < chains.size(); i++)
+		{
+			for (int j = 0; j < chains[i].size(); j++)
+			{
+				freeLines.removeAll(chains[i][j]);
+			}
+			chains[i].append(line);
+			std::sort(chains[i].begin(), chains[i].end());
+			chainList.append(chains[i]);
+			//kDebug() << "chain: " << chains[i];
+		}
+		
+		lines[line] = false;
+	}
+	
+	// TODO: required?
+	// remove duplicate chains
+	for (int i = 0; i < chainList.size(); i++)
+	{
+		bool newChain = true;
+		QList<int> chainCheck = chainList[i]; // this is the chain we might add
+		for (int j = 0; j < chainSet.size(); j++)
+		{
+			if(chainSet[j] == chainCheck) // found chainCheck in chainSet, don't add
+			{
+				newChain = false;
+				break;
+			}
+		}
+		if (newChain) // chainCheck not in chainSet
+		{
+			chainSet.append(chainCheck);
+		}
+	}
+	
+	// analyse chains
+	for (int i = 0; i < chainSet.size(); i++)
+	{
+		QList<int> chain = chainSet[i];
+    int classification = aiFunctions::classifyChain(width, height, chain, lines);
+    //kDebug() << "analysing chain " << chain << ": " << classification;
+		switch (classification)
+		{
+      case 0: 
+        longChainCnt++;
+        longChains.append(chain);
+      break;
+      case 1:
+        shortChainCnt++;
+        shortChains.append(chain);
+      break;
+      case 2:
+        loopChainCnt++;
+        loopChains.append(chain);
+      break;
+      default:
+        kDebug() << "unknown chain type " << classification;
+				kDebug() << "board: " << aiFunctions::boardToString(lines, linesSize, width, height);
+				kDebug() << "chain: " << aiFunctions::linelistToString(chain, linesSize, width, height);
+    }
+	}
+	
+	// cleanup - undo ownChain!
+	for (int i = 0; i < ownChains.size(); i++)
+	{
+		for (int j = 0; j < ownChains[i].size(); j++)
+		{
+			lines[ownChains[i][j]] = false;
+		}
+	}
 }
 
 
@@ -425,12 +524,12 @@ void printSquares(QList<int> squares, int width, int height)
 
 // @param chain: chain lines
 // @return 0: long chain, 1: short chain, 2: loop chain, -1: no chain
-int aiFunctions::classifyChain(int width, int height, const QList<int> &chain, bool *lines)
+KSquares::ChainType aiFunctions::classifyChain(int width, int height, const QList<int> &chain, bool *lines)
 {
   if (chain.size() <= 0)
   {
     kDebug() << "ERROR: classifyChain called with no chain lines";
-    return -1;
+    return KSquares::CHAIN_UNKNOWN;
   }
   
   // get all squares of the chain
@@ -440,7 +539,7 @@ int aiFunctions::classifyChain(int width, int height, const QList<int> &chain, b
     if (lines[chain[i]])
     {
       kDebug() << "ERROR: classifyChain called with incorrect chain parameter (line " << chain[i] << " is drawn!)";
-      return -1;
+      return KSquares::CHAIN_UNKNOWN;
     }
     QList<int> curSquares = squaresFromLine(width, height, chain[i]);
     for (int j = 0; j < curSquares.size(); j++)
@@ -457,7 +556,7 @@ int aiFunctions::classifyChain(int width, int height, const QList<int> &chain, b
   // no squares -> no chain
   if (squares.size() < 1)
   {
-    return 0;
+    return KSquares::CHAIN_UNKNOWN;
   }
   
   // look for square loops
@@ -474,7 +573,7 @@ int aiFunctions::classifyChain(int width, int height, const QList<int> &chain, b
     if (squareVisited.contains(curSquare))
     {
       //kDebug() << "visiting an square that has already been visited! (" << curSquare << ", queue = " << squareVisited << ")";
-      return 2;
+      return KSquares::CHAIN_LOOP;
     }
     squareVisited.append(curSquare);
     
@@ -510,20 +609,20 @@ int aiFunctions::classifyChain(int width, int height, const QList<int> &chain, b
   if (squares.size() != squareVisited.size())
   {
     kDebug() << "ERROR: didn't visit all squares (squares cnt = " << squares.size() << ", squares visited cnt = " << squareVisited.size() << ")";
-    return -1;
+    return KSquares::CHAIN_UNKNOWN;
   }
   
   // how many chains did we visit? two or less = short chain
   if (squareVisited.size() <= 2)
   {
-    return 1;
+    return KSquares::CHAIN_SHORT;
   }
   
   // long chain
-  return 0; 
+  return KSquares::CHAIN_LONG; 
 }
 
-int aiFunctions::classifyChain(const QList<int> &chain, bool *lines) const
+KSquares::ChainType aiFunctions::classifyChain(const QList<int> &chain, bool *lines) const
 {
 	return classifyChain(width, height, chain, lines);
 }
