@@ -75,3 +75,9 @@ kde4_add_unit_test( test-berlekamp
   ${ksquarestest_SRCS}
   berlekamp.cpp
 )
+
+kde4_add_unit_test( test-alphabeta
+  TESTNAME alphabeta
+  ${ksquarestest_SRCS}
+  alphabeta.cpp
+)

@@ -21,6 +21,7 @@ public:
 	typedef QSharedPointer<aiBoard> Ptr;
 	
 	aiBoard(bool *newLines, int newLinesSize, int newWidth, int newHeight, const QList<int> newSquareOwners, int playerId, int maxPlayerId);
+	aiBoard(Board *board);
 	~aiBoard();
 	
 	void doMove(int line);

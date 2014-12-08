@@ -16,6 +16,19 @@ aiBoard::aiBoard(bool *newLines, int newLinesSize, int newWidth, int newHeight, 
 {
 }
 
+aiBoard::aiBoard(Board *board)
+{
+	linesSize = board->lines().size();
+	lines = new bool[linesSize];
+	for (int i = 0; i < linesSize; i++)
+		lines[i] = board->lines()[i];
+	width = board->width();
+	height = board->height();
+	squareOwners = board->squares();
+	playerId = board->currentPlayer();
+	maxPlayerId = board->getNumOfPlayers() - 1;
+}
+
 aiBoard::~aiBoard()
 {
 }

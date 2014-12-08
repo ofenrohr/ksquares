@@ -148,6 +148,10 @@ class Board : public QObject
      * @return the history of drawn lines
      */
     QList<Move> getLineHistory() const {return lineHistory_;}
+    /**
+		 * @return number of players
+		 */
+		int getNumOfPlayers() const {return numOfPlayers_;}
 
 		//setters
 		void setNumOfPlayers(int numOfPlayers) {numOfPlayers_ = numOfPlayers;}

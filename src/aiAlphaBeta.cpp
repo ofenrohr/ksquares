@@ -239,7 +239,7 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board)
 					aiFunctions::linesFromSquare(board->width, board->height, squareLines, lineSquares[j]);
 					for (int k = 0; k < 4; k++)
 					{
-						if (board->lines[lineSquares[k]] || lineSquares[k] == line)
+						if (board->lines[squareLines[k]] || squareLines[k] == line)
 							continue;
 						seqDone = false;
 						elem.first = squareLines[k];

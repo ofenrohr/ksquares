@@ -25,8 +25,21 @@ class alphabeta : public QObject
  */
 void alphabeta::testAlphaBeta001()
 {
-	aiAlphaBeta ai;
+	QList<int> lines;
+	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+  QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/6x3-barker-korf.dbl", sGame.data(), &lines));
+	for (int i = 0; i < lines.size(); i++)
+	{
+		bool nextPlayer, boardFilled;
+		QList<int> completedSquares;
+		sGame->board()->addLine(lines[i], &nextPlayer, &boardFilled, &completedSquares);
+	}
 	
+	aiBoard::Ptr board(new aiBoard(sGame->board()));
+	
+	QList<QList<int> > moveSequences = aiAlphaBeta::getMoveSequences(board);
+	
+	kDebug() << moveSequences;
 }
 
 QTEST_MAIN(alphabeta)
