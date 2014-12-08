@@ -110,6 +110,7 @@ class aiFunctions
 		 */
 		KSquares::ChainType classifyChain(const QList<int> &chain, bool *lines) const;
 		static KSquares::ChainType classifyChain(int width, int height, const QList<int> &chain, bool *lines);
+		static KSquares::ChainType classifyChain(int width, int height, const QList<int> &chain, bool *lines, QList<int> *squares);
 		/**
 		 * TODO: move to aiBoard
 		 * Gets lines that are not drawn

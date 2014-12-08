@@ -14,6 +14,8 @@
 #include <cmath>
 #include <algorithm>
 #include <QElapsedTimer>
+#include <QMap>
+#include <QPair>
 
 aiAlphaBeta::aiAlphaBeta(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel) : KSquaresAi(newWidth, newHeight), playerId(newPlayerId), maxPlayerId(newMaxPlayerId), level(newLevel)
 {
@@ -89,7 +91,7 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, int paren
 			alphabetaTimer.restart();
 		}
 	}
-	QList<int> freeLines = aiFunctions::getFreeLines(board->lines, board->linesSize);
+	QList<QList<int> > moveSequences = getMoveSequences(board);
 	
 	int thisNode = debugNodeCnt;
 	debugNodeCnt++;
@@ -116,7 +118,7 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, int paren
 		}
 	}
 	
-	if (freeLines.size() == 0) // game is over
+	if (moveSequences.size() == 0) // game is over
 	{
 		//kDebug() << "terminal node";
 		int winner = aiFunctions::getLeader(board->squareOwners);
@@ -158,42 +160,26 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, int paren
 		return eval;
 	}
 	
-	if (playerId == board->playerId)
+	float bestValue = -INFINITY;
+	for (int i = 0; i < moveSequences.size(); i++)
 	{
-		float bestValue = -INFINITY;
-		for (int i = 0; i < freeLines.size(); i++)
+		for (int j = 0; j < moveSequences[i].size(); j++)
 		{
-			board->doMove(freeLines[i]);
-			float val = alphabeta(board, depth - 1, NULL, thisNode);
-			board->undoMove(freeLines[i]);
-			if (val > bestValue)
-			{
-				bestValue = val;
-				if (line != NULL)
-					*line = freeLines[i];
-			}
+			board->doMove(moveSequences[i][j]);
 		}
-		return bestValue;
-	}
-	else
-	{
-		float bestValue = INFINITY;
-		for (int i = 0; i < freeLines.size(); i++)
+		float val = -alphabeta(board, depth - 1, NULL, thisNode);
+		for (int j = 0; j < moveSequences[i].size(); j++)
 		{
-			board->doMove(freeLines[i]);
-			float val = alphabeta(board, depth - 1, NULL, thisNode);
-			board->undoMove(freeLines[i]);
-			if (val < bestValue)
-			{
-				bestValue = val;
-				if (line != NULL)
-					*line = freeLines[i];
-			}
+			board->undoMove(moveSequences[i][j]);
 		}
-		return bestValue;
+		if (val > bestValue)
+		{
+			bestValue = val;
+			if (line != NULL)
+				*line = moveSequences[i][0];
+		}
 	}
-	
-	return 0.0;
+	return bestValue;
 }
 
 float aiAlphaBeta::evaluate(aiBoard::Ptr board)
@@ -207,14 +193,64 @@ float aiAlphaBeta::evaluate(aiBoard::Ptr board)
 	return ret;
 }
 
-QList<QList<int> > getMoveSequence(aiBoard::Ptr board)
+QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board)
 {
 	QList<int> freeLines = aiFunctions::getFreeLines(board->lines, board->linesSize);
+	QMap<int, int> squareValence;
+	QList<QPair<int, int> > chainEnds; // line, square
 	while (freeLines.size() > 0)
 	{
 		int line = freeLines.takeLast();
+		QList<int> lineSquares = aiFunctions::squaresFromLine(board->width, board->height, line);
+		for (int i = 0; i < lineSquares.size(); i++)
+		{
+			if (squareValence.contains(lineSquares[i]))
+				continue;
+			squareValence[lineSquares[i]] = countBorderLines(board->width, board->height, lineSquares[i], board->lines);
+			
+			if (squareValence[lineSquares[i]] == 3) // square can be captured
+			{
+				QPair<int, int> chainEnd(line, lineSquares[i]);
+				chainEnds.append(chainEnd);
+			}
+		}
 	}
+	
 	QList<QList<int> > ret;
+	for (int i = 0; i < chainEnds.size(); i++)
+	{
+		QList<int> lineSequence;
+		lineSequence.append(chainEnds[i].first);
+		QPair<int, int> elem = chainEnds[i];
+		bool seqDone = false;
+		while (!seqDone)
+		{
+			seqDone = true;
+			int line = elem.first;
+			int square = elem.second;
+			QList<int> lineSquares = aiFunctions::squaresFromLine(board->width, board->height, line);
+			for (int j = 0; j < lineSquares.size(); j++)
+			{
+				if (lineSquares[j] == square)
+					continue;
+				if (squareValence[lineSquares[j]] == 2) // chain continues
+				{
+					int squareLines[4];
+					aiFunctions::linesFromSquare(board->width, board->height, squareLines, lineSquares[j]);
+					for (int k = 0; k < 4; k++)
+					{
+						if (board->lines[lineSquares[k]] || lineSquares[k] == line)
+							continue;
+						seqDone = false;
+						elem.first = squareLines[k];
+						elem.second = lineSquares[j];
+						lineSequence.append(line);
+					}
+				}
+			}
+		}
+		ret.append(lineSequence);
+	}
 	return ret;
 }
 
