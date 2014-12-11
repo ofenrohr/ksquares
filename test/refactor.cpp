@@ -80,14 +80,14 @@ void refactor::testClassifyChain002()
   kDebug() << "input board: " << aift.linelistToString(lines);
   //kDebug() << "input board: " << aift.boardToString(linesb);
   
-  int result;
+  KSquares::ChainType result;
   
   QList<int> singleChain;
   singleChain.append(0);
   singleChain.append(4);
   result = aift.classifyChain(singleChain, linesb);
   kDebug() << "single chain result: " << result;
-  QVERIFY(result == 1);
+  QVERIFY(result == KSquares::CHAIN_SHORT);
   
   QList<int> longChain1;
   longChain1.append(13);
@@ -96,7 +96,7 @@ void refactor::testClassifyChain002()
   longChain1.append(31);
   result = aift.classifyChain(longChain1, linesb);
   kDebug() << "long chain (shorter one) result: " << result;
-  QVERIFY(result == 0);
+  QVERIFY(result == KSquares::CHAIN_LONG);
   
   QList<int> quad;
   quad.append(6);
@@ -105,7 +105,7 @@ void refactor::testClassifyChain002()
   quad.append(15);
   result = aift.classifyChain(quad, linesb);
   kDebug() << "quad result: " << result;
-  QVERIFY(result == 2);
+  QVERIFY(result == KSquares::CHAIN_LOOP);
 }
 
 /**
@@ -133,7 +133,7 @@ void refactor::testClassifyChain003()
   kDebug() << "input board: " << aift.linelistToString(lines);
   //kDebug() << "input board: " << aift.boardToString(linesb);
   
-  int result;
+  KSquares::ChainType result;
   
   QList<int> shortChain1;
   shortChain1.append(0);
@@ -141,14 +141,14 @@ void refactor::testClassifyChain003()
   shortChain1.append(13);
   result = aift.classifyChain(shortChain1, linesb);
   kDebug() << "shortChain1 result: " << result;
-  QVERIFY(result == 1);
+  QVERIFY(result == KSquares::CHAIN_SHORT);
   
   QList<int> shortChain2;
   shortChain2.append(24);
   shortChain2.append(29);
   result = aift.classifyChain(shortChain2, linesb);
   kDebug() << "shortChain2 result: " << result;
-  QVERIFY(result == 1);
+  QVERIFY(result == KSquares::CHAIN_SHORT);
 }
 
 /**

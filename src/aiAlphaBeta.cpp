@@ -193,7 +193,105 @@ float aiAlphaBeta::evaluate(aiBoard::Ptr board)
 	return ret;
 }
 
+// TODO: move to aiFunctions
+/**
+ * Finds the squares connected to given square
+ * @param board the board to operate on
+ * @param square the square in question
+ * @return List of pairs (first: line index, second: square index) adjacent to given square
+ */
+QList<QPair<int, int> > getConnectedSquares(aiBoard::Ptr board, int square)
+{
+	QList<QPair<int, int> > connectedSquares;
+	
+	int squareLines[4];
+	aiFunctions::linesFromSquare(board->width, board->height, squareLines, square);
+	for (int i = 0; i < 4; i++)
+	{
+		if (board->lines[squareLines[i]])
+			continue;
+		QList<int> lineSquares = aiFunctions::squaresFromLine(board->width, board->height, squareLines[i]);
+		for (int j = 0; j < lineSquares.size(); j++)
+		{
+			if (lineSquares[j] == square)
+				continue;
+			QPair<int, int> connectedSquare(squareLines[i], lineSquares[j]);
+			connectedSquares.append(connectedSquare);
+		}
+	}
+	
+	return connectedSquares;
+}
+
+int getMissingLine(aiBoard::Ptr board, int square)
+{
+	int squareLines[4];
+	aiFunctions::linesFromSquare(board->width, board->height, squareLines, square);
+	for (int i = 0; i < 4; i++)
+	{
+		if (board->lines[squareLines[i]])
+			continue;
+		return squareLines[i];
+	}
+	return -1;
+}
+
 QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board)
+{
+	QList<QList<int> > moveSequences;
+	
+	QMap<int, int> squareValences; // square, valence
+	
+	// find untaken squares and calculate valence
+	QList<int> freeSquares;
+	for (int i = 0; i < board->squareOwners.size(); i++)
+	{
+		if (board->squareOwners[i] == -1)
+		{
+			squareValences[i] = countBorderLines(board->width, board->height, i, board->lines);
+			freeSquares.append(i);
+		}
+	}
+	
+	// look for chains
+	QList<QList<int> > capturableChains;
+	QList<QList<int> > uncapturableChains;
+	while (freeSquares.size() > 0)
+	{
+		int square = freeSquares.takeLast();
+		
+		if (squareValences[square] == 3)
+		{
+			QList<int> capturableChain;
+			
+			//int nextLine = getMissingLine(board, square);
+			int nextSquare = square;
+			bool foundSquare = true;
+			while (foundSquare)
+			{
+				foundSquare = false;
+				QList<QPair<int, int> > connectedSquares = getConnectedSquares(board, nextSquare);
+				for (int i = 0; i < connectedSquares.size(); i++)
+				{
+					if (capturableChain.contains(connectedSquares[i].first) ||
+							squareValences[nextSquare] < 2)
+						continue;
+					
+					capturableChain.append(connectedSquares[i].first);
+					nextSquare = connectedSquares[i].second;
+					freeSquares.removeAll(nextSquare);
+					foundSquare = true;
+				}
+			}
+			
+			capturableChains.append(capturableChain);
+		}
+	}
+	
+	return capturableChains;
+}
+
+QList<QList<int> > getMoveSequencesOld(aiBoard::Ptr board)
 {
 	QList<int> freeLines = aiFunctions::getFreeLines(board->lines, board->linesSize);
 	QMap<int, int> squareValence;
@@ -206,7 +304,7 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board)
 		{
 			if (squareValence.contains(lineSquares[i]))
 				continue;
-			squareValence[lineSquares[i]] = countBorderLines(board->width, board->height, lineSquares[i], board->lines);
+			squareValence[lineSquares[i]] = aiFunctions::countBorderLines(board->width, board->height, lineSquares[i], board->lines);
 			
 			if (squareValence[lineSquares[i]] == 3) // square can be captured
 			{
@@ -216,11 +314,13 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board)
 		}
 	}
 	
+	kDebug() << "chainEnds: " << chainEnds;
+	
 	QList<QList<int> > ret;
 	for (int i = 0; i < chainEnds.size(); i++)
 	{
 		QList<int> lineSequence;
-		lineSequence.append(chainEnds[i].first);
+		//lineSequence.append(chainEnds[i].first);
 		QPair<int, int> elem = chainEnds[i];
 		bool seqDone = false;
 		while (!seqDone)
@@ -233,19 +333,19 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board)
 			{
 				if (lineSquares[j] == square)
 					continue;
-				if (squareValence[lineSquares[j]] == 2) // chain continues
+				int squareLines[4];
+				aiFunctions::linesFromSquare(board->width, board->height, squareLines, lineSquares[j]);
+				for (int k = 0; k < 4; k++)
 				{
-					int squareLines[4];
-					aiFunctions::linesFromSquare(board->width, board->height, squareLines, lineSquares[j]);
-					for (int k = 0; k < 4; k++)
+					if (board->lines[squareLines[k]] || squareLines[k] == line)
+						continue;
+					if (squareValence[lineSquares[j]] == 2) // chain continues
 					{
-						if (board->lines[squareLines[k]] || squareLines[k] == line)
-							continue;
 						seqDone = false;
-						elem.first = squareLines[k];
-						elem.second = lineSquares[j];
-						lineSequence.append(line);
 					}
+					elem.first = squareLines[k];
+					elem.second = lineSquares[j];
+					lineSequence.append(line);
 				}
 			}
 		}
