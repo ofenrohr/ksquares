@@ -223,7 +223,40 @@ QList<QPair<int, int> > getConnectedSquares(aiBoard::Ptr board, int square)
 	return connectedSquares;
 }
 
-int getMissingLine(aiBoard::Ptr board, int square)
+// TODO: move to ai functions
+QMap<int, int> getSquareValences(aiBoard::Ptr board)
+{
+	QMap<int, int> squareValences; // square, valence
+	
+	// find untaken squares and calculate valence
+	QList<int> freeSquares;
+	for (int i = 0; i < board->squareOwners.size(); i++)
+	{
+		squareValences[i] = aiFunctions::countBorderLines(board->width, board->height, i, board->lines);
+	}
+	
+	return squareValences;
+}
+
+// TODO: move to ai functions
+// Checks if given square is at at least one border of the board
+bool isBorderSquare(aiBoard::Ptr board, int square)
+{
+	int squareLines[4];
+	aiFunctions::linesFromSquare(board->width, board->height, squareLines, square);
+	for (int i = 0; i < 4; i++)
+	{
+		if (aiFunctions::squaresFromLine(board->width, board->height, squareLines[i]).size() == 1)
+			return true;
+	}
+	return false;
+}
+
+// TODO: move to ai functions
+/**
+ * Checks if a square is connected to a joint square (either ground or a square with 0 or 1 lines drawn)
+ */
+bool squareConnectedToJoint(aiBoard::Ptr board, QMap<int, int> &squareValences, int square)
 {
 	int squareLines[4];
 	aiFunctions::linesFromSquare(board->width, board->height, squareLines, square);
@@ -231,9 +264,25 @@ int getMissingLine(aiBoard::Ptr board, int square)
 	{
 		if (board->lines[squareLines[i]])
 			continue;
-		return squareLines[i];
+		QList<int> lineSquares = aiFunctions::squaresFromLine(board->width, board->height, squareLines[i]);
+		if (lineSquares.size() == 1) // line has only one square -> connection to ground in strings & coins representation
+			return true;
+		for (int j = 0; j < lineSquares.size(); j++)
+		{
+			if (squareValences[lineSquares[j]] < 2)
+				return true;
+		}
 	}
-	return -1;
+	return false;
+}
+
+// Source: http://stackoverflow.com/questions/1339121/how-to-reverse-a-qlist
+template <typename T>
+QList<T> reverseList( const QList<T> & in ) {
+    QList<T> result;
+    result.reserve( in.size() ); // reserve is new in Qt 4.7
+    std::reverse_copy( in.begin(), in.end(), std::back_inserter( result ) );
+    return result;
 }
 
 QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board)
@@ -248,7 +297,7 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board)
 	{
 		if (board->squareOwners[i] == -1)
 		{
-			squareValences[i] = countBorderLines(board->width, board->height, i, board->lines);
+			squareValences[i] = aiFunctions::countBorderLines(board->width, board->height, i, board->lines);
 			freeSquares.append(i);
 		}
 	}
@@ -260,33 +309,75 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board)
 	{
 		int square = freeSquares.takeLast();
 		
-		if (squareValences[square] == 3)
+		if (squareValences[square] == 2 && squareConnectedToJoint(board, squareValences, square))
 		{
-			QList<int> capturableChain;
+			kDebug() << "square connected to joint: " << square;
+		}
+		
+		if (squareValences[square] == 3 || (squareValences[square] == 2 && squareConnectedToJoint(board, squareValences, square)))
+		{
+			QList<int> chain;
+			bool canCapture = squareValences[square] == 3;
 			
-			//int nextLine = getMissingLine(board, square);
-			int nextSquare = square;
+			if (!canCapture) // square connected to ground
+			{
+				int groundLine = -1;
+				int squareLines[4];
+				aiFunctions::linesFromSquare(board->width, board->height, squareLines, square);
+				for (int i = 0; i < 4; i++)
+				{
+					if (board->lines[squareLines[i]])
+						continue;
+					if (aiFunctions::squaresFromLine(board->width, board->height, squareLines[i]).size() == 1)
+						groundLine = squareLines[i];
+				}
+				if (groundLine == -1)
+					continue;
+				chain.append(groundLine);
+			}
+			
+			int expandingSquare = square;
 			bool foundSquare = true;
 			while (foundSquare)
 			{
 				foundSquare = false;
-				QList<QPair<int, int> > connectedSquares = getConnectedSquares(board, nextSquare);
+				QList<QPair<int, int> > connectedSquares = getConnectedSquares(board, expandingSquare);
 				for (int i = 0; i < connectedSquares.size(); i++)
 				{
-					if (capturableChain.contains(connectedSquares[i].first) ||
-							squareValences[nextSquare] < 2)
+					if (chain.contains(connectedSquares[i].first))// ||
+							//squareValences[expandingSquare] < 2 || // TODO: this skips too much
+							//!freeSquares.contains(connectedSquares[i].second)) // TODO: this might also skip too much
 						continue;
 					
-					capturableChain.append(connectedSquares[i].first);
-					nextSquare = connectedSquares[i].second;
-					freeSquares.removeAll(nextSquare);
-					foundSquare = true;
+					if (squareConnectedToJoint(board, squareValences, expandingSquare) && expandingSquare != square)
+					{
+						kDebug() << "expandingSquare: " << expandingSquare << ", connectedSquares[i] = (" << connectedSquares[i].first << "|" << connectedSquares[i].second << ")";
+						chain.append(connectedSquares[i].first);
+					}
+					else
+					{
+						chain.append(connectedSquares[i].first);
+						expandingSquare = connectedSquares[i].second;
+						freeSquares.removeAll(expandingSquare);
+						foundSquare = true;
+					}
 				}
 			}
 			
-			capturableChains.append(capturableChain);
+			if (squareValences[expandingSquare] == 3)
+			{
+				chain = reverseList(chain);
+				canCapture = true;
+			}
+			
+			if (canCapture)
+				capturableChains.append(chain);
+			else
+				uncapturableChains.append(chain);
 		}
 	}
+	
+	kDebug() << "uncapturable Chains: " << uncapturableChains;
 	
 	return capturableChains;
 }
