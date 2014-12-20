@@ -34,6 +34,11 @@ class aiAlphaBeta : public KSquaresAi
 		 */
 		float evaluate(aiBoard::Ptr board);
 		/**
+		 * Generates the double dealing sequence for the given chain.
+		 * @return the double dealing variant of the given chain. if the chain is short or unknown an empty list will be returned
+		 */
+		static QList<int> getDoubleDealingSequence(KSquares::Chain &chain);
+		/**
 		 * Generates a move list. Chains are returned twice if applicable:
 		 * one sequence with chain fully taken and one with double dealing.
 		 */

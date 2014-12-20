@@ -280,6 +280,180 @@ int aiFunctions::findOwnChains(bool *lines, int linesSize, int width, int height
 }
 
 
+QList<QPair<int, int> > aiFunctions::getConnectedSquares(aiBoard::Ptr board, int square)
+{
+	QList<QPair<int, int> > connectedSquares;
+	
+	int squareLines[4];
+	aiFunctions::linesFromSquare(board->width, board->height, squareLines, square);
+	for (int i = 0; i < 4; i++)
+	{
+		if (board->lines[squareLines[i]])
+			continue;
+		QList<int> lineSquares = aiFunctions::squaresFromLine(board->width, board->height, squareLines[i]);
+		for (int j = 0; j < lineSquares.size(); j++)
+		{
+			if (lineSquares[j] == square)
+				continue;
+			QPair<int, int> connectedSquare(squareLines[i], lineSquares[j]);
+			connectedSquares.append(connectedSquare);
+		}
+	}
+	
+	return connectedSquares;
+}
+
+
+bool aiFunctions::squareConnectedToJoint(aiBoard::Ptr board, QMap<int, int> &squareValences, int square)
+{
+	int squareLines[4];
+	aiFunctions::linesFromSquare(board->width, board->height, squareLines, square);
+	for (int i = 0; i < 4; i++)
+	{
+		if (board->lines[squareLines[i]])
+			continue;
+		QList<int> lineSquares = aiFunctions::squaresFromLine(board->width, board->height, squareLines[i]);
+		if (lineSquares.size() == 1) // line has only one square -> connection to ground in strings & coins representation
+			return true;
+		for (int j = 0; j < lineSquares.size(); j++)
+		{
+			if (squareValences[lineSquares[j]] < 2)
+				return true;
+		}
+	}
+	return false;
+}
+
+
+// Source: http://stackoverflow.com/questions/1339121/how-to-reverse-a-qlist
+template <typename T>
+QList<T> aiFunctions::reverseQList( const QList<T> & in ) {
+    QList<T> result;
+    result.reserve( in.size() ); // reserve is new in Qt 4.7
+    std::reverse_copy( in.begin(), in.end(), std::back_inserter( result ) );
+    return result;
+}
+
+
+QString chainTypeToString(KSquares::ChainType t)
+{
+	switch (t)
+	{
+		case KSquares::CHAIN_SHORT: return "short";
+		case KSquares::CHAIN_LONG: return "long";
+		case KSquares::CHAIN_LOOP: return "loop";
+		case KSquares::CHAIN_UNKNOWN: return "unknown";
+		default: return "unknown (switch)";
+	}
+}
+
+void aiFunctions::findChains(aiBoard::Ptr board, QList<KSquares::Chain> *foundChains)
+{
+	QMap<int, int> squareValences; // square, valence
+	
+	// find untaken squares and calculate valence
+	QList<int> freeSquares;
+	for (int i = 0; i < board->squareOwners.size(); i++)
+	{
+		if (board->squareOwners[i] == -1)
+		{
+			squareValences[i] = aiFunctions::countBorderLines(board->width, board->height, i, board->lines);
+			freeSquares.append(i);
+		}
+	}
+	
+	// look for chains
+	QList<QList<int> > capturableChains;
+	QList<QList<int> > uncapturableChains;
+	while (freeSquares.size() > 0)
+	{
+		int square = freeSquares.takeLast();
+		
+		/*
+		if (squareValences[square] == 2 && squareConnectedToJoint(board, squareValences, square))
+		{
+			kDebug() << "square connected to joint: " << square;
+		}
+		*/
+		
+		if (squareValences[square] == 3 || (squareValences[square] == 2 && squareConnectedToJoint(board, squareValences, square)))
+		{
+			QList<int> chain;
+			bool canCapture = squareValences[square] == 3;
+			
+			if (!canCapture) // square connected to ground
+			{
+				int groundLine = -1;
+				int squareLines[4];
+				aiFunctions::linesFromSquare(board->width, board->height, squareLines, square);
+				for (int i = 0; i < 4; i++)
+				{
+					if (board->lines[squareLines[i]])
+						continue;
+					if (aiFunctions::squaresFromLine(board->width, board->height, squareLines[i]).size() == 1)
+						groundLine = squareLines[i];
+				}
+				if (groundLine == -1)
+					continue;
+				chain.append(groundLine);
+			}
+			
+			int expandingSquare = square;
+			bool foundSquare = true;
+			while (foundSquare)
+			{
+				foundSquare = false;
+				QList<QPair<int, int> > connectedSquares = getConnectedSquares(board, expandingSquare);
+				for (int i = 0; i < connectedSquares.size(); i++)
+				{
+					if (chain.contains(connectedSquares[i].first))// ||
+							//squareValences[expandingSquare] < 2 || // TODO: this skips too much
+							//!freeSquares.contains(connectedSquares[i].second)) // TODO: this might also skip too much
+						continue;
+					
+					if (squareConnectedToJoint(board, squareValences, expandingSquare) && expandingSquare != square)
+					{
+						//kDebug() << "expandingSquare: " << expandingSquare << ", connectedSquares[i] = (" << connectedSquares[i].first << "|" << connectedSquares[i].second << ")";
+						chain.append(connectedSquares[i].first);
+					}
+					else
+					{
+						chain.append(connectedSquares[i].first);
+						expandingSquare = connectedSquares[i].second;
+						freeSquares.removeAll(expandingSquare);
+						foundSquare = true;
+					}
+				}
+			}
+			
+			bool canCaptureFromBothEnds = false;
+			if (squareValences[expandingSquare] == 3)
+			{
+				chain = reverseQList(chain);
+				if (canCapture)
+					canCaptureFromBothEnds = true;
+				canCapture = true;
+			}
+			
+			capturableChains.append(chain);
+			KSquares::Chain foundChain;
+			foundChain.lines = chain;
+			foundChain.type = classifyChain(board->width, board->height, chain, board->lines, &(foundChain.squares)); // TODO: integrate classification!
+			if (canCaptureFromBothEnds && foundChain.type == KSquares::CHAIN_LONG)
+				foundChain.type = KSquares::CHAIN_LOOP;
+			
+			if (canCapture)
+				foundChain.ownChain = true;
+			else
+				foundChain.ownChain = false;
+			
+			kDebug() << "found chain:" << chain << "squares:" << foundChain.squares << "cap:" << canCapture << "type:" << chainTypeToString(foundChain.type);
+			foundChains->append(foundChain);
+		}
+	}
+}
+
+/*
 void aiFunctions::findChains(bool *lines, int linesSize, int width, int height, QList<KSquares::Chain> *foundChains)
 {
 	QList<QList<int> > ownChains;
@@ -368,7 +542,7 @@ void aiFunctions::findChains(bool *lines, int linesSize, int width, int height, 
 		}
 	}
 }
-
+*/
 
 QList<int> aiFunctions::getFreeLines(bool *lines, int linesSize)
 {

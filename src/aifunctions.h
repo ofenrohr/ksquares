@@ -14,8 +14,10 @@
 #include <QString>
 #include <QSharedPointer>
 #include <QMap>
+#include <QPair>
 
 #include "board.h"
+#include "aiBoard.h"
 
 namespace KSquares
 {
@@ -94,14 +96,26 @@ class aiFunctions
 		 */
 		static int findOwnChains(bool *lines, int linesSize, int width, int height, QList<QList<int> > *ownChains);
 		/**
+		 * Checks if a square is connected to a joint square (either ground or a square with 0 or 1 lines drawn)
+		 */
+		static bool squareConnectedToJoint(aiBoard::Ptr board, QMap<int, int> &squareValences, int square);
+		/**
+		 * Finds the squares connected to given square
+		 * @param board the board to operate on
+		 * @param square the square in question
+		 * @return List of pairs (first: line index, second: square index) adjacent to given square
+		 */
+		static QList<QPair<int, int> > getConnectedSquares(aiBoard::Ptr board, int square);
+		/**
+		 * Reverses a QList.
+		 */
+		template <typename T> static QList<T> reverseQList(const QList<T> & in);
+		/**
 		 * Find chains on board
-		 * @param lines lines of the board
-		 * @param linesSize number of lines on the board
-		 * @param width width of board in boxes
-		 * @param height height of board in boxes
+		 * @param board the board to analyze
 		 * @param ownChains returns the chains on the board
 		 */
-		static void findChains(bool *lines, int linesSize, int width, int height, QList<KSquares::Chain> *chains);
+		static void findChains(aiBoard::Ptr board, QList<KSquares::Chain> *chains);
 		/**
 		 * Classifies a given chain as short, long or loop chain.
 		 * @param chain list of lines the chain is made up of
