@@ -72,7 +72,6 @@ int aiAlphaBeta::chooseLine(const QList<bool> &newLines, const QList<int> &newSq
 
 /*
  * Sources:
- * http://en.wikipedia.org/wiki/Minimax#Minimax_algorithm_with_alternate_moves
  * http://www.fierz.ch/strategy1.htm
 */
 
@@ -240,6 +239,11 @@ QList<int> aiAlphaBeta::getDoubleDealingSequence(KSquares::Chain &chain)
 	
 	if (chain.type == KSquares::CHAIN_LOOP)
 	{
+		if (ret.size() < 3)
+		{
+			ret.clear();
+			return ret;
+		}
 		ret.removeAt(ret.size() - 3);
 		ret.removeAt(ret.size() - 1);
 	}
@@ -282,9 +286,13 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board)
 		}
 	}
 	
-	if (capturableLongChains.size() > 0 && capturableLoopChains.size() > 0)
+	if (capturableLongChains.size() > 0)
 	{
 		QList<int> baseMoveSequence;
+		for (int i = 0; i < capturableShortChains.size(); i++)
+		{
+			baseMoveSequence.append(chains[capturableShortChains[i]].lines);
+		}
 		for (int i = 0; i < capturableLoopChains.size(); i++)
 		{
 			baseMoveSequence.append(chains[capturableLoopChains[i]].lines);
@@ -318,6 +326,11 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board)
 			moveSequences.append(moveSequence);
 		}
 	}
+	else
+	{
+		
+	}
+	
 	
 	return moveSequences;
 }

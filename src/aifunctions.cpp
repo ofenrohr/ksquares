@@ -347,6 +347,20 @@ QString chainTypeToString(KSquares::ChainType t)
 	}
 }
 
+QList<int> aiFunctions::getGroundConnections(aiBoard::Ptr board, int square, bool includeCutConnections)
+{
+	QList<int> groundConnections;
+	int squareLines[4];
+	aiFunctions::linesFromSquare(board->width, board->height, squareLines, square);
+	for (int i = 0; i < 4; i++)
+	{
+		if (aiFunctions::squaresFromLine(board->width, board->height, squareLines[i]).size() == 1)
+			if (includeCutConnections || !board->lines[squareLines[i]])
+				groundConnections.append(squareLines[i]);
+	}
+	return groundConnections;
+}
+
 void aiFunctions::findChains(aiBoard::Ptr board, QList<KSquares::Chain> *foundChains)
 {
 	QMap<int, int> squareValences; // square, valence
@@ -381,7 +395,7 @@ void aiFunctions::findChains(aiBoard::Ptr board, QList<KSquares::Chain> *foundCh
 			QList<int> chain;
 			bool canCapture = squareValences[square] == 3;
 			
-			if (!canCapture) // square connected to ground
+			if (getGroundConnections(board, square).size() > 0) // square connected to ground
 			{
 				int groundLine = -1;
 				int squareLines[4];

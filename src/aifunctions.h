@@ -111,6 +111,10 @@ class aiFunctions
 		 */
 		template <typename T> static QList<T> reverseQList(const QList<T> & in);
 		/**
+		 * Returns all lines of a square that are connected to ground. If includeCutConnections is set drawn lines will be included
+		 */
+		static QList<int> getGroundConnections(aiBoard::Ptr board, int square, bool includeCutConnections = false);
+		/**
 		 * Find chains on board
 		 * @param board the board to analyze
 		 * @param ownChains returns the chains on the board
