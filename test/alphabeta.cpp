@@ -264,4 +264,4 @@ void alphabeta::testAlphaBeta002()
 }
 
 QTEST_MAIN(alphabeta)
-#include "alphabetb.moc"
+#include "alphabeta.moc"
