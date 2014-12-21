@@ -417,12 +417,11 @@ void aiFunctions::findChains(aiBoard::Ptr board, QList<KSquares::Chain> *foundCh
 			while (foundSquare)
 			{
 				foundSquare = false;
+				kDebug() << "square: " << square;
 				QList<QPair<int, int> > connectedSquares = getConnectedSquares(board, expandingSquare);
 				for (int i = 0; i < connectedSquares.size(); i++)
 				{
-					if (chain.contains(connectedSquares[i].first))// ||
-							//squareValences[expandingSquare] < 2 || // TODO: this skips too much
-							//!freeSquares.contains(connectedSquares[i].second)) // TODO: this might also skip too much
+					if (chain.contains(connectedSquares[i].first))
 						continue;
 					
 					if (squareConnectedToJoint(board, squareValences, expandingSquare) && expandingSquare != square)
@@ -461,7 +460,7 @@ void aiFunctions::findChains(aiBoard::Ptr board, QList<KSquares::Chain> *foundCh
 			else
 				foundChain.ownChain = false;
 			
-			kDebug() << "found chain:" << chain << "squares:" << foundChain.squares << "cap:" << canCapture << "type:" << chainTypeToString(foundChain.type);
+			//kDebug() << "found chain:" << chain << "squares:" << foundChain.squares << "cap:" << canCapture << "type:" << chainTypeToString(foundChain.type);
 			foundChains->append(foundChain);
 		}
 	}
@@ -786,7 +785,7 @@ KSquares::ChainType aiFunctions::classifyChain(int width, int height, const QLis
   // did we visit all squares?
   if (squares->size() != squareVisited.size())
   {
-    kDebug() << "ERROR: didn't visit all squares (squares cnt = " << squares->size() << ", squares visited cnt = " << squareVisited.size() << ")";
+    kDebug() << "ERROR: didn't visit all squares (squares cnt = " << squares->size() << ", squares visited cnt = " << squareVisited.size() << "), board: " << boardToString(lines, toLinesSize(width, height), width, height) << "chain: " << linelistToString(chain, toLinesSize(width, height), width, height);
     return KSquares::CHAIN_UNKNOWN;
   }
   

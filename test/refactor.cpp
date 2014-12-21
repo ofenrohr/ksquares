@@ -18,6 +18,7 @@ class refactor : public QObject
     void testClassifyChain002();
     void testClassifyChain003();
     void testFindOwnChains004();
+    void testFindChains005();
 };
 
 /**
@@ -189,5 +190,30 @@ void refactor::testFindOwnChains004()
   QVERIFY(squaresCnt == 4);
 }
 
+/**
+ * test findChains
+ */
+void refactor::testFindChains005()
+{
+  QList<int> lines;
+	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+  QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/4x4-chaintest-2.dbl", sGame.data(), &lines));
+	for (int i = 0; i < lines.size(); i++)
+	{
+		bool nextPlayer, boardFilled;
+		QList<int> completedSquares;
+		sGame->board()->addLine(lines[i], &nextPlayer, &boardFilled, &completedSquares);
+	}
+	
+	aiBoard::Ptr board(new aiBoard(sGame->board()));
+	
+	QList<KSquares::Chain> chains;
+	aiFunctions aift(4,4);
+	aift.findChains(board, &chains);
+	
+	QCOMPARE(chains.size(), 2);
+	QVERIFY(chains[0].squares.size() == 5 || chains[1].squares.size() == 5);
+	QVERIFY(chains[0].squares.size() == 9 || chains[1].squares.size() == 9);
+}
 QTEST_MAIN(refactor)
 #include "refactor.moc"

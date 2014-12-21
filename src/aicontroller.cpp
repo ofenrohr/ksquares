@@ -84,12 +84,14 @@ KSquaresAi::Ptr aiController::getAi()
 			kDebug() << "creating aiEasyMediumHard: w = " << width << ", h = " << height;
 			ai = KSquaresAi::Ptr(new aiEasyMediumHard(playerId, width, height, level));
 		break;
+		/*
 		case 3:
 			kDebug() << "creating aiMiniMax";
 			if (ai.isNull())
 				ai = KSquaresAi::Ptr(new aiMiniMax(playerId, maxPlayerId, width, height, level));
 		break;
-		case 4:
+		*/
+		case 3:
 			kDebug() << "creating aiAlphaBeta";
 			if (ai.isNull())
 				ai = KSquaresAi::Ptr(new aiAlphaBeta(playerId, maxPlayerId, width, height, level));

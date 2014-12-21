@@ -362,7 +362,7 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board)
 	for (int i = 0; i < board->linesSize; i++)
 		if (!board->lines[i] && !baseMoveSequence.contains(i))
 			freeLines.append(i);
-	kDebug() << "free lines: " << freeLines;
+	//kDebug() << "free lines: " << freeLines;
 	if (freeLines.size() == 0)
 		moveSequences.append(baseMoveSequence);
 	// add one sequence for each long and loop chain
@@ -383,7 +383,16 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board)
 	// add half and hard hearted handouts for short chains
 	for (int i = 0; i < openShortChains.size(); i++)
 	{
-		// TODO
+		if (chains[openShortChains[i]].squares.size() != 2)
+			continue;
+		QList<int> halfHeartedSequence;
+		halfHeartedSequence.append(baseMoveSequence);
+		halfHeartedSequence.append(chains[openShortChains[i]].lines[0]);
+		moveSequences.append(halfHeartedSequence);
+		QList<int> hardHeartedSequence;
+		hardHeartedSequence.append(baseMoveSequence);
+		hardHeartedSequence.append(chains[openShortChains[i]].lines[1]);
+		moveSequences.append(hardHeartedSequence);
 	}
 	// add all that's left
 	for (int i = 0; i < freeLines.size(); i++)
