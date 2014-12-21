@@ -115,7 +115,8 @@ class aiFunctions
 		 */
 		static QList<int> getGroundConnections(aiBoard::Ptr board, int square, bool includeCutConnections = false);
 		/**
-		 * Find chains on board
+		 * Find chains on board.
+		 * WARNING: closed long chains will be classified as loop chains because a 4 square sacrifice is required for double dealing.
 		 * @param board the board to analyze
 		 * @param ownChains returns the chains on the board
 		 */
