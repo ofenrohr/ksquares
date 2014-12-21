@@ -19,6 +19,7 @@ class refactor : public QObject
     void testClassifyChain003();
     void testFindOwnChains004();
     void testFindChains005();
+    void testFindChains006();
 };
 
 /**
@@ -215,5 +216,67 @@ void refactor::testFindChains005()
 	QVERIFY(chains[0].squares.size() == 5 || chains[1].squares.size() == 5);
 	QVERIFY(chains[0].squares.size() == 9 || chains[1].squares.size() == 9);
 }
+
+/**
+ * test findChains
+ */
+void refactor::testFindChains006()
+{
+  QList<int> lines;
+	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+  QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/6x3-barker-korf.dbl", sGame.data(), &lines));
+	for (int i = 0; i < lines.size(); i++)
+	{
+		bool nextPlayer, boardFilled;
+		QList<int> completedSquares;
+		sGame->board()->addLine(lines[i], &nextPlayer, &boardFilled, &completedSquares);
+	}
+	
+	aiBoard::Ptr board(new aiBoard(sGame->board()));
+	
+	QList<KSquares::Chain> chains;
+	aiFunctions aift(6,3);
+	aift.findChains(board, &chains);
+	
+	for (int i = 0; i < chains.size(); i++)
+	{
+		kDebug() << "chain: " << chains[i].lines << ", " << chains[i].squares;
+	}
+	
+	QCOMPARE(chains.size(), 3);
+	
+	QList<int> seq1;
+	seq1.append(13);
+	seq1.append(26);
+	seq1.append(33);
+	seq1.append(34);
+	seq1.append(35);
+	seq1.append(36);
+	
+	QList<int> seq2;
+	seq2.append(1);
+	seq2.append(14);
+	seq2.append(21);
+	seq2.append(22);
+	seq2.append(23);
+	seq2.append(30);
+	seq2.append(43);
+	
+	QList<int> seq3;
+	seq3.append(9);
+	seq3.append(10);
+	seq3.append(11);
+	seq3.append(18);
+	seq3.append(31);
+	
+	bool foundChain = false;
+	for (int i = 0; i < chains.size(); i++)
+	{
+		if (chains[i].lines == seq1)
+			foundChain = true;
+	}
+	QVERIFY(foundChain);
+}
+
 QTEST_MAIN(refactor)
 #include "refactor.moc"
