@@ -760,6 +760,8 @@ KSquares::ChainType aiFunctions::classifyChain(int width, int height, const QLis
     return KSquares::CHAIN_UNKNOWN;
   }
   
+  QMap<int, int> squareReached; // square index, times the square was reached - used for joint squares
+  
   // get all squares of the chain
   for (int i = 0; i < chain.size(); i++)
   {
@@ -773,11 +775,13 @@ KSquares::ChainType aiFunctions::classifyChain(int width, int height, const QLis
     {
       if (squares->contains(curSquares[j]))
         continue;
-      if (countBorderLines(width, height, curSquares[j], lines) < 2)
+			squareReached[curSquares[j]] ++;
+			if (countBorderLines(width, height, curSquares[j], lines) < 2 && squareReached[curSquares[j]] != 2)
         continue;
       squares->append(curSquares[j]);
     }
   }
+  squareReached.clear();
   //printSquares(squares, width, height);
   
   // no squares -> no chain
@@ -790,7 +794,7 @@ KSquares::ChainType aiFunctions::classifyChain(int width, int height, const QLis
   QStack<int> squareQueue;
   QList<int> squareVisited;
   QList<int> linesVisited;
-  
+	
   squareQueue.push(squares->at(0));
   while (squareQueue.size() > 0)
   {
@@ -802,7 +806,8 @@ KSquares::ChainType aiFunctions::classifyChain(int width, int height, const QLis
       //kDebug() << "visiting an square that has already been visited! (" << curSquare << ", queue = " << squareVisited << ")";
       return KSquares::CHAIN_LOOP;
     }
-    squareVisited.append(curSquare);
+    //if (countBorderLines(width, height, curSquare, lines) >= 2)
+			squareVisited.append(curSquare);
     
     // find connected squares for curSquare
     int curLines[4];
@@ -825,7 +830,8 @@ KSquares::ChainType aiFunctions::classifyChain(int width, int height, const QLis
         // check if the square isn't the one we are expanding
         if (curSquare == curLineSquares[j]) 
           continue;
-        if (countBorderLines(width, height, curLineSquares[j], lines) < 2)
+				squareReached[curLineSquares[j]] ++;
+        if (countBorderLines(width, height, curLineSquares[j], lines) < 2 && squareReached[curLineSquares[j]] != 2)
           continue;
         squareQueue.push(curLineSquares[j]);
       }
