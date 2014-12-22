@@ -304,7 +304,7 @@ QList<QPair<int, int> > aiFunctions::getConnectedSquares(aiBoard::Ptr board, int
 }
 
 
-bool aiFunctions::squareConnectedToJoint(aiBoard::Ptr board, QMap<int, int> &squareValences, int square)
+bool aiFunctions::squareConnectedToJoint(aiBoard::Ptr board, QMap<int, int> &squareValences, int square, bool checkJointInCycle)
 {
 	int squareLines[4];
 	aiFunctions::linesFromSquare(board->width, board->height, squareLines, square);
@@ -322,6 +322,8 @@ bool aiFunctions::squareConnectedToJoint(aiBoard::Ptr board, QMap<int, int> &squ
 		{
 			if (squareValences[lineSquares[j]] < 2)
 			{
+				if (checkJointInCycle && jointInCycle(board, lineSquares[j], square, squareValences))
+					continue;
 				kDebug() << "inner joint";
 				return true;
 			}
@@ -367,8 +369,47 @@ QList<int> aiFunctions::getGroundConnections(aiBoard::Ptr board, int square, boo
 	return groundConnections;
 }
 
+bool aiFunctions::jointInCycle(aiBoard::Ptr board, int joint, int start, QMap<int, int> &squareValences)
+{
+	QList<int> squaresVisited;
+	
+	if (squareValences[start] != 2)
+		return false;
+	
+	if (joint == start)
+	{
+		kDebug() << "WARNING: jointInCycle called with wrong parameter! joint == start";
+		return false;
+	}
+	
+	int square = start;
+	bool foundNextSquare = false;
+	do
+	{
+		foundNextSquare = false;
+		squaresVisited.append(square);
+		
+		QList<QPair<int, int> > connectedSquares = getConnectedSquares(board, square);
+		for (int i = 0; i < connectedSquares.size(); i++)
+		{
+			if (squaresVisited.contains(connectedSquares[i].second))
+				continue;
+			if (connectedSquares[i].second == joint)
+				return true;
+			if (squareValences[connectedSquares[i].second] == 2)
+			{
+				square = connectedSquares[i].second;
+				foundNextSquare = true;
+			}
+		}
+	} while (foundNextSquare);
+	
+	return false;
+}
+
 void aiFunctions::findChains(aiBoard::Ptr board, QList<KSquares::Chain> *foundChains)
 {
+	/*
 	QList<QList<int> > ownChains;
 	findOwnChains(board->lines, board->linesSize, board->width, board->height, &ownChains);
 	for (int i = 0; i < ownChains.size(); i++)
@@ -392,6 +433,7 @@ void aiFunctions::findChains(aiBoard::Ptr board, QList<KSquares::Chain> *foundCh
 		}
 		foundChains->append(foundChain);
 	}
+	*/
 	
 	QMap<int, int> squareValences; // square, valence (WARNING: not really the valence, it's the count of border lines!)
 	
@@ -458,7 +500,9 @@ void aiFunctions::findChains(aiBoard::Ptr board, QList<KSquares::Chain> *foundCh
 					if (chain.contains(connectedSquares[i].first))
 						continue;
 					
-					if (squareConnectedToJoint(board, squareValences, expandingSquare) && expandingSquare != square)
+					if (squareConnectedToJoint(board, squareValences, expandingSquare) && 
+						expandingSquare != square
+					)
 					{
 						chain.append(connectedSquares[i].first);
 						kDebug() << "end of chain: " << expandingSquare << ", connectedSquares[i] = (" << connectedSquares[i].first << "|" << connectedSquares[i].second << "), expandingSquare = " << expandingSquare << ", square = " << square;
@@ -473,8 +517,8 @@ void aiFunctions::findChains(aiBoard::Ptr board, QList<KSquares::Chain> *foundCh
 							squareQueue.push(expandingSquare);
 						kDebug() << "pushing square " << expandingSquare;
 					}
-					squareValences[expandingSquare] = squareValences[expandingSquare] + 1;
-					squareValences[connectedSquares[i].second] = squareValences[connectedSquares[i].second] + 1;
+					//squareValences[expandingSquare] = squareValences[expandingSquare] + 1;
+					//squareValences[connectedSquares[i].second] = squareValences[connectedSquares[i].second] + 1;
 				}
 			}
 			
@@ -505,6 +549,7 @@ void aiFunctions::findChains(aiBoard::Ptr board, QList<KSquares::Chain> *foundCh
 	}
 	
 	// undo the taken own chains
+	/*
 	for (int i = 0; i < foundChains->size(); i++)
 	{
 		if (!foundChains->at(i).ownChain)
@@ -514,6 +559,7 @@ void aiFunctions::findChains(aiBoard::Ptr board, QList<KSquares::Chain> *foundCh
 		for (int j = 0; j < foundChains->at(i).squares.size(); j++)
 			board->squareOwners[foundChains->at(i).squares[j]] = -1;
 	}
+	*/
 }
 
 /*

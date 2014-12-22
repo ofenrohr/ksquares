@@ -98,7 +98,7 @@ class aiFunctions
 		/**
 		 * Checks if a square is connected to a joint square (either ground or a square with 0 or 1 lines drawn)
 		 */
-		static bool squareConnectedToJoint(aiBoard::Ptr board, QMap<int, int> &squareValences, int square);
+		static bool squareConnectedToJoint(aiBoard::Ptr board, QMap<int, int> &squareValences, int square, bool checkJointInCycle = false);
 		/**
 		 * Finds the squares connected to given square
 		 * @param board the board to operate on
@@ -114,6 +114,14 @@ class aiFunctions
 		 * Returns all lines of a square that are connected to ground. If includeCutConnections is set drawn lines will be included
 		 */
 		static QList<int> getGroundConnections(aiBoard::Ptr board, int square, bool includeCutConnections = false);
+		/**
+		 * Determines if there is a simple path that ends at the same joint square
+		 * @param board the board to operate on
+		 * @param joint the joint in question
+		 * @param start the square to start from (!= joint square)
+		 * @param squareValences index: square index, value: number of completed lines in dots & boxes representation
+		 */
+		static bool jointInCycle(aiBoard::Ptr board, int joint, int start, QMap<int, int> &squareValences);
 		/**
 		 * Find chains on board.
 		 * WARNING: closed long chains will be classified as loop chains because a 4 square sacrifice is required for double dealing.
