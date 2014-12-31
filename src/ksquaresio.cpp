@@ -399,13 +399,14 @@ bool KSquaresIO::saveGame(QString filename, KSquaresGame *sGame)
 	else if (filename.endsWith(".tex"))
 	{
 		// save in tex format
-		outStream << "\\begin{pgfpicture}\n";
+		outStream << "\\begin{tikzpicture}\n";
 		outStream << "  \\pgfsetlinewidth{1pt}\n";
 		for (int x = 0; x <= sGame->board()->width(); x++)
 		{
 			for (int y = 0; y <= sGame->board()->height(); y++)
 			{
-				outStream << "  \\pgfcircle[fill]{\\pgfxy(" << x << "," << y << ")}{3pt}\n";
+				//outStream << "  \\pgfcircle[fill]{\\pgfxy(" << x << "," << y << ")}{3pt}\n";
+				outStream << "  \\fill (" << x << "," << y << ") circle (3pt);\n";
 			}
 		}
 		for (int i = 0; i < sGame->board()->getLineHistory().size(); i++)
@@ -418,16 +419,18 @@ bool KSquaresIO::saveGame(QString filename, KSquaresGame *sGame)
 				file.close();
 				return false;
 			}
-			outStream << "  \\pgfxyline(" << p1.x() << ", " << p1.y() << ")(" << p2.x() << ", " << p2.y() << ")\n";
+			//outStream << "  \\pgfxyline(" << p1.x() << ", " << p1.y() << ")(" << p2.x() << ", " << p2.y() << ")\n";
+			outStream << "  \\draw (" << p1.x() << ", " << p1.y() << ") -- (" << p2.x() << ", " << p2.y() << ");\n";
 		}
 		for (int i = 0; i < sGame->board()->squares().size(); i++)
 		{
 			if (sGame->board()->squares()[i] >= 0)
 			{
-				outStream << "  \\pgfputat{\\pgfxy(" << ( i % sGame->board()->width() ) << ".5," << ( sGame->board()->height() - i / sGame->board()->width() - 1 ) << ".5)}{\\pgfbox[center,center]{{\\LARGE " << (char)(sGame->board()->squares()[i] + 'A') << "}}}\n";
+				//outStream << "  \\pgfputat{\\pgfxy(" << ( i % sGame->board()->width() ) << ".5," << ( sGame->board()->height() - i / sGame->board()->width() - 1 ) << ".5)}{\\pgfbox[center,center]{{\\LARGE " << (char)(sGame->board()->squares()[i] + 'A') << "}}}\n";
+				outStream << "  \\node[align=center] at (" << ( i % sGame->board()->width() ) << ".5," << ( sGame->board()->height() - i / sGame->board()->width() - 1 ) << ".5) { {\\LARGE " << (char)(sGame->board()->squares()[i] + 'A') << "} };\n";
 			}
 		}
-		outStream << "\\end{pgfpicture}\n";
+		outStream << "\\end{tikzpicture}\n";
 	}
 	else
 	{
