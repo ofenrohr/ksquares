@@ -15,6 +15,7 @@
 #include <QSharedPointer>
 #include <QMap>
 #include <QPair>
+#include <QDebug>
 
 #include "board.h"
 #include "aiBoard.h"
@@ -29,7 +30,18 @@ namespace KSquares
 		ChainType type;
 		bool ownChain;
 	} Chain;
+	
+	// used to convey connections to another square via a line
+	typedef struct LSConnection_t
+	{
+		LSConnection_t(int l, int s) {line = l; square = s;}
+		int line;
+		int square;
+		friend QDebug operator<<(QDebug dbg, const KSquares::LSConnection_t &con) { dbg.nospace() << "LSConnection(l: " << con.line << ", s: " << con.square << ")"; return dbg.maybeSpace(); }
+	} LSConnection;
+	
 }
+
 
 
 class aiFunctions 
@@ -100,12 +112,17 @@ class aiFunctions
 		 */
 		static bool squareConnectedToJoint(aiBoard::Ptr board, QMap<int, int> &squareValences, int square, bool checkJointInCycle = false);
 		/**
+		 * Finds connected joints
+		 * @return list of connections + type of connection: true = ground connection, false = inner joint connection; connections to ground have square value of -1
+		 */
+		static QList<QPair<KSquares::LSConnection, bool> > getConnectionsToJoints(aiBoard::Ptr board, QMap<int, int> &squareValences, int square, bool checkJointInCycle = false);
+		/**
 		 * Finds the squares connected to given square
 		 * @param board the board to operate on
 		 * @param square the square in question
 		 * @return List of pairs (first: line index, second: square index) adjacent to given square
 		 */
-		static QList<QPair<int, int> > getConnectedSquares(aiBoard::Ptr board, int square);
+		static QList<KSquares::LSConnection> getConnectedSquares(aiBoard::Ptr board, int square);
 		/**
 		 * Reverses a QList.
 		 */

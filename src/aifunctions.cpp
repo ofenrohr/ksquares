@@ -280,9 +280,9 @@ int aiFunctions::findOwnChains(bool *lines, int linesSize, int width, int height
 }
 
 
-QList<QPair<int, int> > aiFunctions::getConnectedSquares(aiBoard::Ptr board, int square)
+QList<KSquares::LSConnection > aiFunctions::getConnectedSquares(aiBoard::Ptr board, int square)
 {
-	QList<QPair<int, int> > connectedSquares;
+	QList<KSquares::LSConnection > connectedSquares;
 	
 	int squareLines[4];
 	aiFunctions::linesFromSquare(board->width, board->height, squareLines, square);
@@ -295,7 +295,7 @@ QList<QPair<int, int> > aiFunctions::getConnectedSquares(aiBoard::Ptr board, int
 		{
 			if (lineSquares[j] == square)
 				continue;
-			QPair<int, int> connectedSquare(squareLines[i], lineSquares[j]);
+			KSquares::LSConnection connectedSquare(squareLines[i], lineSquares[j]);
 			connectedSquares.append(connectedSquare);
 		}
 	}
@@ -315,7 +315,7 @@ bool aiFunctions::squareConnectedToJoint(aiBoard::Ptr board, QMap<int, int> &squ
 		QList<int> lineSquares = aiFunctions::squaresFromLine(board->width, board->height, squareLines[i]);
 		if (getGroundConnections(board, square).size() >= 1)
 		{
-			kDebug() << "ground joint";
+			kDebug() << "square " << square << " connected to ground joint";
 			return true;
 		}
 		for (int j = 0; j < lineSquares.size(); j++)
@@ -324,12 +324,47 @@ bool aiFunctions::squareConnectedToJoint(aiBoard::Ptr board, QMap<int, int> &squ
 			{
 				if (checkJointInCycle && jointInCycle(board, lineSquares[j], square, squareValences))
 					continue;
-				kDebug() << "inner joint";
+				kDebug() << "square " << square << " connected to inner joint";
 				return true;
 			}
 		}
 	}
 	return false;
+}
+
+
+// @return list of connections + type of connection: true = ground connection, false = inner joint connection; connections to ground have square value of -1
+QList<QPair<KSquares::LSConnection, bool> > aiFunctions::getConnectionsToJoints(aiBoard::Ptr board, QMap<int, int> &squareValences, int square, bool checkJointInCycle)
+{
+	QList<QPair<KSquares::LSConnection, bool> > ret;
+	int squareLines[4];
+	aiFunctions::linesFromSquare(board->width, board->height, squareLines, square);
+	for (int i = 0; i < 4; i++)
+	{
+		if (board->lines[squareLines[i]])
+			continue;
+		QList<int> lineSquares = aiFunctions::squaresFromLine(board->width, board->height, squareLines[i]);
+		QList<int> groundConnections = getGroundConnections(board, square);
+		for (int j = 0; j < groundConnections.size(); j++)
+		{
+			kDebug() << "square " << square << " connected to ground joint via line " << groundConnections[j];
+			KSquares::LSConnection connection(groundConnections[j], -1);
+			ret.append(QPair<KSquares::LSConnection, bool>(connection, true));
+		}
+		for (int j = 0; j < lineSquares.size(); j++)
+		{
+			if (squareValences[lineSquares[j]] < 2)
+			{
+				if (checkJointInCycle && jointInCycle(board, lineSquares[j], square, squareValences))
+					continue;
+				kDebug() << "square " << square << " connected to inner joint square " << lineSquares[j] << " via line " << squareLines[i];
+				KSquares::LSConnection connection(squareLines[i], lineSquares[j]);
+				ret.append(QPair<KSquares::LSConnection, bool>(connection, false));
+				//return true;
+			}
+		}
+	}
+	return ret;
 }
 
 
@@ -389,16 +424,16 @@ bool aiFunctions::jointInCycle(aiBoard::Ptr board, int joint, int start, QMap<in
 		foundNextSquare = false;
 		squaresVisited.append(square);
 		
-		QList<QPair<int, int> > connectedSquares = getConnectedSquares(board, square);
+		QList<KSquares::LSConnection > connectedSquares = getConnectedSquares(board, square);
 		for (int i = 0; i < connectedSquares.size(); i++)
 		{
-			if (squaresVisited.contains(connectedSquares[i].second))
+			if (squaresVisited.contains(connectedSquares[i].square))
 				continue;
-			if (connectedSquares[i].second == joint)
+			if (connectedSquares[i].square == joint)
 				return true;
-			if (squareValences[connectedSquares[i].second] == 2)
+			if (squareValences[connectedSquares[i].square] == 2)
 			{
-				square = connectedSquares[i].second;
+				square = connectedSquares[i].square;
 				foundNextSquare = true;
 			}
 		}
@@ -493,24 +528,24 @@ void aiFunctions::findChains(aiBoard::Ptr board, QList<KSquares::Chain> *foundCh
 					chain.append(endGroundConnections[0]);
 				}
 				// look for next squares in chain
-				QList<QPair<int, int> > connectedSquares = getConnectedSquares(board, expandingSquare);
+				QList<KSquares::LSConnection > connectedSquares = getConnectedSquares(board, expandingSquare);
 				kDebug() << "connectedSquares: " << connectedSquares;
 				for (int i = 0; i < connectedSquares.size(); i++)
 				{
-					if (chain.contains(connectedSquares[i].first))
+					if (chain.contains(connectedSquares[i].line))
 						continue;
 					
 					if (squareConnectedToJoint(board, squareValences, expandingSquare) && 
 						expandingSquare != square
 					)
 					{
-						chain.append(connectedSquares[i].first);
-						kDebug() << "end of chain: " << expandingSquare << ", connectedSquares[i] = (" << connectedSquares[i].first << "|" << connectedSquares[i].second << "), expandingSquare = " << expandingSquare << ", square = " << square;
+						chain.append(connectedSquares[i].line);
+						kDebug() << "end of chain: " << expandingSquare << ", connectedSquares[i] = (" << connectedSquares[i].line << "|" << connectedSquares[i].square << "), expandingSquare = " << expandingSquare << ", square = " << square;
 					}
 					else
 					{
-						chain.append(connectedSquares[i].first);
-						expandingSquare = connectedSquares[i].second;
+						chain.append(connectedSquares[i].line);
+						expandingSquare = connectedSquares[i].square;
 						freeSquares.removeAll(expandingSquare);
 						//foundSquare = true;
 						//if (squareValences[expandingSquare] >= 2)
@@ -518,7 +553,7 @@ void aiFunctions::findChains(aiBoard::Ptr board, QList<KSquares::Chain> *foundCh
 						kDebug() << "pushing square " << expandingSquare;
 					}
 					//squareValences[expandingSquare] = squareValences[expandingSquare] + 1;
-					//squareValences[connectedSquares[i].second] = squareValences[connectedSquares[i].second] + 1;
+					//squareValences[connectedSquares[i].square] = squareValences[connectedSquares[i].square] + 1;
 				}
 			}
 			
