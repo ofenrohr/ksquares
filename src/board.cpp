@@ -71,7 +71,7 @@ bool Board::addLine(int lineIndex, bool *nextPlayer, bool *boardFilled, QList<in
 			currentPlayerId_++;
 		}
 	}
-	kDebug() << "current player id: " << currentPlayerId_;
+	//kDebug() << "current player id: " << currentPlayerId_;
 	*boardFilled = !lineList_.contains(false); // game over?
 	return true;
 }

@@ -429,12 +429,13 @@ bool aiFunctions::jointInCycle(aiBoard::Ptr board, int joint, int start, QMap<in
 		{
 			if (squaresVisited.contains(connectedSquares[i].square))
 				continue;
-			if (connectedSquares[i].square == joint)
+			if (connectedSquares[i].square == joint && square != start)
 				return true;
 			if (squareValences[connectedSquares[i].square] == 2)
 			{
 				square = connectedSquares[i].square;
 				foundNextSquare = true;
+				break;
 			}
 		}
 	} while (foundNextSquare);

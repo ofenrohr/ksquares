@@ -22,6 +22,7 @@ class minimax : public QObject
 		void testMiniMax003();
 		void testMiniMax004();
 		void testMiniMax005();
+		void testMiniMax006();
 };
 
 /**
@@ -206,25 +207,36 @@ void minimax::testMiniMax005()
 	
 	aiMiniMax ai(0, 1, width, height, -1);
 	
-	
-	/*
-  aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(linesb, linesSize, width, height, squareOwners, 0, 1));
-	ai.setDebug(true);
-	int line = -10;
-	
-	float res = ai.minimax(board, 2, &line);
-	
-	QFile file("/tmp/minimax2.dot");
-	QVERIFY(file.open(QIODevice::ReadWrite | QIODevice::Truncate));
-	
-	QTextStream outStream(&file);
-	outStream << "graph {\n" << ai.getDebugDot() << "}";
-	*/
-	
 	int line = ai.chooseLine(linesbl, squareOwners);
 	QCOMPARE(line, 6);
 }
 
+void minimax::testMiniMax006()
+{
+	QList<int> lines;
+	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+  QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/2x1-tree.dbl", sGame.data(), &lines));
+	for (int i = 0; i < lines.size(); i++)
+	{
+		bool nextPlayer, boardFilled;
+		QList<int> completedSquares;
+		sGame->board()->addLine(lines[i], &nextPlayer, &boardFilled, &completedSquares);
+	}
+	
+	aiBoard::Ptr board(new aiBoard(sGame->board()));
+	
+	aiMiniMax ai(0, 1, board->width, board->height, -1);
+	ai.setDebug(true);
+	
+	int line=-10;
+	float res = ai.minimax(board, 4, &line);
+	
+	QFile file("/tmp/tree.dot");
+	QVERIFY(file.open(QIODevice::ReadWrite | QIODevice::Truncate));
+	
+	QTextStream outStream(&file);
+	outStream << "graph {\n" << ai.getDebugDot() << "}";
+}
 
 QTEST_MAIN(minimax)
 #include "minimax.moc"

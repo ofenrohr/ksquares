@@ -20,6 +20,8 @@ class refactor : public QObject
     void testFindOwnChains004();
     void testFindChains005();
     void testFindChains006();
+		void testIsJointInCycle007();
+		void testIsJointInCycle008();
 };
 
 /**
@@ -276,6 +278,62 @@ void refactor::testFindChains006()
 			foundChain = true;
 	}
 	QVERIFY(foundChain);
+}
+
+
+void refactor::testIsJointInCycle007()
+{
+	QList<int> lines;
+	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+  QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/6x3-barker-korf.dbl", sGame.data(), &lines));
+	for (int i = 0; i < lines.size(); i++)
+	{
+		bool nextPlayer, boardFilled;
+		QList<int> completedSquares;
+		sGame->board()->addLine(lines[i], &nextPlayer, &boardFilled, &completedSquares);
+	}
+	
+	aiBoard::Ptr board(new aiBoard(sGame->board()));
+	
+	QMap<int, int> squareValences; // square, valence (WARNING: not really the valence, it's the count of border lines!)
+	for (int i = 0; i < board->squareOwners.size(); i++)
+	{
+		if (board->squareOwners[i] == -1)
+		{
+			squareValences[i] = aiFunctions::countBorderLines(board->width, board->height, i, board->lines);
+		}
+	}
+	
+	aiFunctions aift(6,3);
+	QVERIFY(! aift.jointInCycle(board, 16, 10, squareValences));
+}
+
+
+void refactor::testIsJointInCycle008()
+{
+	QList<int> lines;
+	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+  QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/4x4-chaintest-2.dbl", sGame.data(), &lines));
+	for (int i = 0; i < lines.size(); i++)
+	{
+		bool nextPlayer, boardFilled;
+		QList<int> completedSquares;
+		sGame->board()->addLine(lines[i], &nextPlayer, &boardFilled, &completedSquares);
+	}
+	
+	aiBoard::Ptr board(new aiBoard(sGame->board()));
+	
+	QMap<int, int> squareValences; // square, valence (WARNING: not really the valence, it's the count of border lines!)
+	for (int i = 0; i < board->squareOwners.size(); i++)
+	{
+		if (board->squareOwners[i] == -1)
+		{
+			squareValences[i] = aiFunctions::countBorderLines(board->width, board->height, i, board->lines);
+		}
+	}
+	
+	aiFunctions aift(board->width, board->height);
+	QVERIFY(aift.jointInCycle(board, 5, 4, squareValences));
 }
 
 QTEST_MAIN(refactor)

@@ -100,8 +100,8 @@ float aiMiniMax::minimax(aiBoard::Ptr board, int depth, int *line, int parentNod
 		//QString debugDot = "";
 		debugDot.append("  n");
 		debugDot.append(QString::number(thisNode));
-		debugDot.append("[label=\"p:");
-		debugDot.append(QString::number(board->playerId));
+		debugDot.append("[shape=box,label=\"p:");
+		debugDot.append(QString('A'+board->playerId));
 		debugDot.append("\\l");
 		debugDot.append(boardStr);
 		debugDot.append("\"];\n");
@@ -139,7 +139,7 @@ float aiMiniMax::minimax(aiBoard::Ptr board, int depth, int *line, int parentNod
 	{
 		//kDebug() << "evaluating board:" << boardToString(board->lines, board->linesSize, board->width, board->height);
 		int eval = evaluate(board);
-		if (debug)
+		if (debug && false)
 		{
 			//kDebug() << "result: " << eval;
 			debugDot.append("  e");
