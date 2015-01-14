@@ -27,6 +27,41 @@ class berlekamp : public QObject
 		void testBerlekamp007(); // 9
 };
 
+void executeAi(Board *board, int player, QString name, QList<int> expectedLines)
+{
+  // open the file
+	QString filename = "test-" + name + ".log";
+	QFile file(filename);
+	if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate))
+	{
+		kDebug() << "KSquaresIO::saveGame error: Can't open file";
+		return;
+	}
+	
+	QTextStream summary(&file);
+	
+	summary << "Summary for " << name << ": \n";
+	for (int i = 0; i <= aiController::getMaxAiLevel(); i++)
+	{
+		aiController aic(player, 1, board->width(), board->height(), i);
+		KSquaresAi::Ptr ai = aic.getAi();
+		int aiLine = ai->chooseLine(board->lines(), board->squares());
+		if (expectedLines.contains(aiLine))
+		{
+			summary << "PASS: " << ai->getName() << "\n";
+		}
+		else
+		{
+			summary << "FAIL: " << ai->getName() << ", returned: " << aiLine << ", expected: ";
+			for (int j = 0; j < expectedLines.size(); j++)
+				summary << QString::number(expectedLines[j]) << (j != expectedLines.size() -1 ? "," : "");
+			summary << "\n";
+		}
+	}
+	
+	file.close();
+}
+
 /**
  * test based on berlekamps book "sophisticated child's play"
  * page 13 & 14
@@ -43,25 +78,9 @@ void berlekamp::testBerlekamp001()
 		sGame->board()->addLine(lines[i], &nextPlayer, &boardFilled, &completedSquares);
 	}
 	
-	int expectedLine = 16;
-	QString summaryStr = "Summary: \n";
-	QTextStream summary(&summaryStr);
-	for (int i = 0; i <= aiController::getMaxAiLevel(); i++)
-	{
-		aiController aic(lines.size() % 2, 1, sGame->board()->width(), sGame->board()->height(), i);
-		KSquaresAi::Ptr ai = aic.getAi();
-		int aiLine = ai->chooseLine(sGame->board()->lines(), sGame->board()->squares());
-		if (aiLine == expectedLine)
-		{
-			summary << "PASS: " << ai->getName() << "\n";
-		}
-		else
-		{
-			summary << "FAIL: " << ai->getName() << ", returned: " << aiLine << ", expected: " << expectedLine << "\n";
-		}
-	}
-	
-	kDebug() << summaryStr;
+	QList<int> expectedLines;
+	expectedLines.append(16);
+	executeAi(sGame->board(), lines.size() % 2, "berlekamp-01", expectedLines);
 }
 
 /**
@@ -83,27 +102,7 @@ void berlekamp::testBerlekamp002()
 	QList<int> expectedLines;
 	expectedLines.append(17);
 	expectedLines.append(21);
-	QString summaryStr = "Summary: \n";
-	QTextStream summary(&summaryStr);
-	for (int i = 0; i <= aiController::getMaxAiLevel(); i++)
-	{
-		aiController aic(lines.size() % 2, 1, sGame->board()->width(), sGame->board()->height(), i);
-		KSquaresAi::Ptr ai = aic.getAi();
-		int aiLine = ai->chooseLine(sGame->board()->lines(), sGame->board()->squares());
-		if (expectedLines.contains(aiLine))
-		{
-			summary << "PASS: " << ai->getName() << "\n";
-		}
-		else
-		{
-			summary << "FAIL: " << ai->getName() << ", returned: " << aiLine << ", expected: ";
-			for (int j = 0; j < expectedLines.size(); j++)
-				summary << QString::number(expectedLines[j]) << (j != expectedLines.size() -1 ? "," : "");
-			summary << "\n";
-		}
-	}
-	
-	kDebug() << summaryStr;
+	executeAi(sGame->board(), lines.size() % 2, "berlekamp-02", expectedLines);
 }
 
 /**
@@ -122,25 +121,9 @@ void berlekamp::testBerlekamp003()
 		sGame->board()->addLine(lines[i], &nextPlayer, &boardFilled, &completedSquares);
 	}
 	
-	int expectedLine = 7;
-	QString summaryStr = "Summary: \n";
-	QTextStream summary(&summaryStr);
-	for (int i = 0; i <= aiController::getMaxAiLevel(); i++)
-	{
-		aiController aic(lines.size() % 2, 1, sGame->board()->width(), sGame->board()->height(), i);
-		KSquaresAi::Ptr ai = aic.getAi();
-		int aiLine = ai->chooseLine(sGame->board()->lines(), sGame->board()->squares());
-		if (aiLine == expectedLine)
-		{
-			summary << "PASS: " << ai->getName() << "\n";
-		}
-		else
-		{
-			summary << "FAIL: " << ai->getName() << ", returned: " << aiLine << ", expected: " << expectedLine << "\n";
-		}
-	}
-	
-	kDebug() << summaryStr;
+	QList<int> expectedLines;
+	expectedLines.append(7);
+	executeAi(sGame->board(), lines.size() % 2, "berlekamp-03", expectedLines);
 }
 
 /**
@@ -159,25 +142,9 @@ void berlekamp::testBerlekamp004()
 		sGame->board()->addLine(lines[i], &nextPlayer, &boardFilled, &completedSquares);
 	}
 	
-	int expectedLine = 12;
-	QString summaryStr = "Summary: \n";
-	QTextStream summary(&summaryStr);
-	for (int i = 0; i <= aiController::getMaxAiLevel(); i++)
-	{
-		aiController aic(lines.size() % 2, 1, sGame->board()->width(), sGame->board()->height(), i);
-		KSquaresAi::Ptr ai = aic.getAi();
-		int aiLine = ai->chooseLine(sGame->board()->lines(), sGame->board()->squares());
-		if (aiLine == expectedLine)
-		{
-			summary << "PASS: " << ai->getName() << "\n";
-		}
-		else
-		{
-			summary << "FAIL: " << ai->getName() << ", returned: " << aiLine << ", expected: " << expectedLine << "\n";
-		}
-	}
-	
-	kDebug() << summaryStr;
+	QList<int> expectedLines;
+	expectedLines.append(12);
+	executeAi(sGame->board(), lines.size() % 2, "berlekamp-04", expectedLines);
 }
 
 /**
@@ -196,25 +163,9 @@ void berlekamp::testBerlekamp005()
 		sGame->board()->addLine(lines[i], &nextPlayer, &boardFilled, &completedSquares);
 	}
 	
-	int expectedLine = 0;
-	QString summaryStr = "Summary: \n";
-	QTextStream summary(&summaryStr);
-	for (int i = 0; i <= aiController::getMaxAiLevel(); i++)
-	{
-		aiController aic(lines.size() % 2, 1, sGame->board()->width(), sGame->board()->height(), i);
-		KSquaresAi::Ptr ai = aic.getAi();
-		int aiLine = ai->chooseLine(sGame->board()->lines(), sGame->board()->squares());
-		if (aiLine == expectedLine)
-		{
-			summary << "PASS: " << ai->getName() << "\n";
-		}
-		else
-		{
-			summary << "FAIL: " << ai->getName() << ", returned: " << aiLine << ", expected: " << expectedLine << "\n";
-		}
-	}
-	
-	kDebug() << summaryStr;
+	QList<int> expectedLines;
+	expectedLines.append(0);
+	executeAi(sGame->board(), lines.size() % 2, "berlekamp-05", expectedLines);
 }
 
 /**
@@ -233,25 +184,9 @@ void berlekamp::testBerlekamp006()
 		sGame->board()->addLine(lines[i], &nextPlayer, &boardFilled, &completedSquares);
 	}
 	
-	int expectedLine = 10;
-	QString summaryStr = "Summary: \n";
-	QTextStream summary(&summaryStr);
-	for (int i = 0; i <= aiController::getMaxAiLevel(); i++)
-	{
-		aiController aic(lines.size() % 2, 1, sGame->board()->width(), sGame->board()->height(), i);
-		KSquaresAi::Ptr ai = aic.getAi();
-		int aiLine = ai->chooseLine(sGame->board()->lines(), sGame->board()->squares());
-		if (aiLine == expectedLine)
-		{
-			summary << "PASS: " << ai->getName() << "\n";
-		}
-		else
-		{
-			summary << "FAIL: " << ai->getName() << ", returned: " << aiLine << ", expected: " << expectedLine << "\n";
-		}
-	}
-	
-	kDebug() << summaryStr;
+	QList<int> expectedLines;
+	expectedLines.append(10);
+	executeAi(sGame->board(), lines.size() % 2, "berlekamp-06", expectedLines);
 }
 
 /**
@@ -270,25 +205,9 @@ void berlekamp::testBerlekamp007()
 		sGame->board()->addLine(lines[i], &nextPlayer, &boardFilled, &completedSquares);
 	}
 	
-	int expectedLine = 9;
-	QString summaryStr = "Summary: \n";
-	QTextStream summary(&summaryStr);
-	for (int i = 0; i <= aiController::getMaxAiLevel(); i++)
-	{
-		aiController aic(lines.size() % 2, 1, sGame->board()->width(), sGame->board()->height(), i);
-		KSquaresAi::Ptr ai = aic.getAi();
-		int aiLine = ai->chooseLine(sGame->board()->lines(), sGame->board()->squares());
-		if (aiLine == expectedLine)
-		{
-			summary << "PASS: " << ai->getName() << "\n";
-		}
-		else
-		{
-			summary << "FAIL: " << ai->getName() << ", returned: " << aiLine << ", expected: " << expectedLine << "\n";
-		}
-	}
-	
-	kDebug() << summaryStr;
+	QList<int> expectedLines;
+	expectedLines.append(9);
+	executeAi(sGame->board(), lines.size() % 2, "berlekamp-07", expectedLines);
 }
 
 QTEST_MAIN(berlekamp)
