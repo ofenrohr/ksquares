@@ -470,32 +470,6 @@ void aiFunctions::findChains(aiBoard::Ptr board, QList<KSquares::Chain> *foundCh
 
 void aiFunctions::findChains(aiBoard::Ptr board, QList<KSquares::Chain> *foundChains)
 {
-	/*
-	QList<QList<int> > ownChains;
-	findOwnChains(board->lines, board->linesSize, board->width, board->height, &ownChains);
-	for (int i = 0; i < ownChains.size(); i++)
-	{
-		KSquares::Chain foundChain;
-		foundChain.lines = ownChains[i];
-		foundChain.type = classifyChain(board->width, board->height, ownChains[i], board->lines, &(foundChain.squares));
-		if (foundChain.type == KSquares::CHAIN_LONG &&
-			countBorderLines(board->width, board->height, foundChain.squares[0], board->lines) &&
-			countBorderLines(board->width, board->height, foundChain.squares[foundChain.squares.size() - 1], board->lines)
-		)
-			foundChain.type = KSquares::CHAIN_LOOP;
-		foundChain.ownChain = true;
-		for (int j = 0; j < ownChains[i].size(); j++)
-		{
-			board->lines[ownChains[i][j]] = true;
-		}
-		for (int j = 0; j < foundChain.squares.size(); j++)
-		{
-			board->squareOwners[foundChain.squares[j]] = -2;
-		}
-		foundChains->append(foundChain);
-	}
-	*/
-	
 	QMap<int, int> squareValences; // square, valence (WARNING: not really the valence, it's the count of border lines!)
 	
 	// find untaken squares and calculate valence
@@ -512,32 +486,15 @@ void aiFunctions::findChains(aiBoard::Ptr board, QList<KSquares::Chain> *foundCh
 	}
 	
 	// look for chains
-	//QList<QList<int> > capturableChains;
-	//QList<QList<int> > uncapturableChains;
 	while (freeSquares.size() > 0)
 	{
 		int square = freeSquares.takeLast();
 		kDebug() << "square: " << square;
-		/*
-		if (squareValences[square] == 2 && squareConnectedToJoint(board, squareValences, square))
-		{
-			kDebug() << "square connected to joint: " << square;
-		}
-		*/
 		
 		if (squareValences[square] == 3 || (squareValences[square] == 2 && squareConnectedToJoint(board, squareValences, square)))
 		{
 			QList<int> chain;
 			bool canCapture = squareValences[square] == 3;
-			
-			/*
-			QList<int> startGroundConnections = getGroundConnections(board, square);
-			if (startGroundConnections.size() > 0) // square connected to ground
-			{
-				chain.append(startGroundConnections);
-				//squareValences[square] = squareValences[square] + startGroundConnections.size();
-			}
-			*/
 			
 			//bool foundSquare = true;
 			int expandingSquare = square;
@@ -591,27 +548,6 @@ void aiFunctions::findChains(aiBoard::Ptr board, QList<KSquares::Chain> *foundCh
 						// add the connection to the joint we're coming from
 						chain.append(connectedSquares[i].line);
 					}
-					/*
-					if (squareConnectedToJoint(board, squareValences, expandingSquare) && 
-						expandingSquare != square
-					)
-					{
-						chain.append(connectedSquares[i].line);
-						kDebug() << "end of chain: " << expandingSquare << ", connectedSquares[i] = (" << connectedSquares[i].line << "|" << connectedSquares[i].square << "), expandingSquare = " << expandingSquare << ", square = " << square;
-					}
-					else
-					{
-						chain.append(connectedSquares[i].line);
-						expandingSquare = connectedSquares[i].square;
-						freeSquares.removeAll(expandingSquare);
-						//foundSquare = true;
-						//if (squareValences[expandingSquare] >= 2)
-							squareQueue.push(expandingSquare);
-						kDebug() << "pushing square " << expandingSquare;
-					}
-					//squareValences[expandingSquare] = squareValences[expandingSquare] + 1;
-					//squareValences[connectedSquares[i].square] = squareValences[connectedSquares[i].square] + 1;
-					*/
 				}
 			}
 			
@@ -640,111 +576,7 @@ void aiFunctions::findChains(aiBoard::Ptr board, QList<KSquares::Chain> *foundCh
 			foundChains->append(foundChain);
 		}
 	}
-	
-	// undo the taken own chains
-	/*
-	for (int i = 0; i < foundChains->size(); i++)
-	{
-		if (!foundChains->at(i).ownChain)
-			continue;
-		for (int j = 0; j < foundChains->at(i).lines.size(); j++)
-			board->lines[foundChains->at(i).lines[j]] = false;
-		for (int j = 0; j < foundChains->at(i).squares.size(); j++)
-			board->squareOwners[foundChains->at(i).squares[j]] = -1;
-	}
-	*/
 }
-
-/*
-void findChainsOld(bool *lines, int linesSize, int width, int height, QList<KSquares::Chain> *foundChains)
-{
-	QList<QList<int> > ownChains;
-	// find opened chains
-	aiFunctions::findOwnChains(lines, linesSize, width, height, &ownChains);
-	for (int i = 0; i < ownChains.size(); i++)
-	{
-		KSquares::Chain foundChain;
-		foundChain.lines = ownChains[i];
-		foundChain.type = classifyChain(width, height, ownChains[i], lines, &(foundChain.squares));
-		foundChain.ownChain = true;
-		
-		foundChains->append(foundChain);
-		
-		for (int j = 0; j < ownChains[i].size(); j++)
-		{
-			lines[ownChains[i][j]] = true;
-		}
-	}
-	
-	// find chains
-	QList<int> freeLines = aiFunctions::getFreeLines(lines, linesSize);
-	QList<QList<int> > chains;
-	QList<QList<int> > chainList;
-	QList<QList<int> > chainSet;
-	
-	while (!freeLines.isEmpty())
-	{
-		int line = freeLines.takeLast();
-		lines[line] = true;
-		chains.clear();
-		aiFunctions::findOwnChains(lines, linesSize, width, height, &chains);
-		
-		for (int i = 0; i < chains.size(); i++)
-		{
-			for (int j = 0; j < chains[i].size(); j++)
-			{
-				freeLines.removeAll(chains[i][j]);
-			}
-			chains[i].append(line);
-			std::sort(chains[i].begin(), chains[i].end());
-			chainList.append(chains[i]);
-			//kDebug() << "chain: " << chains[i];
-		}
-		
-		lines[line] = false;
-	}
-	
-	// TODO: required?
-	// remove duplicate chains
-	for (int i = 0; i < chainList.size(); i++)
-	{
-		bool newChain = true;
-		QList<int> chainCheck = chainList[i]; // this is the chain we might add
-		for (int j = 0; j < chainSet.size(); j++)
-		{
-			if(chainSet[j] == chainCheck) // found chainCheck in chainSet, don't add
-			{
-				newChain = false;
-				break;
-			}
-		}
-		if (newChain) // chainCheck not in chainSet
-		{
-			chainSet.append(chainCheck);
-		}
-	}
-	
-	// analyse chains
-	for (int i = 0; i < chainSet.size(); i++)
-	{
-		KSquares::Chain foundChain;
-		foundChain.lines = chainSet[i];
-		foundChain.type = classifyChain(width, height, chainSet[i], lines, &(foundChain.squares));
-		foundChain.ownChain = false;
-		
-		foundChains->append(foundChain);
-	}
-	
-	// cleanup - undo ownChain!
-	for (int i = 0; i < ownChains.size(); i++)
-	{
-		for (int j = 0; j < ownChains[i].size(); j++)
-		{
-			lines[ownChains[i][j]] = false;
-		}
-	}
-}
-*/
 
 QList<int> aiFunctions::getFreeLines(bool *lines, int linesSize)
 {
