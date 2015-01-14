@@ -22,6 +22,7 @@ class refactor : public QObject
     void testFindChains006();
 		void testIsJointInCycle007();
 		void testIsJointInCycle008();
+    void testFindChains009();
 };
 
 /**
@@ -337,6 +338,30 @@ void refactor::testIsJointInCycle008()
 	
 	aiFunctions aift(board->width, board->height);
 	QVERIFY(aift.jointInCycle(board, 5, 4, squareValences));
+}
+
+/**
+ * test findChains
+ */
+void refactor::testFindChains009()
+{
+  QList<int> lines;
+	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+  QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/5x5-chaintest.dbl", sGame.data(), &lines));
+	for (int i = 0; i < lines.size(); i++)
+	{
+		bool nextPlayer, boardFilled;
+		QList<int> completedSquares;
+		sGame->board()->addLine(lines[i], &nextPlayer, &boardFilled, &completedSquares);
+	}
+	
+	aiBoard::Ptr board(new aiBoard(sGame->board()));
+	
+	QList<KSquares::Chain> chains;
+	aiFunctions aift(board->width, board->height);
+	aift.findChains(board, &chains);
+	
+	QCOMPARE(chains.size(), 9);
 }
 
 QTEST_MAIN(refactor)
