@@ -474,6 +474,7 @@ void aiFunctions::findChains(aiBoard::Ptr board, QList<KSquares::Chain> *foundCh
 	
 	// find untaken squares and calculate valence
 	QList<int> freeSquares;
+	QList<int> excludeFromRemovalOnce;
 	for (int i = 0; i < board->squareOwners.size(); i++)
 	{
 		if (board->squareOwners[i] == -1)
@@ -494,6 +495,7 @@ void aiFunctions::findChains(aiBoard::Ptr board, QList<KSquares::Chain> *foundCh
 		if (squareValences[square] == 3 || (squareValences[square] == 2 && squareConnectedToJoint(board, squareValences, square)))
 		{
 			QList<int> chain;
+			QList<int> chainSquares;
 			bool canCapture = squareValences[square] == 3;
 			
 			//bool foundSquare = true;
@@ -513,18 +515,33 @@ void aiFunctions::findChains(aiBoard::Ptr board, QList<KSquares::Chain> *foundCh
 					chain.append(groundConnections[i]);
 				}
 				// look for next squares in chain
-				QList<KSquares::LSConnection > connectedSquares = getConnectedSquares(board, expandingSquare);
+				QList<KSquares::LSConnection> connectedSquares = getConnectedSquares(board, expandingSquare);
 				kDebug() << "connectedSquares: " << connectedSquares;
+				// order connected squares by valence: joints must be evaluated first
+				QList<KSquares::LSConnection> connectedSquaresOrdered;
+				for (int i = 0; i < connectedSquares.size(); i++)
+				{
+					if (squareValences[connectedSquares[i].square] < 2) // joints come first
+						connectedSquaresOrdered.prepend(connectedSquares[i]);
+					else
+						connectedSquaresOrdered.append(connectedSquares[i]);
+				}
+				connectedSquares = connectedSquaresOrdered;
+				// analyse ordered connected squares
 				for (int i = 0; i < connectedSquares.size(); i++)
 				{
 					if (chain.contains(connectedSquares[i].line))
 						continue;
 					
-					if (squareValences[connectedSquares[i].square] == 2) // next square continues chain
+					if ((squareValences[connectedSquares[i].square] == 3) || // next square is an end of chain
+					    (squareValences[connectedSquares[i].square] == 2))   // next square continues chain
 					{
 						chain.append(connectedSquares[i].line);
 						squareQueue.push(connectedSquares[i].square);
-						freeSquares.removeAll(connectedSquares[i].square); // this square is a part of a single chain and doesn't need to be evaluated as possible start of another chain
+						if (excludeFromRemovalOnce.contains(connectedSquares[i].square))
+							excludeFromRemovalOnce.removeAll(connectedSquares[i].square); // this square connects to a joint square and will be the start square of another chain
+						else
+							freeSquares.removeAll(connectedSquares[i].square); // this square is a part of a single chain and doesn't need to be evaluated as possible start of another chain
 						continue;
 					}
 					
@@ -532,29 +549,35 @@ void aiFunctions::findChains(aiBoard::Ptr board, QList<KSquares::Chain> *foundCh
 					{
 						int connectedJointSquare = connectedSquares[i].square;
 						QList<KSquares::LSConnection> jointConnections = getConnectedSquares(board, connectedJointSquare);
-						bool jointReachedBefore = false;
+						QList<KSquares::LSConnection> externalJointConnections;
 						for (int j = 0; j < jointConnections.size(); j++)
 						{
 							if (jointConnections[j].square == expandingSquare) // this is the square we're coming from now
 								continue;
 							
-							if (chain.contains(jointConnections[j].line)) // the chain has reached the joint before
-								jointReachedBefore = true;
+							if (!chain.contains(jointConnections[j].line)) // the chain has reached the joint before
+								externalJointConnections.append(jointConnections[j]);
 						}
-						if (jointReachedBefore) // the joint is part of a cycle and won't stop the chain
+						if (externalJointConnections.size() + getGroundConnections(board, connectedJointSquare).size() == 1) // the joint is part of a cycle and won't stop the chain
 						{
 							squareQueue.push(connectedJointSquare);
+							// there can be a chain that when completed creates a loop chain which contains the joint
+							// to find that chain the connection to that joint that's not part of the loop chain must be added to freeSquares
+							excludeFromRemovalOnce.append(externalJointConnections[0].square);
 						}
 						// add the connection to the joint we're coming from
 						chain.append(connectedSquares[i].line);
+						continue;
 					}
 				}
+				chainSquares.append(expandingSquare);
 			}
 			
 			bool canCaptureFromBothEnds = false;
 			if (squareValences[expandingSquare] == 3)
 			{
 				chain = reverseQList(chain);
+				chainSquares = reverseQList(chainSquares);
 				if (canCapture)
 					canCaptureFromBothEnds = true;
 				canCapture = true;
@@ -563,7 +586,9 @@ void aiFunctions::findChains(aiBoard::Ptr board, QList<KSquares::Chain> *foundCh
 			//capturableChains.append(chain);
 			KSquares::Chain foundChain;
 			foundChain.lines = chain;
-			foundChain.type = classifyChain(board->width, board->height, chain, board->lines, &(foundChain.squares)); // TODO: integrate classification!
+			foundChain.squares = chainSquares;
+			QList<int> classifyChainSquares;
+			foundChain.type = classifyChain(board->width, board->height, chain, board->lines, &(classifyChainSquares)); // TODO: integrate classification!
 			if (canCaptureFromBothEnds && foundChain.type == KSquares::CHAIN_LONG)
 				foundChain.type = KSquares::CHAIN_LOOP;
 			
@@ -572,7 +597,7 @@ void aiFunctions::findChains(aiBoard::Ptr board, QList<KSquares::Chain> *foundCh
 			else
 				foundChain.ownChain = false;
 			
-			//kDebug() << "found chain:" << chain << "squares:" << foundChain.squares << "cap:" << canCapture << "type:" << chainTypeToString(foundChain.type) << " chain: " << linelistToString(chain, board->linesSize, board->width, board->height);
+			kDebug() << "found chain:" << chain << "squares:" << foundChain.squares << "cap:" << canCapture << "type:" << chainTypeToString(foundChain.type) << " chain: " << linelistToString(chain, board->linesSize, board->width, board->height);
 			foundChains->append(foundChain);
 		}
 	}

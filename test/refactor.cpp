@@ -245,7 +245,7 @@ void refactor::testFindChains006()
 	for (int i = 0; i < chains.size(); i++)
 	{
 		kDebug() << "chain: " << chains[i].lines << ", " << chains[i].squares;
-		kDebug() << "visualized chain: " << aift.linelistToString(chains[i].lines, board->linesSize, board->width, board->height);
+		//kDebug() << "visualized chain: " << aift.linelistToString(chains[i].lines, board->linesSize, board->width, board->height);
 	}
 	
 	QCOMPARE(chains.size(), 3);
