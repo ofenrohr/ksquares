@@ -262,10 +262,6 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board)
 	QList<int> capturableLoopChains;
 	QList<int> capturableShortChains;
 	
-	QList<int> openLongChains;
-	QList<int> openLoopChains;
-	QList<int> openShortChains;
-	
 	for (int i = 0; i < chains.size(); i++)
 	{
 		switch (chains[i].type)
@@ -273,20 +269,14 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board)
 			case KSquares::CHAIN_LONG:
 				if (chains[i].ownChain)
 					capturableLongChains.append(i);
-				else
-					openLongChains.append(i);
 			break;
 			case KSquares::CHAIN_LOOP:
 				if (chains[i].ownChain)
 					capturableLoopChains.append(i);
-				else
-					openLoopChains.append(i);
 			break;
 			case KSquares::CHAIN_SHORT:
 				if (chains[i].ownChain)
 					capturableShortChains.append(i);
-				else
-					openShortChains.append(i);
 			break;
 			case KSquares::CHAIN_UNKNOWN:
 			default:
@@ -355,6 +345,54 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board)
 		baseMoveSequence.append(chains[doubleDealingChainIndex].lines);
 	}
 	
+	/* ============================================== */
+	/* == board changes from here on               == */
+	/* ============================================== */
+	
+	// now we need to create a board with all capturable chains filled in to
+	// get the newly available chains (filling out chains can connect separate chains)
+	for (int i = 0; i < baseMoveSequence.size(); i++)
+	{
+		board->doMove(baseMoveSequence[i]);
+	}
+	
+	// look for chains a second time
+	QList<KSquares::Chain> otherChains;
+	aiFunctions::findChains(board, &otherChains);
+	
+	QList<int> openLongChains;
+	QList<int> openLoopChains;
+	QList<int> openShortChains;
+	
+	for (int i = 0; i < otherChains.size(); i++)
+	{
+		switch (otherChains[i].type)
+		{
+			case KSquares::CHAIN_LONG:
+				if (!otherChains[i].ownChain)
+					openLongChains.append(i);
+				else
+					kDebug() << "ERROR: capturable chain found when there should be none!";
+			break;
+			case KSquares::CHAIN_LOOP:
+				if (!otherChains[i].ownChain)
+					openLoopChains.append(i);
+				else
+					kDebug() << "ERROR: capturable chain found when there should be none!";
+			break;
+			case KSquares::CHAIN_SHORT:
+				if (!otherChains[i].ownChain)
+					openShortChains.append(i);
+				else
+					kDebug() << "ERROR: capturable chain found when there should be none!";
+			break;
+			case KSquares::CHAIN_UNKNOWN:
+			default:
+				kDebug() << "WARNING: unknown chain! " << otherChains[i].lines;
+			break;
+		}
+	}
+	
 	// add full capture version
 	// move sequences for open chains + free lines
 	// get free lines and filter them
@@ -373,25 +411,25 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board)
 	{
 		QList<int> moveSequence;
 		moveSequence.append(baseMoveSequence);
-		moveSequence.append(chains[openLongAndLoopChains[i]].lines[0]);
-		for (int j = 0; j < chains[openLongAndLoopChains[i]].lines.size(); j++)
+		moveSequence.append(otherChains[openLongAndLoopChains[i]].lines[0]);
+		for (int j = 0; j < otherChains[openLongAndLoopChains[i]].lines.size(); j++)
 		{
-			freeLines.removeAll(chains[openLongAndLoopChains[i]].lines[j]);
+			freeLines.removeAll(otherChains[openLongAndLoopChains[i]].lines[j]);
 		}
 		moveSequences.append(moveSequence);
 	}
 	// add half and hard hearted handouts for short chains
 	for (int i = 0; i < openShortChains.size(); i++)
 	{
-		if (chains[openShortChains[i]].squares.size() != 2)
+		if (otherChains[openShortChains[i]].squares.size() != 2)
 			continue;
 		QList<int> halfHeartedSequence;
 		halfHeartedSequence.append(baseMoveSequence);
-		halfHeartedSequence.append(chains[openShortChains[i]].lines[0]);
+		halfHeartedSequence.append(otherChains[openShortChains[i]].lines[0]);
 		moveSequences.append(halfHeartedSequence);
 		QList<int> hardHeartedSequence;
 		hardHeartedSequence.append(baseMoveSequence);
-		hardHeartedSequence.append(chains[openShortChains[i]].lines[1]);
+		hardHeartedSequence.append(otherChains[openShortChains[i]].lines[1]);
 		moveSequences.append(hardHeartedSequence);
 	}
 	// add all that's left
@@ -401,6 +439,12 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board)
 		moveSequence.append(baseMoveSequence);
 		moveSequence.append(freeLines[i]);
 		moveSequences.append(moveSequence);
+	}
+	
+	// undo the filled out chains
+	for (int i = baseMoveSequence.size() - 1; i >= 0; i--)
+	{
+		board->undoMove(baseMoveSequence[i]);
 	}
 	
 	return moveSequences;
