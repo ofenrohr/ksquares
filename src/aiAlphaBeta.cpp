@@ -431,6 +431,10 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board)
 		hardHeartedSequence.append(baseMoveSequence);
 		hardHeartedSequence.append(otherChains[openShortChains[i]].lines[1]);
 		moveSequences.append(hardHeartedSequence);
+		for (int j = 0; j < otherChains[openShortChains[i]].lines.size(); j++)
+		{
+			freeLines.removeAll(otherChains[openShortChains[i]].lines[j]);
+		}
 	}
 	// add all that's left
 	for (int i = 0; i < freeLines.size(); i++)

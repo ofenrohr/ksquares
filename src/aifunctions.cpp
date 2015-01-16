@@ -315,7 +315,7 @@ bool aiFunctions::squareConnectedToJoint(aiBoard::Ptr board, QMap<int, int> &squ
 		QList<int> lineSquares = aiFunctions::squaresFromLine(board->width, board->height, squareLines[i]);
 		if (getGroundConnections(board, square).size() >= 1)
 		{
-			kDebug() << "square " << square << " connected to ground joint";
+			//kDebug() << "square " << square << " connected to ground joint";
 			return true;
 		}
 		for (int j = 0; j < lineSquares.size(); j++)
@@ -324,7 +324,7 @@ bool aiFunctions::squareConnectedToJoint(aiBoard::Ptr board, QMap<int, int> &squ
 			{
 				if (checkJointInCycle && jointInCycle(board, lineSquares[j], square, squareValences))
 					continue;
-				kDebug() << "square " << square << " connected to inner joint";
+				//kDebug() << "square " << square << " connected to inner joint";
 				return true;
 			}
 		}
@@ -347,7 +347,7 @@ QList<QPair<KSquares::LSConnection, bool> > aiFunctions::getConnectionsToJoints(
 		QList<int> groundConnections = getGroundConnections(board, square);
 		for (int j = 0; j < groundConnections.size(); j++)
 		{
-			kDebug() << "square " << square << " connected to ground joint via line " << groundConnections[j];
+			//kDebug() << "square " << square << " connected to ground joint via line " << groundConnections[j];
 			KSquares::LSConnection connection(groundConnections[j], -1);
 			ret.append(QPair<KSquares::LSConnection, bool>(connection, true));
 		}
@@ -357,7 +357,7 @@ QList<QPair<KSquares::LSConnection, bool> > aiFunctions::getConnectionsToJoints(
 			{
 				if (checkJointInCycle && jointInCycle(board, lineSquares[j], square, squareValences))
 					continue;
-				kDebug() << "square " << square << " connected to inner joint square " << lineSquares[j] << " via line " << squareLines[i];
+				//kDebug() << "square " << square << " connected to inner joint square " << lineSquares[j] << " via line " << squareLines[i];
 				KSquares::LSConnection connection(squareLines[i], lineSquares[j]);
 				ret.append(QPair<KSquares::LSConnection, bool>(connection, false));
 				//return true;
@@ -443,30 +443,6 @@ bool aiFunctions::jointInCycle(aiBoard::Ptr board, int joint, int start, QMap<in
 	return false;
 }
 
-/*
-void aiFunctions::findChains(aiBoard::Ptr board, QList<KSquares::Chain> *foundChains)
-{
-	QMap<int, int> squareValences; // square, valence (WARNING: not really the valence, it's the count of border lines!)
-	QList<int> startSquares;
-	QList<int> chainSquares; // squares with valence == 2
-	
-	for (int i = 0; i < board->squareOwners.size(); i++)
-	{
-		if (board->squareOwners[i] == -1)
-		{
-			squareValences[i] = aiFunctions::countBorderLines(board->width, board->height, i, board->lines);
-			if (squareValences[i] < 2) // joint squares
-				startSquares.append(i);
-			if (squareValences[i] == 3)
-				startSquares.append(i);
-			if (squareValences[i] == 2)
-				chainSquares.append(i);
-		}
-	}
-	
-	while 
-}
-*/
 
 void aiFunctions::findChains(aiBoard::Ptr board, QList<KSquares::Chain> *foundChains)
 {
@@ -491,7 +467,7 @@ void aiFunctions::findChains(aiBoard::Ptr board, QList<KSquares::Chain> *foundCh
 	while (freeSquares.size() > 0)
 	{
 		int square = freeSquares.takeLast();
-		kDebug() << "square: " << square;
+		//kDebug() << "square: " << square;
 		
 		if (squareValences[square] == 3 || (squareValences[square] == 2 && squareConnectedToJoint(board, squareValences, square)))
 		{
@@ -507,17 +483,17 @@ void aiFunctions::findChains(aiBoard::Ptr board, QList<KSquares::Chain> *foundCh
 			{
 				expandingSquare = squareQueue.pop();
 				//foundSquare = false;
-				kDebug() << "expandingSquare: " << expandingSquare;
+				//kDebug() << "expandingSquare: " << expandingSquare;
 				// check for ground connections
 				QList<int> groundConnections = getGroundConnections(board, expandingSquare);
 				for (int i = 0; i < groundConnections.size(); i++)
 				{
-					kDebug() << "ground connection for square " << expandingSquare << ": " << groundConnections[0];
+					//kDebug() << "ground connection for square " << expandingSquare << ": " << groundConnections[0];
 					chain.append(groundConnections[i]);
 				}
 				// look for next squares in chain
 				QList<KSquares::LSConnection> connectedSquares = getConnectedSquares(board, expandingSquare);
-				kDebug() << "connectedSquares: " << connectedSquares;
+				//kDebug() << "connectedSquares: " << connectedSquares;
 				// order connected squares by valence: joints must be evaluated first
 				QList<KSquares::LSConnection> connectedSquaresOrdered;
 				for (int i = 0; i < connectedSquares.size(); i++)
@@ -569,6 +545,7 @@ void aiFunctions::findChains(aiBoard::Ptr board, QList<KSquares::Chain> *foundCh
 						}
 						if (jointReachedBefore && externalJointConnections.size() + getGroundConnections(board, connectedJointSquare).size() == 1) // the joint is part of a cycle and won't stop the chain
 						{
+							chain.append(connectedSquares[i].line);
 							squareQueue.push(connectedJointSquare);
 							// there can be a chain that when completed creates a loop chain which contains the joint
 							// to find that chain the connection to that joint that's not part of the loop chain must be added to freeSquares
@@ -607,7 +584,7 @@ void aiFunctions::findChains(aiBoard::Ptr board, QList<KSquares::Chain> *foundCh
 			else
 				foundChain.ownChain = false;
 			
-			kDebug() << "found chain:" << chain << "squares:" << foundChain.squares << "cap:" << canCapture << "type:" << chainTypeToString(foundChain.type) << " chain: " << linelistToString(chain, board->linesSize, board->width, board->height);
+			//kDebug() << "found chain:" << chain << "squares:" << foundChain.squares << "cap:" << canCapture << "type:" << chainTypeToString(foundChain.type) << " chain: " << linelistToString(chain, board->linesSize, board->width, board->height);
 			foundChains->append(foundChain);
 		}
 	}
