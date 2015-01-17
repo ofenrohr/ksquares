@@ -375,3 +375,84 @@ QList<int> aiEasyMediumHard::chooseLeastDamaging(const QList<int> &choiceList) c
 	QList<int> bestMoves = linePointDamage.values(linePointDamage.begin().key());	//this is a list of the indices of the lines that are the least damaging. linePointDamage.begin() returns the 1st pair in the QMap, sorted in ascending order by Key (damage of move)
 	return bestMoves;
 }
+
+
+int aiEasyMediumHard::findOwnChains(bool *lines, int linesSize, int width, int height, QList<QList<int> > *ownChains)
+{
+  /*
+	kDebug() << "find own chains" << linesSize << ", " << width << ", " << height;
+	QString linesStr;
+	for (int i = 0; i < linesSize; i++)
+		linesStr += lines[i]?"1":"0";
+	kDebug() << "lines:" <<linesStr;
+  */
+	int sidesOfSquare[4];
+	QScopedArrayPointer<bool> myLines(new bool[linesSize]); //make temporary local copies of lists
+	int ownLinesCnt = 0; // count of how many lines ai will take in this run
+	int ownSquaresCnt = 0; // count of how many squares ai will get in this run
+	memcpy(myLines.data(), lines, linesSize); // lines --> myLines (complete own chains) --> linesCopy (analyze damage/chains for next runs)
+	bool chainFound;
+	// since chooseLeastDamaging will be called early during the game if playing against hard ai, we need to finish open chains in linesCopy before computing the number of residual chains
+	do // this loop completes all chains the opponent gave to ai
+	{
+		chainFound = false;
+		for(int curSquare = 0; curSquare < width*height; curSquare++) // walk through squares and search for start of chain
+		{
+			QList<int> ownChain; // remember completed chain lines
+			int chainSquare = curSquare;
+			bool squareFound;
+			do { // this loop walks through a chain square by square
+				squareFound = false;
+				if(countBorderLines(width, height, sidesOfSquare, chainSquare, &(*myLines)) == 3) // found a square for ai
+				{
+					//kDebug() << "found square:" << chainSquare;
+					for(int sideOfSquare = 0; sideOfSquare <= 3; sideOfSquare++)
+					{
+						if(!myLines[sidesOfSquare[sideOfSquare]]) // found missing line of square
+						{
+							ownLinesCnt++;
+							
+							int nextSquareFound=-1;
+							QList<int> adjacentSquares = squaresFromLine(width, height, sidesOfSquare[sideOfSquare]);
+							for(int i = 0; i < adjacentSquares.size(); i++)
+							{
+								int chainSquareBorderCnt = countBorderLines(width, height, adjacentSquares.at(i), &(*myLines));
+								if(chainSquare != adjacentSquares.at(i) &&
+										chainSquareBorderCnt == 3)	// check if a second square will be completed by this line
+								{
+                  //kDebug() << "found double cross between " << chainSquare << " and " << adjacentSquares.at(i);
+									ownSquaresCnt++; // add extra square
+								}
+								if(chainSquareBorderCnt == 2)	// look for next square in chain
+								{
+									nextSquareFound = adjacentSquares.at(i);
+								}
+							}
+							myLines[sidesOfSquare[sideOfSquare]] = true; // complete line
+							if(nextSquareFound >= 0)
+							{
+								chainSquare = nextSquareFound;
+							}
+							ownChain.append(sidesOfSquare[sideOfSquare]);
+						}
+					}
+					squareFound = true;
+					chainFound = true;
+					ownSquaresCnt++;
+				}
+			} while(squareFound);
+			if(chainFound)
+			{
+				//std::sort(ownChain.begin(), ownChain.end());
+				//qSort(ownChain);
+				//if (!ownChains->contains(ownChain))
+					ownChains->append(ownChain);
+				break;
+			}
+		}
+	} while (chainFound);
+  
+	//qSort(ownChains);
+	//kDebug() << "findOwnChains returns: " << *ownChains;
+  return ownSquaresCnt;
+}

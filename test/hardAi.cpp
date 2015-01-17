@@ -19,7 +19,7 @@ class hardAi: public QObject
 		void testBoard002();
 		void testBoard003();
 		void testBoard005();
-		void testBoard006();
+		//void testBoard006();
 };
 
 /**
@@ -103,7 +103,7 @@ void hardAi::testBoard005()
 /**
  * hard ai
  * TODO
- */
+ *
 void hardAi::testBoard006()
 {
 	QList<int> lines;
@@ -128,7 +128,7 @@ void hardAi::testBoard006()
   kDebug() << "ownChains.size() = " << ownChains.size();
   kDebug() << "input board: " << aift.boardToString(linesb);
 	QVERIFY(false);
-}
+*/
 
 QTEST_MAIN(hardAi)
 #include "hardAi.moc"

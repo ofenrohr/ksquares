@@ -17,6 +17,17 @@ class aiEasyMediumHard : public KSquaresAi
 		//~aiEasyMediumHard();
 		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners);
 		QString getName();
+		/**
+		 * Finds chains on board that can be taken by the player to move
+		 * this is public to make testing easier
+		 * @param lines lines of the board
+		 * @param linesSize number of lines on the board
+		 * @param width width of board in boxes
+		 * @param height height of board in boxes
+		 * @param ownChains returns the chains the current player can score
+     * @return number of squares taken
+		 */
+		static int findOwnChains(bool *lines, int linesSize, int width, int height, QList<QList<int> > *ownChains);
 	protected:
 		/**
 			* @param choiceList list of indices (of lines) which have squares next to them with two lines drawn (relates to @ref lines )

@@ -2,6 +2,7 @@
 #include <QtCore>
 
 #include "aifunctions.h"
+#include "aiEasyMediumHard.h"
 #include "ksquaresgame.h"
 #include "ksquaresio.h"
 
@@ -46,8 +47,7 @@ void refactor::testFindOwnChains001()
 		linesb[lines.at(i)] = true;
 	}
 	QList<QList<int> > ownChains;
-	aiFunctions aift(3,3);
-	aift.findOwnChains(linesb, 24, 3, 3, &ownChains);
+	aiEasyMediumHard::findOwnChains(linesb, 24, 3, 3, &ownChains);
 	kDebug() << "ownChains.size() = " << ownChains.size();
 	QList<int> chainLengths;
 	for (int i = 0; i < ownChains.size(); i++)
@@ -179,7 +179,7 @@ void refactor::testFindOwnChains004()
   }
   QList<QList<int> > ownChains;
   aiFunctions aift(4,4);
-  int squaresCnt = aift.findOwnChains(linesb, linesSize, 4, 4, &ownChains);
+  int squaresCnt = aiEasyMediumHard::findOwnChains(linesb, linesSize, 4, 4, &ownChains);
   kDebug() << "returned squaresCnt = " << squaresCnt;
   kDebug() << "ownChains.size() = " << ownChains.size();
   kDebug() << "input board: " << aift.boardToString(linesb);

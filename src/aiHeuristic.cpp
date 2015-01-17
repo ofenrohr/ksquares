@@ -65,6 +65,7 @@ void aiHeuristic::analyseChains(aiBoard::Ptr board)
 	if (chainsAnalyzed)
 		return;
 	
+	/*
 	// find opened chains
 	ownSquaresCnt = aiFunctions::findOwnChains(board->lines, board->linesSize, board->width, board->height, &ownChains);
 	for (int i = 0; i < ownChains.size(); i++)
@@ -158,6 +159,7 @@ void aiHeuristic::analyseChains(aiBoard::Ptr board)
 			board->lines[ownChains[i][j]] = false;
 		}
 	}
+	*/
 }
 
 float aiHeuristic::evalSquaresCnt(aiBoard::Ptr board)

@@ -98,16 +98,6 @@ class aiFunctions
 		QList<int> safeMoves(int linesSize, const bool *lines) const;
 		static QList<int> safeMoves(int width, int height, int linesSize, const bool *lines);
 		/**
-		 * Finds chains on board that can be taken by the player to move
-		 * @param lines lines of the board
-		 * @param linesSize number of lines on the board
-		 * @param width width of board in boxes
-		 * @param height height of board in boxes
-		 * @param ownChains returns the chains the current player can score
-     * @return number of squares taken
-		 */
-		static int findOwnChains(bool *lines, int linesSize, int width, int height, QList<QList<int> > *ownChains);
-		/**
 		 * Checks if a square is connected to a joint square (either ground or a square with 0 or 1 lines drawn)
 		 */
 		static bool squareConnectedToJoint(aiBoard::Ptr board, QMap<int, int> &squareValences, int square, bool checkJointInCycle = false);
