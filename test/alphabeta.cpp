@@ -21,6 +21,7 @@ class alphabeta : public QObject
 		void testAlphaBeta001();
 		//void testAlphaBeta002();
 		void testAlphaBeta003();
+		void testBerlekamp007();
 };
 
 template <typename T>
@@ -146,6 +147,42 @@ void alphabeta::testAlphaBeta003()
 	QList<QList<int> > moveSequences = aiAlphaBeta::getMoveSequences(board);
 	
 	kDebug() << moveSequences;
+}
+
+/**
+ * test based on berlekamps book "sophisticated child's play"
+ * page 15 & 16
+ */
+void alphabeta::testBerlekamp007()
+{
+  QList<int> lines;
+	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+  QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/berlekamp-3.7.dbl", sGame.data(), &lines));
+	for (int i = 0; i < lines.size(); i++)
+	{
+		bool nextPlayer, boardFilled;
+		QList<int> completedSquares;
+		sGame->board()->addLine(lines[i], &nextPlayer, &boardFilled, &completedSquares);
+	}
+	
+	QList<int> expectedLines;
+	expectedLines.append(9);
+	
+	aiAlphaBeta ai(lines.size() % 2, 1, sGame->board()->width(), sGame->board()->height(), -1);
+	ai.setDebug(true);
+	int aiLine = ai.chooseLine(sGame->board()->lines(), sGame->board()->squares());
+	// write dot tree to file
+	QFile file("/tmp/berlekamp-7.dot");
+	if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate))
+	{
+		kDebug() << "error: Can't open file";
+		return;
+	}
+	QTextStream fileoutput(&file);
+	fileoutput << "graph {\n" << ai.getDebugDot() << "}";
+	file.close();
+	
+	QVERIFY(expectedLines.contains(aiLine));
 }
 
 QTEST_MAIN(alphabeta)

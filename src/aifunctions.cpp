@@ -545,7 +545,6 @@ void aiFunctions::findChains(aiBoard::Ptr board, QList<KSquares::Chain> *foundCh
 						}
 						if (jointReachedBefore && externalJointConnections.size() + getGroundConnections(board, connectedJointSquare).size() == 1) // the joint is part of a cycle and won't stop the chain
 						{
-							chain.append(connectedSquares[i].line);
 							squareQueue.push(connectedJointSquare);
 							// there can be a chain that when completed creates a loop chain which contains the joint
 							// to find that chain the connection to that joint that's not part of the loop chain must be added to freeSquares

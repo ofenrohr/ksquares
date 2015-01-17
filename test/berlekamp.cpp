@@ -34,7 +34,7 @@ void executeAi(Board *board, int player, QString name, QList<int> expectedLines)
 	QFile file(filename);
 	if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate))
 	{
-		kDebug() << "KSquaresIO::saveGame error: Can't open file";
+		kDebug() << "error: Can't open file";
 		return;
 	}
 	

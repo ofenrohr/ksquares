@@ -236,6 +236,7 @@ void minimax::testMiniMax006()
 	
 	QTextStream outStream(&file);
 	outStream << "graph {\n" << ai.getDebugDot() << "}";
+	file.close();
 }
 
 QTEST_MAIN(minimax)
