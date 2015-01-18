@@ -40,6 +40,21 @@ namespace KSquares
 		friend QDebug operator<<(QDebug dbg, const KSquares::LSConnection_t &con) { dbg.nospace() << "LSConnection(l: " << con.line << ", s: " << con.square << ")"; return dbg.maybeSpace(); }
 	} LSConnection;
 	
+	typedef struct BoardAnalysis_t
+	{
+		QList<KSquares::Chain> chains;
+		QList<KSquares::Chain> chainsAfterCapture;
+		
+		// list of indices of chains
+		QList<int> capturableLongChains;
+		QList<int> capturableLoopChains;
+		QList<int> capturableShortChains;
+		
+		// list of indices of chainsAfterCapture
+		QList<int> openLongChains;
+		QList<int> openLoopChains;
+		QList<int> openShortChains;
+	} BoardAnalysis;
 }
 
 
@@ -163,6 +178,10 @@ class aiFunctions
 		 * @return playerId of player with most squares, -1 if no squares are drawn, -2 if draw
 		 */
 		static int getLeader(QList<int> &squareOwners);
+		/**
+		 * Analyse chains of a given board
+		 */
+		static KSquares::BoardAnalysis analyseBoard(aiBoard::Ptr board);
 		
 		/* Debugging */
 		static QString boardToString(aiBoard::Ptr board) { return boardToString(board->lines, board->linesSize, board->width, board->height); }

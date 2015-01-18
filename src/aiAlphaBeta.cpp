@@ -255,55 +255,39 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board)
 {
 	QList<QList<int> > moveSequences;
 	
-	QList<KSquares::Chain> chains;
-	aiFunctions::findChains(board, &chains);
-	
-	QList<int> capturableLongChains;
-	QList<int> capturableLoopChains;
-	QList<int> capturableShortChains;
-	
-	for (int i = 0; i < chains.size(); i++)
-	{
-		switch (chains[i].type)
-		{
-			case KSquares::CHAIN_LONG:
-				if (chains[i].ownChain)
-					capturableLongChains.append(i);
-			break;
-			case KSquares::CHAIN_LOOP:
-				if (chains[i].ownChain)
-					capturableLoopChains.append(i);
-			break;
-			case KSquares::CHAIN_SHORT:
-				if (chains[i].ownChain)
-					capturableShortChains.append(i);
-			break;
-			case KSquares::CHAIN_UNKNOWN:
-			default:
-				kDebug() << "WARNING: unknown chain! " << chains[i].lines;
-			break;
-		}
-	}
+	// TODO: share with heuristic
+	KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
 	
 	// find out if double dealing is possible and remember the id of the chain in which double dealing shall happen
 	int doubleDealingChainIndex = -1;
 	// double dealing in long chain
-	if (capturableLongChains.size() > 0)
+	if (analysis.capturableLongChains.size() > 0)
 	{
-		doubleDealingChainIndex = capturableLongChains[capturableLongChains.size()-1];
+		doubleDealingChainIndex = analysis.capturableLongChains[analysis.capturableLongChains.size()-1];
 	}
 	else 
 	{ // try double dealing in short and loop chains
 		QList<int> capturableShortAndLoopChains;
-		capturableShortAndLoopChains.append(capturableShortChains);
+		capturableShortAndLoopChains.append(analysis.capturableShortChains);
 		// TODO: sort loop chains by number of squares in descending order!
+		// workaround: put the one with most squares at beginning
 		QList<int> sortedCapturableLoopChains;
-		sortedCapturableLoopChains.append(capturableLoopChains);
+		for (int i = 0; i < analysis.capturableLoopChains.size(); i++)
+		{
+			if (sortedCapturableLoopChains.size() > 0)
+				if (analysis.chains[sortedCapturableLoopChains[0]].squares.size() < analysis.chains[analysis.capturableLoopChains[i]].squares.size())
+					sortedCapturableLoopChains.prepend(analysis.capturableLoopChains[i]);
+				else
+					sortedCapturableLoopChains.append(analysis.capturableLoopChains[i]);
+			else
+				sortedCapturableLoopChains.append(analysis.capturableLoopChains[i]);
+		}
+		sortedCapturableLoopChains.append(analysis.capturableLoopChains);
 		capturableShortAndLoopChains.append(sortedCapturableLoopChains);
 		
 		for (int i = 0; i < capturableShortAndLoopChains.size(); i++)
 		{
-			QList<int> doubleDealingVariant = getDoubleDealingSequence(chains[capturableShortAndLoopChains[i]]);
+			QList<int> doubleDealingVariant = getDoubleDealingSequence(analysis.chains[capturableShortAndLoopChains[i]]);
 			if (doubleDealingVariant.size() > 0)
 			{
 				doubleDealingChainIndex = capturableShortAndLoopChains[i];
@@ -314,23 +298,23 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board)
 	
 	// generate the basic move sequence - excluding the chain where double dealing will happen
 	QList<int> baseMoveSequence;
-	for (int i = 0; i < capturableShortChains.size(); i++)
+	for (int i = 0; i < analysis.capturableShortChains.size(); i++)
 	{
-		if (doubleDealingChainIndex == capturableShortChains[i])
+		if (doubleDealingChainIndex == analysis.capturableShortChains[i])
 			continue;
-		baseMoveSequence.append(chains[capturableShortChains[i]].lines);
+		baseMoveSequence.append(analysis.chains[analysis.capturableShortChains[i]].lines);
 	}
-	for (int i = 0; i < capturableLoopChains.size(); i++)
+	for (int i = 0; i < analysis.capturableLoopChains.size(); i++)
 	{
-		if (doubleDealingChainIndex == capturableLoopChains[i])
+		if (doubleDealingChainIndex == analysis.capturableLoopChains[i])
 			continue;
-		baseMoveSequence.append(chains[capturableLoopChains[i]].lines);
+		baseMoveSequence.append(analysis.chains[analysis.capturableLoopChains[i]].lines);
 	}
-	for (int i = 0; i < capturableLongChains.size(); i++)
+	for (int i = 0; i < analysis.capturableLongChains.size(); i++)
 	{
-		if (doubleDealingChainIndex == capturableLongChains[i])
+		if (doubleDealingChainIndex == analysis.capturableLongChains[i])
 			continue;
-		baseMoveSequence.append(chains[capturableLongChains[i]].lines);
+		baseMoveSequence.append(analysis.chains[analysis.capturableLongChains[i]].lines);
 	}
 	
 	// add double dealing version
@@ -338,59 +322,11 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board)
 	{
 		QList<int> doubleDealingSequence;
 		doubleDealingSequence.append(baseMoveSequence);
-		doubleDealingSequence.append(getDoubleDealingSequence(chains[doubleDealingChainIndex]));
+		doubleDealingSequence.append(getDoubleDealingSequence(analysis.chains[doubleDealingChainIndex]));
 		moveSequences.append(doubleDealingSequence);
 		
 		// add normal variant to basic move sequence
-		baseMoveSequence.append(chains[doubleDealingChainIndex].lines);
-	}
-	
-	/* ============================================== */
-	/* == board changes from here on               == */
-	/* ============================================== */
-	
-	// now we need to create a board with all capturable chains filled in to
-	// get the newly available chains (filling out chains can connect separate chains)
-	for (int i = 0; i < baseMoveSequence.size(); i++)
-	{
-		board->doMove(baseMoveSequence[i]);
-	}
-	
-	// look for chains a second time
-	QList<KSquares::Chain> otherChains;
-	aiFunctions::findChains(board, &otherChains);
-	
-	QList<int> openLongChains;
-	QList<int> openLoopChains;
-	QList<int> openShortChains;
-	
-	for (int i = 0; i < otherChains.size(); i++)
-	{
-		switch (otherChains[i].type)
-		{
-			case KSquares::CHAIN_LONG:
-				if (!otherChains[i].ownChain)
-					openLongChains.append(i);
-				else
-					kDebug() << "ERROR: capturable chain found when there should be none!";
-			break;
-			case KSquares::CHAIN_LOOP:
-				if (!otherChains[i].ownChain)
-					openLoopChains.append(i);
-				else
-					kDebug() << "ERROR: capturable chain found when there should be none!";
-			break;
-			case KSquares::CHAIN_SHORT:
-				if (!otherChains[i].ownChain)
-					openShortChains.append(i);
-				else
-					kDebug() << "ERROR: capturable chain found when there should be none!";
-			break;
-			case KSquares::CHAIN_UNKNOWN:
-			default:
-				kDebug() << "WARNING: unknown chain! " << otherChains[i].lines;
-			break;
-		}
+		baseMoveSequence.append(analysis.chains[doubleDealingChainIndex].lines);
 	}
 	
 	// add full capture version
@@ -405,35 +341,35 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board)
 		moveSequences.append(baseMoveSequence);
 	// add one sequence for each long and loop chain
 	QList<int> openLongAndLoopChains;
-	openLongAndLoopChains.append(openLongChains);
-	openLongAndLoopChains.append(openLoopChains);
+	openLongAndLoopChains.append(analysis.openLongChains);
+	openLongAndLoopChains.append(analysis.openLoopChains);
 	for (int i = 0; i < openLongAndLoopChains.size(); i++)
 	{
 		QList<int> moveSequence;
 		moveSequence.append(baseMoveSequence);
-		moveSequence.append(otherChains[openLongAndLoopChains[i]].lines[0]);
-		for (int j = 0; j < otherChains[openLongAndLoopChains[i]].lines.size(); j++)
+		moveSequence.append(analysis.chainsAfterCapture[openLongAndLoopChains[i]].lines[0]);
+		for (int j = 0; j < analysis.chainsAfterCapture[openLongAndLoopChains[i]].lines.size(); j++)
 		{
-			freeLines.removeAll(otherChains[openLongAndLoopChains[i]].lines[j]);
+			freeLines.removeAll(analysis.chainsAfterCapture[openLongAndLoopChains[i]].lines[j]);
 		}
 		moveSequences.append(moveSequence);
 	}
 	// add half and hard hearted handouts for short chains
-	for (int i = 0; i < openShortChains.size(); i++)
+	for (int i = 0; i < analysis.openShortChains.size(); i++)
 	{
-		if (otherChains[openShortChains[i]].squares.size() != 2)
+		if (analysis.chainsAfterCapture[analysis.openShortChains[i]].squares.size() != 2)
 			continue;
 		QList<int> halfHeartedSequence;
 		halfHeartedSequence.append(baseMoveSequence);
-		halfHeartedSequence.append(otherChains[openShortChains[i]].lines[0]);
+		halfHeartedSequence.append(analysis.chainsAfterCapture[analysis.openShortChains[i]].lines[0]);
 		moveSequences.append(halfHeartedSequence);
 		QList<int> hardHeartedSequence;
 		hardHeartedSequence.append(baseMoveSequence);
-		hardHeartedSequence.append(otherChains[openShortChains[i]].lines[1]);
+		hardHeartedSequence.append(analysis.chainsAfterCapture[analysis.openShortChains[i]].lines[1]);
 		moveSequences.append(hardHeartedSequence);
-		for (int j = 0; j < otherChains[openShortChains[i]].lines.size(); j++)
+		for (int j = 0; j < analysis.chainsAfterCapture[analysis.openShortChains[i]].lines.size(); j++)
 		{
-			freeLines.removeAll(otherChains[openShortChains[i]].lines[j]);
+			freeLines.removeAll(analysis.chainsAfterCapture[analysis.openShortChains[i]].lines[j]);
 		}
 	}
 	// add all that's left
@@ -445,76 +381,7 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board)
 		moveSequences.append(moveSequence);
 	}
 	
-	// undo the filled out chains
-	for (int i = baseMoveSequence.size() - 1; i >= 0; i--)
-	{
-		board->undoMove(baseMoveSequence[i]);
-	}
-	
 	return moveSequences;
-}
-
-QList<QList<int> > getMoveSequencesOld(aiBoard::Ptr board)
-{
-	QList<int> freeLines = aiFunctions::getFreeLines(board->lines, board->linesSize);
-	QMap<int, int> squareValence;
-	QList<QPair<int, int> > chainEnds; // line, square
-	while (freeLines.size() > 0)
-	{
-		int line = freeLines.takeLast();
-		QList<int> lineSquares = aiFunctions::squaresFromLine(board->width, board->height, line);
-		for (int i = 0; i < lineSquares.size(); i++)
-		{
-			if (squareValence.contains(lineSquares[i]))
-				continue;
-			squareValence[lineSquares[i]] = aiFunctions::countBorderLines(board->width, board->height, lineSquares[i], board->lines);
-			
-			if (squareValence[lineSquares[i]] == 3) // square can be captured
-			{
-				QPair<int, int> chainEnd(line, lineSquares[i]);
-				chainEnds.append(chainEnd);
-			}
-		}
-	}
-	
-	kDebug() << "chainEnds: " << chainEnds;
-	
-	QList<QList<int> > ret;
-	for (int i = 0; i < chainEnds.size(); i++)
-	{
-		QList<int> lineSequence;
-		//lineSequence.append(chainEnds[i].first);
-		QPair<int, int> elem = chainEnds[i];
-		bool seqDone = false;
-		while (!seqDone)
-		{
-			seqDone = true;
-			int line = elem.first;
-			int square = elem.second;
-			QList<int> lineSquares = aiFunctions::squaresFromLine(board->width, board->height, line);
-			for (int j = 0; j < lineSquares.size(); j++)
-			{
-				if (lineSquares[j] == square)
-					continue;
-				int squareLines[4];
-				aiFunctions::linesFromSquare(board->width, board->height, squareLines, lineSquares[j]);
-				for (int k = 0; k < 4; k++)
-				{
-					if (board->lines[squareLines[k]] || squareLines[k] == line)
-						continue;
-					if (squareValence[lineSquares[j]] == 2) // chain continues
-					{
-						seqDone = false;
-					}
-					elem.first = squareLines[k];
-					elem.second = lineSquares[j];
-					lineSequence.append(line);
-				}
-			}
-		}
-		ret.append(lineSequence);
-	}
-	return ret;
 }
 
 void aiAlphaBeta::setTimeout(long timeout)

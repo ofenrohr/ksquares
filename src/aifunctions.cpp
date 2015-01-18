@@ -762,3 +762,83 @@ KSquares::ChainType aiFunctions::classifyChain(const QList<int> &chain, bool *li
 {
 	return classifyChain(width, height, chain, lines);
 }
+
+KSquares::BoardAnalysis aiFunctions::analyseBoard(aiBoard::Ptr board)
+{
+	KSquares::BoardAnalysis analysis;
+	
+	// look for capturable chains
+	aiFunctions::findChains(board, &(analysis.chains));
+	
+	// sort capturable chains by classification
+	for (int i = 0; i < analysis.chains.size(); i++)
+	{
+		switch (analysis.chains[i].type)
+		{
+			case KSquares::CHAIN_LONG:
+				if (analysis.chains[i].ownChain)
+					analysis.capturableLongChains.append(i);
+			break;
+			case KSquares::CHAIN_LOOP:
+				if (analysis.chains[i].ownChain)
+					analysis.capturableLoopChains.append(i);
+			break;
+			case KSquares::CHAIN_SHORT:
+				if (analysis.chains[i].ownChain)
+					analysis.capturableShortChains.append(i);
+			break;
+			case KSquares::CHAIN_UNKNOWN:
+			default:
+				kDebug() << "WARNING: unknown chain! " << analysis.chains[i].lines;
+			break;
+		}
+		// capture everything that can be captured
+		if (analysis.chains[i].ownChain)
+			for (int j = 0; j < analysis.chains[i].lines.size(); j++)
+				board->doMove(analysis.chains[i].lines[j]);
+	}
+	
+	// look for chains a second time
+	aiFunctions::findChains(board, &(analysis.chainsAfterCapture));
+	
+	// sort chains by classification
+	for (int i = 0; i < analysis.chainsAfterCapture.size(); i++)
+	{
+		switch (analysis.chainsAfterCapture[i].type)
+		{
+			case KSquares::CHAIN_LONG:
+				if (!analysis.chainsAfterCapture[i].ownChain)
+					analysis.openLongChains.append(i);
+				else
+					kDebug() << "ERROR: capturable chain found when there should be none!";
+			break;
+			case KSquares::CHAIN_LOOP:
+				if (!analysis.chainsAfterCapture[i].ownChain)
+					analysis.openLoopChains.append(i);
+				else
+					kDebug() << "ERROR: capturable chain found when there should be none!";
+			break;
+			case KSquares::CHAIN_SHORT:
+				if (!analysis.chainsAfterCapture[i].ownChain)
+					analysis.openShortChains.append(i);
+				else
+					kDebug() << "ERROR: capturable chain found when there should be none!";
+			break;
+			case KSquares::CHAIN_UNKNOWN:
+			default:
+				kDebug() << "WARNING: unknown chain! " << analysis.chainsAfterCapture[i].lines;
+			break;
+		}
+	}
+	
+	// undo capture moves
+	for (int i = 0; i < analysis.chains.size(); i++)
+	{
+		if (!analysis.chains[i].ownChain)
+			continue;
+		for (int j = analysis.chains[i].lines.size()-1; j >= 0; j--)
+			board->undoMove(analysis.chains[i].lines[j]);
+	}
+	
+	return analysis;
+}

@@ -182,10 +182,8 @@ void minimax::testMiniMax005()
 	QList<int> lines;
 	QList<bool> linesbl;
   int linesSize = 2 * width * height + width + height;
-  bool linesb[linesSize];
   for (int i = 0; i < linesSize; i++)
   {
-    linesb[i] = false;
 		linesbl.append(false);
   }
 	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
@@ -195,7 +193,6 @@ void minimax::testMiniMax005()
 	
 	for (int i = 0; i < lines.size(); i++)
 	{
-		linesb[lines.at(i)] = true;
 		linesbl[lines.at(i)] = true;
 	}
 	
@@ -213,6 +210,7 @@ void minimax::testMiniMax005()
 
 void minimax::testMiniMax006()
 {
+	/*
 	QList<int> lines;
 	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
   QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/2x1-tree.dbl", sGame.data(), &lines));
@@ -237,6 +235,7 @@ void minimax::testMiniMax006()
 	QTextStream outStream(&file);
 	outStream << "graph {\n" << ai.getDebugDot() << "}";
 	file.close();
+	*/
 }
 
 QTEST_MAIN(minimax)
