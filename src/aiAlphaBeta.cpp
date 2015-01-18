@@ -90,7 +90,8 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, int paren
 			alphabetaTimer.restart();
 		}
 	}
-	QList<QList<int> > moveSequences = getMoveSequences(board);
+	KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
+	QList<QList<int> > moveSequences = getMoveSequences(board, analysis);
 	
 	int thisNode = debugNodeCnt;
 	debugNodeCnt++;
@@ -139,6 +140,7 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, int paren
 	if (terminalNode)
 	{
 		//kDebug() << "evaluating board:" << boardToString(board->lines, board->linesSize, board->width, board->height);
+		heuristic->setAnalysis(analysis);
 		int eval = evaluate(board);
 		if (debug)
 		{
@@ -251,12 +253,12 @@ QList<int> aiAlphaBeta::getDoubleDealingSequence(KSquares::Chain &chain)
 	return ret;
 }
 
-QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board)
+QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board, KSquares::BoardAnalysis &analysis)
 {
 	QList<QList<int> > moveSequences;
 	
 	// TODO: share with heuristic
-	KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
+	//KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
 	//board->analyseBoard();
 	
 	// find out if double dealing is possible and remember the id of the chain in which double dealing shall happen

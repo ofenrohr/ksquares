@@ -52,7 +52,8 @@ void alphabeta::testAlphaBeta001()
 	
 	aiBoard::Ptr board(new aiBoard(sGame->board()));
 	
-	QList<QList<int> > moveSequences = aiAlphaBeta::getMoveSequences(board);
+	KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
+	QList<QList<int> > moveSequences = aiAlphaBeta::getMoveSequences(board, analysis);
 	
 	kDebug() << "generated move sequences: " << moveSequences;
 	
@@ -144,7 +145,8 @@ void alphabeta::testAlphaBeta003()
 	
 	aiBoard::Ptr board(new aiBoard(sGame->board()));
 	
-	QList<QList<int> > moveSequences = aiAlphaBeta::getMoveSequences(board);
+	KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
+	QList<QList<int> > moveSequences = aiAlphaBeta::getMoveSequences(board, analysis);
 	
 	kDebug() << moveSequences;
 }

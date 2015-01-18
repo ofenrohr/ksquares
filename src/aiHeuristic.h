@@ -23,6 +23,7 @@ public:
 	
 	void reset();
 	float evaluate(aiBoard::Ptr board, int ownPlayerId);
+	void setAnalysis(KSquares::BoardAnalysis &a);
 	
 protected:
 	int playerId;
@@ -36,7 +37,7 @@ protected:
 	float evalLongChainRule(aiBoard::Ptr board);
 	
 	void analyseChains(aiBoard::Ptr board);
-	bool chainsAnalyzed;
+	bool chainsAnalysed;
 	KSquares::BoardAnalysis analysis;
 	//int ownSquaresCnt; // squares in opened chain
 	//int shortChainCnt; // chains <= 2 lines

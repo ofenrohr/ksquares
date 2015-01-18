@@ -42,7 +42,7 @@ class aiAlphaBeta : public KSquaresAi
 		 * Generates a move list. Chains are returned twice if applicable:
 		 * one sequence with chain fully taken and one with double dealing.
 		 */
-		static QList<QList<int> > getMoveSequences(aiBoard::Ptr board);
+		static QList<QList<int> > getMoveSequences(aiBoard::Ptr board, KSquares::BoardAnalysis &analysis);
 		
 		void setTimeout(long timeout);
 		long getTimeout();

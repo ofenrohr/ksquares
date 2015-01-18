@@ -31,7 +31,7 @@ aiHeuristic::aiHeuristic(bool squaresCnt, bool scores, bool longChainRule)
 
 void aiHeuristic::reset()
 {
-	chainsAnalyzed = false;
+	chainsAnalysed = false;
 // 	ownSquaresCnt = 0;
 // 	shortChainCnt = 0;
 // 	longChainCnt = 0;
@@ -62,11 +62,12 @@ float aiHeuristic::evaluate(aiBoard::Ptr board, int ownPlayerId)
 
 void aiHeuristic::analyseChains(aiBoard::Ptr board)
 {
-	if (chainsAnalyzed)
+	if (chainsAnalysed)
 		return;
 	
 	//board->analyseBoard();
 	analysis = aiFunctions::analyseBoard(board);
+	chainsAnalysed = true;
 }
 
 float aiHeuristic::evalSquaresCnt(aiBoard::Ptr board)
@@ -106,4 +107,10 @@ float aiHeuristic::evalLongChainRule(aiBoard::Ptr board)
 	int lcr = (dots + analysis.capturableLongChains.size() + analysis.capturableLoopChains.size()) % 2 == board->playerId ? -dots : dots;
 	
 	return lcr;
+}
+
+void aiHeuristic::setAnalysis(KSquares::BoardAnalysis &a)
+{
+	chainsAnalysed = true;
+	analysis = a;
 }
