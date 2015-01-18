@@ -14,7 +14,6 @@
 
 aiBoard::aiBoard(bool *newLines, int newLinesSize, int newWidth, int newHeight, const QList<int> newSquareOwners, int newPlayerId, int newMaxPlayerId) : lines(newLines), linesSize(newLinesSize), width(newWidth), height(newHeight), squareOwners(newSquareOwners), playerId(newPlayerId), maxPlayerId(newMaxPlayerId)
 {
-	//analysed = false;
 }
 
 aiBoard::aiBoard(Board *board)
@@ -28,18 +27,14 @@ aiBoard::aiBoard(Board *board)
 	squareOwners = board->squares();
 	playerId = board->currentPlayer();
 	maxPlayerId = board->getNumOfPlayers() - 1;
-	//analysed = false;
 }
 
 aiBoard::~aiBoard()
 {
-	//delete[] lines;
 }
 
 void aiBoard::doMove(int line)
 {
-	//analysed = false;
-	
 	// TODO: remove this check
 	if (lines[line] || line < 0 || line >= linesSize)
 	{
@@ -83,8 +78,6 @@ void aiBoard::doMove(int line)
 
 void aiBoard::undoMove(int line)
 {
-	//analysed = false;
-	
 	// TODO: remove this check
 	if (!lines[line] || line < 0 || line >= linesSize)
 	{
@@ -125,100 +118,3 @@ void aiBoard::undoMove(int line)
 		if (playerId < 0) playerId = maxPlayerId;
 	}
 }
-
-/*
-void aiBoard::analyseBoard()
-{
-	if (analysed)
-	{
-		kDebug() << "skipping analysis";
-		return;
-	}
-	
-	QString lineDebug = "";
-	for (int i = 0; i < linesSize; i++)
-		lineDebug += lines[i] ? "1" : "0";
-	kDebug() << "running board analysis... lines = " << lineDebug;
-	
-	// look for capturable chains
-	aiFunctions::findChains(this, &(analysis.chains));
-	
-	// sort capturable chains by classification
-	for (int i = 0; i < analysis.chains.size(); i++)
-	{
-		switch (analysis.chains[i].type)
-		{
-			case KSquares::CHAIN_LONG:
-				if (analysis.chains[i].ownChain)
-					analysis.capturableLongChains.append(i);
-			break;
-			case KSquares::CHAIN_LOOP:
-				if (analysis.chains[i].ownChain)
-					analysis.capturableLoopChains.append(i);
-			break;
-			case KSquares::CHAIN_SHORT:
-				if (analysis.chains[i].ownChain)
-					analysis.capturableShortChains.append(i);
-			break;
-			case KSquares::CHAIN_UNKNOWN:
-			default:
-				kDebug() << "WARNING: unknown chain! " << analysis.chains[i].lines;
-			break;
-		}
-		// capture everything that can be captured
-		if (analysis.chains[i].ownChain)
-			for (int j = 0; j < analysis.chains[i].lines.size(); j++)
-				doMove(analysis.chains[i].lines[j]);
-	}
-	
-	// look for chains a second time
-	aiFunctions::findChains(this, &(analysis.chainsAfterCapture));
-	
-	// sort chains by classification
-	for (int i = 0; i < analysis.chainsAfterCapture.size(); i++)
-	{
-		switch (analysis.chainsAfterCapture[i].type)
-		{
-			case KSquares::CHAIN_LONG:
-				if (!analysis.chainsAfterCapture[i].ownChain)
-					analysis.openLongChains.append(i);
-				else
-					kDebug() << "ERROR: capturable chain found when there should be none!";
-			break;
-			case KSquares::CHAIN_LOOP:
-				if (!analysis.chainsAfterCapture[i].ownChain)
-					analysis.openLoopChains.append(i);
-				else
-					kDebug() << "ERROR: capturable chain found when there should be none!";
-			break;
-			case KSquares::CHAIN_SHORT:
-				if (!analysis.chainsAfterCapture[i].ownChain)
-					analysis.openShortChains.append(i);
-				else
-					kDebug() << "ERROR: capturable chain found when there should be none!";
-			break;
-			case KSquares::CHAIN_UNKNOWN:
-			default:
-				kDebug() << "WARNING: unknown chain! " << analysis.chainsAfterCapture[i].lines;
-			break;
-		}
-	}
-	
-	// undo capture moves
-	for (int i = analysis.chains.size()-1; i >= 0; i--)
-	{
-		if (!analysis.chains[i].ownChain)
-			continue;
-		for (int j = analysis.chains[i].lines.size()-1; j >= 0; j--)
-			undoMove(analysis.chains[i].lines[j]);
-	}
-	
-	analysed = true;
-	
-	
-	lineDebug = "";
-	for (int i = 0; i < linesSize; i++)
-		lineDebug += lines[i] ? "1" : "0";
-	kDebug() << "finished board analysis... lines = " << lineDebug;
-}
-*/
