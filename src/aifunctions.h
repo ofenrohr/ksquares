@@ -19,44 +19,7 @@
 
 #include "board.h"
 #include "aiBoard.h"
-
-namespace KSquares
-{
-	enum ChainType {CHAIN_SHORT, CHAIN_LONG, CHAIN_LOOP, CHAIN_UNKNOWN};
-	typedef struct Chain_t
-	{
-		QList<int> lines;
-		QList<int> squares;
-		ChainType type;
-		bool ownChain;
-	} Chain;
-	
-	// used to convey connections to another square via a line
-	typedef struct LSConnection_t
-	{
-		LSConnection_t(int l, int s) {line = l; square = s;}
-		int line;
-		int square;
-		friend QDebug operator<<(QDebug dbg, const KSquares::LSConnection_t &con) { dbg.nospace() << "LSConnection(l: " << con.line << ", s: " << con.square << ")"; return dbg.maybeSpace(); }
-	} LSConnection;
-	
-	typedef struct BoardAnalysis_t
-	{
-		QList<KSquares::Chain> chains;
-		QList<KSquares::Chain> chainsAfterCapture;
-		
-		// list of indices of chains
-		QList<int> capturableLongChains;
-		QList<int> capturableLoopChains;
-		QList<int> capturableShortChains;
-		
-		// list of indices of chainsAfterCapture
-		QList<int> openLongChains;
-		QList<int> openLoopChains;
-		QList<int> openShortChains;
-	} BoardAnalysis;
-}
-
+#include "aistructs.h"
 
 
 class aiFunctions 
@@ -115,19 +78,22 @@ class aiFunctions
 		/**
 		 * Checks if a square is connected to a joint square (either ground or a square with 0 or 1 lines drawn)
 		 */
-		static bool squareConnectedToJoint(aiBoard::Ptr board, QMap<int, int> &squareValences, int square, bool checkJointInCycle = false);
+		static bool squareConnectedToJoint(aiBoard::Ptr board, QMap<int, int> &squareValences, int square, bool checkJointInCycle = false) { return squareConnectedToJoint(board.data(), squareValences, square, checkJointInCycle); }
+		static bool squareConnectedToJoint(aiBoard *board, QMap<int, int> &squareValences, int square, bool checkJointInCycle = false);
 		/**
 		 * Finds connected joints
 		 * @return list of connections + type of connection: true = ground connection, false = inner joint connection; connections to ground have square value of -1
 		 */
-		static QList<QPair<KSquares::LSConnection, bool> > getConnectionsToJoints(aiBoard::Ptr board, QMap<int, int> &squareValences, int square, bool checkJointInCycle = false);
+		static QList<QPair<KSquares::LSConnection, bool> > getConnectionsToJoints(aiBoard::Ptr board, QMap<int, int> &squareValences, int square, bool checkJointInCycle = false) { return getConnectionsToJoints(board.data(), squareValences, square, checkJointInCycle); }
+		static QList<QPair<KSquares::LSConnection, bool> > getConnectionsToJoints(aiBoard *board, QMap<int, int> &squareValences, int square, bool checkJointInCycle = false);
 		/**
 		 * Finds the squares connected to given square
 		 * @param board the board to operate on
 		 * @param square the square in question
 		 * @return List of pairs (first: line index, second: square index) adjacent to given square
 		 */
-		static QList<KSquares::LSConnection> getConnectedSquares(aiBoard::Ptr board, int square);
+		static QList<KSquares::LSConnection> getConnectedSquares(aiBoard::Ptr board, int square) { return getConnectedSquares(board.data(), square); }
+		static QList<KSquares::LSConnection> getConnectedSquares(aiBoard *board, int square);
 		/**
 		 * Reverses a QList.
 		 */
@@ -135,7 +101,8 @@ class aiFunctions
 		/**
 		 * Returns all lines of a square that are connected to ground. If includeCutConnections is set drawn lines will be included
 		 */
-		static QList<int> getGroundConnections(aiBoard::Ptr board, int square, bool includeCutConnections = false);
+		static QList<int> getGroundConnections(aiBoard::Ptr board, int square, bool includeCutConnections = false) { return getGroundConnections(board.data(), square, includeCutConnections); }
+		static QList<int> getGroundConnections(aiBoard *board, int square, bool includeCutConnections = false);
 		/**
 		 * Determines if there is a simple path that ends at the same joint square
 		 * @param board the board to operate on
@@ -143,14 +110,18 @@ class aiFunctions
 		 * @param start the square to start from (!= joint square)
 		 * @param squareValences index: square index, value: number of completed lines in dots & boxes representation
 		 */
-		static bool jointInCycle(aiBoard::Ptr board, int joint, int start, QMap<int, int> &squareValences);
+		static bool jointInCycle(aiBoard::Ptr board, int joint, int start, QMap<int, int> &squareValences) { return jointInCycle(board.data(), joint, start, squareValences); }
+		static bool jointInCycle(aiBoard *board, int joint, int start, QMap<int, int> &squareValences);
 		/**
 		 * Find chains on board.
 		 * WARNING: closed long chains will be classified as loop chains because a 4 square sacrifice is required for double dealing.
 		 * @param board the board to analyze
 		 * @param ownChains returns the chains on the board
 		 */
-		static void findChains(aiBoard::Ptr board, QList<KSquares::Chain> *chains);
+		static void findChains(aiBoard::Ptr board, QList<KSquares::Chain> *chains) { findChains(board.data(), chains); }
+		// this is here because of usage of findChains in aiBoard and this doc of QSharedPointer:
+		// QSharedPointer::QSharedPointer ( T * ptr ) : Creates a QSharedPointer that points to ptr. The pointer ptr becomes managed by this QSharedPointer and must not be passed to another QSharedPointer object or deleted outside this object.
+		static void findChains(aiBoard *board, QList<KSquares::Chain> *chains);
 		/**
 		 * Classifies a given chain as short, long or loop chain.
 		 * @param chain list of lines the chain is made up of
@@ -178,9 +149,8 @@ class aiFunctions
 		 * @return playerId of player with most squares, -1 if no squares are drawn, -2 if draw
 		 */
 		static int getLeader(QList<int> &squareOwners);
-		/**
-		 * Analyse chains of a given board
-		 */
+		
+		
 		static KSquares::BoardAnalysis analyseBoard(aiBoard::Ptr board);
 		
 		/* Debugging */

@@ -257,6 +257,7 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board)
 	
 	// TODO: share with heuristic
 	KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
+	//board->analyseBoard();
 	
 	// find out if double dealing is possible and remember the id of the chain in which double dealing shall happen
 	int doubleDealingChainIndex = -1;

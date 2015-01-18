@@ -200,7 +200,7 @@ QList<int> aiFunctions::safeMoves(int width, int height, int linesSize, const bo
 }
 
 
-QList<KSquares::LSConnection > aiFunctions::getConnectedSquares(aiBoard::Ptr board, int square)
+QList<KSquares::LSConnection > aiFunctions::getConnectedSquares(aiBoard *board, int square)
 {
 	QList<KSquares::LSConnection > connectedSquares;
 	
@@ -224,7 +224,7 @@ QList<KSquares::LSConnection > aiFunctions::getConnectedSquares(aiBoard::Ptr boa
 }
 
 
-bool aiFunctions::squareConnectedToJoint(aiBoard::Ptr board, QMap<int, int> &squareValences, int square, bool checkJointInCycle)
+bool aiFunctions::squareConnectedToJoint(aiBoard *board, QMap<int, int> &squareValences, int square, bool checkJointInCycle)
 {
 	int squareLines[4];
 	aiFunctions::linesFromSquare(board->width, board->height, squareLines, square);
@@ -254,7 +254,7 @@ bool aiFunctions::squareConnectedToJoint(aiBoard::Ptr board, QMap<int, int> &squ
 
 
 // @return list of connections + type of connection: true = ground connection, false = inner joint connection; connections to ground have square value of -1
-QList<QPair<KSquares::LSConnection, bool> > aiFunctions::getConnectionsToJoints(aiBoard::Ptr board, QMap<int, int> &squareValences, int square, bool checkJointInCycle)
+QList<QPair<KSquares::LSConnection, bool> > aiFunctions::getConnectionsToJoints(aiBoard *board, QMap<int, int> &squareValences, int square, bool checkJointInCycle)
 {
 	QList<QPair<KSquares::LSConnection, bool> > ret;
 	int squareLines[4];
@@ -310,7 +310,7 @@ QString chainTypeToString(KSquares::ChainType t)
 	}
 }
 
-QList<int> aiFunctions::getGroundConnections(aiBoard::Ptr board, int square, bool includeCutConnections)
+QList<int> aiFunctions::getGroundConnections(aiBoard *board, int square, bool includeCutConnections)
 {
 	QList<int> groundConnections;
 	int squareLines[4];
@@ -324,7 +324,7 @@ QList<int> aiFunctions::getGroundConnections(aiBoard::Ptr board, int square, boo
 	return groundConnections;
 }
 
-bool aiFunctions::jointInCycle(aiBoard::Ptr board, int joint, int start, QMap<int, int> &squareValences)
+bool aiFunctions::jointInCycle(aiBoard *board, int joint, int start, QMap<int, int> &squareValences)
 {
 	QList<int> squaresVisited;
 	
@@ -364,7 +364,7 @@ bool aiFunctions::jointInCycle(aiBoard::Ptr board, int joint, int start, QMap<in
 }
 
 
-void aiFunctions::findChains(aiBoard::Ptr board, QList<KSquares::Chain> *foundChains)
+void aiFunctions::findChains(aiBoard *board, QList<KSquares::Chain> *foundChains)
 {
 	QMap<int, int> squareValences; // square, valence (WARNING: not really the valence, it's the count of border lines!)
 	
@@ -762,6 +762,7 @@ KSquares::ChainType aiFunctions::classifyChain(const QList<int> &chain, bool *li
 {
 	return classifyChain(width, height, chain, lines);
 }
+
 
 KSquares::BoardAnalysis aiFunctions::analyseBoard(aiBoard::Ptr board)
 {

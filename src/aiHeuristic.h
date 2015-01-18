@@ -37,14 +37,15 @@ protected:
 	
 	void analyseChains(aiBoard::Ptr board);
 	bool chainsAnalyzed;
-	int ownSquaresCnt; // squares in opened chain
-	int shortChainCnt; // chains <= 2 lines
-	int longChainCnt; // exploitable chains
-	int loopChainCnt; // also exploitable, but more costly
-	QList<QList<int> > ownChains;
-	QList<QList<int> > shortChains;
-  QList<QList<int> > longChains;
-  QList<QList<int> > loopChains;
+	KSquares::BoardAnalysis analysis;
+	//int ownSquaresCnt; // squares in opened chain
+	//int shortChainCnt; // chains <= 2 lines
+	//int longChainCnt; // exploitable chains
+	//int loopChainCnt; // also exploitable, but more costly
+	//QList<QList<int> > ownChains;
+	//QList<QList<int> > shortChains;
+  //QList<QList<int> > longChains;
+  //QList<QList<int> > loopChains;
 };
 
 #endif

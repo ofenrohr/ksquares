@@ -11,9 +11,11 @@
 #define AIBOARD_H
 
 #include "board.h"
+#include "aistructs.h"
 
 #include <QList>
 #include <QSharedPointer>
+
 
 class aiBoard
 {
@@ -27,6 +29,11 @@ public:
 	void doMove(int line);
 	void undoMove(int line);
 	
+	/**
+	 * Analyse chains of a given board
+	 */
+	//void analyseBoard();
+	
 	bool *lines;
 	int linesSize;
 	int width;
@@ -34,6 +41,8 @@ public:
 	QList<int> squareOwners;
 	int playerId;
 	int maxPlayerId;
+	//bool analysed;
+	//KSquares::BoardAnalysis analysis;
 };
 
 #endif
