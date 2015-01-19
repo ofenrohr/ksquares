@@ -22,8 +22,9 @@ public:
 	aiHeuristic(bool squaresCnt, bool scores, bool longChainRule);
 	
 	void reset();
-	float evaluate(aiBoard::Ptr board, int ownPlayerId);
+	float evaluate(aiBoard::Ptr board, int ownPlayerId = -1);
 	void setAnalysis(KSquares::BoardAnalysis &a);
+	void setDebug(bool d);
 	
 protected:
 	int playerId;
@@ -39,6 +40,8 @@ protected:
 	void analyseChains(aiBoard::Ptr board);
 	bool chainsAnalysed;
 	KSquares::BoardAnalysis analysis;
+	
+	bool debug;
 };
 
 #endif

@@ -187,7 +187,7 @@ float aiAlphaBeta::evaluate(aiBoard::Ptr board)
 {
 	QElapsedTimer evalTimer;
 	evalTimer.start();
-	float ret = heuristic->evaluate(board, playerId);
+	float ret = heuristic->evaluate(board);
 	long evalTime = evalTimer.elapsed();
 	if (evalTime > maxEvalTime)
 		evalTime = maxEvalTime;

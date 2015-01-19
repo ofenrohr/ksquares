@@ -22,6 +22,7 @@ class alphabeta : public QObject
 		//void testAlphaBeta002();
 		void testAlphaBeta003();
 		void testBerlekamp007();
+		void testHeuristic001();
 };
 
 template <typename T>
@@ -185,6 +186,31 @@ void alphabeta::testBerlekamp007()
 	file.close();
 	
 	QVERIFY(expectedLines.contains(aiLine));
+}
+
+void alphabeta::testHeuristic001()
+{
+	QList<int> lines;
+	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+  QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/berlekamp-3.1.dbl", sGame.data(), &lines));
+	for (int i = 0; i < lines.size(); i++)
+	{
+		bool nextPlayer, boardFilled;
+		QList<int> completedSquares;
+		sGame->board()->addLine(lines[i], &nextPlayer, &boardFilled, &completedSquares);
+	}
+	aiBoard::Ptr board(new aiBoard(sGame->board()));
+	
+	aiHeuristic heuristic(false, false, true);
+	heuristic.setDebug(true);
+	float result1 = heuristic.evaluate(board);
+	QVERIFY(result1 < 0);
+	
+	board->doMove(16);
+	
+	heuristic.reset();
+	float result2 = heuristic.evaluate(board);
+	QVERIFY(result2 < 0);
 }
 
 QTEST_MAIN(alphabeta)

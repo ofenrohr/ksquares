@@ -20,6 +20,8 @@ aiHeuristic::aiHeuristic()
 	enableSquaresCnt = true;
 	enableScores = true;
 	enableLongChainRule = true;
+	chainsAnalysed = false;
+	debug = false;
 }
 
 aiHeuristic::aiHeuristic(bool squaresCnt, bool scores, bool longChainRule)
@@ -27,24 +29,23 @@ aiHeuristic::aiHeuristic(bool squaresCnt, bool scores, bool longChainRule)
 	  enableScores(scores),
 	  enableLongChainRule(longChainRule)
 {
+	chainsAnalysed = false;
+	debug = false;
 }
 
 void aiHeuristic::reset()
 {
 	chainsAnalysed = false;
-// 	ownSquaresCnt = 0;
-// 	shortChainCnt = 0;
-// 	longChainCnt = 0;
-// 	loopChainCnt = 0;
-// 	ownChains.clear();
-// 	shortChains.clear();
-// 	longChains.clear();
-// 	loopChains.clear();
+}
+
+void aiHeuristic::setDebug(bool d)
+{
+	debug = d;
 }
 
 float aiHeuristic::evaluate(aiBoard::Ptr board, int ownPlayerId)
 {
-	playerId = ownPlayerId;
+	playerId = ownPlayerId >= 0 ? ownPlayerId : board->playerId;
 	reset();
 	float result = 0.0;
 	
@@ -76,7 +77,11 @@ float aiHeuristic::evalSquaresCnt(aiBoard::Ptr board)
 	
 	int ownSquaresCnt = 0;
 	
-	//for (int i = 0; i < analysis.capturableLongChains.size(); i++)
+	for (int i = 0; i < analysis.chains.size(); i++)
+	{
+		if (analysis.chains[i].ownChain)
+			ownSquaresCnt += analysis.chains[i].squares.size();
+	}
 	
 	return ownSquaresCnt;
 }
@@ -104,7 +109,16 @@ float aiHeuristic::evalLongChainRule(aiBoard::Ptr board)
 	analyseChains(board);
 	
 	int dots = (board->width + 1) * (board->height + 1);
-	int lcr = (dots + analysis.capturableLongChains.size() + analysis.capturableLoopChains.size()) % 2 == board->playerId ? -dots : dots;
+	int lcr = (dots + analysis.capturableLongChains.size()) % 2 == board->playerId ? -dots : dots;
+	
+	if (debug)
+	{
+		kDebug() << "evaluation of board " << aiFunctions::boardToString(board);
+		kDebug() << "  dots = " << dots;
+		kDebug() << "  long chains = " << analysis.capturableLongChains.size();
+		kDebug() << "  playerId = " << board->playerId;
+		kDebug() << "  lcr = " << lcr;
+	}
 	
 	return lcr;
 }
