@@ -109,13 +109,13 @@ float aiHeuristic::evalLongChainRule(aiBoard::Ptr board)
 	analyseChains(board);
 	
 	int dots = (board->width + 1) * (board->height + 1);
-	int lcr = (dots + analysis.capturableLongChains.size()) % 2 == board->playerId ? -dots : dots;
+	int lcr = (dots + analysis.openLongChains.size()) % 2 != board->playerId ? -dots : dots;
 	
 	if (debug)
 	{
 		kDebug() << "evaluation of board " << aiFunctions::boardToString(board);
 		kDebug() << "  dots = " << dots;
-		kDebug() << "  long chains = " << analysis.capturableLongChains.size();
+		kDebug() << "  long chains = " << analysis.openLongChains.size();
 		kDebug() << "  playerId = " << board->playerId;
 		kDebug() << "  lcr = " << lcr;
 	}

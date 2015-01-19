@@ -204,12 +204,13 @@ void alphabeta::testHeuristic001()
 	aiHeuristic heuristic(false, false, true);
 	heuristic.setDebug(true);
 	float result1 = heuristic.evaluate(board);
-	QVERIFY(result1 < 0);
 	
 	board->doMove(16);
 	
 	heuristic.reset();
 	float result2 = heuristic.evaluate(board);
+	
+	QVERIFY(result1 < 0);
 	QVERIFY(result2 < 0);
 }
 

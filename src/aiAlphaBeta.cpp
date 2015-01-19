@@ -26,7 +26,7 @@ aiAlphaBeta::aiAlphaBeta(int newPlayerId, int newMaxPlayerId, int newWidth, int 
 	debug = false;
 	maxEvalTime = 0;
 	alphabetaTimeout = 5000; // 5 sec timeout
-	heuristic = new aiHeuristic(true, true, true);
+	heuristic = new aiHeuristic(false, false, true);
 }
 
 aiAlphaBeta::~aiAlphaBeta()
