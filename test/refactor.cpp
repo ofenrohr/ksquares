@@ -25,6 +25,8 @@ class refactor : public QObject
 		void testIsJointInCycle008();
     void testFindChains009();
     void testFindChains010();
+    void testAnalyseBoard011();
+    void testAnalyseBoard012();
 };
 
 /**
@@ -401,6 +403,85 @@ void refactor::testFindChains010()
 			chains[i].lines.size() == 7
 		);
 	}
+}
+
+/**
+ * test analyseBoard
+ */
+void refactor::testAnalyseBoard011()
+{
+  QList<int> lines;
+	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+  QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/3x3-chaintest-2.dbl", sGame.data(), &lines));
+	for (int i = 0; i < lines.size(); i++)
+	{
+		bool nextPlayer, boardFilled;
+		QList<int> completedSquares;
+		sGame->board()->addLine(lines[i], &nextPlayer, &boardFilled, &completedSquares);
+	}
+	
+	aiBoard::Ptr board(new aiBoard(sGame->board()));
+	
+	KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
+	
+	QCOMPARE(analysis.chainsAfterCapture.size(), 3);
+	for (int i = 0; i < analysis.chainsAfterCapture.size(); i++)
+	{
+		QVERIFY(
+			analysis.chainsAfterCapture[i].squares.size() == 2 ||
+			analysis.chainsAfterCapture[i].squares.size() == 3 ||
+			analysis.chainsAfterCapture[i].squares.size() == 6
+		);
+		
+		QVERIFY(
+			analysis.chainsAfterCapture[i].lines.size() == 3 ||
+			analysis.chainsAfterCapture[i].lines.size() == 4 ||
+			analysis.chainsAfterCapture[i].lines.size() == 7
+		);
+	}
+	
+	QCOMPARE(analysis.openShortChains.size(), 1);
+	QCOMPARE(analysis.openLongChains.size(), 2);
+	QCOMPARE(analysis.openLoopChains.size(), 0);
+}
+
+/**
+ * test analyseBoard
+ */
+void refactor::testAnalyseBoard012()
+{
+  QList<int> lines;
+	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+  QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/3x3-chaintest-3.dbl", sGame.data(), &lines));
+	for (int i = 0; i < lines.size(); i++)
+	{
+		bool nextPlayer, boardFilled;
+		QList<int> completedSquares;
+		sGame->board()->addLine(lines[i], &nextPlayer, &boardFilled, &completedSquares);
+	}
+	
+	aiBoard::Ptr board(new aiBoard(sGame->board()));
+	
+	KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
+	
+	
+	QCOMPARE(analysis.chains.size(), 2);
+	for (int i = 0; i < analysis.chains.size(); i++)
+	{
+		kDebug() << "chains["<<i<<"].type = "<<analysis.chains[i].type;
+		kDebug() << aiFunctions::linelistToString(analysis.chains[i].lines, board->linesSize, board->width, board->height);
+		QVERIFY(analysis.chains[i].squares.size() == 1);
+		QVERIFY(analysis.chains[i].lines.size() == 1);
+	}
+	for (int i = 0; i < analysis.chainsAfterCapture.size(); i++)
+	{
+		kDebug() << "chainsAfterCapture["<<i<<"].type = "<<analysis.chainsAfterCapture[i].type;
+		kDebug() << aiFunctions::linelistToString(analysis.chainsAfterCapture[i].lines, board->linesSize, board->width, board->height);
+	}
+	
+	QCOMPARE(analysis.capturableShortChains.size(), 2);
+	QCOMPARE(analysis.openLongChains.size(), 1);
+	QCOMPARE(analysis.openLoopChains.size(), 1);
 }
 
 QTEST_MAIN(refactor)

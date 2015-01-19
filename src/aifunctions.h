@@ -118,10 +118,10 @@ class aiFunctions
 		 * @param board the board to analyze
 		 * @param ownChains returns the chains on the board
 		 */
-		static void findChains(aiBoard::Ptr board, QList<KSquares::Chain> *chains) { findChains(board.data(), chains); }
+		static void findChains(aiBoard::Ptr board, QList<KSquares::Chain> *chains, bool onlyOwnChains = false) { findChains(board.data(), chains, onlyOwnChains); }
 		// this is here because of usage of findChains in aiBoard and this doc of QSharedPointer:
 		// QSharedPointer::QSharedPointer ( T * ptr ) : Creates a QSharedPointer that points to ptr. The pointer ptr becomes managed by this QSharedPointer and must not be passed to another QSharedPointer object or deleted outside this object.
-		static void findChains(aiBoard *board, QList<KSquares::Chain> *chains);
+		static void findChains(aiBoard *board, QList<KSquares::Chain> *chains, bool onlyOwnChains = false);
 		/**
 		 * Classifies a given chain as short, long or loop chain.
 		 * @param chain list of lines the chain is made up of

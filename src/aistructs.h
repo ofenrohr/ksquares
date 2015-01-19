@@ -27,7 +27,9 @@ namespace KSquares
 	
 	typedef struct BoardAnalysis_t
 	{
+		// capturable chains
 		QList<KSquares::Chain> chains;
+		// chains after capture of other chains
 		QList<KSquares::Chain> chainsAfterCapture;
 		
 		// list of indices of chains

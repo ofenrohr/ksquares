@@ -364,7 +364,7 @@ bool aiFunctions::jointInCycle(aiBoard *board, int joint, int start, QMap<int, i
 }
 
 
-void aiFunctions::findChains(aiBoard *board, QList<KSquares::Chain> *foundChains)
+void aiFunctions::findChains(aiBoard *board, QList<KSquares::Chain> *foundChains, bool onlyOwnChains)
 {
 	QMap<int, int> squareValences; // square, valence (WARNING: not really the valence, it's the count of border lines!)
 	
@@ -389,11 +389,12 @@ void aiFunctions::findChains(aiBoard *board, QList<KSquares::Chain> *foundChains
 		int square = freeSquares.takeLast();
 		//kDebug() << "square: " << square;
 		
-		if (squareValences[square] == 3 || (squareValences[square] == 2 && squareConnectedToJoint(board, squareValences, square)))
+		if (squareValences[square] == 3 || squareValences[square] == 2) //(squareValences[square] == 2 && squareConnectedToJoint(board, squareValences, square)))
 		{
 			QList<int> chain;
 			QList<int> chainSquares;
 			bool canCapture = squareValences[square] == 3;
+			bool passedJoint = false; // joint square is part of loop and connects to another chain (important if that other chain can be captured)
 			
 			//bool foundSquare = true;
 			int expandingSquare = square;
@@ -466,6 +467,7 @@ void aiFunctions::findChains(aiBoard *board, QList<KSquares::Chain> *foundChains
 						if (jointReachedBefore && externalJointConnections.size() + getGroundConnections(board, connectedJointSquare).size() == 1) // the joint is part of a cycle and won't stop the chain
 						{
 							squareQueue.push(connectedJointSquare);
+							passedJoint = true;
 							// there can be a chain that when completed creates a loop chain which contains the joint
 							// to find that chain the connection to that joint that's not part of the loop chain must be added to freeSquares
 							if (externalJointConnections.size() > 0)
@@ -486,10 +488,17 @@ void aiFunctions::findChains(aiBoard *board, QList<KSquares::Chain> *foundChains
 				chainSquares = reverseQList(chainSquares);
 				if (canCapture)
 					canCaptureFromBothEnds = true;
-				canCapture = true;
+				if (!canCapture && passedJoint)
+					kDebug() << "special case where a loop chain connects to a capturable chain";
+				else
+					canCapture = true;
 			}
 			
-			//capturableChains.append(chain);
+			if (onlyOwnChains && !canCapture)
+			{
+				continue;
+			}
+			
 			KSquares::Chain foundChain;
 			foundChain.lines = chain;
 			foundChain.squares = chainSquares;
@@ -769,7 +778,7 @@ KSquares::BoardAnalysis aiFunctions::analyseBoard(aiBoard::Ptr board)
 	KSquares::BoardAnalysis analysis;
 	
 	// look for capturable chains
-	aiFunctions::findChains(board, &(analysis.chains));
+	aiFunctions::findChains(board, &(analysis.chains), true);
 	
 	// sort capturable chains by classification
 	for (int i = 0; i < analysis.chains.size(); i++)
@@ -798,6 +807,8 @@ KSquares::BoardAnalysis aiFunctions::analyseBoard(aiBoard::Ptr board)
 			for (int j = 0; j < analysis.chains[i].lines.size(); j++)
 				board->doMove(analysis.chains[i].lines[j]);
 	}
+	
+	kDebug() << "board after capture " << boardToString(board);
 	
 	// look for chains a second time
 	aiFunctions::findChains(board, &(analysis.chainsAfterCapture));
