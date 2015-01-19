@@ -206,12 +206,16 @@ void alphabeta::testHeuristic001()
 	float result1 = heuristic.evaluate(board);
 	
 	board->doMove(16);
-	
 	heuristic.reset();
 	float result2 = heuristic.evaluate(board);
 	
+	board->doMove(17);
+	heuristic.reset();
+	float result3 = heuristic.evaluate(board);
+	
 	QVERIFY(result1 < 0);
 	QVERIFY(result2 < 0);
+	QVERIFY(result3 > 0);
 }
 
 QTEST_MAIN(alphabeta)

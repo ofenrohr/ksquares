@@ -550,7 +550,9 @@ void aiFunctions::findChains(aiBoard *board, QList<KSquares::Chain> *foundChains
 				if (canCapture)
 					canCaptureFromBothEnds = true;
 				if (!canCapture && passedJoint)
-					kDebug() << "special case where a loop chain connects to a capturable chain";
+				{
+					//kDebug() << "special case where a loop chain connects to a capturable chain";
+				}
 				else
 					canCapture = true;
 			}
