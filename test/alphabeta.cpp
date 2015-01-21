@@ -23,6 +23,7 @@ class alphabeta : public QObject
 		void testAlphaBeta003();
 		void testBerlekamp007();
 		void testHeuristic001();
+		void testAlphaBeta004();
 };
 
 template <typename T>
@@ -216,6 +217,39 @@ void alphabeta::testHeuristic001()
 	QVERIFY(result1 < 0);
 	QVERIFY(result2 < 0);
 	QVERIFY(result3 > 0);
+}
+
+void alphabeta::testAlphaBeta004()
+{
+	QList<int> lines;
+	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+  QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/berlekamp-3.1.dbl", sGame.data(), &lines));
+	for (int i = 0; i < lines.size(); i++)
+	{
+		bool nextPlayer, boardFilled;
+		QList<int> completedSquares;
+		sGame->board()->addLine(lines[i], &nextPlayer, &boardFilled, &completedSquares);
+	}
+	aiBoard::Ptr board(new aiBoard(sGame->board()));
+	
+	
+	aiAlphaBeta ai(0, 1, board->width, board->height, -1);
+	ai.setDepth(1);
+	ai.setDebug(true);
+	int aiLine = ai.chooseLine(sGame->board()->lines(), sGame->board()->squares());
+	
+	kDebug() << "ai line = " << aiLine;
+	
+	// write dot tree to file
+	QFile file("/tmp/berlekamp-1.dot");
+	if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate))
+	{
+		kDebug() << "error: Can't open file";
+		return;
+	}
+	QTextStream fileoutput(&file);
+	fileoutput << "graph {\n" << ai.getDebugDot() << "}";
+	file.close();
 }
 
 QTEST_MAIN(alphabeta)

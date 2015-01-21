@@ -109,6 +109,17 @@ float aiHeuristic::evalLongChainRule(aiBoard::Ptr board)
 	analyseChains(board);
 	
 	int dots = (board->width + 1) * (board->height + 1);
+	
+	// check if the enemy made a loony move
+	if (analysis.capturableLongChains.size() > 0)
+		return dots;
+	if (analysis.capturableLoopChains.size() > 0)
+		return dots;
+	for (int i = 0; i < analysis.capturableShortChains.size(); i++)
+	{
+		if (analysis.chains[analysis.capturableShortChains[i]].squares.size() > 1)
+			return dots;
+	}
 	int lcr = (dots + analysis.openLongChains.size()) % 2 != board->playerId ? -dots : dots;
 	
 	if (debug)

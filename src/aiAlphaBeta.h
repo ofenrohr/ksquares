@@ -18,6 +18,8 @@
 #include <QString>
 #include <QElapsedTimer>
 
+#include <cmath>
+
 
 class aiAlphaBeta : public KSquaresAi
 {
@@ -28,7 +30,8 @@ class aiAlphaBeta : public KSquaresAi
 		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners);
 		QString getName() { return "alphabeta"; }
 		
-		float alphabeta(aiBoard::Ptr board, int depth, int *line, int parentNode = -1);
+		void setDepth(int d) { searchDepth = d; }
+		float alphabeta(aiBoard::Ptr board, int depth, int *line, float alpha = -INFINITY, float beta = INFINITY, int parentNode = -1);
 		/**
 		 * Calls evaluation from aiHeuristic
 		 */
@@ -69,6 +72,8 @@ class aiAlphaBeta : public KSquaresAi
 		bool *lines;
 		/// used to analyse boards
 		aiHeuristic *heuristic;
+		/// search depth
+		int searchDepth;
 		
 		/// enable debugging
 		bool debug;

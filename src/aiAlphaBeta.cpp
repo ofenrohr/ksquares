@@ -11,7 +11,6 @@
 
 #include <limits>
 #include <KDebug>
-#include <cmath>
 #include <algorithm>
 #include <QElapsedTimer>
 #include <QMap>
@@ -26,7 +25,8 @@ aiAlphaBeta::aiAlphaBeta(int newPlayerId, int newMaxPlayerId, int newWidth, int 
 	debug = false;
 	maxEvalTime = 0;
 	alphabetaTimeout = 5000; // 5 sec timeout
-	heuristic = new aiHeuristic(true, true, true);
+	heuristic = new aiHeuristic(false, false, true);
+	searchDepth = 4;
 }
 
 aiAlphaBeta::~aiAlphaBeta()
@@ -52,7 +52,7 @@ int aiAlphaBeta::chooseLine(const QList<bool> &newLines, const QList<int> &newSq
 	aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(lines, linesSize, width, height, squareOwners, playerId, maxPlayerId));
 	
 	int line;
-	alphabeta(board, 4, &line);
+	alphabeta(board, searchDepth, &line);
 	
 	if (line < 0 || line >= linesSize)
 	{
@@ -75,7 +75,7 @@ int aiAlphaBeta::chooseLine(const QList<bool> &newLines, const QList<int> &newSq
  * http://www.fierz.ch/strategy1.htm
 */
 
-float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, int parentNode)
+float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alpha, float beta, int parentNode)
 {
 	if (line != NULL)
 	{
@@ -102,7 +102,7 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, int paren
 		//QString debugDot = "";
 		debugDot.append("  n");
 		debugDot.append(QString::number(thisNode));
-		debugDot.append("[label=\"p:");
+		debugDot.append("[shape=box, label=\"p:");
 		debugDot.append(QString::number(board->playerId));
 		debugDot.append("\\l");
 		debugDot.append(boardStr);
@@ -147,11 +147,23 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, int paren
 			//kDebug() << "result: " << eval;
 			debugDot.append("  e");
 			debugDot.append(QString::number(thisNode));
-			debugDot.append("[label=\"");
+			debugDot.append("[shape=box, label=\"");
 			debugDot.append(QString::number(eval));
-			debugDot.append("\\n");
-			debugDot.append(QString::number(lastEvalTime));
-			debugDot.append(" ms");
+			debugDot.append("\\nsc:");
+			debugDot.append(QString::number(analysis.openShortChains.size()));
+			debugDot.append("\\nlc:");
+			debugDot.append(QString::number(analysis.openLongChains.size()));
+			debugDot.append("\\ncc:");
+			debugDot.append(QString::number(analysis.openLoopChains.size()));
+			debugDot.append("\\ncsc:");
+			debugDot.append(QString::number(analysis.capturableShortChains.size()));
+			debugDot.append("\\nclc:");
+			debugDot.append(QString::number(analysis.capturableLongChains.size()));
+			debugDot.append("\\nccc:");
+			debugDot.append(QString::number(analysis.capturableLoopChains.size()));
+			//debugDot.append("\\n");
+			//debugDot.append(QString::number(lastEvalTime));
+			//debugDot.append(" ms");
 			debugDot.append("\"];\n  e");
 			debugDot.append(QString::number(thisNode));
 			debugDot.append(" -- n");
@@ -168,7 +180,7 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, int paren
 		{
 			board->doMove(moveSequences[i][j]);
 		}
-		float val = -alphabeta(board, depth - 1, NULL, thisNode);
+		float val = -alphabeta(board, depth - 1, NULL, -beta, -alpha, thisNode);
 		for (int j = 0; j < moveSequences[i].size(); j++)
 		{
 			board->undoMove(moveSequences[i][j]);
@@ -179,6 +191,10 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, int paren
 			if (line != NULL)
 				*line = moveSequences[i][0];
 		}
+		if (bestValue >= beta)
+			break;
+		if (bestValue > alpha)
+			alpha = bestValue;
 	}
 	return bestValue;
 }
