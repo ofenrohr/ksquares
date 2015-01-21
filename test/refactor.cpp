@@ -28,6 +28,7 @@ class refactor : public QObject
     void testAnalyseBoard011();
     void testAnalyseBoard012();
     void testFindChains013();
+		void testClassifyChain014();
 };
 
 /**
@@ -523,6 +524,39 @@ void refactor::testFindChains013()
 	QVERIFY(chains[0].lines.size() == 6 || chains[1].lines.size() == 6 || chains[2].lines.size() == 6);
 	QVERIFY(chains[0].lines.size() == 3 || chains[1].lines.size() == 3 || chains[2].lines.size() == 3);
 	QVERIFY(chains[0].lines.size() == 4 || chains[1].lines.size() == 4 || chains[2].lines.size() == 4);
+}
+
+
+/**
+ * test findChains
+ */
+void refactor::testClassifyChain014()
+{
+  QList<int> lines;
+	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+  QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/2x2-classify.dbl", sGame.data(), &lines));
+	for (int i = 0; i < lines.size(); i++)
+	{
+		bool nextPlayer, boardFilled;
+		QList<int> completedSquares;
+		sGame->board()->addLine(lines[i], &nextPlayer, &boardFilled, &completedSquares);
+	}
+	
+	aiBoard::Ptr board(new aiBoard(sGame->board()));
+	
+	QList<KSquares::Chain> chains;
+	aiFunctions aift(board->width, board->height);
+	aift.findChains(board, &chains);
+	
+	for (int i = 0; i < chains.size(); i++)
+	{
+		kDebug() << "chain["<<i<<"]: cap: " << chains[i].ownChain << ", on board: " << aiFunctions::linelistToString(chains[i].lines, board->linesSize, board->width, board->height);
+	}
+	
+	QCOMPARE(chains.size(), 1);
+	QVERIFY(chains[0].squares.size() == 4);
+	QVERIFY(chains[0].lines.size() == 5);
+	QVERIFY(chains[0].type == KSquares::CHAIN_LOOP);
 }
 
 QTEST_MAIN(refactor)
