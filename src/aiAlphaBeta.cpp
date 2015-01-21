@@ -25,8 +25,8 @@ aiAlphaBeta::aiAlphaBeta(int newPlayerId, int newMaxPlayerId, int newWidth, int 
 	debug = false;
 	maxEvalTime = 0;
 	alphabetaTimeout = 5000; // 5 sec timeout
-	heuristic = new aiHeuristic(false, false, true);
-	searchDepth = 4;
+	heuristic = new aiHeuristic(false, true, true);
+	searchDepth = 10;
 }
 
 aiAlphaBeta::~aiAlphaBeta()
@@ -52,7 +52,9 @@ int aiAlphaBeta::chooseLine(const QList<bool> &newLines, const QList<int> &newSq
 	aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(lines, linesSize, width, height, squareOwners, playerId, maxPlayerId));
 	
 	int line;
-	alphabeta(board, searchDepth, &line);
+	float evalResult = alphabeta(board, searchDepth, &line);
+	
+	kDebug() << "alphabeta eval result = " << evalResult;
 	
 	if (line < 0 || line >= linesSize)
 	{

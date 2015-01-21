@@ -48,17 +48,29 @@ float aiHeuristic::evaluate(aiBoard::Ptr board, int ownPlayerId)
 	playerId = ownPlayerId >= 0 ? ownPlayerId : board->playerId;
 	reset();
 	float result = 0.0;
+	float div = 0.0;
 	
 	if (enableSquaresCnt)
+	{
+		div += 1.0;
 		result += evalSquaresCnt(board);
+	}
 	
 	if (enableScores)
+	{
+		div += 1.0;
 		result += evalScores(board);
+	}
 	
 	if (enableLongChainRule)
+	{
+		div += 1.0;
 		result += evalLongChainRule(board);
+	}
 	
-	return result;
+	if (div == 0.0) return 0;
+	
+	return result / div;
 }
 
 void aiHeuristic::analyseChains(aiBoard::Ptr board)
@@ -83,7 +95,7 @@ float aiHeuristic::evalSquaresCnt(aiBoard::Ptr board)
 			ownSquaresCnt += analysis.chains[i].squares.size();
 	}
 	
-	return ownSquaresCnt;
+	return ownSquaresCnt / (board->width * board->height);
 }
 
 float aiHeuristic::evalScores(aiBoard::Ptr board)
@@ -101,7 +113,7 @@ float aiHeuristic::evalScores(aiBoard::Ptr board)
 			enemyScore += scores[i];
 	}
 	
-	return score - enemyScore;
+	return score - enemyScore / (board->width * board->height);
 }
 
 float aiHeuristic::evalLongChainRule(aiBoard::Ptr board)
@@ -112,15 +124,15 @@ float aiHeuristic::evalLongChainRule(aiBoard::Ptr board)
 	
 	// check if the enemy made a loony move
 	if (analysis.capturableLongChains.size() > 0)
-		return dots;
+		return 1;
 	if (analysis.capturableLoopChains.size() > 0)
-		return dots;
+		return 1;
 	for (int i = 0; i < analysis.capturableShortChains.size(); i++)
 	{
 		if (analysis.chains[analysis.capturableShortChains[i]].squares.size() > 1)
-			return dots;
+			return 1;
 	}
-	int lcr = (dots + analysis.openLongChains.size()) % 2 != board->playerId ? -dots : dots;
+	int lcr = (dots + analysis.openLongChains.size()) % 2 != board->playerId ? -1 : 1;
 	
 	if (debug)
 	{

@@ -730,6 +730,11 @@ KSquares::ChainType aiFunctions::classifyChain(int width, int height, const QLis
 	return classifyChain(width, height, chain, lines, &squares);
 }
 
+KSquares::ChainType aiFunctions::classifyChain(const QList<int> &chain, bool *lines) const
+{
+	return classifyChain(width, height, chain, lines);
+}
+
 KSquares::ChainType aiFunctions::classifyChain(int width, int height, const QList<int> &chain, bool *lines, QList<int> *squares)
 {
   if (chain.size() <= 0)
@@ -772,12 +777,16 @@ KSquares::ChainType aiFunctions::classifyChain(int width, int height, const QLis
   QStack<int> squareQueue;
   QList<int> squareVisited;
   QList<int> linesVisited;
+	int lastSquareLoopJoint = -1;
+	bool isLoop = false;
 	
   squareQueue.push(squares->at(0));
   while (squareQueue.size() > 0)
   {
     int curSquare = squareQueue.pop();
     
+		//kDebug() << "expanding: " << curSquare;
+		
     // has square already been visited?
     if (squareVisited.contains(curSquare))
     {
@@ -809,11 +818,25 @@ KSquares::ChainType aiFunctions::classifyChain(int width, int height, const QLis
         if (curSquare == curLineSquares[j]) 
           continue;
 				squareReached[curLineSquares[j]] ++;
-        if (countBorderLines(width, height, curLineSquares[j], lines) < 2 && squareReached[curLineSquares[j]] != 2)
-          continue;
+				// TODO: not general enough!
+        if (countBorderLines(width, height, curLineSquares[j], lines) < 2)
+				{
+					if (squareReached[curLineSquares[j]] != 2)
+					{
+						continue;
+					}
+					else
+					{
+						lastSquareLoopJoint = curLineSquares[j];
+						//kDebug() << "loop joint square: " << curLineSquares[j];
+					}
+				}
         squareQueue.push(curLineSquares[j]);
       }
     }
+    
+		if (squareQueue.size() == 0 && lastSquareLoopJoint == curSquare)
+			isLoop = true;
   }
   
   // did we visit all squares?
@@ -824,6 +847,12 @@ KSquares::ChainType aiFunctions::classifyChain(int width, int height, const QLis
     return KSquares::CHAIN_UNKNOWN;
   }
   
+  // chain ended in a loop joint
+  if (isLoop)
+	{
+		return KSquares::CHAIN_LOOP;
+	}
+  
   // how many chains did we visit? two or less = short chain
   if (squareVisited.size() <= 2)
   {
@@ -832,11 +861,6 @@ KSquares::ChainType aiFunctions::classifyChain(int width, int height, const QLis
   
   // long chain
   return KSquares::CHAIN_LONG; 
-}
-
-KSquares::ChainType aiFunctions::classifyChain(const QList<int> &chain, bool *lines) const
-{
-	return classifyChain(width, height, chain, lines);
 }
 
 
