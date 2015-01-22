@@ -24,6 +24,7 @@ class alphabeta : public QObject
 		void testBerlekamp007();
 		void testHeuristic001();
 		void testAlphaBeta004();
+		void testCornerLines001();
 };
 
 template <typename T>
@@ -250,6 +251,33 @@ void alphabeta::testAlphaBeta004()
 	QTextStream fileoutput(&file);
 	fileoutput << "graph {\n" << ai.getDebugDot() << "}";
 	file.close();
+}
+
+
+void alphabeta::testCornerLines001()
+{
+	bool lines[4];
+	QList<int> owners;
+	owners.append(-1);
+	aiBoard::Ptr board(new aiBoard(lines, 4, 1, 1, owners, 0, 1));
+	
+	for (int j = 0; j < 4; j++)
+	{
+		QList<int> ignore = aiAlphaBeta::ignoreCornerLines(board);
+		for (int i = 0; i < 4; i++)
+		{
+			if (board->lines[i])
+				continue;
+			if (ignore.contains(i))
+				continue;
+			board->doMove(i);
+			break;
+		}
+	}
+	for (int i = 0; i < 4; i++)
+	{
+		QVERIFY(board->lines[i]);
+	}
 }
 
 QTEST_MAIN(alphabeta)

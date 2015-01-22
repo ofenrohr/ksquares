@@ -26,7 +26,7 @@ aiAlphaBeta::aiAlphaBeta(int newPlayerId, int newMaxPlayerId, int newWidth, int 
 	maxEvalTime = 0;
 	alphabetaTimeout = 5000; // 5 sec timeout
 	heuristic = new aiHeuristic(false, true, true);
-	searchDepth = 10;
+	searchDepth = 30;
 }
 
 aiAlphaBeta::~aiAlphaBeta()
@@ -51,8 +51,10 @@ int aiAlphaBeta::chooseLine(const QList<bool> &newLines, const QList<int> &newSq
 	// do sth smart
 	aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(lines, linesSize, width, height, squareOwners, playerId, maxPlayerId));
 	
+	kDebug() << "alphabeta START";
 	int line;
 	float evalResult = alphabeta(board, searchDepth, &line);
+	kDebug() << "alphabeta END " << line;
 	
 	kDebug() << "alphabeta eval result = " << evalResult;
 	
@@ -83,12 +85,12 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 	{
 		if (!alphabetaTimer.isValid())
 		{
-			kDebug() << "starting alphabeta timer";
+			//kDebug() << "starting alphabeta timer";
 			alphabetaTimer.start();
 		}
 		else
 		{
-			kDebug() << "restarting alphabeta timer";
+			//kDebug() << "restarting alphabeta timer";
 			alphabetaTimer.restart();
 		}
 	}
@@ -122,14 +124,16 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 	
 	if (moveSequences.size() == 0) // game is over
 	{
-		//kDebug() << "terminal node";
+		//kDebug() << "terminal node - board filled";
+		if (board->squareOwners.contains(-1))
+			kDebug() << "full board contains square without owner!";
 		int winner = aiFunctions::getLeader(board->squareOwners);
-		if (winner == -2) // draw
+		if (winner < 0) // draw
 			return 0;
-		if (winner == playerId)
-			return -INFINITY;
-		else
+		if (winner == board->playerId)
 			return INFINITY;
+		else
+			return -INFINITY;
 	}
 	
 	bool terminalNode = false;
@@ -143,7 +147,7 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 	{
 		//kDebug() << "evaluating board:" << boardToString(board->lines, board->linesSize, board->width, board->height);
 		heuristic->setAnalysis(analysis);
-		int eval = evaluate(board);
+		float eval = evaluate(board);
 		if (debug)
 		{
 			//kDebug() << "result: " << eval;
@@ -175,9 +179,12 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 		return eval;
 	}
 	
+	//int localLine = -1;
 	float bestValue = -INFINITY;
 	for (int i = 0; i < moveSequences.size(); i++)
 	{
+		//if (moveSequences[i].size() == 0)
+		//	kDebug() << "empty move sequence!";
 		for (int j = 0; j < moveSequences[i].size(); j++)
 		{
 			board->doMove(moveSequences[i][j]);
@@ -193,11 +200,17 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 			if (line != NULL)
 				*line = moveSequences[i][0];
 		}
-		if (bestValue >= beta)
+		/*
+		if (val > alpha)
+			alpha = val;
+		if (alpha >= beta)
+		{
+			//kDebug() << "pruned";
 			break;
-		if (bestValue > alpha)
-			alpha = bestValue;
+		}
+		*/
 	}
+	//kDebug() << localLine << " ";
 	return bestValue;
 }
 
@@ -271,9 +284,34 @@ QList<int> aiAlphaBeta::getDoubleDealingSequence(KSquares::Chain &chain)
 	return ret;
 }
 
+QList<int> aiAlphaBeta::ignoreCornerLines(aiBoard::Ptr board)
+{
+	QList<int> ignoreLines;
+	int squareLines[4]; // top, left, right, bottom
+	
+	aiFunctions::linesFromSquare(board->width, board->height, squareLines, 0);
+	if (!board->lines[squareLines[0]] && !board->lines[squareLines[1]])
+		ignoreLines.append(squareLines[0]);
+	
+	aiFunctions::linesFromSquare(board->width, board->height, squareLines, board->width-1);
+	if (!board->lines[squareLines[0]] && !board->lines[squareLines[2]])
+		ignoreLines.append(squareLines[0]);
+	
+	aiFunctions::linesFromSquare(board->width, board->height, squareLines, board->width*board->height-board->width);
+	if (!board->lines[squareLines[1]] && !board->lines[squareLines[3]])
+		ignoreLines.append(squareLines[1]);
+	
+	aiFunctions::linesFromSquare(board->width, board->height, squareLines, board->width*board->height-1);
+	if (!board->lines[squareLines[2]] && !board->lines[squareLines[3]])
+		ignoreLines.append(squareLines[3]);
+	
+	return ignoreLines;
+}
+
 QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board, KSquares::BoardAnalysis &analysis)
 {
 	QList<QList<int> > moveSequences;
+	QList<QList<int> > chainSacrificeSequences;
 	
 	// TODO: share with heuristic
 	//KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
@@ -354,11 +392,13 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board, KSquares::B
 	// move sequences for open chains + free lines
 	// get free lines and filter them
 	QList<int> freeLines; // = aiFunctions::getFreeLines(board->lines, board->linesSize);
+	QList<int> ignoreLines = ignoreCornerLines(board);
+	//QList<int> ignoreLines;
 	for (int i = 0; i < board->linesSize; i++)
-		if (!board->lines[i] && !baseMoveSequence.contains(i))
+		if (!board->lines[i] && !baseMoveSequence.contains(i) && !ignoreLines.contains(i))
 			freeLines.append(i);
 	//kDebug() << "free lines: " << freeLines;
-	if (freeLines.size() == 0)
+	if (freeLines.size() == 0 && baseMoveSequence.size() > 0)
 		moveSequences.append(baseMoveSequence);
 	// add one sequence for each long and loop chain
 	QList<int> openLongAndLoopChains;
@@ -373,7 +413,8 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board, KSquares::B
 		{
 			freeLines.removeAll(analysis.chainsAfterCapture[openLongAndLoopChains[i]].lines[j]);
 		}
-		moveSequences.append(moveSequence);
+		//moveSequences.append(moveSequence);
+		chainSacrificeSequences.append(moveSequence);
 	}
 	// add half and hard hearted handouts for short chains
 	for (int i = 0; i < analysis.openShortChains.size(); i++)
@@ -383,11 +424,13 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board, KSquares::B
 		QList<int> halfHeartedSequence;
 		halfHeartedSequence.append(baseMoveSequence);
 		halfHeartedSequence.append(analysis.chainsAfterCapture[analysis.openShortChains[i]].lines[0]);
-		moveSequences.append(halfHeartedSequence);
+		//moveSequences.append(halfHeartedSequence);
+		chainSacrificeSequences.prepend(halfHeartedSequence);
 		QList<int> hardHeartedSequence;
 		hardHeartedSequence.append(baseMoveSequence);
 		hardHeartedSequence.append(analysis.chainsAfterCapture[analysis.openShortChains[i]].lines[1]);
-		moveSequences.append(hardHeartedSequence);
+		//moveSequences.append(hardHeartedSequence);
+		chainSacrificeSequences.prepend(hardHeartedSequence);
 		for (int j = 0; j < analysis.chainsAfterCapture[analysis.openShortChains[i]].lines.size(); j++)
 		{
 			freeLines.removeAll(analysis.chainsAfterCapture[analysis.openShortChains[i]].lines[j]);
@@ -401,6 +444,8 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board, KSquares::B
 		moveSequence.append(freeLines[i]);
 		moveSequences.append(moveSequence);
 	}
+	// add chain sacrifice moves
+	moveSequences.append(chainSacrificeSequences);
 	
 	return moveSequences;
 }

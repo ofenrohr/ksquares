@@ -42,6 +42,11 @@ class aiAlphaBeta : public KSquaresAi
 		 */
 		static QList<int> getDoubleDealingSequence(KSquares::Chain &chain);
 		/**
+		 * Two lines at each corner of the board are equivalent.
+		 * This returns one line per corner if both corner lines aren't drawn.
+		 */
+		static QList<int> ignoreCornerLines(aiBoard::Ptr board);
+		/**
 		 * Generates a move list. Chains are returned twice if applicable:
 		 * one sequence with chain fully taken and one with double dealing.
 		 */
