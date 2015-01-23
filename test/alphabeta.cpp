@@ -25,6 +25,7 @@ class alphabeta : public QObject
 		void testHeuristic001();
 		void testAlphaBeta004();
 		void testCornerLines001();
+		void testAlphaBeta005();
 };
 
 template <typename T>
@@ -238,7 +239,6 @@ void alphabeta::testAlphaBeta004()
 	ai.setDepth(1);
 	ai.setDebug(true);
 	int aiLine = ai.chooseLine(sGame->board()->lines(), sGame->board()->squares());
-	
 	kDebug() << "ai line = " << aiLine;
 	
 	// write dot tree to file
@@ -251,6 +251,26 @@ void alphabeta::testAlphaBeta004()
 	QTextStream fileoutput(&file);
 	fileoutput << "graph {\n" << ai.getDebugDot() << "}";
 	file.close();
+	
+	// do sth not so smart
+	bool nextPlayer, gameOver = false;
+	QList<int> completedSquares;
+	sGame->board()->addLine(13, &nextPlayer, &gameOver, &completedSquares);
+	
+	// next iteration
+	int aiLine2 = ai.chooseLine(sGame->board()->lines(), sGame->board()->squares());
+	kDebug() << "ai line 2 = " << aiLine2;
+	
+	// write dot tree to file
+	QFile file2("/tmp/berlekamp-1-2.dot");
+	if (!file2.open(QIODevice::ReadWrite | QIODevice::Truncate))
+	{
+		kDebug() << "error: Can't open file";
+		return;
+	}
+	QTextStream fileoutput2(&file2);
+	fileoutput2 << "graph {\n" << ai.getDebugDot() << "}";
+	file2.close();
 }
 
 
@@ -278,6 +298,41 @@ void alphabeta::testCornerLines001()
 	{
 		QVERIFY(board->lines[i]);
 	}
+}
+
+void alphabeta::testAlphaBeta005()
+{
+	/*
+	QList<int> lines;
+	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+  QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/berlekamp-3.1.dbl", sGame.data(), &lines));
+	for (int i = 0; i < lines.size(); i++)
+	{
+		bool nextPlayer, boardFilled;
+		QList<int> completedSquares;
+		sGame->board()->addLine(lines[i], &nextPlayer, &boardFilled, &completedSquares);
+	}
+	aiBoard::Ptr board(new aiBoard(sGame->board()));
+	
+	
+	aiAlphaBeta ai(0, 1, board->width, board->height, -1);
+	int aiLine = ai.chooseLine(sGame->board()->lines(), sGame->board()->squares());
+	
+	kDebug() << "aiLine 0: " << aiLine;
+	
+	if (aiLine != 16)
+		kDebug() << "ERROR: aiLine != 16";
+	
+	bool nextPlayer, gameOver = false;
+	int i = 1;
+	while (!gameOver)
+	{
+		QList<int> squaresCompleted;
+		aiLine = ai.chooseLine(sGame->board()->lines(), sGame->board()->squares());
+		sGame->board()->addLine(aiLine, &nextPlayer, &gameOver, &squaresCompleted);
+		kDebug() << "aiLine " << i++ << ": " << aiLine;
+	}
+	*/
 }
 
 QTEST_MAIN(alphabeta)

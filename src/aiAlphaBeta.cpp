@@ -52,7 +52,7 @@ int aiAlphaBeta::chooseLine(const QList<bool> &newLines, const QList<int> &newSq
 	aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(lines, linesSize, width, height, squareOwners, playerId, maxPlayerId));
 	
 	kDebug() << "alphabeta START";
-	int line;
+	int line = -1;
 	float evalResult = alphabeta(board, searchDepth, &line);
 	kDebug() << "alphabeta END " << line;
 	
@@ -125,6 +125,7 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 	if (moveSequences.size() == 0) // game is over
 	{
 		//kDebug() << "terminal node - board filled";
+		// TODO: remove check
 		if (board->squareOwners.contains(-1))
 			kDebug() << "full board contains square without owner!";
 		int winner = aiFunctions::getLeader(board->squareOwners);
@@ -190,7 +191,7 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 			board->doMove(moveSequences[i][j]);
 		}
 		float val = -alphabeta(board, depth - 1, NULL, -beta, -alpha, thisNode);
-		for (int j = 0; j < moveSequences[i].size(); j++)
+		for (int j = moveSequences[i].size() -1; j >= 0; j--)
 		{
 			board->undoMove(moveSequences[i][j]);
 		}
@@ -211,6 +212,8 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 		*/
 	}
 	//kDebug() << localLine << " ";
+	//if (bestValue == -INFINITY && moveSequences.size() > 0 && line != NULL)
+	//	*line = moveSequences[0][0];
 	return bestValue;
 }
 
