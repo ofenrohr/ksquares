@@ -7,13 +7,14 @@
 
 namespace KSquares
 {
-	enum ChainType {CHAIN_SHORT, CHAIN_LONG, CHAIN_LOOP, CHAIN_UNKNOWN};
+	enum ChainType {CHAIN_SHORT, CHAIN_LONG, CHAIN_LOOP, CHAIN_SPECIAL, CHAIN_UNKNOWN};
 	typedef struct Chain_t
 	{
 		QList<int> lines;
 		QList<int> squares;
 		ChainType type;
 		bool ownChain;
+		friend QDebug operator<<(QDebug dbg, const KSquares::Chain_t &c) { dbg.nospace() << "Chain(lines: " << c.lines << ", squares: " << c.squares << ", type: " << c.type << ", own: " << c.ownChain << ")"; return dbg.maybeSpace(); }
 	} Chain;
 	
 	// used to convey connections to another square via a line
@@ -41,6 +42,26 @@ namespace KSquares
 		QList<int> openLongChains;
 		QList<int> openLoopChains;
 		QList<int> openShortChains;
+		
+		// lines that have a special impact on the game:
+		// * lines that create a loop chain when drawn (cycles that have a connection to ground)
+		QList<int> specialLines;
+		
+		friend QDebug operator<<(QDebug dbg, const KSquares::BoardAnalysis_t &a)
+		{
+			dbg.nospace() << "BoardAnalysis\n";
+			dbg.nospace() << "|-> chains: " << a.chains << "\n";
+			dbg.nospace() << "|-> chainsAfterCapture: " << a.chainsAfterCapture << "\n"; 
+			dbg.nospace() << "|-> capturableLongChains: " << a.capturableLongChains << "\n";
+			dbg.nospace() << "|-> capturableLoopChains: " << a.capturableLoopChains << "\n";
+			dbg.nospace() << "|-> capturableShortChains: " << a.capturableShortChains << "\n";
+			dbg.nospace() << "|-> openLongChains: " << a.openLongChains << "\n";
+			dbg.nospace() << "|-> openLoopChains: " << a.openLoopChains << "\n";
+			dbg.nospace() << "|-> openShortChains: " << a.openShortChains << "\n";
+			dbg.nospace() << "|-> specialLines: " << a.specialLines << "\n";
+			
+			return dbg.maybeSpace();
+		}
 	} BoardAnalysis;
 }
 

@@ -498,11 +498,12 @@ void aiFunctions::findChains(aiBoard *board, QList<KSquares::Chain> *foundChains
 							if (isExternalConnection)
 								externalJointConnections.append(jointConnections[j]);
 						}
+						QList<int> jointGroundConnections = getGroundConnections(board, connectedJointSquare);
 						if (squareValences[connectedJointSquare] + 
 							jointReachedBefore[connectedJointSquare] + 
 							localJointReachedBefore == 3 &&
 							externalJointConnections.size() + 
-							getGroundConnections(board, connectedJointSquare).size() == 1) // the joint can be passed
+							jointGroundConnections.size() == 1) // the joint can be passed
 						{
 							squareQueue.prepend(connectedJointSquare);
 							passedJoint = true;
@@ -516,10 +517,22 @@ void aiFunctions::findChains(aiBoard *board, QList<KSquares::Chain> *foundChains
 								foundChains->removeAt(otherChainsReachingJoint[k]);
 								//kDebug() << "removed foundChain and prepended to new chain";
 							}
-							// there can be a chain that when completed creates a loop chain which contains the joint
+							// there can be a chain that when completed creates a loop chain which contains the joint.
 							// to find that chain the connection to that joint that's not part of the loop chain must be added to freeSquares
 							if (externalJointConnections.size() > 0)
 								excludeFromRemovalOnce.append(externalJointConnections[0].square);
+							else // cutting the ground connection of the joint will create an open loop chain for the next player
+							{
+								//kDebug() << "no external joint connection, jointGroundConnections: " << jointGroundConnections;
+								if (!onlyOwnChains && jointGroundConnections.size() > 0)
+								{
+									KSquares::Chain createLoopChainChain;
+									createLoopChainChain.lines.append(jointGroundConnections[0]);
+									createLoopChainChain.ownChain = false;
+									createLoopChainChain.type = KSquares::CHAIN_SPECIAL;
+									foundChains->append(createLoopChainChain);
+								}
+							}
 						}
 						/*
 						else
@@ -888,9 +901,12 @@ KSquares::BoardAnalysis aiFunctions::analyseBoard(aiBoard::Ptr board)
 				if (analysis.chains[i].ownChain)
 					analysis.capturableShortChains.append(i);
 			break;
+			case KSquares::CHAIN_SPECIAL:
+				kDebug() << "ERROR: special own chain!" << analysis.chains[i];
+			break;
 			case KSquares::CHAIN_UNKNOWN:
 			default:
-				kDebug() << "WARNING: unknown chain! " << analysis.chains[i].lines;
+				kDebug() << "WARNING: unknown chain! " << analysis.chains[i];
 			break;
 		}
 		// capture everything that can be captured
@@ -932,6 +948,21 @@ KSquares::BoardAnalysis aiFunctions::analyseBoard(aiBoard::Ptr board)
 			case KSquares::CHAIN_SHORT:
 				if (!analysis.chainsAfterCapture[i].ownChain)
 					analysis.openShortChains.append(i);
+				else
+				{
+					kDebug() << "ERROR: capturable chain found when there should be none! chain: " << linelistToString(analysis.chainsAfterCapture[i].lines, board->linesSize, board->width, board->height) << " on board " << boardToString(board);
+					for (int j = 0; j < analysis.chains.size(); j++)
+						kDebug() << "capture chain: " << linelistToString(analysis.chains[j].lines, board->linesSize, board->width, board->height);
+				}
+			break;
+			case KSquares::CHAIN_SPECIAL:
+				if (!analysis.chainsAfterCapture[i].ownChain)
+				{
+					for (int j = 0; j < analysis.chainsAfterCapture[i].lines.size(); j++)
+					{
+						analysis.specialLines.append(analysis.chainsAfterCapture[i].lines[j]);
+					}
+				}
 				else
 				{
 					kDebug() << "ERROR: capturable chain found when there should be none! chain: " << linelistToString(analysis.chainsAfterCapture[i].lines, board->linesSize, board->width, board->height) << " on board " << boardToString(board);

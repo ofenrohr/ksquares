@@ -26,6 +26,7 @@ class alphabeta : public QObject
 		void testAlphaBeta004();
 		void testCornerLines001();
 		void testAlphaBeta005();
+		void testAnalyse001();
 };
 
 template <typename T>
@@ -302,10 +303,9 @@ void alphabeta::testCornerLines001()
 
 void alphabeta::testAlphaBeta005()
 {
-	/*
 	QList<int> lines;
 	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
-  QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/berlekamp-3.1.dbl", sGame.data(), &lines));
+  QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/2x2-minimax.dbl", sGame.data(), &lines));
 	for (int i = 0; i < lines.size(); i++)
 	{
 		bool nextPlayer, boardFilled;
@@ -316,13 +316,23 @@ void alphabeta::testAlphaBeta005()
 	
 	
 	aiAlphaBeta ai(0, 1, board->width, board->height, -1);
+	ai.setDebug(true);
 	int aiLine = ai.chooseLine(sGame->board()->lines(), sGame->board()->squares());
 	
 	kDebug() << "aiLine 0: " << aiLine;
 	
-	if (aiLine != 16)
-		kDebug() << "ERROR: aiLine != 16";
+	// write dot tree to file
+	QFile file("/tmp/2x2-tree.dot");
+	if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate))
+	{
+		kDebug() << "error: Can't open file";
+		return;
+	}
+	QTextStream fileoutput(&file);
+	fileoutput << "graph {\n" << ai.getDebugDot() << "}";
+	file.close();
 	
+	/*
 	bool nextPlayer, gameOver = false;
 	int i = 1;
 	while (!gameOver)
@@ -332,6 +342,44 @@ void alphabeta::testAlphaBeta005()
 		sGame->board()->addLine(aiLine, &nextPlayer, &gameOver, &squaresCompleted);
 		kDebug() << "aiLine " << i++ << ": " << aiLine;
 	}
+	*/
+}
+
+
+
+void alphabeta::testAnalyse001()
+{
+	QList<int> lines;
+	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+  QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/2x2-classify.dbl", sGame.data(), &lines));
+	for (int i = 0; i < lines.size(); i++)
+	{
+		bool nextPlayer, boardFilled;
+		QList<int> completedSquares;
+		sGame->board()->addLine(lines[i], &nextPlayer, &boardFilled, &completedSquares);
+	}
+	aiBoard::Ptr board(new aiBoard(sGame->board()));
+	
+	KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
+	
+	kDebug() << "analysis: " << analysis;
+	/*
+	aiAlphaBeta ai(0, 1, board->width, board->height, -1);
+	ai.setDebug(true);
+	int aiLine = ai.chooseLine(sGame->board()->lines(), sGame->board()->squares());
+	
+	kDebug() << "aiLine 0: " << aiLine;
+	
+	// write dot tree to file
+	QFile file("/tmp/2x2-classify.dot");
+	if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate))
+	{
+		kDebug() << "error: Can't open file";
+		return;
+	}
+	QTextStream fileoutput(&file);
+	fileoutput << "graph {\n" << ai.getDebugDot() << "}";
+	file.close();
 	*/
 }
 

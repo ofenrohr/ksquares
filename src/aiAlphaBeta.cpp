@@ -128,6 +128,41 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 		// TODO: remove check
 		if (board->squareOwners.contains(-1))
 			kDebug() << "full board contains square without owner!";
+		int result = 0;
+		for (int i = 0; i < board->squareOwners.size(); i++)
+		{
+			if (board->squareOwners[i] < 0)
+				kDebug() << "ERROR: no move sequences available, but untaken squares on board!!";
+			
+			result += board->squareOwners[i] == board->playerId ? 1 : -1;
+		}
+		if (debug)
+		{
+			QMap<int, int> scoreMap = aiFunctions::getScoreMap(board->squareOwners);
+			QString resultStr = "\\n";
+			for (int i = 0; i < scoreMap.keys().size(); i++)
+			{
+				resultStr += "p"; 
+				resultStr += QString::number(scoreMap.keys()[i]);
+				resultStr += ":";
+				resultStr += QString::number(scoreMap[scoreMap.keys()[i]]);
+				resultStr += "\\n";
+			}
+			debugDot.append("  e");
+			debugDot.append(QString::number(thisNode));
+			debugDot.append("[shape=box, label=\"");
+			debugDot.append(QString::number(result));
+			debugDot.append(resultStr);
+			debugDot.append("\"];\n  e");
+			debugDot.append(QString::number(thisNode));
+			debugDot.append(" -- n");
+			debugDot.append(QString::number(thisNode));
+			debugDot.append(";\n");
+		}
+		// the player didn't change: return negative result!
+		return -result;
+		
+		/*
 		int winner = aiFunctions::getLeader(board->squareOwners);
 		if (winner < 0) // draw
 			return 0;
@@ -135,6 +170,7 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 			return INFINITY;
 		else
 			return -INFINITY;
+		*/
 	}
 	
 	bool terminalNode = false;
@@ -214,6 +250,20 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 	//kDebug() << localLine << " ";
 	//if (bestValue == -INFINITY && moveSequences.size() > 0 && line != NULL)
 	//	*line = moveSequences[0][0];
+	
+	if (debug)
+	{
+		debugDot.append("  e");
+		debugDot.append(QString::number(thisNode));
+		debugDot.append("[shape=box, label=\"");
+		debugDot.append(QString::number(bestValue));
+		debugDot.append("\"];\n  e");
+		debugDot.append(QString::number(thisNode));
+		debugDot.append(" -- n");
+		debugDot.append(QString::number(thisNode));
+		debugDot.append(";\n");
+	}
+	
 	return bestValue;
 }
 
@@ -382,10 +432,23 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board, KSquares::B
 	// add double dealing version
 	if (doubleDealingChainIndex != -1)
 	{
-		QList<int> doubleDealingSequence;
-		doubleDealingSequence.append(baseMoveSequence);
-		doubleDealingSequence.append(getDoubleDealingSequence(analysis.chains[doubleDealingChainIndex]));
-		moveSequences.append(doubleDealingSequence);
+		// only double deal if there is sth left
+		bool finalCapture = true;
+		for (int i = 0; i < board->linesSize; i++)
+		{
+			if (!board->lines[i] && !baseMoveSequence.contains(i) && !analysis.chains[doubleDealingChainIndex].lines.contains(i))
+			{
+				finalCapture = false;
+				break;
+			}
+		}
+		if (!finalCapture)
+		{
+			QList<int> doubleDealingSequence;
+			doubleDealingSequence.append(baseMoveSequence);
+			doubleDealingSequence.append(getDoubleDealingSequence(analysis.chains[doubleDealingChainIndex]));
+			moveSequences.append(doubleDealingSequence);
+		}
 		
 		// add normal variant to basic move sequence
 		baseMoveSequence.append(analysis.chains[doubleDealingChainIndex].lines);
@@ -439,6 +502,8 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board, KSquares::B
 			freeLines.removeAll(analysis.chainsAfterCapture[analysis.openShortChains[i]].lines[j]);
 		}
 	}
+	for (int i = 0; i < analysis.specialLines.size(); i++)
+		freeLines.append(analysis.specialLines[i]);
 	// add all that's left
 	for (int i = 0; i < freeLines.size(); i++)
 	{
