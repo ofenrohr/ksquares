@@ -241,9 +241,15 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 	{
 		//if (moveSequences[i].size() == 0)
 		//	kDebug() << "empty move sequence!";
+		int prevPlayer = board->playerId;
 		for (int j = 0; j < moveSequences[i].size(); j++)
 		{
 			board->doMove(moveSequences[i][j]);
+		}
+		if (prevPlayer == board->playerId && board->squareOwners.contains(-1))
+		{
+			kDebug() << "ERROR: sth went really wrong! player didn't change after move sequence: " << moveSequences[i];
+			kDebug() << "ERROR: board: " << aiFunctions::boardToString(board);
 		}
 		float val = -alphabeta(board, depth - 1, NULL, -beta, -alpha, thisNode);
 		for (int j = moveSequences[i].size() -1; j >= 0; j--)
@@ -336,7 +342,7 @@ QList<int> aiAlphaBeta::getDoubleDealingSequence(KSquares::Chain &chain)
 {
 	QList<int> ret;
 	
-	if (chain.type != KSquares::CHAIN_LONG && chain.type != KSquares::CHAIN_LOOP)
+	if (chain.type != KSquares::CHAIN_LONG && chain.type != KSquares::CHAIN_LOOP && chain.type != KSquares::CHAIN_SHORT)
 	{
 		return ret;
 	}
@@ -357,6 +363,16 @@ QList<int> aiAlphaBeta::getDoubleDealingSequence(KSquares::Chain &chain)
 		}
 		ret.removeAt(ret.size() - 3);
 		ret.removeAt(ret.size() - 1);
+	}
+	
+	if (chain.type == KSquares::CHAIN_SHORT)
+	{
+		if (chain.squares.size() < 2 || chain.lines.size() < 2)
+		{
+			ret.clear();
+			return ret;
+		}
+		ret.removeAt(ret.size() - 2);
 	}
 	
 	return ret;
@@ -425,6 +441,8 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board, KSquares::B
 		for (int i = 0; i < capturableShortAndLoopChains.size(); i++)
 		{
 			QList<int> doubleDealingVariant = getDoubleDealingSequence(analysis.chains[capturableShortAndLoopChains[i]]);
+			//kDebug() << "short or loop chain: " << analysis.chains[capturableShortAndLoopChains[i]];
+			//kDebug() << "doubleDealingVariant: " << doubleDealingVariant;
 			if (doubleDealingVariant.size() > 0)
 			{
 				doubleDealingChainIndex = capturableShortAndLoopChains[i];
@@ -477,6 +495,10 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board, KSquares::B
 		
 		// add normal variant to basic move sequence
 		baseMoveSequence.append(analysis.chains[doubleDealingChainIndex].lines);
+	}
+	else
+	{
+		//kDebug() << "no double dealing chain available";
 	}
 	
 	// add full capture version

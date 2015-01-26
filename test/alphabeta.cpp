@@ -28,6 +28,9 @@ class alphabeta : public QObject
 		void testAlphaBeta005();
 		void testAnalyse001();
 		void testBerlekamp004();
+		void testMoveSeq001();
+		void testMoveSeq002();
+		void testMoveSeq003();
 };
 
 template <typename T>
@@ -437,6 +440,85 @@ void alphabeta::testBerlekamp004()
 		kDebug() << "aiLine " << i++ << ": " << aiLine;
 	}
 	*/
+}
+
+void alphabeta::testMoveSeq001()
+{
+	QList<int> lines;
+	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+  QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/2x1-move-seq.dbl", sGame.data(), &lines));
+	for (int i = 0; i < lines.size(); i++)
+	{
+		bool nextPlayer, boardFilled;
+		QList<int> completedSquares;
+		sGame->board()->addLine(lines[i], &nextPlayer, &boardFilled, &completedSquares);
+	}
+	aiBoard::Ptr board(new aiBoard(sGame->board()));
+	
+	KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
+	
+	kDebug() << "analysis: " << analysis;
+	
+	QList<QList<int> > moveSequences = aiAlphaBeta::getMoveSequences(board, analysis);
+	
+	kDebug() << "move sequences: " << moveSequences;
+	
+	QCOMPARE(moveSequences.size(), 1);
+}
+
+void alphabeta::testMoveSeq002()
+{
+	QList<int> lines;
+	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+  QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/berlekamp-3.5.dbl", sGame.data(), &lines));
+	for (int i = 0; i < lines.size(); i++)
+	{
+		bool nextPlayer, boardFilled;
+		QList<int> completedSquares;
+		sGame->board()->addLine(lines[i], &nextPlayer, &boardFilled, &completedSquares);
+	}
+	aiBoard::Ptr board(new aiBoard(sGame->board()));
+	
+	KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
+	
+	kDebug() << "analysis: " << analysis;
+	
+	QList<QList<int> > moveSequences = aiAlphaBeta::getMoveSequences(board, analysis);
+	
+	kDebug() << "move sequences: " << moveSequences;
+	
+	QList<int> doubleDealingMove;
+	doubleDealingMove.append(0);
+	QVERIFY(moveSequences.contains(doubleDealingMove));
+}
+
+void alphabeta::testMoveSeq003()
+{
+	QList<int> lines;
+	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+  QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/berlekamp-3.5.dbl", sGame.data(), &lines));
+	for (int i = 0; i < lines.size(); i++)
+	{
+		bool nextPlayer, boardFilled;
+		QList<int> completedSquares;
+		sGame->board()->addLine(lines[i], &nextPlayer, &boardFilled, &completedSquares);
+	}
+	aiBoard::Ptr board(new aiBoard(sGame->board()));
+	
+	board->doMove(0);
+	
+	KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
+	
+	kDebug() << "analysis: " << analysis;
+	
+	QList<QList<int> > moveSequences = aiAlphaBeta::getMoveSequences(board, analysis);
+	
+	kDebug() << "move sequences: " << moveSequences;
+	
+	QList<int> correctMove;
+	correctMove.append(4);
+	correctMove.append(19);
+	QVERIFY(moveSequences.contains(correctMove));
 }
 
 QTEST_MAIN(alphabeta)
