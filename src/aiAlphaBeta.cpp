@@ -262,7 +262,7 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 			if (line != NULL)
 				*line = moveSequences[i][0];
 		}
-		/*
+		
 		if (val > alpha)
 			alpha = val;
 		if (alpha >= beta)
@@ -270,7 +270,7 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 			//kDebug() << "pruned";
 			break;
 		}
-		*/
+		
 	}
 	//kDebug() << localLine << " ";
 	//if (bestValue == -INFINITY && moveSequences.size() > 0 && line != NULL)

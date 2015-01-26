@@ -25,6 +25,12 @@ class berlekamp : public QObject
 		void testBerlekamp005(); // 0
 		void testBerlekamp006(); // 10
 		void testBerlekamp007(); // 9
+		void testBerlekamp008(); // 0
+		void testBerlekamp009(); // 0
+		void testBerlekamp010(); // 11
+		void testBerlekamp011(); // 2
+		void testBerlekamp012(); // 15
+		void testBerlekamp013(); // 17
 };
 
 void executeAi(Board *board, int player, QString name, QList<int> expectedLines)
@@ -208,6 +214,132 @@ void berlekamp::testBerlekamp007()
 	QList<int> expectedLines;
 	expectedLines.append(9);
 	executeAi(sGame->board(), lines.size() % 2, "berlekamp-07", expectedLines);
+}
+
+/**
+ * test based on berlekamps book "sophisticated child's play"
+ * page 17 & 18
+ */
+void berlekamp::testBerlekamp008()
+{
+  QList<int> lines;
+	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+  QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/berlekamp-3.8.dbl", sGame.data(), &lines));
+	for (int i = 0; i < lines.size(); i++)
+	{
+		bool nextPlayer, boardFilled;
+		QList<int> completedSquares;
+		sGame->board()->addLine(lines[i], &nextPlayer, &boardFilled, &completedSquares);
+	}
+	
+	QList<int> expectedLines;
+	expectedLines.append(0);
+	executeAi(sGame->board(), sGame->board()->currentPlayer(), "berlekamp-08", expectedLines);
+}
+
+/**
+ * test based on berlekamps book "sophisticated child's play"
+ * page 17 & 18
+ */
+void berlekamp::testBerlekamp009()
+{
+  QList<int> lines;
+	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+  QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/berlekamp-3.9.dbl", sGame.data(), &lines));
+	for (int i = 0; i < lines.size(); i++)
+	{
+		bool nextPlayer, boardFilled;
+		QList<int> completedSquares;
+		sGame->board()->addLine(lines[i], &nextPlayer, &boardFilled, &completedSquares);
+	}
+	
+	QList<int> expectedLines;
+	expectedLines.append(0);
+	executeAi(sGame->board(), sGame->board()->currentPlayer(), "berlekamp-09", expectedLines);
+}
+
+/**
+ * test based on berlekamps book "sophisticated child's play"
+ * page 17 & 18
+ */
+void berlekamp::testBerlekamp010()
+{
+  QList<int> lines;
+	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+  QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/berlekamp-3.10.dbl", sGame.data(), &lines));
+	for (int i = 0; i < lines.size(); i++)
+	{
+		bool nextPlayer, boardFilled;
+		QList<int> completedSquares;
+		sGame->board()->addLine(lines[i], &nextPlayer, &boardFilled, &completedSquares);
+	}
+	
+	QList<int> expectedLines;
+	expectedLines.append(11);
+	executeAi(sGame->board(), sGame->board()->currentPlayer(), "berlekamp-10", expectedLines);
+}
+
+/**
+ * test based on berlekamps book "sophisticated child's play"
+ * page 17 & 18
+ */
+void berlekamp::testBerlekamp011()
+{
+  QList<int> lines;
+	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+  QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/berlekamp-3.11.dbl", sGame.data(), &lines));
+	for (int i = 0; i < lines.size(); i++)
+	{
+		bool nextPlayer, boardFilled;
+		QList<int> completedSquares;
+		sGame->board()->addLine(lines[i], &nextPlayer, &boardFilled, &completedSquares);
+	}
+	
+	QList<int> expectedLines;
+	expectedLines.append(2);
+	executeAi(sGame->board(), sGame->board()->currentPlayer(), "berlekamp-11", expectedLines);
+}
+
+/**
+ * test based on berlekamps book "sophisticated child's play"
+ * page 19 & 20
+ */
+void berlekamp::testBerlekamp012()
+{
+  QList<int> lines;
+	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+  QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/berlekamp-3.12.dbl", sGame.data(), &lines));
+	for (int i = 0; i < lines.size(); i++)
+	{
+		bool nextPlayer, boardFilled;
+		QList<int> completedSquares;
+		sGame->board()->addLine(lines[i], &nextPlayer, &boardFilled, &completedSquares);
+	}
+	
+	QList<int> expectedLines;
+	expectedLines.append(15);
+	executeAi(sGame->board(), sGame->board()->currentPlayer(), "berlekamp-12", expectedLines);
+}
+
+/**
+ * test based on berlekamps book "sophisticated child's play"
+ * page 19 & 20
+ */
+void berlekamp::testBerlekamp013()
+{
+  QList<int> lines;
+	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+  QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/berlekamp-3.13.dbl", sGame.data(), &lines));
+	for (int i = 0; i < lines.size(); i++)
+	{
+		bool nextPlayer, boardFilled;
+		QList<int> completedSquares;
+		sGame->board()->addLine(lines[i], &nextPlayer, &boardFilled, &completedSquares);
+	}
+	
+	QList<int> expectedLines;
+	expectedLines.append(17);
+	executeAi(sGame->board(), sGame->board()->currentPlayer(), "berlekamp-13", expectedLines);
 }
 
 QTEST_MAIN(berlekamp)

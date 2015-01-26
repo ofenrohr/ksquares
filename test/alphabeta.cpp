@@ -392,9 +392,9 @@ void alphabeta::testBerlekamp004()
 {
 	QList<int> lines;
 	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
-  //QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/berlekamp-3.4.dbl", sGame.data(), &lines));
+  QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/berlekamp-3.4.dbl", sGame.data(), &lines));
   //QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/3x3-alphabeta.dbl", sGame.data(), &lines));
-  QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/berlekamp-3.5.dbl", sGame.data(), &lines));
+  //QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/berlekamp-3.5.dbl", sGame.data(), &lines));
 	for (int i = 0; i < lines.size(); i++)
 	{
 		bool nextPlayer, boardFilled;
@@ -406,7 +406,12 @@ void alphabeta::testBerlekamp004()
 	board->doMove(12);
 	aiAlphaBeta ai(0, 1, board->width, board->height, -1);
 	ai.setDebug(true);
-	//ai.setDebugDepth(1);
+// 	QList<QPair<int, int> > debugLines; // line, depth
+// 	debugLines.append(QPair<int,int>(22, 1));
+// 	debugLines.append(QPair<int,int>(12, 1));
+// 	ai.setDebugLines(debugLines);
+	ai.setDebugDepth(3);
+	
 	int aiLine = ai.chooseLine(sGame->board()->lines(), sGame->board()->squares());
 	kDebug() << "aiLine 0: " << aiLine;
 	board->undoMove(12);
