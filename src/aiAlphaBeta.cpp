@@ -25,7 +25,7 @@ aiAlphaBeta::aiAlphaBeta(int newPlayerId, int newMaxPlayerId, int newWidth, int 
 	debug = false;
 	maxEvalTime = 0;
 	alphabetaTimeout = 5000; // 5 sec timeout
-	heuristic = new aiHeuristic(false, true, true);
+	heuristic = new aiHeuristic(false, false, true);
 	searchDepth = 30;
 	debugDepth = searchDepth;
 }
@@ -95,8 +95,9 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 			alphabetaTimer.restart();
 		}
 	}
+	bool isEndgame = false;
 	KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
-	QList<QList<int> > moveSequences = getMoveSequences(board, analysis);
+	QList<QList<int> > moveSequences = getMoveSequences(board, analysis, &isEndgame);
 	
 	int thisNode = debugNodeCnt;
 	debugNodeCnt++;
@@ -192,7 +193,7 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 		terminalNode = true;
 		kDebug() << "alphabeta timeout reached, not going deeper";
 	}
-	if (terminalNode)
+	if (terminalNode) //|| isEndgame)
 	{
 		//kDebug() << "evaluating board:" << boardToString(board->lines, board->linesSize, board->width, board->height);
 		heuristic->setAnalysis(analysis);
@@ -402,7 +403,7 @@ QList<int> aiAlphaBeta::ignoreCornerLines(aiBoard::Ptr board)
 	return ignoreLines;
 }
 
-QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board, KSquares::BoardAnalysis &analysis)
+QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board, KSquares::BoardAnalysis &analysis, bool *isEndgame)
 {
 	QList<QList<int> > moveSequences;
 	QList<QList<int> > chainSacrificeSequences;
@@ -551,6 +552,8 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board, KSquares::B
 	}
 	for (int i = 0; i < analysis.specialLines.size(); i++)
 		freeLines.append(analysis.specialLines[i]);
+	if (isEndgame != NULL)
+		*isEndgame = freeLines.size() > 0;
 	// add all that's left
 	for (int i = 0; i < freeLines.size(); i++)
 	{

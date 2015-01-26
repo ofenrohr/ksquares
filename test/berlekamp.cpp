@@ -54,11 +54,11 @@ void executeAi(Board *board, int player, QString name, QList<int> expectedLines)
 		int aiLine = ai->chooseLine(board->lines(), board->squares());
 		if (expectedLines.contains(aiLine))
 		{
-			summary << "PASS: " << ai->getName() << "\n";
+			summary << "PASS " << name << ": " << ai->getName() << "\n";
 		}
 		else
 		{
-			summary << "FAIL: " << ai->getName() << ", returned: " << aiLine << ", expected: ";
+			summary << "FAIL " << name << ": " << ai->getName() << ", returned: " << aiLine << ", expected: ";
 			for (int j = 0; j < expectedLines.size(); j++)
 				summary << QString::number(expectedLines[j]) << (j != expectedLines.size() -1 ? "," : "");
 			summary << "\n";

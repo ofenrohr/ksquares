@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>368</width>
-    <height>370</height>
+    <height>375</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -470,6 +470,29 @@ p, li { white-space: pre-wrap; }
         </property>
         <property name="text">
          <string>Quick start</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="KIntSpinBox" name="aiThinkTime">
+        <property name="suffix">
+         <string>s</string>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>9999</number>
+        </property>
+        <property name="value">
+         <number>10</number>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLabel" name="aiThinkTimeLabel">
+        <property name="text">
+         <string>max. AI think time</string>
         </property>
        </widget>
       </item>
