@@ -21,7 +21,7 @@ class berlekamp : public QObject
 		void testBerlekamp001(); // 16
 		void testBerlekamp002(); // 17, 21
 		void testBerlekamp003(); // 7
-		void testBerlekamp004(); // 12
+		void testBerlekamp004(); // 12 (22, 23)
 		void testBerlekamp005(); // 0
 		void testBerlekamp006(); // 10
 		void testBerlekamp007(); // 9
@@ -150,6 +150,8 @@ void berlekamp::testBerlekamp004()
 	
 	QList<int> expectedLines;
 	expectedLines.append(12);
+	expectedLines.append(22); // this result is not listed in berlekamp's book!
+	expectedLines.append(23); // this result is not listed in berlekamp's book!
 	executeAi(sGame->board(), lines.size() % 2, "berlekamp-04", expectedLines);
 }
 

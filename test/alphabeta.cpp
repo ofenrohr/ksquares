@@ -392,9 +392,9 @@ void alphabeta::testBerlekamp004()
 {
 	QList<int> lines;
 	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
-  QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/berlekamp-3.4.dbl", sGame.data(), &lines));
+  //QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/berlekamp-3.4.dbl", sGame.data(), &lines));
   //QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/3x3-alphabeta.dbl", sGame.data(), &lines));
-  //QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/berlekamp-3.5.dbl", sGame.data(), &lines));
+  QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/berlekamp-3.6.dbl", sGame.data(), &lines));
 	for (int i = 0; i < lines.size(); i++)
 	{
 		bool nextPlayer, boardFilled;
@@ -424,7 +424,7 @@ void alphabeta::testBerlekamp004()
 	*/
 	
 	// write dot tree to file
-	QFile file("/tmp/berlekamp-4-tree.dot");
+	QFile file("/tmp/berlekamp-6-tree.dot");
 	if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate))
 	{
 		kDebug() << "error: Can't open file";

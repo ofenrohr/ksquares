@@ -17,6 +17,7 @@
 
 #include "ksquareswindow.h"
 #include "ksquaresdemowindow.h"
+#include "ksquarestestwindow.h"
 #include "settings.h"
 
 static const char description[] =
@@ -37,6 +38,7 @@ int main(int argc, char **argv)
 
 	KCmdLineOptions options;
 	options.add("demo", ki18n("Run game in demo (autoplay) mode"));
+	options.add("test", ki18n("Run game in test (autoplay) mode"));
 	KCmdLineArgs::addCmdLineOptions( options );
 	KCmdLineArgs *args = KCmdLineArgs::parsedArgs();
 	
@@ -55,7 +57,13 @@ int main(int argc, char **argv)
 		cg.writeEntry("initializeNames", false);
 	}
 	
-	if (args->isSet("demo"))
+	if (args->isSet("test"))
+	{
+		KSquaresTestWindow *testWindow = new KSquaresTestWindow;
+		testWindow->show();
+		testWindow->gameNew();
+	}
+	else if (args->isSet("demo"))
 	{
 		KSquaresDemoWindow *demoWindow = new KSquaresDemoWindow;
 		demoWindow->show();
