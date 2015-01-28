@@ -13,6 +13,8 @@
 
 #include <QList>
 #include <QSharedPointer>
+#include <QObject>
+#include <QThread>
 #include "aifunctions.h"
 #include "board.h"
 
@@ -43,7 +45,7 @@ class KSquaresAi : public aiFunctions
 		virtual QString getName() = 0;
 };
 
-class aiController
+class aiController : public QObject
 {
 	public:
 		typedef QSharedPointer<aiController> Ptr;
@@ -97,6 +99,37 @@ class aiController
 		/// number of lines on board
 		//int linesSize;
 		KSquaresAi::Ptr ai;
+};
+
+// see http://qt-project.org/doc/qt-4.8/qthread.html#details
+class aiControllerWorker : public QObject
+{
+	Q_OBJECT
+	QThread workerThread;
+	aiController::Ptr aicontroller;
+	QList<bool> lines;
+	QList<int> squares;
+	
+	public:
+		aiControllerWorker(aiController::Ptr aic, const QList<bool> &newLines, const QList<int> &newSquareOwners)
+		{
+			aicontroller = aic;
+			lines = newLines;
+			squares = newSquareOwners;
+		}
+
+	public slots:
+		void process()
+		//void chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners)
+		{
+			int line = aicontroller->chooseLine(lines, squares);
+			emit lineChosen(line);
+			emit finished();
+		}
+
+	signals:
+		void lineChosen(const int &result);
+		void finished();
 };
 
 #endif // KSQUARES_H

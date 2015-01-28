@@ -36,6 +36,7 @@ class KSquaresTestWindow : public KXmlGuiWindow
 
 	public slots:
 		void gameNew();
+		void aiChoseLine(const int &line);
 
 	private slots:
 		void aiChooseLine();

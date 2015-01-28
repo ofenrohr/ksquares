@@ -41,38 +41,38 @@ int aiEasyMediumHard::chooseLine(const QList<bool> &newLines, const QList<int> &
 	// remember square owner table (might not be necessary)
 	//squareOwners = newSquareOwners;
 	// do the ai stuff:
-	kDebug() << "incoming board:" << boardToString(lines, linesSize, width, height);
+	//kDebug() << "incoming board:" << boardToString(lines, linesSize, width, height);
 	QList<int> choiceList = findLinesCompletingBoxes(linesSize, lines);
-  kDebug() << "finLinesCompletingBoxes returned: " << choiceList;
+  //kDebug() << "finLinesCompletingBoxes returned: " << choiceList;
 	if(choiceList.size() != 0)
 	{
 		if(level >= 2) // to play good ai has to look into the future game
 		{
 			QList<int> openLines; // list of not yet drawn lines
 			openLines = aiFunctions::getFreeLines(lines, linesSize);
-			kDebug() << "choosing from all possible lines";
+			//kDebug() << "choosing from all possible lines";
 			QList<int> choices=chooseLeastDamaging(openLines); // run extended damage control
 			if(choices.size() > 0)
 			{
-				kDebug() << "AI: 4. Drawing line at index:" << choices.at(0);
+				//kDebug() << "AI: 4. Drawing line at index:" << choices.at(0);
 				return choices.at(0);
 			}
 		}
 		float randomFloat = ((float) rand()/(RAND_MAX + 1.0))*(choiceList.size()-1);
 		int randChoice = (short)(randomFloat)/1;
-		kDebug() << "AI: 1. Drawing line at index:" << choiceList.at(randChoice);
+		//kDebug() << "AI: 1. Drawing line at index:" << choiceList.at(randChoice);
 		return choiceList.at(randChoice);
 	}
 	
 	choiceList = safeMoves(linesSize, lines);
-  kDebug() << "safeMoves:" << linelistToString(choiceList);
+  //kDebug() << "safeMoves:" << linelistToString(choiceList);
 	
 	if(choiceList.size() != 0)
 	{
 		float randomFloat = ((float) rand()/(RAND_MAX + 1.0))*(choiceList.size()-1);
 		int randChoice = (short)(randomFloat)/1;
-		kDebug() << "choiceList: " << choiceList;
-		kDebug() << "AI: 2. Drawing line at index:" << choiceList.at(randChoice);
+		//kDebug() << "choiceList: " << choiceList;
+		//kDebug() << "AI: 2. Drawing line at index:" << choiceList.at(randChoice);
 		return choiceList.at(randChoice);
 	}
 	
@@ -95,12 +95,12 @@ int aiEasyMediumHard::chooseLine(const QList<bool> &newLines, const QList<int> &
 	if(level >= 1) //Hard(2/3)	//do some damage control :)
 	{
 		QList<int> goodChoiceList = chooseLeastDamaging(choiceList);
-    kDebug() << "goodChoiceList: " << linelistToString(goodChoiceList);
+    //kDebug() << "goodChoiceList: " << linelistToString(goodChoiceList);
 		if(goodChoiceList.size() != 0)
 		{
 			float randomFloat = ((float) rand()/(RAND_MAX + 1.0))*(goodChoiceList.size()-1);
 			int randChoice = (short)(randomFloat)/1;
-			kDebug() << "AI: 3. Drawing line at index:" << goodChoiceList.at(randChoice);
+			//kDebug() << "AI: 3. Drawing line at index:" << goodChoiceList.at(randChoice);
 			return goodChoiceList.at(randChoice);
 		}
 	}
@@ -109,7 +109,7 @@ int aiEasyMediumHard::chooseLine(const QList<bool> &newLines, const QList<int> &
 	{
 		float randomFloat = ((float) rand()/(RAND_MAX + 1.0))*(choiceList.size()-1);
 		int randChoice = (short)(randomFloat)/1;
-		kDebug() << "AI: 3. Drawing line at index:" << choiceList.at(randChoice);
+		//kDebug() << "AI: 3. Drawing line at index:" << choiceList.at(randChoice);
 		return choiceList.at(randChoice);
 	}
         return 0;
@@ -117,8 +117,8 @@ int aiEasyMediumHard::chooseLine(const QList<bool> &newLines, const QList<int> &
 
 QList<int> aiEasyMediumHard::chooseLeastDamaging(const QList<int> &choiceList) const
 {
-	kDebug() << "AI: Checking" << choiceList.size() << "possible moves";
-	kDebug() << "choiceList: " << linelistToString(choiceList, linesSize, width, height);
+	//kDebug() << "AI: Checking" << choiceList.size() << "possible moves";
+	//kDebug() << "choiceList: " << linelistToString(choiceList, linesSize, width, height);
 	QMap<int,int> linePointDamage;	//this will be a list of how damaging a certain move will be. Key = damage of move, Value = index of line
 	QScopedArrayPointer<bool> linesCopy(new bool[linesSize]); //make temporary local copies of lists
 	
@@ -133,7 +133,7 @@ QList<int> aiEasyMediumHard::chooseLeastDamaging(const QList<int> &choiceList) c
 	if (level > 1)
 	{
 		ownSquaresCnt = findOwnChains(lines, linesSize, width, height, &ownChains);
-		kDebug() << "ownChains:" << ownChains;
+		//kDebug() << "ownChains:" << ownChains;
     
     memcpy(myLines.data(), lines, linesSize);
 
@@ -157,7 +157,7 @@ QList<int> aiEasyMediumHard::chooseLeastDamaging(const QList<int> &choiceList) c
 		{
 			ownMoves=ownChains.at(minChain);
 		}
-		kDebug() << "ownMoves:" << ownMoves;
+		//kDebug() << "ownMoves:" << ownMoves;
 	}
 	
 	for(int i = 0; i < choiceList.size(); i++)	//cycle through all the possible moves
@@ -198,7 +198,7 @@ QList<int> aiEasyMediumHard::chooseLeastDamaging(const QList<int> &choiceList) c
 		chains.insert(choiceList.at(i), chain);
 	}
 	
-	kDebug() << "linePointDamage:" << linePointDamage;
+	//kDebug() << "linePointDamage:" << linePointDamage;
 	
 	if(level < 2) // middle ai won't analyze the game further
 	{
@@ -230,7 +230,7 @@ QList<int> aiEasyMediumHard::chooseLeastDamaging(const QList<int> &choiceList) c
 			chainSet.insert(j.key(), chainCheck);
 		}
 	}
-	kDebug() << "chainSet:" << chainSet;
+	//kDebug() << "chainSet:" << chainSet;
 
 	// analyze chains
 	int shortChainCnt = 0; // chains <= 2 lines
@@ -245,7 +245,7 @@ QList<int> aiEasyMediumHard::chooseLeastDamaging(const QList<int> &choiceList) c
 		chainSetIt.next();
 		QSet<int> chainSetI = chainSetIt.value();
     int classification = classifyChain(chainSetI.toList(), lines);
-    kDebug() << "analysing chain " << chainSetI << ": " << classification;
+    //kDebug() << "analysing chain " << chainSetI << ": " << classification;
 		switch (classification)
 		{
 			case KSquares::CHAIN_LONG: 
@@ -264,7 +264,7 @@ QList<int> aiEasyMediumHard::chooseLeastDamaging(const QList<int> &choiceList) c
         kDebug() << "unknown chain type " << classification;
     }
 	}
-	kDebug() << "short chains:" << shortChainCnt << ", long chains: " << longChainCnt << ", loop chains: " << loopChainCnt << ", ownLinesCnt: " << ownLinesCnt << ", ownSquaresCnt: " << ownSquaresCnt;
+	//kDebug() << "short chains:" << shortChainCnt << ", long chains: " << longChainCnt << ", loop chains: " << loopChainCnt << ", ownLinesCnt: " << ownLinesCnt << ", ownSquaresCnt: " << ownSquaresCnt;
 
 	if(
 		(
@@ -279,7 +279,7 @@ QList<int> aiEasyMediumHard::chooseLeastDamaging(const QList<int> &choiceList) c
 		safeMoves(linesSize, lines).size() == 0 // only do it in endgames
 	  )
 	{
-		kDebug() << "HAHA, our chance to do the evil thing!";
+		//kDebug() << "HAHA, our chance to do the evil thing!";
 		int magicLine = -1; // line in own moves that is used to get the next chain (draw there to give 2/4 squares to opponent)
 		// formal definition of magicLine: line that when completed will leave at least one other line in own moves that completes two squares at once
 		// the opposite of magic line will be used in the hard hearted handout to make sure that the opponent won't be able to do the evil move
@@ -305,7 +305,7 @@ QList<int> aiEasyMediumHard::chooseLeastDamaging(const QList<int> &choiceList) c
 				}
 			}
 		}
-		kDebug() << "Magic Line index:" << magicLine;
+		//kDebug() << "Magic Line index:" << magicLine;
 		QList<int> bestMoves;
 		if(ownMoves.size() > 1)
 		{
@@ -364,7 +364,7 @@ QList<int> aiEasyMediumHard::chooseLeastDamaging(const QList<int> &choiceList) c
 		}
 		if(handoutLine >= 0)
 		{
-			kDebug() << "Hard hearted handout at" << opponentChain.at(handoutLine);
+			//kDebug() << "Hard hearted handout at" << opponentChain.at(handoutLine);
 			QList<int> retMove;
 			retMove.append(opponentChain.at(handoutLine));
 			return retMove;

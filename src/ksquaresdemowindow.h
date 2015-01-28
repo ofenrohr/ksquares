@@ -10,9 +10,12 @@
 #ifndef KSQUARESDEMOWINDOW_H
 #define KSQUARESDEMOWINDOW_H
 
+#include <QList>
+
 #include <KXmlGuiWindow>
 
 #include "ksquaresgame.h"
+#include "aicontroller.h"
 
 class GameBoardView;
 class GameBoardScene;
@@ -35,6 +38,7 @@ class KSquaresDemoWindow : public KXmlGuiWindow
 
 	public slots:
 		void gameNew();
+		void aiChoseLine(const int &line);
 
 	private slots:
 		void aiChooseLine();
@@ -48,6 +52,8 @@ class KSquaresDemoWindow : public KXmlGuiWindow
 		GameBoardScene *m_scene;
 		///The game controller
 		KSquaresGame* sGame;
+		///The ai controllers
+		QList<aiController::Ptr> ais;
 };
 
 #endif // KSQUARESDEMOWINDOW_H

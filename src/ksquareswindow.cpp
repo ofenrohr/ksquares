@@ -291,7 +291,7 @@ void KSquaresWindow::gameOver(const QVector<KSquaresPlayer> &_playerList)
 
 void KSquaresWindow::playerTakeTurn(KSquaresPlayer* currentPlayer)
 {
-	//kDebug() << "void KSquares::playerTakeTurn(KSquaresPlayer* currentPlayer)";
+	kDebug() << "void KSquares::playerTakeTurn(KSquaresPlayer* currentPlayer)";
 	statusBar()->changeItem(
 		QString::fromLatin1("<font color=\"%1\">%2</font>")
 			.arg(currentPlayer->colour().name())
@@ -378,7 +378,25 @@ int KSquaresWindow::getAiLevel(int playerId)
 void KSquaresWindow::aiChooseLine()
 {
 	kDebug() << "choosing line...";
-	sGame->addLineToIndex(ais.at(sGame->currentPlayerId())->chooseLine(sGame->board()->lines(), sGame->board()->squares()));
+	
+	// https://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
+	QThread* thread = new QThread;
+	aiControllerWorker *worker = new aiControllerWorker(ais.at(sGame->currentPlayerId()), sGame->board()->lines(), sGame->board()->squares());
+	worker->moveToThread(thread);
+	//connect(worker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
+	connect(thread, SIGNAL(started()), worker, SLOT(process()));
+	connect(worker, SIGNAL(finished()), thread, SLOT(quit()));
+	connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater()));
+	connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
+	connect(worker, SIGNAL(lineChosen(int)), this, SLOT(aiChoseLine(int)));
+	thread->start();
+}
+
+// called when worker thread is done
+void KSquaresWindow::aiChoseLine(const int &line)
+{
+	kDebug() << "chose line...";
+	sGame->addLineToIndex(line);
 }
 
 void KSquaresWindow::setupActions()

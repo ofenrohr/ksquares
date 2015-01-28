@@ -112,8 +112,22 @@ void KSquaresTestWindow::playerTakeTurn(KSquaresPlayer* currentPlayer)
 
 void KSquaresTestWindow::aiChooseLine()
 {
-	aiController::Ptr ai = aiList[sGame->currentPlayerId()];
-	sGame->addLineToIndex(ai->chooseLine(sGame->board()->lines(), sGame->board()->squares()));
+	// https://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
+	QThread* thread = new QThread;
+	aiControllerWorker *worker = new aiControllerWorker(aiList[sGame->currentPlayerId()], sGame->board()->lines(), sGame->board()->squares());
+	worker->moveToThread(thread);
+	//connect(worker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
+	connect(thread, SIGNAL(started()), worker, SLOT(process()));
+	connect(worker, SIGNAL(finished()), thread, SLOT(quit()));
+	connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater()));
+	connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
+	connect(worker, SIGNAL(lineChosen(int)), this, SLOT(aiChoseLine(int)));
+	thread->start();
+}
+
+void KSquaresTestWindow::aiChoseLine(const int &line)
+{
+	sGame->addLineToIndex(line);
 }
 
 void KSquaresTestWindow::gameOver(const QVector<KSquaresPlayer> & playerList)

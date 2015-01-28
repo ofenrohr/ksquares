@@ -25,7 +25,6 @@
 #include "settings.h"
 
 //classes
-#include "aicontroller.h"
 #include "gameboardview.h"
 
 KSquaresDemoWindow::KSquaresDemoWindow() : KXmlGuiWindow(), m_view(new GameBoardView(this)), m_scene(0)
@@ -71,6 +70,16 @@ void KSquaresDemoWindow::gameNew()
 				kError() << "KSquaresGame::playerSquareComplete(); currentPlayerId() != 0|1|2|3";
 		}
 		playerList.append(KSquaresPlayer(i18n("Player %1", i+1), color, false));
+		
+		int aiLevel=0;
+		switch(i)
+		{
+			case 0: aiLevel = Settings::playerOneAi(); break;
+			case 1: aiLevel = Settings::playerTwoAi(); break;
+			case 2: aiLevel = Settings::playerThreeAi(); break;
+			case 3: aiLevel = Settings::playerFourAi(); break;
+		}
+		ais.append(aiController::Ptr(new aiController(i, 3, 15, 10, aiLevel)));
 	}
 
 	//create physical board
@@ -90,6 +99,7 @@ void KSquaresDemoWindow::gameNew()
 	connect(sGame, SIGNAL(drawSquare(int,QColor)), m_scene, SLOT(drawSquare(int,QColor)));
 
 	sGame->start();
+	playerTakeTurn(sGame->currentPlayer());
 }
 
 void KSquaresDemoWindow::playerTakeTurn(KSquaresPlayer* currentPlayer)
@@ -100,16 +110,24 @@ void KSquaresDemoWindow::playerTakeTurn(KSquaresPlayer* currentPlayer)
 
 void KSquaresDemoWindow::aiChooseLine()
 {
-	int aiLevel=0;
-	switch(sGame->currentPlayerId())
-	{
-		case 0: aiLevel = Settings::playerOneAi(); break;
-		case 1: aiLevel = Settings::playerTwoAi(); break;
-		case 2: aiLevel = Settings::playerThreeAi(); break;
-		case 3: aiLevel = Settings::playerFourAi(); break;
-	}
-	aiController ai(sGame->currentPlayerId(), Settings::numOfPlayers() - 1, sGame->board()->width(), sGame->board()->height(), aiLevel);
-	sGame->addLineToIndex(ai.chooseLine(sGame->board()->lines(), sGame->board()->squares()));
+	//sGame->addLineToIndex(ai.chooseLine(sGame->board()->lines(), sGame->board()->squares()));
+	
+	// https://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
+	QThread* thread = new QThread;
+	aiControllerWorker *worker = new aiControllerWorker(ais.at(sGame->currentPlayerId()), sGame->board()->lines(), sGame->board()->squares());
+	worker->moveToThread(thread);
+	//connect(worker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
+	connect(thread, SIGNAL(started()), worker, SLOT(process()));
+	connect(worker, SIGNAL(finished()), thread, SLOT(quit()));
+	connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater()));
+	connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
+	connect(worker, SIGNAL(lineChosen(int)), this, SLOT(aiChoseLine(int)));
+	thread->start();
+}
+
+void KSquaresDemoWindow::aiChoseLine(const int &line)
+{
+	sGame->addLineToIndex(line);
 }
 
 void KSquaresDemoWindow::gameOver(const QVector<KSquaresPlayer> & /*playerList*/)

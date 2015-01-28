@@ -11,6 +11,7 @@
 #define KSQUARESWINDOW_H
 
 #include <QList>
+#include <QThread>
 
 #include <KXmlGuiWindow>
 
@@ -57,6 +58,10 @@ class KSquaresWindow : public KXmlGuiWindow
     void saveGameAs();
 		///Get Level of Ai for player id
 		int getAiLevel(int playerId);
+		void aiChoseLine(const int &line); // testing only
+		
+//	signals:
+//		void startAi(const QList<bool> &lines, const QList<int> &squares);
 
 	private slots:
 		void aiChooseLine(); // testing only

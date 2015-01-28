@@ -21,11 +21,11 @@
 
 aiController::aiController(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel) : playerId(newPlayerId), maxPlayerId(newMaxPlayerId), width(newWidth), height(newHeight), level(newLevel)
 {
-	kDebug() << "aiController init: nw = " << newWidth << ", nh = " << newHeight << ", w = " << width << ", h = " << height;
+	//kDebug() << "aiController init: nw = " << newWidth << ", nh = " << newHeight << ", w = " << width << ", h = " << height;
 	//linesSize = aiFunctions::toLinesSize(width, height);
 	//lines = new bool[linesSize];
 	srand( (unsigned)time( NULL ) );
-	kDebug() << "AI: Starting AI level" << level;
+	//kDebug() << "AI: Starting AI level" << level;
 }
 
 aiController::~aiController()
@@ -81,7 +81,7 @@ KSquaresAi::Ptr aiController::getAi()
 		case 0:
 		case 1:
 		case 2:
-			kDebug() << "creating aiEasyMediumHard: w = " << width << ", h = " << height;
+			//kDebug() << "creating aiEasyMediumHard: w = " << width << ", h = " << height;
 			ai = KSquaresAi::Ptr(new aiEasyMediumHard(playerId, width, height, level));
 		break;
 		/*
@@ -92,7 +92,7 @@ KSquaresAi::Ptr aiController::getAi()
 		break;
 		*/
 		case 3:
-			kDebug() << "creating aiAlphaBeta";
+			//kDebug() << "creating aiAlphaBeta";
 			if (ai.isNull())
 				ai = KSquaresAi::Ptr(new aiAlphaBeta(playerId, maxPlayerId, width, height, level));
 		break;
