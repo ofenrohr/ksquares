@@ -52,6 +52,9 @@ class KSquaresTestWindow : public KXmlGuiWindow
 		KSquaresGame* sGame;
 		///List of AI players
 		QList<aiController::Ptr> aiList;
+		///Result map
+		QMap<int, int> results;
+		QString resultStr;
 };
 
 #endif // KSQUARESDEMOWINDOW_H

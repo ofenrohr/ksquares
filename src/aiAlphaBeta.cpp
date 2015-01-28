@@ -266,6 +266,14 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 		{
 			board->undoMove(moveSequences[i][j]);
 		}
+		/*
+		if (val == bestValue && line != NULL) // randomly select other result if it is as good as the best one found
+		{
+			linePool.append(moveSequences[i][0]);
+			int poolIndex = ((float) rand()/(RAND_MAX + 1.0)) * (linePool.size()-1);
+			*line = linePool[poolIndex];
+		}
+		*/
 		if (val > bestValue)
 		{
 			bestValue = val;
@@ -275,12 +283,6 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 				linePool.append(moveSequences[i][0]);
 				*line = moveSequences[i][0];
 			}
-		}
-		if (val == bestValue && line != NULL) // randomly select other result if it is as good as the best one found
-		{
-			linePool.append(moveSequences[i][0]);
-			int poolIndex = ((float) rand()/(RAND_MAX + 1.0)) * (linePool.size()-1);
-			*line = linePool[poolIndex];
 		}
 		
 		if (val > alpha)
