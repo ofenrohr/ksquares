@@ -553,10 +553,13 @@ void refactor::testClassifyChain014()
 		kDebug() << "chain["<<i<<"]: cap: " << chains[i].ownChain << ", on board: " << aiFunctions::linelistToString(chains[i].lines, board->linesSize, board->width, board->height);
 	}
 	
-	QCOMPARE(chains.size(), 1);
-	QVERIFY(chains[0].squares.size() == 4);
-	QVERIFY(chains[0].lines.size() == 5);
-	QVERIFY(chains[0].type == KSquares::CHAIN_LOOP);
+	QCOMPARE(chains.size(), 2);
+	QVERIFY((chains[0].squares.size() == 4) ^ (chains[0].squares.size() == 0));
+	QVERIFY((chains[0].lines.size() == 5) ^ (chains[0].lines.size() == 1));
+	QVERIFY((chains[0].type == KSquares::CHAIN_LOOP) ^ (chains[0].type == KSquares::CHAIN_SPECIAL));
+	QVERIFY((chains[1].squares.size() == 4) ^ (chains[1].squares.size() == 0));
+	QVERIFY((chains[1].lines.size() == 5) ^ (chains[1].lines.size() == 1));
+	QVERIFY((chains[1].type == KSquares::CHAIN_LOOP) ^ (chains[1].type == KSquares::CHAIN_SPECIAL));
 }
 
 QTEST_MAIN(refactor)

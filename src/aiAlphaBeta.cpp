@@ -143,7 +143,7 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 			
 			result += board->squareOwners[i] == board->playerId ? 1 : -1;
 		}
-		if (debug && searchDepth - depth <= debugDepth)
+		if (debug && searchDepth - depth <= debugDepth && !debugEvalOnly)
 		{
 			QMap<int, int> scoreMap = aiFunctions::getScoreMap(board->squareOwners);
 			QString resultStr = "\\n";
@@ -191,14 +191,14 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 	if (line == NULL && alphabetaTimer.hasExpired(alphabetaTimeout)) 
 	{
 		terminalNode = true;
-		kDebug() << "alphabeta timeout reached, not going deeper";
+		//kDebug() << "alphabeta timeout reached, not going deeper";
 	}
 	if (terminalNode) //|| isEndgame)
 	{
 		//kDebug() << "evaluating board:" << boardToString(board->lines, board->linesSize, board->width, board->height);
 		heuristic->setAnalysis(analysis);
 		float eval = evaluate(board);
-		if (debug && searchDepth - depth <= debugDepth)
+		if (debug && searchDepth - depth <= debugDepth && (!debugEvalOnly || (debugEvalOnly && depth == searchDepth - 1)))
 		{
 			//kDebug() << "result: " << eval;
 			debugDot.append("  n");
@@ -218,7 +218,8 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 			debugDot.append("\\nccc:");
 			debugDot.append(QString::number(analysis.capturableLoopChains.size()));
 			debugDot.append("\\n");
-			debugDot.append(debugLabel);
+			if (!debugEvalOnly)
+				debugDot.append(debugLabel);
 			//debugDot.append("\\n");
 			//debugDot.append(QString::number(lastEvalTime));
 			//debugDot.append(" ms");
@@ -247,12 +248,14 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 		{
 			board->doMove(moveSequences[i][j]);
 		}
+		// TODO: remove this check
 		if (prevPlayer == board->playerId && board->squareOwners.contains(-1))
 		{
 			kDebug() << "ERROR: sth went really wrong! player didn't change after move sequence: " << moveSequences[i];
 			kDebug() << "ERROR: board: " << aiFunctions::boardToString(board);
 		}
 		float val = -alphabeta(board, depth - 1, NULL, -beta, -alpha, thisNode);
+		if (line != NULL) kDebug() << "val for " << moveSequences[i][0] << " = " << val;
 		for (int j = moveSequences[i].size() -1; j >= 0; j--)
 		{
 			board->undoMove(moveSequences[i][j]);
@@ -268,7 +271,8 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 			alpha = val;
 		if (alpha >= beta)
 		{
-			//kDebug() << "pruned";
+			if (line != NULL)
+				kDebug() << "pruned at " << i;
 			break;
 		}
 		
@@ -277,7 +281,7 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 	//if (bestValue == -INFINITY && moveSequences.size() > 0 && line != NULL)
 	//	*line = moveSequences[0][0];
 	
-	if (debug && searchDepth - depth <= debugDepth)
+	if (debug && searchDepth - depth <= debugDepth && !debugEvalOnly)
 	{
 		debugDot.append("  n");
 		debugDot.append(QString::number(thisNode));
@@ -588,6 +592,11 @@ void aiAlphaBeta::setDebug(bool val)
 void aiAlphaBeta::setDebugDepth(int d)
 {
 	debugDepth = d;
+}
+
+void aiAlphaBeta::setDebugEvalOnly(bool e)
+{
+	debugEvalOnly = e;
 }
 
 QString aiAlphaBeta::getDebugDot()

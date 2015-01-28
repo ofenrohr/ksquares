@@ -143,11 +143,6 @@ p, li { white-space: pre-wrap; }
         </item>
         <item>
          <property name="text">
-          <string>MiniMax</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
           <string>AlphaBeta</string>
          </property>
         </item>
@@ -209,11 +204,6 @@ p, li { white-space: pre-wrap; }
         <item>
          <property name="text">
           <string>Hard</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>MiniMax</string>
          </property>
         </item>
         <item>
@@ -283,11 +273,6 @@ p, li { white-space: pre-wrap; }
         </item>
         <item>
          <property name="text">
-          <string>MiniMax</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
           <string>AlphaBeta</string>
          </property>
         </item>
@@ -349,11 +334,6 @@ p, li { white-space: pre-wrap; }
         <item>
          <property name="text">
           <string>Hard</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>MiniMax</string>
          </property>
         </item>
         <item>

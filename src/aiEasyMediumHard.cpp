@@ -260,6 +260,9 @@ QList<int> aiEasyMediumHard::chooseLeastDamaging(const QList<int> &choiceList) c
         loopChainCnt++;
         loopChains.append(chainSetI);
       break;
+			case KSquares::CHAIN_SPECIAL:
+				// not relevant for this ai
+			break;
       default:
         kDebug() << "unknown chain type " << classification;
     }

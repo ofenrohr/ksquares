@@ -46,6 +46,8 @@ namespace KSquares
 		// lines that have a special impact on the game:
 		// * lines that create a loop chain when drawn (cycles that have a connection to ground)
 		QList<int> specialLines;
+		// safe moves
+		QList<int> safeLines;
 		
 		friend QDebug operator<<(QDebug dbg, const KSquares::BoardAnalysis_t &a)
 		{

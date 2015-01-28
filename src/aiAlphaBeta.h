@@ -57,6 +57,7 @@ class aiAlphaBeta : public KSquaresAi
 		
 		void setDebug(bool val);
 		void setDebugDepth(int d);
+		void setDebugEvalOnly(bool e);
 		QString getDebugDot();
 		
 	protected:
@@ -86,6 +87,7 @@ class aiAlphaBeta : public KSquaresAi
 		int debugDepth;
 		QString debugDot;
 		int debugNodeCnt;
+		bool debugEvalOnly;
 		long maxEvalTime;
 		long lastEvalTime;
 		QElapsedTimer alphabetaTimer;

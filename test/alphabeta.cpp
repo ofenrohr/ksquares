@@ -31,6 +31,9 @@ class alphabeta : public QObject
 		void testMoveSeq001();
 		void testMoveSeq002();
 		void testMoveSeq003();
+		void testEmptyBoard001();
+		void testHeuristic002();
+		void testHeuristic003();
 };
 
 template <typename T>
@@ -524,6 +527,85 @@ void alphabeta::testMoveSeq003()
 	correctMove.append(4);
 	correctMove.append(19);
 	QVERIFY(moveSequences.contains(correctMove));
+}
+
+void alphabeta::testEmptyBoard001()
+{
+	int w = 10, h = 10;
+	int ls = aiFunctions::toLinesSize(w,h);
+	QList<bool> lines;
+	for (int i = 0; i < ls; i++)
+		lines.append(false);
+	QList<int> squares;
+	for (int i = 0; i < w*h; i++)
+		squares.append(-1);
+	
+	aiAlphaBeta ai(0, 1, w, h, -1);
+	ai.setDebug(true);
+	ai.setDebugEvalOnly(true);
+	int line = ai.chooseLine(lines, squares);
+	
+	kDebug() << "line = " << line;
+	
+	// write dot tree to file
+	QFile file("/tmp/eval-only.dot");
+	if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate))
+	{
+		kDebug() << "error: Can't open file";
+		return;
+	}
+	QTextStream fileoutput(&file);
+	fileoutput << "graph {\n" << ai.getDebugDot() << "}";
+	file.close();
+}
+
+void alphabeta::testHeuristic002()
+{
+	QList<int> lines;
+	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+  QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/6x6-alphabeta.dbl", sGame.data(), &lines));
+	for (int i = 0; i < lines.size(); i++)
+	{
+		bool nextPlayer, boardFilled;
+		QList<int> completedSquares;
+		sGame->board()->addLine(lines[i], &nextPlayer, &boardFilled, &completedSquares);
+	}
+	aiBoard::Ptr board(new aiBoard(sGame->board()));
+	
+	KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
+	
+	kDebug() << "analysis: " << analysis;
+	
+	aiAlphaBeta ai(0, 1, sGame->board()->width(), sGame->board()->height(), -1);
+	int line = ai.chooseLine(sGame->board()->lines(), sGame->board()->squares());
+	
+	QVERIFY(line != 7);
+}
+
+void alphabeta::testHeuristic003()
+{
+	QList<int> lines;
+	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+  QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/6x6-alphabeta.dbl", sGame.data(), &lines));
+	for (int i = 0; i < lines.size(); i++)
+	{
+		bool nextPlayer, boardFilled;
+		QList<int> completedSquares;
+		sGame->board()->addLine(lines[i], &nextPlayer, &boardFilled, &completedSquares);
+	}
+	aiBoard::Ptr board(new aiBoard(sGame->board()));
+	
+	board->doMove(7);
+	
+	KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
+	
+	kDebug() << "analysis: " << analysis;
+	
+	aiHeuristic heuristic(true, true, true);
+	heuristic.setAnalysis(analysis);
+	float eval = heuristic.evaluate(board);
+	
+	kDebug() << "eval: " << eval;
 }
 
 QTEST_MAIN(alphabeta)

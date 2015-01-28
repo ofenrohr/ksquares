@@ -89,13 +89,16 @@ float aiHeuristic::evalSquaresCnt(aiBoard::Ptr board)
 	
 	int ownSquaresCnt = 0;
 	
-	for (int i = 0; i < analysis.chains.size(); i++)
+	QList<int> capturableChains;
+	capturableChains.append(analysis.capturableLongChains);
+	capturableChains.append(analysis.capturableLoopChains);
+	capturableChains.append(analysis.capturableShortChains);
+	for (int i = 0; i < capturableChains.size(); i++)
 	{
-		if (analysis.chains[i].ownChain)
-			ownSquaresCnt += analysis.chains[i].squares.size();
+		ownSquaresCnt += analysis.chains[capturableChains[i]].squares.size();
 	}
 	
-	return ownSquaresCnt / (board->width * board->height);
+	return (float)ownSquaresCnt / (float)(board->width * board->height);
 }
 
 float aiHeuristic::evalScores(aiBoard::Ptr board)
@@ -103,11 +106,11 @@ float aiHeuristic::evalScores(aiBoard::Ptr board)
 	int score = 0;
 	int enemyScore = 0;
 	QMap<int, int> scores = aiFunctions::getScoreMap(board->squareOwners);
-	if (scores.contains(playerId))
-		score = scores[playerId];
+	if (scores.contains(board->playerId))
+		score = scores[board->playerId];
 	for (int i = 0; i <= board->maxPlayerId; i++)
 	{
-		if (i == playerId)
+		if (i == board->playerId)
 			continue;
 		if (scores.contains(i))
 			enemyScore += scores[i];
@@ -119,6 +122,9 @@ float aiHeuristic::evalScores(aiBoard::Ptr board)
 float aiHeuristic::evalLongChainRule(aiBoard::Ptr board)
 {
 	analyseChains(board);
+	
+	if (analysis.safeLines.size() > 0)
+		return 0;
 	
 	int dots = (board->width + 1) * (board->height + 1);
 	

@@ -977,6 +977,9 @@ KSquares::BoardAnalysis aiFunctions::analyseBoard(aiBoard::Ptr board)
 		}
 	}
 	
+	// look for safe moves
+	analysis.safeLines = safeMoves(board->width, board->height, board->linesSize, board->lines);
+	
 	// undo capture moves
 	for (int i = 0; i < analysis.chains.size(); i++)
 	{
