@@ -116,7 +116,7 @@ float aiHeuristic::evalScores(aiBoard::Ptr board)
 			enemyScore += scores[i];
 	}
 	
-	return score - enemyScore / (board->width * board->height);
+	return (float)score - (float)enemyScore / (float)(board->width * board->height);
 }
 
 float aiHeuristic::evalLongChainRule(aiBoard::Ptr board)

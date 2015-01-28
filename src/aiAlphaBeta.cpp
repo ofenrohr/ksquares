@@ -26,7 +26,7 @@ aiAlphaBeta::aiAlphaBeta(int newPlayerId, int newMaxPlayerId, int newWidth, int 
 	maxEvalTime = 0;
 	alphabetaTimeout = 5000; // 5 sec timeout
 	heuristic = new aiHeuristic(true, true, true);
-	searchDepth = 30;
+	searchDepth = 300000; // only used for debugging, search is limited by time
 	debugDepth = searchDepth;
 }
 
@@ -53,6 +53,7 @@ int aiAlphaBeta::chooseLine(const QList<bool> &newLines, const QList<int> &newSq
 	aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(lines, linesSize, width, height, squareOwners, playerId, maxPlayerId));
 	
 	kDebug() << "alphabeta START";
+	timerHasExpiredBefore = false;
 	int line = -1;
 	float evalResult = alphabeta(board, searchDepth, &line);
 	kDebug() << "alphabeta END " << line;
@@ -198,6 +199,12 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 		//kDebug() << "evaluating board:" << boardToString(board->lines, board->linesSize, board->width, board->height);
 		heuristic->setAnalysis(analysis);
 		float eval = evaluate(board);
+		if (!timerHasExpiredBefore)
+		{
+			timerHasExpiredBefore = true;
+			kDebug() << "analysis for first timer expiration: " << analysis;
+			kDebug() << "eval for first timer expiration: " << eval;
+		}
 		if (debug && searchDepth - depth <= debugDepth && (!debugEvalOnly || (debugEvalOnly && depth == searchDepth - 1)))
 		{
 			//kDebug() << "result: " << eval;
@@ -255,7 +262,6 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 			kDebug() << "ERROR: board: " << aiFunctions::boardToString(board);
 		}
 		float val = -alphabeta(board, depth - 1, NULL, -beta, -alpha, thisNode);
-		if (line != NULL) kDebug() << "val for " << moveSequences[i][0] << " = " << val;
 		for (int j = moveSequences[i].size() -1; j >= 0; j--)
 		{
 			board->undoMove(moveSequences[i][j]);
@@ -264,7 +270,17 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 		{
 			bestValue = val;
 			if (line != NULL)
+			{
+				linePool.clear();
+				linePool.append(moveSequences[i][0]);
 				*line = moveSequences[i][0];
+			}
+		}
+		if (val == bestValue && line != NULL) // randomly select other result if it is as good as the best one found
+		{
+			linePool.append(moveSequences[i][0]);
+			int poolIndex = ((float) rand()/(RAND_MAX + 1.0)) * (linePool.size()-1);
+			*line = linePool[poolIndex];
 		}
 		
 		if (val > alpha)

@@ -81,6 +81,8 @@ class aiAlphaBeta : public KSquaresAi
 		aiHeuristic *heuristic;
 		/// search depth
 		int searchDepth;
+		///
+		QList<int> linePool;
 		
 		/// enable debugging
 		bool debug;
@@ -88,6 +90,7 @@ class aiAlphaBeta : public KSquaresAi
 		QString debugDot;
 		int debugNodeCnt;
 		bool debugEvalOnly;
+		bool timerHasExpiredBefore;
 		long maxEvalTime;
 		long lastEvalTime;
 		QElapsedTimer alphabetaTimer;
