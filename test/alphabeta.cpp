@@ -6,6 +6,7 @@
 #include "ksquaresio.h"
 #include "aiBoard.h"
 #include "aiAlphaBeta.h"
+#include "lineSorter.h"
 
 #include <QList>
 #include <QElapsedTimer>
@@ -34,6 +35,7 @@ class alphabeta : public QObject
 		void testEmptyBoard001();
 		void testHeuristic002();
 		void testHeuristic003();
+		void testLineSorter001();
 };
 
 template <typename T>
@@ -606,6 +608,22 @@ void alphabeta::testHeuristic003()
 	float eval = heuristic.evaluate(board);
 	
 	kDebug() << "eval: " << eval;
+}
+
+void alphabeta::testLineSorter001()
+{
+	LineSorter sorter(3,3,aiFunctions::toLinesSize(3,3));
+	
+	QList<int> sortmap = sorter.getSortMap();
+	/*
+	for (int i = 0; i < sortmap.size(); i++)
+	{
+		QList<int> tmpList;
+		for (int j = 0; j <= i; j++)
+			tmpList.append(sortmap[j]);
+		kDebug() << aiFunctions::linelistToString(tmpList, aiFunctions::toLinesSize(3,3),3,3);
+	}
+	*/
 }
 
 QTEST_MAIN(alphabeta)

@@ -51,7 +51,11 @@ class aiAlphaBeta : public KSquaresAi
 		 * one sequence with chain fully taken and one with double dealing.
 		 */
 		static QList<QList<int> > getMoveSequences(aiBoard::Ptr board, KSquares::BoardAnalysis &analysis, bool *isEndgame = NULL);
-		
+		/**
+		 * Calculates distance of line to center of board.
+		 * Used for sorting lines.
+		 */
+		static float distanceToCenter(aiBoard::Ptr board, int index);
 		void setTimeout(long timeout);
 		long getTimeout();
 		
