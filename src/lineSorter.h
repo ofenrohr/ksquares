@@ -11,19 +11,23 @@
 #define LINESORTER_H
 
 #include <QList>
+#include <QPair>
 
 class LineSorter
 {
 public:
 	LineSorter(int width, int height, int linesSize);
 	
+	bool indexToPoints(const int index, QPair<float, float> *p1, QPair<float, float> *p2) const;
 	float distanceToCenter(const int index) const;
 	QList<int> getSortMap();
-	int operator()(int a, int b) const;
+	bool operator()(int a, int b) const;
 private:
 	int w;
 	int h;
 	int ls;
+	float cx;
+	float cy;
 };
 
 #endif

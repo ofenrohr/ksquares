@@ -60,11 +60,12 @@ kde4_add_unit_test( test-refactor
   refactor.cpp
 )
 
-kde4_add_unit_test( test-minimax
-  TESTNAME minimax
-  ${ksquarestest_SRCS}
-  minimax.cpp
-)
+# minimax is deprecated
+# kde4_add_unit_test( test-minimax
+#   TESTNAME minimax
+#   ${ksquarestest_SRCS}
+#   minimax.cpp
+# )
 
 kde4_add_unit_test( test-aiboard
   TESTNAME aiboard

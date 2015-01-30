@@ -615,15 +615,25 @@ void alphabeta::testLineSorter001()
 	LineSorter sorter(3,3,aiFunctions::toLinesSize(3,3));
 	
 	QList<int> sortmap = sorter.getSortMap();
-	/*
-	for (int i = 0; i < sortmap.size(); i++)
+	
+	for (int i = 0; i < sortmap.size()-1; i++)
 	{
 		QList<int> tmpList;
 		for (int j = 0; j <= i; j++)
 			tmpList.append(sortmap[j]);
-		kDebug() << aiFunctions::linelistToString(tmpList, aiFunctions::toLinesSize(3,3),3,3);
+		bool result = sorter.distanceToCenter(sortmap[i]) <= sorter.distanceToCenter(sortmap[i+1]);
+		//kDebug() << aiFunctions::linelistToString(tmpList, aiFunctions::toLinesSize(3,3),3,3);
+		if (!result)
+		{
+			kDebug() << "i = " << i;
+			kDebug() << "sortmap[i] = " << sortmap[i];
+			kDebug() << "sortmap[i+1] = " << sortmap[i+1];
+			kDebug() << "distanceToCenter(sortmap[i]) = " << sorter.distanceToCenter(sortmap[i]);
+			kDebug() << "distanceToCenter(sortmap[i+1]) = " << sorter.distanceToCenter(sortmap[i+1]);
+		}
+		QVERIFY(result);
 	}
-	*/
+	
 }
 
 QTEST_MAIN(alphabeta)
