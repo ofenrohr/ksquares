@@ -50,7 +50,8 @@ class aiAlphaBeta : public KSquaresAi
 		 * Generates a move list. Chains are returned twice if applicable:
 		 * one sequence with chain fully taken and one with double dealing.
 		 */
-		static QList<QList<int> > getMoveSequences(aiBoard::Ptr board, KSquares::BoardAnalysis &analysis, bool *isEndgame = NULL);
+		QList<QList<int> > getMoveSequences(aiBoard::Ptr board, KSquares::BoardAnalysis &analysis, bool *isEndgame = NULL);
+		static QList<QList<int> > getMoveSequences(aiBoard::Ptr board, KSquares::BoardAnalysis &analysis, QList<int> &lineSortList, bool *isEndgame = NULL);
 		/**
 		 * Calculates distance of line to center of board.
 		 * Used for sorting lines.
@@ -87,6 +88,8 @@ class aiAlphaBeta : public KSquaresAi
 		int searchDepth;
 		///
 		QList<int> linePool;
+		/// circular sorting map for board lines (see j. k. barker and r. e. korf - solving dots-and-boxes)
+		QList<int> lineSortList;
 		
 		/// enable debugging
 		bool debug;

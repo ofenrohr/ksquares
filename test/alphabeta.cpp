@@ -66,8 +66,11 @@ void alphabeta::testAlphaBeta001()
 	
 	aiBoard::Ptr board(new aiBoard(sGame->board()));
 	
+	QList<int> lineSortList;
+	for (int i = 0; i < lines.size(); i++)
+		lineSortList.append(i);
 	KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
-	QList<QList<int> > moveSequences = aiAlphaBeta::getMoveSequences(board, analysis);
+	QList<QList<int> > moveSequences = aiAlphaBeta::getMoveSequences(board, analysis, lineSortList);
 	
 	kDebug() << "generated move sequences: " << moveSequences;
 	
@@ -159,8 +162,11 @@ void alphabeta::testAlphaBeta003()
 	
 	aiBoard::Ptr board(new aiBoard(sGame->board()));
 	
+	QList<int> lineSortList;
+	for (int i = 0; i < lines.size(); i++)
+		lineSortList.append(i);
 	KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
-	QList<QList<int> > moveSequences = aiAlphaBeta::getMoveSequences(board, analysis);
+	QList<QList<int> > moveSequences = aiAlphaBeta::getMoveSequences(board, analysis, lineSortList);
 	
 	kDebug() << moveSequences;
 }
@@ -469,7 +475,10 @@ void alphabeta::testMoveSeq001()
 	
 	kDebug() << "analysis: " << analysis;
 	
-	QList<QList<int> > moveSequences = aiAlphaBeta::getMoveSequences(board, analysis);
+	QList<int> lineSortList;
+	for (int i = 0; i < lines.size(); i++)
+	lineSortList.append(i);
+	QList<QList<int> > moveSequences = aiAlphaBeta::getMoveSequences(board, analysis, lineSortList);
 	
 	kDebug() << "move sequences: " << moveSequences;
 	
@@ -493,7 +502,10 @@ void alphabeta::testMoveSeq002()
 	
 	kDebug() << "analysis: " << analysis;
 	
-	QList<QList<int> > moveSequences = aiAlphaBeta::getMoveSequences(board, analysis);
+	QList<int> lineSortList;
+	for (int i = 0; i < lines.size(); i++)
+	lineSortList.append(i);
+	QList<QList<int> > moveSequences = aiAlphaBeta::getMoveSequences(board, analysis, lineSortList);
 	
 	kDebug() << "move sequences: " << moveSequences;
 	
@@ -521,7 +533,10 @@ void alphabeta::testMoveSeq003()
 	
 	kDebug() << "analysis: " << analysis;
 	
-	QList<QList<int> > moveSequences = aiAlphaBeta::getMoveSequences(board, analysis);
+	QList<int> lineSortList;
+	for (int i = 0; i < lines.size(); i++)
+	lineSortList.append(i);
+	QList<QList<int> > moveSequences = aiAlphaBeta::getMoveSequences(board, analysis, lineSortList);
 	
 	kDebug() << "move sequences: " << moveSequences;
 	

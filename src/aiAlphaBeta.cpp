@@ -16,6 +16,8 @@
 #include <QMap>
 #include <QPair>
 
+#include "lineSorter.h"
+
 aiAlphaBeta::aiAlphaBeta(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel) : KSquaresAi(newWidth, newHeight), playerId(newPlayerId), maxPlayerId(newMaxPlayerId), level(newLevel)
 {
 	width = newWidth;
@@ -28,6 +30,8 @@ aiAlphaBeta::aiAlphaBeta(int newPlayerId, int newMaxPlayerId, int newWidth, int 
 	heuristic = new aiHeuristic(true, true, true);
 	searchDepth = 300000; // only used for debugging, search is limited by time
 	debugDepth = searchDepth;
+	LineSorter sorter(width, height, linesSize);
+	lineSortList = sorter.getSortMap();
 }
 
 aiAlphaBeta::~aiAlphaBeta()
@@ -427,12 +431,13 @@ QList<int> aiAlphaBeta::ignoreCornerLines(aiBoard::Ptr board)
 
 QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board, KSquares::BoardAnalysis &analysis, bool *isEndgame)
 {
+	return getMoveSequences(board, analysis, lineSortList, isEndgame);
+}
+
+QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board, KSquares::BoardAnalysis &analysis, QList<int> &lineSortList, bool *isEndgame)
+{
 	QList<QList<int> > moveSequences;
 	QList<QList<int> > chainSacrificeSequences;
-	
-	// TODO: share with heuristic
-	//KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
-	//board->analyseBoard();
 	
 	// find out if double dealing is possible and remember the id of the chain in which double dealing shall happen
 	int doubleDealingChainIndex = -1;
@@ -528,11 +533,14 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board, KSquares::B
 	// move sequences for open chains + free lines
 	// get free lines and filter them
 	QList<int> freeLines; // = aiFunctions::getFreeLines(board->lines, board->linesSize);
+	QMap<int, int> freeLinesMap;
 	QList<int> ignoreLines = ignoreCornerLines(board);
 	//QList<int> ignoreLines;
 	for (int i = 0; i < board->linesSize; i++)
 		if (!board->lines[i] && !baseMoveSequence.contains(i) && !ignoreLines.contains(i))
-			freeLines.append(i);
+			//freeLines.append(i);
+			freeLinesMap.insert(lineSortList[i], i);
+	freeLines = freeLinesMap.values();
 	//kDebug() << "free lines: " << freeLines;
 	if (freeLines.size() == 0 && baseMoveSequence.size() > 0)
 		moveSequences.append(baseMoveSequence);
