@@ -428,7 +428,7 @@ void refactor::testAnalyseBoard011()
 	
 	aiBoard::Ptr board(new aiBoard(sGame->board()));
 	
-	KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
+	KSquares::BoardAnalysis analysis = BoardAnalysisFunctions::analyseBoard(board);
 	
 	QCOMPARE(analysis.chainsAfterCapture.size(), 3);
 	for (int i = 0; i < analysis.chainsAfterCapture.size(); i++)
@@ -468,7 +468,7 @@ void refactor::testAnalyseBoard012()
 	
 	aiBoard::Ptr board(new aiBoard(sGame->board()));
 	
-	KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
+	KSquares::BoardAnalysis analysis = BoardAnalysisFunctions::analyseBoard(board);
 	
 	
 	QCOMPARE(analysis.chains.size(), 2);

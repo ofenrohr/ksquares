@@ -10,6 +10,7 @@
 #include "aiHeuristic.h"
 
 #include "aifunctions.h"
+#include "boardAnalysis.h"
 
 #include <KDebug>
 #include <algorithm>
@@ -79,7 +80,7 @@ void aiHeuristic::analyseChains(aiBoard::Ptr board)
 		return;
 	
 	//board->analyseBoard();
-	analysis = aiFunctions::analyseBoard(board);
+	analysis = BoardAnalysisFunctions::analyseBoard(board);
 	chainsAnalysed = true;
 }
 

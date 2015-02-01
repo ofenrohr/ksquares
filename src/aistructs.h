@@ -3,6 +3,7 @@
 
 #include <QList>
 #include <QDebug>
+#include <QSharedPointer>
 
 
 namespace KSquares
@@ -46,8 +47,11 @@ namespace KSquares
 		// lines that have a special impact on the game:
 		// * lines that create a loop chain when drawn (cycles that have a connection to ground)
 		QList<int> specialLines;
-		// safe moves
+		// safe moves: WARNING: not calculated atm
 		QList<int> safeLines;
+		
+		// valid turns on analysed board
+		QSharedPointer<QList<QList<int> > > moveSequences;
 		
 		friend QDebug operator<<(QDebug dbg, const KSquares::BoardAnalysis_t &a)
 		{

@@ -151,7 +151,6 @@ class aiFunctions
 		static int getLeader(QList<int> &squareOwners);
 		
 		
-		static KSquares::BoardAnalysis analyseBoard(aiBoard::Ptr board);
 		
 		/* Debugging */
 		static QString boardToString(aiBoard::Ptr board) { return boardToString(board->lines, board->linesSize, board->width, board->height); }

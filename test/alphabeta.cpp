@@ -70,7 +70,7 @@ void alphabeta::testAlphaBeta001()
 	QList<int> lineSortList;
 	for (int i = 0; i < lines.size(); i++)
 		lineSortList.append(i);
-	KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
+	KSquares::BoardAnalysis analysis = BoardAnalysisFunctions::analyseBoard(board);
 	QList<QList<int> > moveSequences = *aiAlphaBeta::getMoveSequences(board, analysis, lineSortList);
 	
 	kDebug() << "generated move sequences: " << moveSequences;
@@ -166,7 +166,7 @@ void alphabeta::testAlphaBeta003()
 	QList<int> lineSortList;
 	for (int i = 0; i < lines.size(); i++)
 		lineSortList.append(i);
-	KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
+	KSquares::BoardAnalysis analysis = BoardAnalysisFunctions::analyseBoard(board);
 	QList<QList<int> > moveSequences = *aiAlphaBeta::getMoveSequences(board, analysis, lineSortList);
 	
 	kDebug() << moveSequences;
@@ -376,7 +376,7 @@ void alphabeta::testAnalyse001()
 	}
 	aiBoard::Ptr board(new aiBoard(sGame->board()));
 	
-	KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
+	KSquares::BoardAnalysis analysis = BoardAnalysisFunctions::analyseBoard(board);
 	
 	kDebug() << "analysis: " << analysis;
 	/*
@@ -472,7 +472,7 @@ void alphabeta::testMoveSeq001()
 	}
 	aiBoard::Ptr board(new aiBoard(sGame->board()));
 	
-	KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
+	KSquares::BoardAnalysis analysis = BoardAnalysisFunctions::analyseBoard(board);
 	
 	kDebug() << "analysis: " << analysis;
 	
@@ -499,7 +499,7 @@ void alphabeta::testMoveSeq002()
 	}
 	aiBoard::Ptr board(new aiBoard(sGame->board()));
 	
-	KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
+	KSquares::BoardAnalysis analysis = BoardAnalysisFunctions::analyseBoard(board);
 	
 	kDebug() << "analysis: " << analysis;
 	
@@ -530,7 +530,7 @@ void alphabeta::testMoveSeq003()
 	
 	board->doMove(0);
 	
-	KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
+	KSquares::BoardAnalysis analysis = BoardAnalysisFunctions::analyseBoard(board);
 	
 	kDebug() << "analysis: " << analysis;
 	
@@ -590,7 +590,7 @@ void alphabeta::testHeuristic002()
 	}
 	aiBoard::Ptr board(new aiBoard(sGame->board()));
 	
-	KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
+	KSquares::BoardAnalysis analysis = BoardAnalysisFunctions::analyseBoard(board);
 	
 	kDebug() << "analysis: " << analysis;
 	
@@ -615,7 +615,7 @@ void alphabeta::testHeuristic003()
 	
 	board->doMove(7);
 	
-	KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
+	KSquares::BoardAnalysis analysis = BoardAnalysisFunctions::analyseBoard(board);
 	
 	kDebug() << "analysis: " << analysis;
 	

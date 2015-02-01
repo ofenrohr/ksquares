@@ -16,6 +16,7 @@
 #include <QObject>
 #include <QThread>
 #include "aifunctions.h"
+#include "boardAnalysis.h"
 #include "board.h"
 
 /**
@@ -33,7 +34,7 @@
  * @author Tom Vincent Peters <kde@vincent-peters.de>
  */
 
-class KSquaresAi : public aiFunctions
+class KSquaresAi : public aiFunctions, public BoardAnalysisFunctions
 {
 	public:
 		typedef QSharedPointer<KSquaresAi> Ptr;

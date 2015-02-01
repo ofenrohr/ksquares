@@ -40,22 +40,6 @@ class aiAlphaBeta : public KSquaresAi
 		 */
 		float evaluate(aiBoard::Ptr board);
 		/**
-		 * Generates the double dealing sequence for the given chain.
-		 * @return the double dealing variant of the given chain. if the chain is short or unknown an empty list will be returned
-		 */
-		static QList<int> getDoubleDealingSequence(KSquares::Chain &chain);
-		/**
-		 * Two lines at each corner of the board are equivalent.
-		 * This returns one line per corner if both corner lines aren't drawn.
-		 */
-		static QList<int> ignoreCornerLines(aiBoard::Ptr board);
-		/**
-		 * Generates a move list. Chains are returned twice if applicable:
-		 * one sequence with chain fully taken and one with double dealing.
-		 */
-		QSharedPointer<QList<QList<int> > > getMoveSequences(aiBoard::Ptr board, KSquares::BoardAnalysis &analysis, bool *isEndgame = NULL);
-		static QSharedPointer<QList<QList<int> > > getMoveSequences(aiBoard::Ptr board, KSquares::BoardAnalysis &analysis, QList<int> &lineSortList, bool *isEndgame = NULL);
-		/**
 		 * Gets board analysis. Uses a QMultiHash to store previous analsyis.
 		 */
 		KSquares::BoardAnalysis getAnalysis(aiBoard::Ptr board);
