@@ -17,7 +17,9 @@
 
 #include <QString>
 #include <QElapsedTimer>
-#include <QMultiHash>
+#include <QHash>
+#include <QPair>
+#include <QSharedPointer>
 
 #include <cmath>
 
@@ -51,8 +53,8 @@ class aiAlphaBeta : public KSquaresAi
 		 * Generates a move list. Chains are returned twice if applicable:
 		 * one sequence with chain fully taken and one with double dealing.
 		 */
-		QList<QList<int> > getMoveSequences(aiBoard::Ptr board, KSquares::BoardAnalysis &analysis, bool *isEndgame = NULL);
-		static QList<QList<int> > getMoveSequences(aiBoard::Ptr board, KSquares::BoardAnalysis &analysis, QList<int> &lineSortList, bool *isEndgame = NULL);
+		QSharedPointer<QList<QList<int> > > getMoveSequences(aiBoard::Ptr board, KSquares::BoardAnalysis &analysis, bool *isEndgame = NULL);
+		static QSharedPointer<QList<QList<int> > > getMoveSequences(aiBoard::Ptr board, KSquares::BoardAnalysis &analysis, QList<int> &lineSortList, bool *isEndgame = NULL);
 		/**
 		 * Gets board analysis. Uses a QMultiHash to store previous analsyis.
 		 */
@@ -94,7 +96,7 @@ class aiAlphaBeta : public KSquaresAi
 		/// circular sorting map for board lines (see j. k. barker and r. e. korf - solving dots-and-boxes)
 		QList<int> lineSortList;
 		/// map of previous board analysis
-		QMultiHash<aiBoard::Ptr, KSquares::BoardAnalysis> *analysisMap;
+		QHash<aiBoard::Ptr, QPair<bool *, KSquares::BoardAnalysis> > *analysisHash;
 		
 		/// enable debugging
 		bool debug;

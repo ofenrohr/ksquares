@@ -119,39 +119,3 @@ void aiBoard::undoMove(int line)
 	}
 }
 
-// the == operator and qHash are required to use an aiBoard as a key for QHash to reuse previous analysis of the board
-// see http://qt-project.org/doc/qt-4.8/qhash.html#details for details
-
-// WARNING: only the drawn lines are taken into consideration!
-// WARNING: this operator doesn't care for the current player or the owned squares!
-// WARNING: do not story boards of different sizes in the same QHash!
-inline bool operator==(const aiBoard::Ptr &b1, const aiBoard::Ptr &b2)
-{
-	/*
-	if (b1->linesSize != b2->linesSize)
-		return false;
-	if (b1->width != b2->width)
-		return false;
-	*/
-	// WARNING: no checking for invalid values (width, linesSize < 0) or for height
-	for (int i = 0; i < b1->linesSize; i++)
-		if (b1->lines[i] != b2->lines[i])
-			return false;
-	return true;
-}
-
-inline uint qHash(const aiBoard::Ptr &key)
-{
-	uint ret = 0;
-	uint add = 1;
-	uint i = 0;
-	while (add > 0)
-	{
-		if (key->lines[i])
-			ret += add;
-		add <<= 1;
-		i++;
-	}
-	return ret;
-}
-

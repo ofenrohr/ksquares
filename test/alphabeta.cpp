@@ -36,6 +36,7 @@ class alphabeta : public QObject
 		void testHeuristic002();
 		void testHeuristic003();
 		void testLineSorter001();
+		void testAnalysisHash001();
 };
 
 template <typename T>
@@ -70,7 +71,7 @@ void alphabeta::testAlphaBeta001()
 	for (int i = 0; i < lines.size(); i++)
 		lineSortList.append(i);
 	KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
-	QList<QList<int> > moveSequences = aiAlphaBeta::getMoveSequences(board, analysis, lineSortList);
+	QList<QList<int> > moveSequences = *aiAlphaBeta::getMoveSequences(board, analysis, lineSortList);
 	
 	kDebug() << "generated move sequences: " << moveSequences;
 	
@@ -166,7 +167,7 @@ void alphabeta::testAlphaBeta003()
 	for (int i = 0; i < lines.size(); i++)
 		lineSortList.append(i);
 	KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
-	QList<QList<int> > moveSequences = aiAlphaBeta::getMoveSequences(board, analysis, lineSortList);
+	QList<QList<int> > moveSequences = *aiAlphaBeta::getMoveSequences(board, analysis, lineSortList);
 	
 	kDebug() << moveSequences;
 }
@@ -478,7 +479,7 @@ void alphabeta::testMoveSeq001()
 	QList<int> lineSortList;
 	for (int i = 0; i < lines.size(); i++)
 	lineSortList.append(i);
-	QList<QList<int> > moveSequences = aiAlphaBeta::getMoveSequences(board, analysis, lineSortList);
+	QList<QList<int> > moveSequences = *aiAlphaBeta::getMoveSequences(board, analysis, lineSortList);
 	
 	kDebug() << "move sequences: " << moveSequences;
 	
@@ -505,7 +506,7 @@ void alphabeta::testMoveSeq002()
 	QList<int> lineSortList;
 	for (int i = 0; i < lines.size(); i++)
 	lineSortList.append(i);
-	QList<QList<int> > moveSequences = aiAlphaBeta::getMoveSequences(board, analysis, lineSortList);
+	QList<QList<int> > moveSequences = *aiAlphaBeta::getMoveSequences(board, analysis, lineSortList);
 	
 	kDebug() << "move sequences: " << moveSequences;
 	
@@ -536,7 +537,7 @@ void alphabeta::testMoveSeq003()
 	QList<int> lineSortList;
 	for (int i = 0; i < lines.size(); i++)
 	lineSortList.append(i);
-	QList<QList<int> > moveSequences = aiAlphaBeta::getMoveSequences(board, analysis, lineSortList);
+	QList<QList<int> > moveSequences = *aiAlphaBeta::getMoveSequences(board, analysis, lineSortList);
 	
 	kDebug() << "move sequences: " << moveSequences;
 	
@@ -648,7 +649,43 @@ void alphabeta::testLineSorter001()
 		}
 		QVERIFY(result);
 	}
+}
+
+void alphabeta::testAnalysisHash001()
+{
+	int w = 22, h = 1;
+	int ls = aiFunctions::toLinesSize(w,h);
+	bool lines[ls];
+	for (int i = 0; i < ls; i++)
+		lines[i] = false;
+	aiBoard::Ptr board0(new aiBoard(lines, ls, w, h, QList<int>(), 0, 1));
+	aiBoard::Ptr board1(new aiBoard(lines, ls, w, h, QList<int>(), 0, 1));
+	aiBoard::Ptr board2(new aiBoard(lines, ls, w, h, QList<int>(), 0, 1));
 	
+	board0->doMove(4);
+	board1->doMove(4);
+	board1->doMove(65);
+	board2->doMove(33);
+	
+	kDebug() << "qHash(board0) = " << QString::number(qHash(board0), 2);
+	kDebug() << "qHash(board1) = " << QString::number(qHash(board1), 2);
+	kDebug() << "qHash(board2) = " << QString::number(qHash(board2), 2);
+	
+	kDebug() << "qHash(*board0) = " << QString::number(qHash(*board0), 2);
+	kDebug() << "qHash(*board1) = " << QString::number(qHash(*board1), 2);
+	kDebug() << "qHash(*board2) = " << QString::number(qHash(*board2), 2);
+	
+	aiAlphaBeta ai(0, 1, w, h, -1);
+	
+	KSquares::BoardAnalysis analysis0 = ai.getAnalysis(board0);
+	KSquares::BoardAnalysis analysis1 = ai.getAnalysis(board1);
+	KSquares::BoardAnalysis analysis2 = ai.getAnalysis(board2);
+	
+	/*
+	kDebug() << "analysis0 = " << analysis0;
+	kDebug() << "analysis1 = " << analysis1;
+	kDebug() << "analysis2 = " << analysis2;
+	*/
 }
 
 QTEST_MAIN(alphabeta)

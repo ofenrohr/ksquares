@@ -32,12 +32,13 @@ aiAlphaBeta::aiAlphaBeta(int newPlayerId, int newMaxPlayerId, int newWidth, int 
 	debugDepth = searchDepth;
 	LineSorter sorter(width, height, linesSize);
 	lineSortList = sorter.getSortMap();
-	analysisMap = new QMultiHash<aiBoard::Ptr, KSquares::BoardAnalysis>();
+	analysisHash = new QHash<aiBoard::Ptr, QPair<bool *, KSquares::BoardAnalysis> >();
+	alphabetaTimer = QElapsedTimer();
 }
 
 aiAlphaBeta::~aiAlphaBeta()
 {
-	delete analysisMap;
+	delete analysisHash;
 	delete[] lines;
 	delete heuristic;
 }
@@ -105,7 +106,7 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 	bool isEndgame = false;
 	//KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
 	KSquares::BoardAnalysis analysis = getAnalysis(board);
-	QList<QList<int> > moveSequences = getMoveSequences(board, analysis, &isEndgame);
+	QSharedPointer<QList<QList<int> > > moveSequences = getMoveSequences(board, analysis, &isEndgame);
 	
 	int thisNode = debugNodeCnt;
 	debugNodeCnt++;
@@ -137,7 +138,7 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 		*/
 	}
 	
-	if (moveSequences.size() == 0) // game is over
+	if (moveSequences->size() == 0) // game is over
 	{
 		//kDebug() << "terminal node - board filled";
 		// TODO: remove check
@@ -253,30 +254,30 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 	
 	//int localLine = -1;
 	float bestValue = -INFINITY;
-	for (int i = 0; i < moveSequences.size(); i++)
+	for (int i = 0; i < moveSequences->size(); i++)
 	{
-		//if (moveSequences[i].size() == 0)
+		//if ((*moveSequences)[i].size() == 0)
 		//	kDebug() << "empty move sequence!";
 		int prevPlayer = board->playerId;
-		for (int j = 0; j < moveSequences[i].size(); j++)
+		for (int j = 0; j < (*moveSequences)[i].size(); j++)
 		{
-			board->doMove(moveSequences[i][j]);
+			board->doMove((*moveSequences)[i][j]);
 		}
 		// TODO: remove this check
 		if (prevPlayer == board->playerId && board->squareOwners.contains(-1))
 		{
-			kDebug() << "ERROR: sth went really wrong! player didn't change after move sequence: " << moveSequences[i];
+			kDebug() << "ERROR: sth went really wrong! player didn't change after move sequence: " << (*moveSequences)[i];
 			kDebug() << "ERROR: board: " << aiFunctions::boardToString(board);
 		}
 		float val = -alphabeta(board, depth - 1, NULL, -beta, -alpha, thisNode);
-		for (int j = moveSequences[i].size() -1; j >= 0; j--)
+		for (int j = (*moveSequences)[i].size() -1; j >= 0; j--)
 		{
-			board->undoMove(moveSequences[i][j]);
+			board->undoMove((*moveSequences)[i][j]);
 		}
 		/*
 		if (val == bestValue && line != NULL) // randomly select other result if it is as good as the best one found
 		{
-			linePool.append(moveSequences[i][0]);
+			linePool.append((*moveSequences)[i][0]);
 			int poolIndex = ((float) rand()/(RAND_MAX + 1.0)) * (linePool.size()-1);
 			*line = linePool[poolIndex];
 		}
@@ -287,8 +288,8 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 			if (line != NULL)
 			{
 				linePool.clear();
-				linePool.append(moveSequences[i][0]);
-				*line = moveSequences[i][0];
+				linePool.append((*moveSequences)[i][0]);
+				*line = (*moveSequences)[i][0];
 			}
 		}
 		
@@ -303,8 +304,8 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 		
 	}
 	//kDebug() << localLine << " ";
-	//if (bestValue == -INFINITY && moveSequences.size() > 0 && line != NULL)
-	//	*line = moveSequences[0][0];
+	//if (bestValue == -INFINITY && moveSequences->size() > 0 && line != NULL)
+	//	*line = (*moveSequences)[0][0];
 	
 	if (debug && searchDepth - depth <= debugDepth && !debugEvalOnly)
 	{
@@ -432,14 +433,14 @@ QList<int> aiAlphaBeta::ignoreCornerLines(aiBoard::Ptr board)
 	return ignoreLines;
 }
 
-QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board, KSquares::BoardAnalysis &analysis, bool *isEndgame)
+QSharedPointer<QList<QList<int> > > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board, KSquares::BoardAnalysis &analysis, bool *isEndgame)
 {
 	return getMoveSequences(board, analysis, lineSortList, isEndgame);
 }
 
-QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board, KSquares::BoardAnalysis &analysis, QList<int> &lineSortList, bool *isEndgame)
+QSharedPointer<QList<QList<int> > > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board, KSquares::BoardAnalysis &analysis, QList<int> &lineSortList, bool *isEndgame)
 {
-	QList<QList<int> > moveSequences;
+	QSharedPointer<QList<QList<int> > > moveSequences(new QList<QList<int> >);
 	QList<QList<int> > chainSacrificeSequences;
 	
 	// find out if double dealing is possible and remember the id of the chain in which double dealing shall happen
@@ -521,7 +522,7 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board, KSquares::B
 			QList<int> doubleDealingSequence;
 			doubleDealingSequence.append(baseMoveSequence);
 			doubleDealingSequence.append(getDoubleDealingSequence(analysis.chains[doubleDealingChainIndex]));
-			moveSequences.append(doubleDealingSequence);
+			moveSequences->append(doubleDealingSequence);
 		}
 		
 		// add normal variant to basic move sequence
@@ -546,7 +547,7 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board, KSquares::B
 	freeLines = freeLinesMap.values();
 	//kDebug() << "free lines: " << freeLines;
 	if (freeLines.size() == 0 && baseMoveSequence.size() > 0)
-		moveSequences.append(baseMoveSequence);
+		moveSequences->append(baseMoveSequence);
 	// add one sequence for each long and loop chain
 	QList<int> openLongAndLoopChains;
 	openLongAndLoopChains.append(analysis.openLongChains);
@@ -560,7 +561,7 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board, KSquares::B
 		{
 			freeLines.removeAll(analysis.chainsAfterCapture[openLongAndLoopChains[i]].lines[j]);
 		}
-		//moveSequences.append(moveSequence);
+		//moveSequences->append(moveSequence);
 		chainSacrificeSequences.append(moveSequence);
 	}
 	// add half and hard hearted handouts for short chains
@@ -571,12 +572,12 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board, KSquares::B
 		QList<int> halfHeartedSequence;
 		halfHeartedSequence.append(baseMoveSequence);
 		halfHeartedSequence.append(analysis.chainsAfterCapture[analysis.openShortChains[i]].lines[0]);
-		//moveSequences.append(halfHeartedSequence);
+		//moveSequences->append(halfHeartedSequence);
 		chainSacrificeSequences.prepend(halfHeartedSequence);
 		QList<int> hardHeartedSequence;
 		hardHeartedSequence.append(baseMoveSequence);
 		hardHeartedSequence.append(analysis.chainsAfterCapture[analysis.openShortChains[i]].lines[1]);
-		//moveSequences.append(hardHeartedSequence);
+		//moveSequences->append(hardHeartedSequence);
 		chainSacrificeSequences.prepend(hardHeartedSequence);
 		for (int j = 0; j < analysis.chainsAfterCapture[analysis.openShortChains[i]].lines.size(); j++)
 		{
@@ -593,26 +594,37 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board, KSquares::B
 		QList<int> moveSequence;
 		moveSequence.append(baseMoveSequence);
 		moveSequence.append(freeLines[i]);
-		moveSequences.append(moveSequence);
+		moveSequences->append(moveSequence);
 	}
 	// add chain sacrifice moves
-	moveSequences.append(chainSacrificeSequences);
+	moveSequences->append(chainSacrificeSequences);
 	
 	return moveSequences;
 }
 
 KSquares::BoardAnalysis aiAlphaBeta::getAnalysis(aiBoard::Ptr board)
 {
-	if (analysisMap->contains(board))
+	if (analysisHash->contains(board))
 	{
-		return analysisMap->value(board);
+		QPair<bool *, KSquares::BoardAnalysis> entry = analysisHash->value(board);
+		bool sameBoard = true;
+		for (int i = 0; i < board->linesSize && sameBoard; i++)
+		{
+			if (entry.first[i] != board->lines[i])
+				sameBoard = false;
+		}
+		if (sameBoard)
+		{
+			//kDebug() << "returning analysis from hash!";
+			return entry.second;
+		}
 	}
-	else
-	{
-		KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
-		analysisMap->insert(board, analysis);
-		return analysis;
-	}
+	
+	KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
+	bool *linesCopy = new bool[board->linesSize];
+	memcpy(linesCopy, board->lines, board->linesSize);
+	analysisHash->insert(board, QPair<bool *, KSquares::BoardAnalysis>(linesCopy, analysis));
+	return analysis;
 }
 
 void aiAlphaBeta::setTimeout(long timeout)
