@@ -32,10 +32,12 @@ aiAlphaBeta::aiAlphaBeta(int newPlayerId, int newMaxPlayerId, int newWidth, int 
 	debugDepth = searchDepth;
 	LineSorter sorter(width, height, linesSize);
 	lineSortList = sorter.getSortMap();
+	analysisMap = new QMultiHash<aiBoard::Ptr, KSquares::BoardAnalysis>();
 }
 
 aiAlphaBeta::~aiAlphaBeta()
 {
+	delete analysisMap;
 	delete[] lines;
 	delete heuristic;
 }
@@ -101,7 +103,8 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 		}
 	}
 	bool isEndgame = false;
-	KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
+	//KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
+	KSquares::BoardAnalysis analysis = getAnalysis(board);
 	QList<QList<int> > moveSequences = getMoveSequences(board, analysis, &isEndgame);
 	
 	int thisNode = debugNodeCnt;
@@ -596,6 +599,20 @@ QList<QList<int> > aiAlphaBeta::getMoveSequences(aiBoard::Ptr board, KSquares::B
 	moveSequences.append(chainSacrificeSequences);
 	
 	return moveSequences;
+}
+
+KSquares::BoardAnalysis aiAlphaBeta::getAnalysis(aiBoard::Ptr board)
+{
+	if (analysisMap->contains(board))
+	{
+		return analysisMap->value(board);
+	}
+	else
+	{
+		KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
+		analysisMap->insert(board, analysis);
+		return analysis;
+	}
 }
 
 void aiAlphaBeta::setTimeout(long timeout)

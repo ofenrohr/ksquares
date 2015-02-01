@@ -17,6 +17,7 @@
 
 #include <QString>
 #include <QElapsedTimer>
+#include <QMultiHash>
 
 #include <cmath>
 
@@ -53,10 +54,12 @@ class aiAlphaBeta : public KSquaresAi
 		QList<QList<int> > getMoveSequences(aiBoard::Ptr board, KSquares::BoardAnalysis &analysis, bool *isEndgame = NULL);
 		static QList<QList<int> > getMoveSequences(aiBoard::Ptr board, KSquares::BoardAnalysis &analysis, QList<int> &lineSortList, bool *isEndgame = NULL);
 		/**
-		 * Calculates distance of line to center of board.
-		 * Used for sorting lines.
+		 * Gets board analysis. Uses a QMultiHash to store previous analsyis.
 		 */
-		static float distanceToCenter(aiBoard::Ptr board, int index);
+		KSquares::BoardAnalysis getAnalysis(aiBoard::Ptr board);
+		/**
+		 * set time in ms until alphabeta aborts search
+		 */
 		void setTimeout(long timeout);
 		long getTimeout();
 		
@@ -90,6 +93,8 @@ class aiAlphaBeta : public KSquaresAi
 		QList<int> linePool;
 		/// circular sorting map for board lines (see j. k. barker and r. e. korf - solving dots-and-boxes)
 		QList<int> lineSortList;
+		/// map of previous board analysis
+		QMultiHash<aiBoard::Ptr, KSquares::BoardAnalysis> *analysisMap;
 		
 		/// enable debugging
 		bool debug;

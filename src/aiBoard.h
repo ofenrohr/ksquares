@@ -17,6 +17,7 @@
 #include <QSharedPointer>
 
 
+// WARNING: take a look at the warnings on the == operator in aiBoard.cpp!
 class aiBoard
 {
 public:
