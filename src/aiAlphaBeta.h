@@ -82,6 +82,8 @@ class aiAlphaBeta : public KSquaresAi
 		QList<int> lineSortList;
 		/// map of previous board analysis
 		QHash<aiBoard::Ptr, QPair<bool *, KSquares::BoardAnalysis> > *analysisHash;
+		/// remember how many turns ai played
+		int turn;
 		
 		/// enable debugging
 		bool debug;

@@ -35,6 +35,7 @@ aiAlphaBeta::aiAlphaBeta(int newPlayerId, int newMaxPlayerId, int newWidth, int 
 	lineSortList = sorter.getSortMap();
 	analysisHash = new QHash<aiBoard::Ptr, QPair<bool *, KSquares::BoardAnalysis> >();
 	alphabetaTimer = QElapsedTimer();
+	turn = 0;
 }
 
 aiAlphaBeta::~aiAlphaBeta()
@@ -263,7 +264,7 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 	
 	//int localLine = -1;
 	float bestValue = -INFINITY;
-	for (int i = 0; i < moveSequences->size() && !alphabetaTimer.hasExpired(alphabetaTimeout); i++)
+	for (int i = 0; i < moveSequences->size() && (!alphabetaTimer.hasExpired(alphabetaTimeout) || line != NULL); i++)
 	{
 		//if ((*moveSequences)[i].size() == 0)
 		//	kDebug() << "empty move sequence!";
@@ -356,24 +357,28 @@ KSquares::BoardAnalysis aiAlphaBeta::getAnalysis(aiBoard::Ptr board)
 {
 	if (analysisHash->contains(board))
 	{
-		QPair<bool *, KSquares::BoardAnalysis> entry = analysisHash->value(board);
-		bool sameBoard = true;
-		for (int i = 0; i < board->linesSize && sameBoard; i++)
+		QList<QPair<bool *, KSquares::BoardAnalysis> > entries = analysisHash->values(board);
+		for (int j = 0; j < entries.size(); j++)
 		{
-			if (entry.first[i] != board->lines[i])
-				sameBoard = false;
-		}
-		if (sameBoard)
-		{
-			//kDebug() << "returning analysis from hash!";
-			return entry.second;
+			QPair<bool *, KSquares::BoardAnalysis> entry = entries[j];//analysisHash->value(board);
+			bool sameBoard = true;
+			for (int i = 0; i < board->linesSize && sameBoard; i++)
+			{
+				if (entry.first[i] != board->lines[i])
+					sameBoard = false;
+			}
+			if (sameBoard)
+			{
+				//kDebug() << "returning analysis from hash!";
+				return entry.second;
+			}
 		}
 	}
 	
 	KSquares::BoardAnalysis analysis = BoardAnalysisFunctions::analyseBoard(board, lineSortList);
 	bool *linesCopy = new bool[board->linesSize];
 	memcpy(linesCopy, board->lines, board->linesSize);
-	analysisHash->insert(board, QPair<bool *, KSquares::BoardAnalysis>(linesCopy, analysis));
+	analysisHash->insertMulti(board, QPair<bool *, KSquares::BoardAnalysis>(linesCopy, analysis));
 	return analysis;
 }
 
