@@ -34,7 +34,8 @@ class aiAlphaBeta : public KSquaresAi
 		QString getName() { return "alphabeta"; }
 		
 		void setDepth(int d) { searchDepth = d; }
-		float alphabeta(aiBoard::Ptr board, int depth, int *line, float alpha = -INFINITY, float beta = INFINITY, int parentNode = -1);
+		float alphabeta(aiBoard::Ptr board, int depth, int *line, float alpha = -INFINITY, float beta = INFINITY/*, int parentNode = -1*/);
+		float alphabetaIterativeDeepening(aiBoard::Ptr board, int depth, int *line);
 		/**
 		 * Calls evaluation from aiHeuristic
 		 */

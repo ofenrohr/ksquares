@@ -62,8 +62,18 @@ int aiAlphaBeta::chooseLine(const QList<bool> &newLines, const QList<int> &newSq
 	
 	kDebug() << "alphabeta START";
 	timerHasExpiredBefore = false;
+	if (!alphabetaTimer.isValid())
+	{
+		//kDebug() << "starting alphabeta timer";
+		alphabetaTimer.start();
+	}
+	else
+	{
+		//kDebug() << "restarting alphabeta timer";
+		alphabetaTimer.restart();
+	}
 	int line = -1;
-	float evalResult = alphabeta(board, searchDepth, &line);
+	float evalResult = alphabetaIterativeDeepening(board, searchDepth, &line);
 	kDebug() << "alphabeta END " << line;
 	
 	kDebug() << "alphabeta eval result = " << evalResult;
@@ -84,104 +94,101 @@ int aiAlphaBeta::chooseLine(const QList<bool> &newLines, const QList<int> &newSq
 	return line;
 }
 
+float aiAlphaBeta::alphabetaIterativeDeepening(aiBoard::Ptr board, int depth, int *line)
+{
+	float lastResult = 0;
+	for (int i = 1; i < depth && !alphabetaTimer.hasExpired(alphabetaTimeout); i++)
+	{
+		lastResult = alphabeta(board, i, line);
+	}
+	return lastResult;
+}
+
 /*
  * Sources:
  * http://www.fierz.ch/strategy1.htm
 */
 
-float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alpha, float beta, int parentNode)
+float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alpha, float beta/*, int parentNode*/)
 {
-	if (line != NULL)
-	{
-		if (!alphabetaTimer.isValid())
-		{
-			//kDebug() << "starting alphabeta timer";
-			alphabetaTimer.start();
-		}
-		else
-		{
-			//kDebug() << "restarting alphabeta timer";
-			alphabetaTimer.restart();
-		}
-	}
-	bool isEndgame = false;
+//	bool isEndgame = false;
 	//KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
 	KSquares::BoardAnalysis analysis = getAnalysis(board);
 	QSharedPointer<QList<QList<int> > > moveSequences = analysis.moveSequences;//getMoveSequences(board, analysis, &isEndgame);
 	
-	int thisNode = debugNodeCnt;
-	debugNodeCnt++;
-	QString debugLabel = "";
-	if (debug && searchDepth - depth <= debugDepth)
-	{
-		QString boardStr = aiFunctions::boardToString(board->lines, board->linesSize, board->width, board->height).trimmed();
-		boardStr.replace(QString("\n"), QString("\\l"));
-		//boardStr.replace(QString(" "), QString(" ")); // space with non-breaking space
-		/*
-		debugDot.append("  n");
-		debugDot.append(QString::number(thisNode));
-		debugDot.append("[shape=box, label=\"p:");
-		*/
-		debugLabel.append("p:"+QString::number(board->playerId));
-		debugLabel.append("\\l");
-		debugLabel.append(boardStr);
-		/*
-		debugDot.append("\"];\n");
-		if (parentNode != -1)
-		{
-			//kDebug() << debugDot;
-			debugDot.append("  n");
-			debugDot.append(QString::number(thisNode));
-			debugDot.append(" -- n");
-			debugDot.append(QString::number(parentNode));
-			debugDot.append(";\n");
-		}
-		*/
-	}
+// 	int thisNode = debugNodeCnt;
+// 	debugNodeCnt++;
+// 	QString debugLabel = "";
+// 	if (debug && searchDepth - depth <= debugDepth)
+// 	{
+// 		QString boardStr = aiFunctions::boardToString(board->lines, board->linesSize, board->width, board->height).trimmed();
+// 		boardStr.replace(QString("\n"), QString("\\l"));
+// 		//boardStr.replace(QString(" "), QString(" ")); // space with non-breaking space
+// 		/*
+// 		debugDot.append("  n");
+// 		debugDot.append(QString::number(thisNode));
+// 		debugDot.append("[shape=box, label=\"p:");
+// 		*/
+// 		debugLabel.append("p:"+QString::number(board->playerId));
+// 		debugLabel.append("\\l");
+// 		debugLabel.append(boardStr);
+// 		/*
+// 		debugDot.append("\"];\n");
+// 		if (parentNode != -1)
+// 		{
+// 			//kDebug() << debugDot;
+// 			debugDot.append("  n");
+// 			debugDot.append(QString::number(thisNode));
+// 			debugDot.append(" -- n");
+// 			debugDot.append(QString::number(parentNode));
+// 			debugDot.append(";\n");
+// 		}
+// 		*/
+// 	}
 	
 	if (moveSequences->size() == 0) // game is over
 	{
 		//kDebug() << "terminal node - board filled";
 		// TODO: remove check
-		if (board->squareOwners.contains(-1))
-			kDebug() << "full board contains square without owner!";
+//		if (board->squareOwners.contains(-1))
+//			kDebug() << "full board contains square without owner!";
 		int result = 0;
 		for (int i = 0; i < board->squareOwners.size(); i++)
 		{
-			if (board->squareOwners[i] < 0)
-				kDebug() << "ERROR: no move sequences available, but untaken squares on board!!";
+// 			if (board->squareOwners[i] < 0)
+// 				kDebug() << "ERROR: no move sequences available, but untaken squares on board!!";
 			
 			result += board->squareOwners[i] == board->playerId ? 1 : -1;
 		}
-		if (debug && searchDepth - depth <= debugDepth && !debugEvalOnly)
-		{
-			QMap<int, int> scoreMap = aiFunctions::getScoreMap(board->squareOwners);
-			QString resultStr = "\\n";
-			for (int i = 0; i < scoreMap.keys().size(); i++)
-			{
-				resultStr += "p"; 
-				resultStr += QString::number(scoreMap.keys()[i]);
-				resultStr += ":";
-				resultStr += QString::number(scoreMap[scoreMap.keys()[i]]);
-				resultStr += "\\l";
-			}
-			debugDot.append("  n");
-			debugDot.append(QString::number(thisNode));
-			debugDot.append("[shape=box, label=\"end: ");
-			debugDot.append(QString::number(result));
-			debugDot.append(resultStr);
-			debugDot.append(debugLabel);
-			debugDot.append("\"];\n ");
-			if (parentNode != -1)
-			{
-				//kDebug() << debugDot;
-				debugDot.append("  n");
-				debugDot.append(QString::number(thisNode));
-				debugDot.append(" -- n");
-				debugDot.append(QString::number(parentNode));
-				debugDot.append(";\n");
-			}
-		}
+// 		if (debug && searchDepth - depth <= debugDepth && !debugEvalOnly)
+// 		{
+// 			QMap<int, int> scoreMap = aiFunctions::getScoreMap(board->squareOwners);
+// 			QString resultStr = "\\n";
+// 			for (int i = 0; i < scoreMap.keys().size(); i++)
+// 			{
+// 				resultStr += "p"; 
+// 				resultStr += QString::number(scoreMap.keys()[i]);
+// 				resultStr += ":";
+// 				resultStr += QString::number(scoreMap[scoreMap.keys()[i]]);
+// 				resultStr += "\\l";
+// 			}
+// 			debugDot.append("  n");
+// 			debugDot.append(QString::number(thisNode));
+// 			debugDot.append("[shape=box, label=\"end: ");
+// 			debugDot.append(QString::number(result));
+// 			debugDot.append(resultStr);
+// 			debugDot.append(debugLabel);
+// 			debugDot.append("\"];\n ");
+// 			if (parentNode != -1)
+// 			{
+// 				//kDebug() << debugDot;
+// 				debugDot.append("  n");
+// 				debugDot.append(QString::number(thisNode));
+// 				debugDot.append(" -- n");
+// 				debugDot.append(QString::number(parentNode));
+// 				debugDot.append(";\n");
+// 			}
+// 		}
 		// the player didn't change: return negative result!
 		return -result;
 		
@@ -208,54 +215,54 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 		//kDebug() << "evaluating board:" << boardToString(board->lines, board->linesSize, board->width, board->height);
 		heuristic->setAnalysis(analysis);
 		float eval = evaluate(board);
-		if (!timerHasExpiredBefore)
-		{
-			timerHasExpiredBefore = true;
-			kDebug() << "analysis for first timer expiration: " << analysis;
-			kDebug() << "eval for first timer expiration: " << eval;
-		}
-		if (debug && searchDepth - depth <= debugDepth && (!debugEvalOnly || (debugEvalOnly && depth == searchDepth - 1)))
-		{
-			//kDebug() << "result: " << eval;
-			debugDot.append("  n");
-			debugDot.append(QString::number(thisNode));
-			debugDot.append("[shape=circle, label=\"");
-			debugDot.append(QString::number(eval));
-			debugDot.append("\\nsc:");
-			debugDot.append(QString::number(analysis.openShortChains.size()));
-			debugDot.append("\\nlc:");
-			debugDot.append(QString::number(analysis.openLongChains.size()));
-			debugDot.append("\\ncc:");
-			debugDot.append(QString::number(analysis.openLoopChains.size()));
-			debugDot.append("\\ncsc:");
-			debugDot.append(QString::number(analysis.capturableShortChains.size()));
-			debugDot.append("\\nclc:");
-			debugDot.append(QString::number(analysis.capturableLongChains.size()));
-			debugDot.append("\\nccc:");
-			debugDot.append(QString::number(analysis.capturableLoopChains.size()));
-			debugDot.append("\\n");
-			if (!debugEvalOnly)
-				debugDot.append(debugLabel);
-			//debugDot.append("\\n");
-			//debugDot.append(QString::number(lastEvalTime));
-			//debugDot.append(" ms");
-			debugDot.append("\"];\n ");
-			if (parentNode != -1)
-			{
-				//kDebug() << debugDot;
-				debugDot.append("  n");
-				debugDot.append(QString::number(thisNode));
-				debugDot.append(" -- n");
-				debugDot.append(QString::number(parentNode));
-				debugDot.append(";\n");
-			}
-		}
+// 		if (!timerHasExpiredBefore)
+// 		{
+// 			timerHasExpiredBefore = true;
+// 			kDebug() << "analysis for first timer expiration: " << analysis;
+// 			kDebug() << "eval for first timer expiration: " << eval;
+// 		}
+// 		if (debug && searchDepth - depth <= debugDepth && (!debugEvalOnly || (debugEvalOnly && depth == searchDepth - 1)))
+// 		{
+// 			//kDebug() << "result: " << eval;
+// 			debugDot.append("  n");
+// 			debugDot.append(QString::number(thisNode));
+// 			debugDot.append("[shape=circle, label=\"");
+// 			debugDot.append(QString::number(eval));
+// 			debugDot.append("\\nsc:");
+// 			debugDot.append(QString::number(analysis.openShortChains.size()));
+// 			debugDot.append("\\nlc:");
+// 			debugDot.append(QString::number(analysis.openLongChains.size()));
+// 			debugDot.append("\\ncc:");
+// 			debugDot.append(QString::number(analysis.openLoopChains.size()));
+// 			debugDot.append("\\ncsc:");
+// 			debugDot.append(QString::number(analysis.capturableShortChains.size()));
+// 			debugDot.append("\\nclc:");
+// 			debugDot.append(QString::number(analysis.capturableLongChains.size()));
+// 			debugDot.append("\\nccc:");
+// 			debugDot.append(QString::number(analysis.capturableLoopChains.size()));
+// 			debugDot.append("\\n");
+// 			if (!debugEvalOnly)
+// 				debugDot.append(debugLabel);
+// 			//debugDot.append("\\n");
+// 			//debugDot.append(QString::number(lastEvalTime));
+// 			//debugDot.append(" ms");
+// 			debugDot.append("\"];\n ");
+// 			if (parentNode != -1)
+// 			{
+// 				//kDebug() << debugDot;
+// 				debugDot.append("  n");
+// 				debugDot.append(QString::number(thisNode));
+// 				debugDot.append(" -- n");
+// 				debugDot.append(QString::number(parentNode));
+// 				debugDot.append(";\n");
+// 			}
+// 		}
 		return eval;
 	}
 	
 	//int localLine = -1;
 	float bestValue = -INFINITY;
-	for (int i = 0; i < moveSequences->size(); i++)
+	for (int i = 0; i < moveSequences->size() && !alphabetaTimer.hasExpired(alphabetaTimeout); i++)
 	{
 		//if ((*moveSequences)[i].size() == 0)
 		//	kDebug() << "empty move sequence!";
@@ -270,7 +277,7 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 			kDebug() << "ERROR: sth went really wrong! player didn't change after move sequence: " << (*moveSequences)[i];
 			kDebug() << "ERROR: board: " << aiFunctions::boardToString(board);
 		}
-		float val = -alphabeta(board, depth - 1, NULL, -beta, -alpha, thisNode);
+		float val = -alphabeta(board, depth - 1, NULL, -beta, -alpha/*, thisNode*/);
 		for (int j = (*moveSequences)[i].size() -1; j >= 0; j--)
 		{
 			board->undoMove((*moveSequences)[i][j]);
@@ -288,10 +295,13 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 			bestValue = val;
 			if (line != NULL)
 			{
-				linePool.clear();
-				linePool.append((*moveSequences)[i][0]);
+				//linePool.clear();
+				//linePool.append((*moveSequences)[i][0]);
 				*line = (*moveSequences)[i][0];
 			}
+			// put the current item in front (reordering for iterative deepening)
+			moveSequences->prepend((*moveSequences)[i]);
+			moveSequences->removeAt(i+1);
 		}
 		
 		if (val > alpha)
@@ -308,24 +318,24 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 	//if (bestValue == -INFINITY && moveSequences->size() > 0 && line != NULL)
 	//	*line = (*moveSequences)[0][0];
 	
-	if (debug && searchDepth - depth <= debugDepth && !debugEvalOnly)
-	{
-		debugDot.append("  n");
-		debugDot.append(QString::number(thisNode));
-		debugDot.append("[shape=box, label=\"bv:");
-		debugDot.append(QString::number(bestValue));
-		debugDot.append(debugLabel);
-		debugDot.append("\"];\n");
-		if (parentNode != -1)
-		{
-			//kDebug() << debugDot;
-			debugDot.append("  n");
-			debugDot.append(QString::number(thisNode));
-			debugDot.append(" -- n");
-			debugDot.append(QString::number(parentNode));
-			debugDot.append(";\n");
-		}
-	}
+// 	if (debug && searchDepth - depth <= debugDepth && !debugEvalOnly)
+// 	{
+// 		debugDot.append("  n");
+// 		debugDot.append(QString::number(thisNode));
+// 		debugDot.append("[shape=box, label=\"bv:");
+// 		debugDot.append(QString::number(bestValue));
+// 		debugDot.append(debugLabel);
+// 		debugDot.append("\"];\n");
+// 		if (parentNode != -1)
+// 		{
+// 			//kDebug() << debugDot;
+// 			debugDot.append("  n");
+// 			debugDot.append(QString::number(thisNode));
+// 			debugDot.append(" -- n");
+// 			debugDot.append(QString::number(parentNode));
+// 			debugDot.append(";\n");
+// 		}
+// 	}
 	
 	return bestValue;
 }
