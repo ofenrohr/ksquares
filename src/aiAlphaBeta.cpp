@@ -73,7 +73,8 @@ int aiAlphaBeta::chooseLine(const QList<bool> &newLines, const QList<int> &newSq
 		alphabetaTimer.restart();
 	}
 	int line = -1;
-	float evalResult = alphabetaIterativeDeepening(board, searchDepth, &line);
+	//float evalResult = alphabetaIterativeDeepening(board, searchDepth, &line);
+	float evalResult = alphabeta(board, searchDepth, &line);
 	kDebug() << "alphabeta END " << line;
 	
 	kDebug() << "alphabeta eval result = " << evalResult;
