@@ -13,7 +13,7 @@ set(ksquares_SRCS
 	aifunctions.cpp
 	ksquaresio.cpp
 	board.cpp
-#	dbgame.cpp
+	dbgame.cpp
 	aiEasyMediumHard.cpp
 	aiMiniMax.cpp
 	aiBoard.cpp

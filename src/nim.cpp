@@ -44,6 +44,7 @@ All other rights retained.
 #include <KDebug>
 
 using namespace std;
+using namespace nim;
 
 
 /*

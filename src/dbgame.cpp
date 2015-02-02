@@ -9,6 +9,10 @@
 #include <assert.h>
 #include <cstdio>
 
+#include "aifunctions.h"
+#include <KDebug>
+
+using namespace dabble;
 
 UndoInfo *UndoInfo::list;
 
@@ -151,7 +155,7 @@ void DBGame::Connect (Edge &edge, Node &node1, Node &node2)
 #endif
 }
 
-DBGame::DBGame (int w, int h)
+DBGame::DBGame (int w, int h) : KSquaresAi(w,h)
 {
 	int i, j;
 
@@ -240,6 +244,73 @@ DBGame::~DBGame ()
 	delete[] hash;
 	delete[] chunk;
 #endif
+}
+
+Coords DBGame::indexToPoints(const int lineIndex)
+{
+	Coords c;
+  int index2 = lineIndex % ( ( 2 * width ) + 1 );
+  c.y1 = lineIndex / ( ( 2 * width ) + 1) ;
+  KSquares::Direction dir = aiFunctions::lineDirection(width, height, lineIndex);
+  if (dir == KSquares::HORIZONTAL)
+  {
+    c.x1 = index2;
+    c.y2 = c.y1;
+    c.x2 = c.x1 + 1;
+  }
+  else 
+  {
+    c.x1 = index2 - width;
+    c.y2 = c.y1 + 1;
+    c.x2 = c.x1;
+  }
+  c.y1 = height - c.y1;
+  c.y2 = height - c.y2;
+	
+	return c;
+}
+
+int DBGame::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners)
+{
+	int line = -1;
+	
+	if (newLines.size() != previousLines.size())
+	{
+		previousLines.clear();
+		previousLines.append(newLines);
+	}
+	else
+	{
+		for (int i = 0; i < newLines.size(); i++)
+		{
+			if (newLines[i] && !previousLines[i])
+			{
+				Coords c = indexToPoints(i);
+				rgEdgeRemoved[maxEdgesRemoved] = c;
+				maxEdgesRemoved++;
+			}
+		}
+	}
+	MyMove();
+	
+	kDebug() << "rgmoves[nummoves-1].node[0] = (" << rgmoves[nummoves-1].move->node[0]->x << ", " << rgmoves[nummoves-1].move->node[0]->y << ") -- (" << rgmoves[nummoves-1].move->node[1]->x << ", " << rgmoves[nummoves-1].move->node[1]->y << ")";
+	
+	QPoint p1(rgmoves[nummoves-1].move->node[0]->x, rgmoves[nummoves-1].move->node[0]->y);
+	QPoint p2(rgmoves[nummoves-1].move->node[1]->x, rgmoves[nummoves-1].move->node[1]->y);
+	line = Board::pointsToIndex(p1, p2, width, height);
+	kDebug() << "line index: " << line;
+	
+	if (newLines[line] || line < 0 || line >= newLines.size())
+	{
+		for (int i = 0; i < newLines.size(); i++)
+		{
+			if (!newLines[i])
+				return i;
+		}
+	}
+	
+	kDebug() << "returned line: " << line;
+	return line;
 }
 
 // returns TRUE if the player can keep moving, FALSE if it's the computer's turn
