@@ -19,7 +19,7 @@
 #include "lineSorter.h"
 #include "boardAnalysis.h"
 
-aiAlphaBeta::aiAlphaBeta(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel) : KSquaresAi(newWidth, newHeight), playerId(newPlayerId), maxPlayerId(newMaxPlayerId), level(newLevel)
+aiAlphaBeta::aiAlphaBeta(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel, int thinkTime) : KSquaresAi(newWidth, newHeight), playerId(newPlayerId), maxPlayerId(newMaxPlayerId), level(newLevel), alphabetaTimeout(thinkTime)
 {
 	width = newWidth;
 	height = newHeight;
@@ -27,7 +27,7 @@ aiAlphaBeta::aiAlphaBeta(int newPlayerId, int newMaxPlayerId, int newWidth, int 
 	lines = new bool[linesSize];
 	debug = false;
 	maxEvalTime = 0;
-	alphabetaTimeout = 5000; // 5 sec timeout
+	//alphabetaTimeout = 5000; // 5 sec timeout
 	heuristic = new aiHeuristic(true, true, true);
 	searchDepth = 300000; // only used for debugging, search is limited by time
 	debugDepth = searchDepth;

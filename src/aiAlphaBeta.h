@@ -27,7 +27,7 @@
 class aiAlphaBeta : public KSquaresAi
 {
 	public:
-		aiAlphaBeta(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel);
+		aiAlphaBeta(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel, int thinkTime = 5000);
 		~aiAlphaBeta();
 		
 		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners);

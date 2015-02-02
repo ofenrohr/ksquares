@@ -51,6 +51,11 @@ http://www.kde.org/standards/kcfg/1.0/kcfg.xsd" >
 			<whatsthis>How difficult the AI should be for player four</whatsthis>
 			<default>0</default>
 		</entry>
+		<entry name="AiThinkTime" type="Int">
+			<label>Time for AI</label>
+			<whatsthis>Maximum time in seconds for AI to come up with a move</whatsthis>
+			<default>5</default>
+		</entry>
 	</group>
 	<group name="Display">
 		<entry name="LineColor" type="Color">

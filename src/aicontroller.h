@@ -61,7 +61,7 @@ class aiController : public QObject
 		 * @param newHeight width of the current gameboard
 		 * @param newLevel level of the ai
 		 */
-		aiController(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel);
+		aiController(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel, int thinkTime = 5000);
 		
 		~aiController();
 		
@@ -100,6 +100,8 @@ class aiController : public QObject
 		/// number of lines on board
 		//int linesSize;
 		KSquaresAi::Ptr ai;
+		/// time in ms for ai to come up with move
+		int aiThinkTime;
 };
 
 // see http://qt-project.org/doc/qt-4.8/qthread.html#details

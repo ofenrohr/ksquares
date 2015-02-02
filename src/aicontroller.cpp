@@ -19,7 +19,7 @@
 
 #include <QSet>
 
-aiController::aiController(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel) : playerId(newPlayerId), maxPlayerId(newMaxPlayerId), width(newWidth), height(newHeight), level(newLevel)
+aiController::aiController(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel, int thinkTime) : playerId(newPlayerId), maxPlayerId(newMaxPlayerId), width(newWidth), height(newHeight), level(newLevel), aiThinkTime(thinkTime)
 {
 	//kDebug() << "aiController init: nw = " << newWidth << ", nh = " << newHeight << ", w = " << width << ", h = " << height;
 	//linesSize = aiFunctions::toLinesSize(width, height);
@@ -94,7 +94,7 @@ KSquaresAi::Ptr aiController::getAi()
 		case 3:
 			//kDebug() << "creating aiAlphaBeta";
 			if (ai.isNull())
-				ai = KSquaresAi::Ptr(new aiAlphaBeta(playerId, maxPlayerId, width, height, level));
+				ai = KSquaresAi::Ptr(new aiAlphaBeta(playerId, maxPlayerId, width, height, level, aiThinkTime));
 		break;
 	}
 	return ai;

@@ -128,7 +128,8 @@ void KSquaresWindow::gameNew()
 		dialog.quickStartCheck->setCheckState(Qt::Checked);
 	else
 		dialog.quickStartCheck->setCheckState(Qt::Unchecked);
-
+	dialog.aiThinkTime->setValue(Settings::aiThinkTime());
+	
 	//run dialog
 	dialog.exec();
 	if (dialog.result() == QDialog::Rejected) return;
@@ -158,6 +159,7 @@ void KSquaresWindow::gameNew()
 	Settings::setBoardHeight(dialog.spinHeight->value());
 	Settings::setBoardWidth(dialog.spinWidth->value());
 	Settings::setQuickStart(dialog.quickStartCheck->checkState());
+	Settings::setAiThinkTime(dialog.aiThinkTime->value());
 	Settings::self()->writeConfig();
 
 	gameReset();
@@ -179,7 +181,7 @@ void KSquaresWindow::gameReset()
 	{
 		int aiLevel = getAiLevel(i);
 		// TODO: don't create ai for human players
-		ais.append(aiController::Ptr(new aiController(i, playerList.size()-1, Settings::boardWidth(), Settings::boardHeight(), aiLevel)));
+		ais.append(aiController::Ptr(new aiController(i, playerList.size()-1, Settings::boardWidth(), Settings::boardHeight(), aiLevel, Settings::aiThinkTime()*1000)));
 	}
 
 	//start game etc.
