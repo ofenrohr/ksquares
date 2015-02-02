@@ -14,6 +14,7 @@
 #include "aiMiniMax.h"
 #include "aiAlphaBeta.h"
 #include "dbgame.h"
+#include "dbgame.nohash.h"
 
 #include <ctime>
 #include <kdebug.h>
@@ -94,7 +95,18 @@ KSquaresAi::Ptr aiController::getAi()
 			if (ai.isNull())
 			{
 				kDebug() << "creating dabble ai";
-				dabble::DBGame *m_game = new dabble::DBGame(width, height);
+				dabble::DBGame *m_game = new dabble::DBGame(width+1, height+1);
+				m_game->searchDepth = 20;
+				m_game->timeLimit = 5;
+				m_game->gameLimit = -5;
+				ai = KSquaresAi::Ptr(m_game);
+			}
+		break;
+		case 5:
+			if (ai.isNull())
+			{
+				kDebug() << "creating dabble.nohash ai";
+				dabble_nohash::DBGame *m_game = new dabble_nohash::DBGame(width+1, height+1);
 				m_game->searchDepth = 20;
 				m_game->timeLimit = 5;
 				m_game->gameLimit = -5;

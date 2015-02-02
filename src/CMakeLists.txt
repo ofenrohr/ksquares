@@ -24,6 +24,7 @@ set(ksquares_SRCS
 	ksquarestestwindow.cpp
 	lineSorter.cpp
 	boardAnalysis.cpp
+	dbgame.nohash.cpp
 )
 
 include_directories(${CMAKE_SOURCE_DIR}/libkdegames/highscore)

@@ -2,21 +2,18 @@
 // dbgame.cpp
 //
 
+#include "StdAfx.h"
 #include "dbgame.h"
 #include <time.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <assert.h>
-#include <cstdio>
 
-#include "aifunctions.h"
-#include <KDebug>
-
-using namespace dabble;
+#pragma warning(disable:4390)
 
 UndoInfo *UndoInfo::list;
 
-// FILE *logfile;
+FILE *logfile;
 
 void DBGame::Log (char *message, ...)
 {
@@ -46,7 +43,7 @@ Node::Node ()
 Edge *Node::NextEdge (Edge *prev)
 {
 	for (int i = 0 ; i < 4 ; i++)
-		prev = (Edge *) ((intptr_t)prev ^ (intptr_t)edge[i]); // TODO: check if this fucks shit up // original: prev = (Edge *) ((int) prev ^ (int) edge[i]); 
+		prev = (Edge *) ((int) prev ^ (int) edge[i]);
 	return prev;
 }
 
@@ -66,7 +63,7 @@ Node *Node::NextNode (Edge *next)
 {
 	if (!next)
 		return NULL;
-	return (Node *) ((intptr_t) next->node[0] ^ (intptr_t) next->node[1] ^ (intptr_t) this);
+	return (Node *) ((int) next->node[0] ^ (int) next->node[1] ^ (int) this);
 }
 
 void Node::DetachEdge (Edge *pedge)
@@ -141,7 +138,6 @@ void DBGame::Connect (Edge &edge, Node &node1, Node &node2)
 	}
 
 	j = rand() % (count + 1);
-	//j = 49 % (count + 1);
 	e = &moves[0];
 	for (i = 0 ; i < j ; i++)
 		e = e->next;
@@ -149,26 +145,24 @@ void DBGame::Connect (Edge &edge, Node &node1, Node &node2)
 	INSERT(&edge, e);
 	count++;
 
-#ifdef HASH
+	// for hashing
 	edge.edgeSet.v64 = edgeBit.v64;
 	edgeBit.v64 <<= 1;
-#endif
 }
 
-DBGame::DBGame (int w, int h) : KSquaresAi(w-1,h-1)
+DBGame::DBGame (int w, int h)
 {
 	int i, j;
 
 	width = w;
 	height = h;
 
-// 	logfile = fopen("dabble.log", "w");
+	logfile = fopen("dabble.log", "w");
 	long seed = time(NULL) & 255;
-	seed = 5;
-// 	fprintf(logfile, "Using random seed %ld\n", seed);
-// 	fprintf(logfile, "%d, %d\n", width, height);
-// 	fclose(logfile);
-	TRACE("Using random seed %ld\n", seed);
+	fprintf(logfile, "Using random seed %d\n", seed);
+	fprintf(logfile, "%d, %d\n", width, height);
+	fclose(logfile);
+	TRACE("Using random seed %d\n", seed);
 	srand(seed);
 
 	for (i = 0 ; i < w + 1 ; i++)
@@ -184,10 +178,9 @@ DBGame::DBGame (int w, int h) : KSquaresAi(w-1,h-1)
 	for (j = 0 ; j < h + 1 ; j++)
 		square[0][j].ground = square[w][j].ground = 1;
 
-#ifdef HASH
+	// for hashing
 	edgeBit.v64 = 1;
 	position.v64 = 0;
-#endif
 
 	for (i = 1 ; i < w ; i++)
 	{
@@ -220,7 +213,7 @@ DBGame::DBGame (int w, int h) : KSquaresAi(w-1,h-1)
 	turn = 0;
 	turnOver = 1;
 
-#ifdef HASH
+	// for hashing
 	hash = new PHashNode[HASHSIZE];
 	for (i = 0 ; i < HASHSIZE ; i++)
 		hash[i] = NULL;
@@ -228,7 +221,6 @@ DBGame::DBGame (int w, int h) : KSquaresAi(w-1,h-1)
 	nextfree = 0;
 
 	edgeBit.v64--;
-#endif
 }
 
 DBGame::~DBGame ()
@@ -239,84 +231,8 @@ DBGame::~DBGame ()
 		UNDO(rgmoves[nummoves].postMove);
 		UNDO(rgmoves[nummoves].preMove);
 	}
-
-#ifdef HASH
 	delete[] hash;
 	delete[] chunk;
-#endif
-}
-
-Coords DBGame::indexToPoints(const int lineIndex)
-{
-	Coords c;
-  int index2 = lineIndex % ( ( 2 * (width-1) ) + 1 );
-  c.y1 = lineIndex / ( ( 2 * (width-1) ) + 1) ;
-  KSquares::Direction dir = aiFunctions::lineDirection(width-1, height-1, lineIndex);
-  if (dir == KSquares::HORIZONTAL)
-  {
-    c.x1 = index2;
-    c.y2 = c.y1;
-    c.x2 = c.x1 + 1;
-  }
-  else 
-  {
-    c.x1 = index2 - (width-1);
-    c.y2 = c.y1 + 1;
-    c.x2 = c.x1;
-  }
-  c.y1 = height - 1 - c.y1;
-  c.y2 = height - 1 - c.y2;
-	
-	return c;
-}
-
-int DBGame::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners)
-{
-	int line = -1;
-	
-	if (newLines.size() != previousLines.size())
-	{
-		previousLines.clear();
-		previousLines.append(newLines);
-		for (int i = 0; i < newLines.size(); i++)
-		{
-			Coords c = indexToPoints(i);
-			rgEdgeRemoved[maxEdgesRemoved] = c;
-			maxEdgesRemoved++;
-		}
-	}
-	else
-	{
-		for (int i = 0; i < newLines.size(); i++)
-		{
-			if (newLines[i] && !previousLines[i])
-			{
-				Coords c = indexToPoints(i);
-				rgEdgeRemoved[maxEdgesRemoved] = c;
-				maxEdgesRemoved++;
-			}
-		}
-	}
-	MyMove();
-	
-	kDebug() << "rgmoves[nummoves-1].node[0] = (" << rgmoves[nummoves-1].move->node[0]->x << ", " << rgmoves[nummoves-1].move->node[0]->y << ") -- (" << rgmoves[nummoves-1].move->node[1]->x << ", " << rgmoves[nummoves-1].move->node[1]->y << ")";
-	
-	QPoint p1(rgmoves[nummoves-1].move->node[0]->x, rgmoves[nummoves-1].move->node[0]->y);
-	QPoint p2(rgmoves[nummoves-1].move->node[1]->x, rgmoves[nummoves-1].move->node[1]->y);
-	line = Board::pointsToIndex(p1, p2, width, height);
-	kDebug() << "line index: " << line;
-	
-	if (newLines[line] || line < 0 || line >= newLines.size())
-	{
-		for (int i = 0; i < newLines.size(); i++)
-		{
-			if (!newLines[i])
-				return i;
-		}
-	}
-	
-	kDebug() << "returned line: " << line;
-	return line;
 }
 
 // returns TRUE if the player can keep moving, FALSE if it's the computer's turn
@@ -341,7 +257,7 @@ int DBGame::PlayerMove (Edge *edge)
 		turn++;
 	}
 	SAVE(turnOver);
-	if ((turnOver = !RemoveEdge(edge)))
+	if (turnOver = !RemoveEdge(edge))
 	{
 		rgmoves[nummoves++].postMove = UndoInfo::GetList();
 		return 0;
@@ -353,9 +269,9 @@ void DBGame::SetEdgeRemoved (Edge *edge)
 {
 	Coords c = edge->GetCoords();
 
-// 	logfile = fopen("dabble.log", "a+");
-// 	fprintf(logfile, "%d: (%d, %d) - (%d, %d)\n", nummoves, c.x1, c.y1, c.x2, c.y2);
-// 	fclose(logfile);
+	logfile = fopen("dabble.log", "a+");
+	fprintf(logfile, "%d: (%d, %d) - (%d, %d)\n", nummoves, c.x1, c.y1, c.x2, c.y2);
+	fclose(logfile);
 
 	SET(edge->removed, turn);
 	SAVE(numEdgesRemoved);
@@ -431,6 +347,7 @@ int DBGame::RemoveEdge (Edge *edge)
 						SET(frag[numfrags], nextfrag);
 						SET(fraglen[numfrags], fraglen[i] - len);
 						SET(fragopen[numfrags], fragopen[i]);
+						SET(fraglen[i], len);
 						nextfrag->DetachEdge(pedge);
 						SAVE(numfrags);
 						numfrags++;
@@ -440,7 +357,6 @@ int DBGame::RemoveEdge (Edge *edge)
 						nextfrag->owner = nummoves & 1;
 						goagain = 1;
 					}
-					SET(fraglen[i], len);
 				}
 				pfrag->DetachEdge(pedge);
 				SAVE(pfrag->degree);
@@ -454,7 +370,7 @@ int DBGame::RemoveEdge (Edge *edge)
 					numfrags--;
 					SET(frag[i], frag[numfrags]);
 					SET(fraglen[i], fraglen[numfrags]);
-					SET(fragopen[i], fragopen[numfrags]);
+					SET(fragopen[i], fraglen[numfrags]);
 				}
 				return goagain;
 			}
@@ -583,9 +499,8 @@ void DBGame::DoLoopMove (Edge *edge, Edge *removedEdge)
 	if (node->degree == 2)
 		SpliceNode(node);
 
-#ifdef HASH
+	// for hashing
 	position.v64 ^= edge->edgeSet.v64;
-#endif
 }
 
 // called with *parent* of loop edge, which is created in DoLoopMove
@@ -639,9 +554,8 @@ void DBGame::UndoLoopMove (Edge *edge)
 	REINSERT(edges[1]);
 	REINSERT(edges[0]);
 
-#ifdef HASH
+	// for hashing
 	position.v64 ^= edge->edgeSet.v64;
-#endif
 }
 
 void DBGame::SpliceNode (Node *node)
@@ -651,15 +565,14 @@ void DBGame::SpliceNode (Node *node)
 
 	for (j = k = 0 ; j < 4 ; j++)
 	{
-		if ((edges[k] = node->edge[j]))
+		if (edges[k] = node->edge[j])
 			k++;
 	}
 	newedge = &node->chainEdge;
 
-#ifdef HASH
+	// for hashing
 	newedge->edgeSet.v64 = edges[0]->edgeSet.v64 | edges[1]->edgeSet.v64;
-#endif
-
+	
 	// check for a cycle
 	if (edges[0] == edges[1])
 	{
@@ -736,7 +649,7 @@ void DBGame::UndoSplice (Node *node)
 	REMOVE(&node->chainEdge);
 	for (j = k = 0 ; j < 4 ; j++)
 	{
-		if ((edges[k] = node->edge[j]))
+		if (edges[k] = node->edge[j])
 			k++;
 	}
 	//Log("k = %d\n", k);
@@ -799,9 +712,8 @@ void DBGame::DoMove (Edge *edge)
 		}
 	}
 
-#ifdef HASH
+	// for hashing
 	position.v64 ^= edge->edgeSet.v64;
-#endif
 }
 
 void DBGame::UndoMove (Edge *edge)
@@ -841,9 +753,8 @@ void DBGame::UndoMove (Edge *edge)
 	}
 	REINSERT(edge);
 
-#ifdef HASH
+	// for hashing
 	position.v64 ^= edge->edgeSet.v64;
-#endif
 }
 
 void DBGame::Undo (void)
@@ -979,6 +890,9 @@ inline Edge *DBGame::GetCycle (void)
 	return NULL;
 }
 
+//
+// TODO: check for beta > val or beta >= val && less sacrifice
+//
 void DBGame::MyMove (void)
 {
 	int i, j, k;
@@ -987,6 +901,7 @@ void DBGame::MyMove (void)
 	int val, prevleaves;
 	int	uninteresting;	// have we done an uninteresting move?
 	Node *node, *node2;
+	int chainlen;
 
 	SAVE(turn);
 	turn++;
@@ -1020,22 +935,8 @@ void DBGame::MyMove (void)
 			}	
 		}
 	}
-		if ((edge = GetChain()))
-			cmoves++;
-		if ((edge = GetCycle()))
-			cmoves++;
-		for (i = 3 ; i < MAX_SORTED ; i++)
-		{
-			for (edge = strings[i].next ; edge != &strings[i] ; edge = edge->next)
-				cmoves++;
-			for (edge = loops[i].next ; edge != &loops[i] ; edge = edge->next)
-			{
-				if (edge->node[0]->degree == 4)
-					cmoves++;
-			}
-		}
-	//if (cmoves)
-	//{
+	if (cmoves)
+	{
 		searchMoves = new SearchMove[cmoves];
 		uninteresting = 0;
 		for (i = 0 ; i < 3 ; i++)
@@ -1052,16 +953,37 @@ void DBGame::MyMove (void)
 				}	
 			}
 		}
-	//}
-	//else
-	//{
-		//searchMoves = new SearchMove[cmoves];
-		if ((edge = GetChain()))
+	}
+	else
+	{
+		chainlen = 9999;
+		if (edge = GetChain())
+		{
+			chainlen = edge->length;
+			cmoves++;
+		}
+		if (edge = GetCycle())
+			cmoves++;
+		for (i = 3 ; i < MAX_SORTED ; i++)
+		{
+			for (edge = strings[i].next ; edge != &strings[i] ; edge = edge->next)
+			{
+				if (edge->length < chainlen)
+					cmoves++;
+			}
+			for (edge = loops[i].next ; edge != &loops[i] ; edge = edge->next)
+			{
+				if (edge->length < chainlen && edge->node[0]->degree == 4)
+					cmoves++;
+			}
+		}
+		searchMoves = new SearchMove[cmoves];
+		if (edge = GetChain())
 		{
 			searchMoves[imove].move = edge;
 			searchMoves[imove++].type = mt_chain;
 		}
-		if ((edge = GetCycle()))
+		if (edge = GetCycle())
 		{
 			searchMoves[imove].move = edge;
 			searchMoves[imove++].type = mt_cycle;
@@ -1070,19 +992,22 @@ void DBGame::MyMove (void)
 		{
 			for (edge = strings[i].next ; edge != &strings[i] ; edge = edge->next)
 			{
-				searchMoves[imove].move = edge;
-				searchMoves[imove++].type = mt_chain;
+				if (edge->length < chainlen)
+				{
+					searchMoves[imove].move = edge;
+					searchMoves[imove++].type = mt_chain;
+				}
 			}
 			for (edge = loops[i].next ; edge != &loops[i] ; edge = edge->next)
 			{
-				if (edge->node[0]->degree == 4)
+				if (edge->length < chainlen && edge->node[0]->degree == 4)
 				{
 					searchMoves[imove].move = edge;
 					searchMoves[imove++].type = mt_chain;
 				}
 			}
 		}
-	//}
+	}
 
 	// check for multiple edges from a single node to the ground or from the ground to the ground
 	for (i = 0 ; i < cmoves ; i++)
@@ -1120,7 +1045,6 @@ void DBGame::MyMove (void)
 	{
 		move = NULL;
 		leaves = 0;
-		bailout = 1;
 		beta = -INF;
 
 		// Sort the moves
@@ -1138,11 +1062,10 @@ void DBGame::MyMove (void)
 			}
 		}
 
-#ifdef HASH
+		// for hashing
 		for (i = 0 ; i < HASHSIZE ; i++)
 			hash[i] = NULL;
 		nextfree = 0;
-#endif
 
 		// Find the best move!
 		for (imove = 0 ; imove < cmoves ; imove++)
@@ -1150,10 +1073,10 @@ void DBGame::MyMove (void)
 			edge = searchMoves[imove].move;
 			DoMove(edge);
 			if (searchMoves[imove].type == mt_short)
-				val = Evaluate(-beta - edge->length + 1, -INF, depth) + 1 - edge->length;
+				val = Evaluate(depth) + 1 - edge->length;
 			else
 			{
-				val = Evaluate(INF, -INF, depth);
+				val = Evaluate(depth);
 				if (searchMoves[imove].type == mt_chain)
 				{
 					if (val > 2)
@@ -1170,7 +1093,7 @@ void DBGame::MyMove (void)
 				}
 			}
 			searchMoves[imove].val = val;
-			if (val > beta && !stop)
+			if ((val > beta || (move != NULL && val == beta && edge->length < move->length)) && !stop)
 			{
 				move = edge;
 				beta = val;
@@ -1189,9 +1112,9 @@ void DBGame::MyMove (void)
 				if (beta < -4 || (fragopen[0] && beta < -2))
 				{
 					if (fragopen[0])
-						last_beta = - 2 - beta;
+						last_beta = fraglen[0] - 4 - beta;
 					else
-						last_beta = - 4 - beta;
+						last_beta = fraglen[0] - 8 - beta;
 				}
 				else
 					last_beta += fraglen[0];
@@ -1199,14 +1122,13 @@ void DBGame::MyMove (void)
 
 			TRACE("Searched %d leaves at depth %d (beta = %d)\n", leaves, depth, last_beta);
 
-			//last_beta = nextfree;
+			::PostMessage(hWnd, WM_CHAR, 18, 0);
 
-			// TODO
-			//::PostMessage(hWnd, WM_CHAR, 18, 0);
-
-			if (bailout)
+			if (leaves == prevleaves && move == bestMove)
+			{
+				last_depth--;
 				break;
-
+			}
 			prevleaves = leaves;
 			bestMove = move;
 		}
@@ -1297,15 +1219,14 @@ typedef struct tagWord16
 {
 	union
 	{
-		int16_t	v16;
-		int8_t	v8[2];
+		__int16	v16;
+		__int8	v8[2];
 	};
 } Word16;
 
-#define CHECKVAL if (val > beta) {if (val >= alpha) return -val; beta = val;}
+#define CHECKVAL if (val > beta) {beta = val;}
 
-int DBGame::Evaluate (int alpha, int beta, int depth)
-#ifdef HASH
+int DBGame::Evaluate (int depth)
 {
 	Word32 temp;
 	int i;
@@ -1325,38 +1246,18 @@ int DBGame::Evaluate (int alpha, int beta, int depth)
 			break;
 	}
 	if (node)
-	{
-		// exact?
-		if (node->alpha > node->val && node->beta < node->val)
-			return -node->val;
+		return node->val;
 
-		if (node->val >= node->alpha)
-		{
-			if (alpha <= node->alpha)
-				return -node->val;
-		}
-		else if (beta >= node->beta)
-			return -node->val;
-	}
-	else
-	{
-		if (nextfree == CHUNKSIZE)
-		{
-			return EvaluateNoHash(alpha, beta, depth); // bail
-		}
-		node = &chunk[nextfree++];
-		node->next = hash[i];
-		hash[i] = node;
-		node->position = position;
-	}
-	node->alpha = alpha;
-	node->beta = beta;
-	node->val = -EvaluateNoHash(alpha, beta, depth);
-	return -node->val;
+	if (nextfree == CHUNKSIZE)
+		return EvaluateNoHash(depth); // bail
+	node = &chunk[nextfree++];
+	node->next = hash[i];
+	hash[i] = node;
+	node->position = position;
+	return node->val = EvaluateNoHash(depth);
 }
 
-int DBGame::EvaluateNoHash (int alpha, int beta, int depth)
-#endif
+int DBGame::EvaluateNoHash (int depth)
 {
 	int i;
 	Edge *edge;
@@ -1364,14 +1265,13 @@ int DBGame::EvaluateNoHash (int alpha, int beta, int depth)
 	Word16 interesting;	// have we done an uninteresting (v8[0]) or interesting (v8[1]) move?
 	int groundground = 0;
 	int skip;
-
-	//alpha = INF;
-	//beta = -INF;
+	int chainlen;
+	int beta = -INF;
 
 	if (stop)
-		return -beta;
+		return 0;
 
-	//TRACE("Evaluate alpha %d beta %d depth %d\n", alpha, beta, depth);
+	//TRACE("Evaluate alpha %d beta %d depth %d score %d\n", alpha, beta, depth, score);
 
 	if (!--depth)
 	{
@@ -1417,7 +1317,7 @@ int DBGame::EvaluateNoHash (int alpha, int beta, int depth)
 
 				// do the move
 				DoMove(edge);
-				val = Evaluate(-beta - i, -alpha - i, depth) - i;
+				val = Evaluate(depth) - i;
 				UndoMove(edge);
 				interesting.v8[f] = 1;
 
@@ -1427,13 +1327,15 @@ int DBGame::EvaluateNoHash (int alpha, int beta, int depth)
 	}
 
 	// If there weren't any, then check exactly one cycle, one chain, and all strings
-	//if (!interesting.v16)
+	if (!interesting.v16)
 	{
-		if ((edge = GetChain()))
+		chainlen = 9999;
+		if (edge = GetChain())
 		{
+			chainlen = edge->length;
 			DoMove(edge);
 
-			val = Evaluate(INF, -INF, depth);
+			val = Evaluate(depth);
 			if (val > 2)
 				val = 5 - edge->length - val;
 			else
@@ -1444,11 +1346,11 @@ int DBGame::EvaluateNoHash (int alpha, int beta, int depth)
 
 			interesting.v16 = 1;
 		}
-		if ((edge = GetCycle()))
+		if (edge = GetCycle())
 		{
 			DoMove(edge);
 
-			val = Evaluate(INF, -INF, depth);
+			val = Evaluate(depth);
 			if (val > 4)
 				val = 8 - edge->length - val;
 			else
@@ -1463,9 +1365,11 @@ int DBGame::EvaluateNoHash (int alpha, int beta, int depth)
 		{
 			for (edge = strings[i].next ; edge != &strings[i] ; edge = edge->next)
 			{
+				if (edge->length >= chainlen)
+					break;
 				DoMove(edge);
 
-				val = Evaluate(INF, -INF, depth);
+				val = Evaluate(depth);
 				if (val > 2)
 					val = 5 - edge->length - val;
 				else
@@ -1478,11 +1382,11 @@ int DBGame::EvaluateNoHash (int alpha, int beta, int depth)
 			}
 			for (edge = loops[i].next ; edge != &loops[i] ; edge = edge->next)
 			{
-				if (edge->node[0]->degree != 4)
+				if (edge->length >= chainlen || edge->node[0]->degree != 4)
 					break;
 				DoMove(edge);
 
-				val = Evaluate(INF, -INF, depth);
+				val = Evaluate(depth);
 				if (val > 2)
 					val = 5 - edge->length - val;
 				else
@@ -1504,9 +1408,20 @@ int DBGame::EvaluateNoHash (int alpha, int beta, int depth)
 	}
 }
 
+inline int fast_rand (void)
+{
+	static union
+	{
+		__int32 v32;
+		__int16 v16[2];
+	} r;
+
+	return r.v32 += 1 + r.v16[1];
+}
+
 int DBGame::FastEval (void)
 {
-	int i;
+	int i, j;
 	Edge *edge;
 	int val;
 	int doublecross = 0;
@@ -1525,22 +1440,6 @@ int DBGame::FastEval (void)
 	}
 
 	// If there weren't any, then check for a string, chain or cycle
-	for (i = 3 ; i < MAX_SORTED ; i++)
-	{
-		edge = cycles[i].next;
-		if (edge != &cycles[i])
-		{
-			DoMove(edge);
-			val = FastEval();
-			UndoMove(edge);
-			if (val > 4)
-				val = 8 - edge->length - val;
-			else
-				val -= edge->length;
-			return -val;
-		}
-	}
-
 	for (i = 3 ; i < MAX_SORTED ; i++)
 	{
 		edge = strings[i].next;
@@ -1583,17 +1482,27 @@ int DBGame::FastEval (void)
 					val -= edge->length - 1;
 				return -val;
 			}
-		}		
+		}
+		
+		edge = cycles[i].next;
+		if (edge != &cycles[i])
+		{
+			DoMove(edge);
+			val = FastEval();
+			UndoMove(edge);
+			if (val > 4)
+				val = 8 - edge->length - val;
+			else
+				val -= edge->length;
+			return -val;
+		}
 	}
 	leaves++;
-	bailout = 0;
 	return 0;
 }
 
-//void DBGame::Pause (char *message, ...)
-//{
-	// TODO
-	/*
+void DBGame::Pause (char *message, ...)
+{
 	va_list args;
 	va_start(args, message);
 	msg.FormatV(message, args);
@@ -1603,5 +1512,4 @@ int DBGame::FastEval (void)
 	::SendMessage(hWnd, WM_CHAR, 18, 0);
 	while (m_pause)
 		Sleep(100);
-	*/
-//}
+}

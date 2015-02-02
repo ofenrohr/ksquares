@@ -83,7 +83,7 @@ class aiController : public QObject
 		static QList<int> autoFill(int safeMovesLeft, int width, int height);
 		
 		KSquaresAi::Ptr getAi();
-		static int getMaxAiLevel() { return 4; }
+		static int getMaxAiLevel() { return 5; }
 
 	protected:
 		
