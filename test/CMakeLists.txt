@@ -20,6 +20,7 @@ set( ksquarestest_SRCS
 	../src/lineSorter.cpp
 	../src/boardAnalysis.cpp
 	../src/dbgame.cpp
+	../src/dbgame-nohash.cpp
 )
 
 kde4_add_kcfg_files(ksquarestest_SRCS GENERATE_MOC settings.kcfgc) #GENERATE_MOC is not needed but it doesn't work without it for some reason :S

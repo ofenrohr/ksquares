@@ -3,14 +3,17 @@
 //
 
 //#include "StdAfx.h"
-#include "dbgame.nohash.h"
+#include "dbgame-nohash.h"
 #include <time.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <assert.h>
 #include <cstdio>
 
-#pragma warning(disable:4390)
+#include <QTimer>
+#include <KDebug>
+
+//#pragma warning(disable:4390)
 
 using namespace dabble_nohash;
 
@@ -207,6 +210,8 @@ DBGame::DBGame (int w, int h) : KSquaresAi(w - 1, h - 1)
 	numEdgesRemoved = maxEdgesRemoved = 0;
 	turn = 0;
 	turnOver = 1;
+	
+	dabbleTimer = QElapsedTimer();
 }
 
 DBGame::~DBGame ()
@@ -271,6 +276,16 @@ int DBGame::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareO
 			}
 		}
 	}
+	
+	if (!dabbleTimer.isValid())
+	{
+		dabbleTimer.start();
+	}
+	else
+	{
+		dabbleTimer.restart();
+	}
+	//QTimer::singleShot(5000, this, SLOT(timeUp()));
 	MyMove();
 	
 	kDebug() << "rgmoves[nummoves-1].node[0] = (" << rgmoves[nummoves-1].move->node[0]->x << ", " << rgmoves[nummoves-1].move->node[0]->y << ") -- (" << rgmoves[nummoves-1].move->node[1]->x << ", " << rgmoves[nummoves-1].move->node[1]->y << ")";
@@ -291,6 +306,14 @@ int DBGame::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareO
 	
 	kDebug() << "returned line: " << line;
 	return line;
+}
+
+void DBGame::timeUp()
+{
+	kDebug() << "time is up!";
+	TRACE("TIME UP SLOT");
+	stop = 1;
+	thinking = 0;
 }
 
 // returns TRUE if the player can keep moving, FALSE if it's the computer's turn
@@ -1081,7 +1104,7 @@ void DBGame::MyMove (void)
 		}
 	}
 
-	for (depth = 1 ; depth <= searchDepth && (!stop || depth == 1) ; depth++)
+	for (depth = 1 ; depth <= searchDepth && ((!stop && !dabbleTimer.hasExpired(5000)) || depth == 1) ; depth++)
 	{
 		move = NULL;
 		leaves = 0;
@@ -1128,8 +1151,8 @@ void DBGame::MyMove (void)
 				}
 			}
 			searchMoves[imove].val = val;
-			if ((val > beta || (move != NULL && val == beta && edge->length < move->length)) && !stop)
-			if (val > beta && !stop)
+			if ((val > beta || (move != NULL && val == beta && edge->length < move->length)) && (!stop && !dabbleTimer.hasExpired(5000)))
+			if (val > beta && (!stop && !dabbleTimer.hasExpired(5000)))
 			{
 				move = edge;
 				beta = val;
@@ -1137,7 +1160,7 @@ void DBGame::MyMove (void)
 			UndoMove(edge);
 		}
 
-		if (!stop)
+		if ((!stop && !dabbleTimer.hasExpired(5000)))
 		{
 			last_leaves = leaves;
 			last_depth = depth;
@@ -1526,3 +1549,5 @@ void DBGame::Pause (char *message, ...)
 		Sleep(100);
 }
 */
+
+#include "dbgame-nohash.moc"

@@ -2,6 +2,9 @@
 // dbgame.h
 //
 
+#ifndef DBGAME_NOHASH_H
+#define DBGAME_NOHASH_H
+
 #include <stdint.h>
 #include <cstddef>
 #include <string>
@@ -11,6 +14,7 @@
 
 #include<QString>
 #include<QList>
+#include<QElapsedTimer>
 
 namespace dabble_nohash
 {
@@ -125,8 +129,9 @@ namespace dabble_nohash
 
 	#define MAX_SORTED	7
 
-	class DBGame : public KSquaresAi
+	class DBGame : public QObject, public KSquaresAi
 	{
+	Q_OBJECT
 	public:
 		DBGame (int w, int h);
 		~DBGame ();
@@ -213,5 +218,11 @@ namespace dabble_nohash
 		
 		QList<bool> previousLines;
 		Coords indexToPoints(const int lineIndex);
+		
+		QElapsedTimer dabbleTimer;
+	public slots:
+		void timeUp();
 	};
 }
+
+#endif

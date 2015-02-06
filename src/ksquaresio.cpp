@@ -264,6 +264,25 @@ bool KSquaresIO::saveGame(QString filename, KSquaresGame *sGame)
 
 	if (filename.endsWith(".dbl"))
 	{
+		// save in wrong dabble format
+		outStream << sGame->board()->width() << "," <<  sGame->board()->height() << "\n";
+		QList<Board::Move> history = sGame->board()->getLineHistory();
+
+		for (int i = 0; i < history.size(); i++) 
+		{
+			QPoint p1;
+			QPoint p2;
+			if (!sGame->board()->indexToPoints(history[i].line, &p1, &p2))
+			{
+				kDebug() << "KSquaresIO::saveGame error: invalid line in history";
+				file.close();
+				return false;
+			}
+			outStream << "(" << p1.x() << ", " << (sGame->board()->height() - p1.y()) << ") - (" << p2.x() << ", " << (sGame->board()->height() - p2.y()) << ")\n";
+		} 
+	}
+	else if (filename.endsWith(".dabble.dbl"))
+	{
 		// save in dabble format
 		outStream << sGame->board()->width() << "," <<  sGame->board()->height() << "\n";
 		QList<Board::Move> history = sGame->board()->getLineHistory();

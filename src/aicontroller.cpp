@@ -14,7 +14,7 @@
 #include "aiMiniMax.h"
 #include "aiAlphaBeta.h"
 #include "dbgame.h"
-#include "dbgame.nohash.h"
+#include "dbgame-nohash.h"
 
 #include <ctime>
 #include <kdebug.h>
