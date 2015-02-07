@@ -12,7 +12,7 @@ set( ksquarestest_SRCS
 	../src/ksquaresio.cpp
 	../src/board.cpp
 	../src/aiEasyMediumHard.cpp
-	../src/aiMiniMax.cpp
+#	../src/aiMiniMax.cpp
 	../src/aiBoard.cpp
 	../src/aiHeuristic.cpp
 	../src/aiAlphaBeta.cpp

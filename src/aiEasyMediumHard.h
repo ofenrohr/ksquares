@@ -9,13 +9,14 @@
 
 #include "aicontroller.h"
 #include "aifunctions.h"
+#include "board.h"
 
 class aiEasyMediumHard : public KSquaresAi
 {
 	public:
 		aiEasyMediumHard(int newPlayerId, int newWidth, int newHeight, int newLevel);
 		//~aiEasyMediumHard();
-		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners);
+		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory);
 		QString getName();
 		/**
 		 * Finds chains on board that can be taken by the player to move

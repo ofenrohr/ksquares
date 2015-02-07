@@ -173,9 +173,6 @@ namespace dabble {
 	public:
 		DBGame (int w, int h);
 		~DBGame ();
-		
-		QString getName() { return "dabble"; }
-		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners);
 
 		void Log (char *message, ...);
 
@@ -269,6 +266,9 @@ namespace dabble {
 		int		stop;
 		
 		// KSquares stuff
+		QString getName() { return "dabble"; }
+		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory);
+
 		QList<bool> previousLines;
 		Coords indexToPoints(const int lineIndex);
 	};

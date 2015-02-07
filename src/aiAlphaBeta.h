@@ -12,6 +12,7 @@
 
 #include "aicontroller.h"
 #include "aifunctions.h"
+#include "board.h"
 #include "aiBoard.h"
 #include "aiHeuristic.h"
 
@@ -30,7 +31,7 @@ class aiAlphaBeta : public KSquaresAi
 		aiAlphaBeta(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel, int thinkTime = 5000);
 		~aiAlphaBeta();
 		
-		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners);
+		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory);
 		QString getName() { return "alphabeta"; }
 		
 		void setDepth(int d) { searchDepth = d; }

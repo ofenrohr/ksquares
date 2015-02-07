@@ -11,6 +11,7 @@
 #include <cstdio>
 
 #include "aicontroller.h"
+#include "board.h"
 
 #include<QString>
 #include<QList>
@@ -214,7 +215,7 @@ namespace dabble_nohash
 		
 		// KSquares stuff
 		QString getName() { return "dabble"; }
-		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners);
+		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory);
 		
 		QList<bool> previousLines;
 		Coords indexToPoints(const int lineIndex);

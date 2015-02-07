@@ -383,7 +383,7 @@ void KSquaresWindow::aiChooseLine()
 	
 	// https://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
 	QThread* thread = new QThread;
-	aiControllerWorker *worker = new aiControllerWorker(ais.at(sGame->currentPlayerId()), sGame->board()->lines(), sGame->board()->squares());
+	aiControllerWorker *worker = new aiControllerWorker(ais.at(sGame->currentPlayerId()), sGame->board()->lines(), sGame->board()->squares(), sGame->board()->getLineHistory());
 	worker->moveToThread(thread);
 	//connect(worker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
 	connect(thread, SIGNAL(started()), worker, SLOT(process()));

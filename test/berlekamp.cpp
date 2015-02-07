@@ -51,7 +51,7 @@ void executeAi(Board *board, int player, QString name, QList<int> expectedLines)
 	{
 		aiController aic(player, 1, board->width(), board->height(), i);
 		KSquaresAi::Ptr ai = aic.getAi();
-		int aiLine = ai->chooseLine(board->lines(), board->squares());
+		int aiLine = ai->chooseLine(board->lines(), board->squares(), board->getLineHistory());
 		if (expectedLines.contains(aiLine))
 		{
 			summary << "PASS " << name << ": " << ai->getName() << "\n";

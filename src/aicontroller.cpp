@@ -11,7 +11,7 @@
 #include "aicontroller.h"
 
 #include "aiEasyMediumHard.h"
-#include "aiMiniMax.h"
+//#include "aiMiniMax.h"
 #include "aiAlphaBeta.h"
 #include "dbgame.h"
 #include "dbgame-nohash.h"
@@ -67,11 +67,11 @@ QList<int> aiController::autoFill(int safeMovesLeft, int width, int height)
 	return fillLines;
 }
 
-int aiController::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners)
+int aiController::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory)
 {
 	KSquaresAi::Ptr ai = getAi();
 	
-	return ai->chooseLine(newLines, newSquareOwners);
+	return ai->chooseLine(newLines, newSquareOwners, lineHistory);
 }
 
 KSquaresAi::Ptr aiController::getAi()

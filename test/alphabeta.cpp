@@ -193,7 +193,7 @@ void alphabeta::testBerlekamp007()
 	
 	aiAlphaBeta ai(lines.size() % 2, 1, sGame->board()->width(), sGame->board()->height(), -1);
 	ai.setDebug(true);
-	int aiLine = ai.chooseLine(sGame->board()->lines(), sGame->board()->squares());
+	int aiLine = ai.chooseLine(sGame->board()->lines(), sGame->board()->squares(), sGame->board()->getLineHistory());
 	// write dot tree to file
 	QFile file("/tmp/berlekamp-7.dot");
 	if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate))
@@ -255,7 +255,7 @@ void alphabeta::testAlphaBeta004()
 	aiAlphaBeta ai(0, 1, board->width, board->height, -1);
 	ai.setDepth(1);
 	ai.setDebug(true);
-	int aiLine = ai.chooseLine(sGame->board()->lines(), sGame->board()->squares());
+	int aiLine = ai.chooseLine(sGame->board()->lines(), sGame->board()->squares(), sGame->board()->getLineHistory());
 	kDebug() << "ai line = " << aiLine;
 	
 	// write dot tree to file
@@ -275,7 +275,7 @@ void alphabeta::testAlphaBeta004()
 	sGame->board()->addLine(13, &nextPlayer, &gameOver, &completedSquares);
 	
 	// next iteration
-	int aiLine2 = ai.chooseLine(sGame->board()->lines(), sGame->board()->squares());
+	int aiLine2 = ai.chooseLine(sGame->board()->lines(), sGame->board()->squares(), sGame->board()->getLineHistory());
 	kDebug() << "ai line 2 = " << aiLine2;
 	
 	// write dot tree to file
@@ -333,7 +333,7 @@ void alphabeta::testAlphaBeta005()
 	
 	aiAlphaBeta ai(0, 1, board->width, board->height, -1);
 	ai.setDebug(true);
-	int aiLine = ai.chooseLine(sGame->board()->lines(), sGame->board()->squares());
+	int aiLine = ai.chooseLine(sGame->board()->lines(), sGame->board()->squares(), sGame->board()->getLineHistory());
 	
 	kDebug() << "aiLine 0: " << aiLine;
 	
@@ -424,7 +424,7 @@ void alphabeta::testBerlekamp004()
 // 	ai.setDebugLines(debugLines);
 	ai.setDebugDepth(3);
 	
-	int aiLine = ai.chooseLine(sGame->board()->lines(), sGame->board()->squares());
+	int aiLine = ai.chooseLine(sGame->board()->lines(), sGame->board()->squares(), sGame->board()->getLineHistory());
 	kDebug() << "aiLine 0: " << aiLine;
 	board->undoMove(12);
 	
@@ -557,11 +557,12 @@ void alphabeta::testEmptyBoard001()
 	QList<int> squares;
 	for (int i = 0; i < w*h; i++)
 		squares.append(-1);
+	QList<Board::Move> lineHistory;
 	
 	aiAlphaBeta ai(0, 1, w, h, -1);
 	ai.setDebug(true);
 	ai.setDebugEvalOnly(true);
-	int line = ai.chooseLine(lines, squares);
+	int line = ai.chooseLine(lines, squares, lineHistory);
 	
 	kDebug() << "line = " << line;
 	
@@ -595,7 +596,7 @@ void alphabeta::testHeuristic002()
 	kDebug() << "analysis: " << analysis;
 	
 	aiAlphaBeta ai(0, 1, sGame->board()->width(), sGame->board()->height(), -1);
-	int line = ai.chooseLine(sGame->board()->lines(), sGame->board()->squares());
+	int line = ai.chooseLine(sGame->board()->lines(), sGame->board()->squares(), sGame->board()->getLineHistory());
 	
 	QVERIFY(line != 7);
 }

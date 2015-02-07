@@ -270,7 +270,7 @@ Coords DBGame::indexToPoints(const int lineIndex)
 	return c;
 }
 
-int DBGame::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners)
+int DBGame::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory)
 {
 	int line = -1;
 	

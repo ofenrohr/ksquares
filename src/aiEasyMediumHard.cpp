@@ -30,7 +30,7 @@ QString aiEasyMediumHard::getName()
 	}
 }
 
-int aiEasyMediumHard::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners)
+int aiEasyMediumHard::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory)
 {
 	if (newLines.size() != linesSize)
 	{

@@ -42,7 +42,7 @@ class KSquaresAi : public aiFunctions, public BoardAnalysisFunctions
 		virtual ~KSquaresAi() {}
 		// call constructor with width, height, playerId, aiLevel
 		//virtual ~KSquaresAi() = 0; 
-		virtual int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners) = 0;
+		virtual int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory) = 0;
 		virtual QString getName() = 0;
 };
 
@@ -73,7 +73,7 @@ class aiController : public QObject
 		 *
 		 * @return The index of the line from "QVector<bool> lines"
 		 */
-		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners);
+		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory);
 		/**
 		 * Finds lines that can be filled without causing squares to be surrounded by 3 lines as a result.
 		 * @param safeMovesLeft number of safe moves that can be performed after those returned by the function are drawn (note: the number is valid only for a certain sequence, for other sequences they could either be more or less)
@@ -112,20 +112,22 @@ class aiControllerWorker : public QObject
 	aiController::Ptr aicontroller;
 	QList<bool> lines;
 	QList<int> squares;
+	QList<Board::Move> lineHistory;
 	
 	public:
-		aiControllerWorker(aiController::Ptr aic, const QList<bool> &newLines, const QList<int> &newSquareOwners)
+		aiControllerWorker(aiController::Ptr aic, const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &newLineHistory)
 		{
 			aicontroller = aic;
 			lines = newLines;
 			squares = newSquareOwners;
+			lineHistory = newLineHistory;
 		}
 
 	public slots:
 		void process()
 		//void chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners)
 		{
-			int line = aicontroller->chooseLine(lines, squares);
+			int line = aicontroller->chooseLine(lines, squares, lineHistory);
 			emit lineChosen(line);
 			emit finished();
 		}

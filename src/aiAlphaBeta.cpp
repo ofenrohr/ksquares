@@ -45,7 +45,7 @@ aiAlphaBeta::~aiAlphaBeta()
 	delete heuristic;
 }
 
-int aiAlphaBeta::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners)
+int aiAlphaBeta::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory)
 {
 	if (newLines.size() != linesSize)
 	{

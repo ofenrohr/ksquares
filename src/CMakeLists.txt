@@ -15,7 +15,7 @@ set(ksquares_SRCS
 	board.cpp
 	dbgame.cpp
 	aiEasyMediumHard.cpp
-	aiMiniMax.cpp
+#	aiMiniMax.cpp
 	aiBoard.cpp
 	aiHeuristic.cpp
 	nim.cpp
