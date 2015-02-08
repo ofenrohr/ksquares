@@ -234,6 +234,8 @@ Coords DBGame::indexToPoints(const int lineIndex)
 	QPoint p1;
 	QPoint p2;
 	Board::indexToPoints(lineIndex, &p1, &p2, width - 1, height - 1);
+  p1.setY(height - p1.y() - 1);
+  p2.setY(height - p2.y() - 1);
 	QPair<QPoint, QPoint> coinsCoords = Board::pointsToCoins(p1, p2, width - 1, height - 1);
 	Coords c;
   c.x1 = coinsCoords.first.x();
@@ -256,11 +258,13 @@ int DBGame::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareO
 	{
 		dabbleTimer.restart();
 	}
-	//QTimer::singleShot(5000, this, SLOT(timeUp()));
+	QTimer::singleShot(1000, this, SLOT(timeUp()));
 	
+	kDebug() << "lineHistory: " << lineHistory;
 	while (lastHistoryIndex < lineHistory.size())
 	{
 		Coords c = indexToPoints(lineHistory[lastHistoryIndex].line);
+		kDebug() << "adding line to dabble: " << c.x1 << ", " << c.y1 << " -- " << c.x2 << ", " << c.y2;
 		rgEdgeRemoved[maxEdgesRemoved] = c;
 		maxEdgesRemoved++;
 		lastHistoryIndex++;
@@ -274,33 +278,10 @@ int DBGame::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareO
 		Redo();
 		numEdgesRemoved++;
 	}
-	/*
-	if (newLines.size() != previousLines.size())
-	{
-		previousLines.clear();
-		previousLines.append(newLines);
-		for (int i = 0; i < newLines.size(); i++)
-		{
-			Coords c = indexToPoints(i);
-			rgEdgeRemoved[maxEdgesRemoved] = c;
-			maxEdgesRemoved++;
-		}
-	}
-	else
-	{
-		for (int i = 0; i < newLines.size(); i++)
-		{
-			if (newLines[i] && !previousLines[i])
-			{
-				Coords c = indexToPoints(i);
-				rgEdgeRemoved[maxEdgesRemoved] = c;
-				maxEdgesRemoved++;
-			}
-		}
-	}
-	*/
+	
 	MyMove();
 	
+	kDebug() << "nummoves: " << nummoves;
 	kDebug() << "rgmoves[nummoves-1] = (" << rgmoves[nummoves-1].move->node[0]->x << ", " << rgmoves[nummoves-1].move->node[0]->y << ") -- (" << rgmoves[nummoves-1].move->node[1]->x << ", " << rgmoves[nummoves-1].move->node[1]->y << ")";
 	
 	QPoint p1c(rgmoves[nummoves-1].move->node[0]->x, rgmoves[nummoves-1].move->node[0]->y);

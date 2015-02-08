@@ -14,6 +14,7 @@
 #include <QObject>
 #include <QPoint>
 #include <QPair>
+#include <QDebug>
 
 
 namespace KSquares {enum Direction {HORIZONTAL, VERTICAL};}
@@ -26,11 +27,13 @@ class Board : public QObject
 		Board();
 		Board(int numOfPlayers, int width, int height);
 	
-    typedef struct Move_t
-    {
-      int line;
-      int player;
-      QList<int> squares;
+		typedef struct Move_t
+		{
+			int line;
+			int player;
+			QList<int> squares;
+			
+			friend QDebug operator<<(QDebug dbg, const Board::Move_t &m) { dbg.nospace() << "Move(line: " << m.line << ", player: " << m.player << ", squares: " << m.squares << ")"; return dbg.maybeSpace(); }
     } Move;	
 
 		/**
