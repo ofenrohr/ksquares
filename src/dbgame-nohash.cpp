@@ -159,6 +159,7 @@ DBGame::DBGame (int w, int h) : KSquaresAi(w - 1, h - 1)
 
 	width = w;
 	height = h;
+	kDebug() << "width, height: " << width << " x " << height;
 
 // 	logfile = fopen("dabble.log", "w");
 	long seed = time(NULL) & 255;
@@ -230,25 +231,15 @@ DBGame::~DBGame ()
 Coords DBGame::indexToPoints(const int lineIndex)
 {
 	kDebug() << "width, height: " << width << " x " << height;
+	QPoint p1;
+	QPoint p2;
+	Board::indexToPoints(lineIndex, &p1, &p2, width - 1, height - 1);
+	QPair<QPoint, QPoint> coinsCoords = Board::pointsToCoins(p1, p2, width - 1, height - 1);
 	Coords c;
-  int index2 = lineIndex % ( ( 2 * (width-1) ) + 1 );
-  c.y1 = lineIndex / ( ( 2 * (width-1) ) + 1) ;
-  KSquares::Direction dir = aiFunctions::lineDirection(width-1, height-1, lineIndex);
-  if (dir == KSquares::HORIZONTAL)
-  {
-    c.x1 = index2;
-    c.y2 = c.y1;
-    c.x2 = c.x1 + 1;
-  }
-  else 
-  {
-    c.x1 = index2 - (width-1);
-    c.y2 = c.y1 + 1;
-    c.x2 = c.x1;
-  }
-  //c.y1 = height - 1 - c.y1;
-  //c.y2 = height - 1 - c.y2;
-	
+  c.x1 = coinsCoords.first.x();
+  c.y1 = coinsCoords.first.y();
+  c.x2 = coinsCoords.second.x();
+  c.y2 = coinsCoords.second.y();
 	return c;
 }
 
@@ -310,11 +301,13 @@ int DBGame::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareO
 	*/
 	MyMove();
 	
-	kDebug() << "rgmoves[nummoves-1].node[0] = (" << rgmoves[nummoves-1].move->node[0]->x << ", " << rgmoves[nummoves-1].move->node[0]->y << ") -- (" << rgmoves[nummoves-1].move->node[1]->x << ", " << rgmoves[nummoves-1].move->node[1]->y << ")";
+	kDebug() << "rgmoves[nummoves-1] = (" << rgmoves[nummoves-1].move->node[0]->x << ", " << rgmoves[nummoves-1].move->node[0]->y << ") -- (" << rgmoves[nummoves-1].move->node[1]->x << ", " << rgmoves[nummoves-1].move->node[1]->y << ")";
 	
-	QPoint p1(rgmoves[nummoves-1].move->node[0]->x, rgmoves[nummoves-1].move->node[0]->y);
-	QPoint p2(rgmoves[nummoves-1].move->node[1]->x, rgmoves[nummoves-1].move->node[1]->y);
-	line = Board::pointsToIndex(p1, p2, width, height);
+	QPoint p1c(rgmoves[nummoves-1].move->node[0]->x, rgmoves[nummoves-1].move->node[0]->y);
+	QPoint p2c(rgmoves[nummoves-1].move->node[1]->x, rgmoves[nummoves-1].move->node[1]->y);
+	QPair<QPoint, QPoint> p12 = Board::coinsToPoints(p1c, p2c, width - 1, height - 1);
+	kDebug() << "point notation: " << p12.first << " -- " << p12.second;
+	line = Board::pointsToIndex(p12.first, p12.second, width - 1, height - 1);
 	kDebug() << "line index: " << line;
 	
 	if (newLines[line] || line < 0 || line >= newLines.size())

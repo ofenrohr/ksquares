@@ -84,12 +84,21 @@ class Board : public QObject
 		bool indexToPoints(const int lineIndex, QPoint *p1, QPoint *p2);
 		
 		/**
+		 * @param lineIndex the index of the line
+		 * @param p1 the first resulting point of the line
+		 * @param p2 the second resulting point of the line
+		 * @param width board width in boxes
+		 * @param height board height in boxes
+		 * @return true if conversion was successful, false otherwise
+		 */
+		static bool indexToPoints(const int lineIndex, QPoint *p1, QPoint *p2, const int width, const int height);
+		/**
 		 * @param a first point on dots and boxes board (upper / left point)
 		 * @param b second piont on dots and boxes board (lower / right point)
 		 * @param w board width in boxes
 		 * @param h board height in boxes
 		 */
-		QPair<QPoint, QPoint> pointsToCoins(QPoint a, QPoint b, int w, int h);
+		static QPair<QPoint, QPoint> pointsToCoins(QPoint a, QPoint b, int w, int h);
 		
 		/**
 		 * @param a first coin on strings & coins board (upper / left coin)
@@ -97,7 +106,7 @@ class Board : public QObject
 		 * @param w board width in coins
 		 * @param h board height in coins
 		 */
-		QPair<QPoint, QPoint> coinsToPoints(QPoint a, QPoint b, int w, int h);
+		static QPair<QPoint, QPoint> coinsToPoints(QPoint a, QPoint b, int w, int h);
 		
 		/**
 		 * @param sidesOfSquare output parameter: the indices of the four lines surrounding the square
@@ -134,6 +143,7 @@ class Board : public QObject
 		 * @return the direction of the line
 		 */
 		KSquares::Direction lineDirection(int lineIndex) const;
+		static KSquares::Direction lineDirection(int lineIndex, const int width);
 		
 		/**
 		 * @param playerIndex the index of the player
