@@ -154,6 +154,7 @@ void DBGame::Connect (Edge &edge, Node &node1, Node &node2)
 
 DBGame::DBGame (int w, int h) : KSquaresAi(w - 1, h - 1)
 {
+	kDebug() << "width, height: " << width << " x " << height;
 	int i, j;
 
 	width = w;
@@ -212,6 +213,7 @@ DBGame::DBGame (int w, int h) : KSquaresAi(w - 1, h - 1)
 	turnOver = 1;
 	
 	dabbleTimer = QElapsedTimer();
+	lastHistoryIndex = 0;
 }
 
 DBGame::~DBGame ()
@@ -227,6 +229,7 @@ DBGame::~DBGame ()
 
 Coords DBGame::indexToPoints(const int lineIndex)
 {
+	kDebug() << "width, height: " << width << " x " << height;
 	Coords c;
   int index2 = lineIndex % ( ( 2 * (width-1) ) + 1 );
   c.y1 = lineIndex / ( ( 2 * (width-1) ) + 1) ;
@@ -251,8 +254,36 @@ Coords DBGame::indexToPoints(const int lineIndex)
 
 int DBGame::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory)
 {
+	kDebug() << "choosing line...";
 	int line = -1;
 	
+	if (!dabbleTimer.isValid())
+	{
+		dabbleTimer.start();
+	}
+	else
+	{
+		dabbleTimer.restart();
+	}
+	//QTimer::singleShot(5000, this, SLOT(timeUp()));
+	
+	while (lastHistoryIndex < lineHistory.size())
+	{
+		Coords c = indexToPoints(lineHistory[lastHistoryIndex].line);
+		rgEdgeRemoved[maxEdgesRemoved] = c;
+		maxEdgesRemoved++;
+		lastHistoryIndex++;
+		if (maxEdgesRemoved != lastHistoryIndex)
+		{
+			TRACE("sth. went wrong");
+		}
+	}
+	while (numEdgesRemoved < maxEdgesRemoved && !stop)
+	{
+		Redo();
+		numEdgesRemoved++;
+	}
+	/*
 	if (newLines.size() != previousLines.size())
 	{
 		previousLines.clear();
@@ -276,16 +307,7 @@ int DBGame::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareO
 			}
 		}
 	}
-	
-	if (!dabbleTimer.isValid())
-	{
-		dabbleTimer.start();
-	}
-	else
-	{
-		dabbleTimer.restart();
-	}
-	//QTimer::singleShot(5000, this, SLOT(timeUp()));
+	*/
 	MyMove();
 	
 	kDebug() << "rgmoves[nummoves-1].node[0] = (" << rgmoves[nummoves-1].move->node[0]->x << ", " << rgmoves[nummoves-1].move->node[0]->y << ") -- (" << rgmoves[nummoves-1].move->node[1]->x << ", " << rgmoves[nummoves-1].move->node[1]->y << ")";

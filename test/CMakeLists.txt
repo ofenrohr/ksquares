@@ -87,3 +87,9 @@ kde4_add_unit_test( test-alphabeta
   ${ksquarestest_SRCS}
   alphabeta.cpp
 )
+
+kde4_add_unit_test( test-dabble
+  TESTNAME dabble
+  ${ksquarestest_SRCS}
+  dabble.cpp
+)

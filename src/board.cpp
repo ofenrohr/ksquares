@@ -170,6 +170,30 @@ bool Board::indexToPoints(const int lineIndex, QPoint *p1, QPoint *p2)
   return true;
 }
 
+QPair<QPoint, QPoint> Board::pointsToCoins(QPoint a, QPoint b, int w, int h)
+{
+	if (a.y() == b.y())
+		return QPair<QPoint, QPoint>(QPoint(a.x() + 1, a.y()), QPoint(a.x() + 1, a.y() + 1));
+	else
+		return QPair<QPoint, QPoint>(QPoint(a.x(), a.y() + 1), QPoint(a.x() + 1, a.y() + 1));
+}
+
+QPair<QPoint, QPoint> Board::coinsToPoints(QPoint a, QPoint b, int w, int h)
+{
+	if (a.x() == b.x())
+	{
+		QPoint ra(a.x() - 1, a.y());
+		QPoint rb(a.x(), a.y());
+		return QPair<QPoint, QPoint>(ra, rb);
+	}
+	else
+	{
+		QPoint ra(a.x(), a.y() - 1);
+		QPoint rb(a.x(), a.y());
+		return QPair<QPoint, QPoint>(ra, rb);
+	}
+}
+
 void Board::linesFromSquare(QList<int> *linesFromSquare, int squareIndex) const
 {
 	int index1 = (squareIndex/width_) * ((2*width_) + 1) + (squareIndex%width_);

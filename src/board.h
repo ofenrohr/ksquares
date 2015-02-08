@@ -13,6 +13,7 @@
 // qt
 #include <QObject>
 #include <QPoint>
+#include <QPair>
 
 
 namespace KSquares {enum Direction {HORIZONTAL, VERTICAL};}
@@ -46,12 +47,12 @@ class Board : public QObject
 		 */
 		bool addLine(int lineIndex, bool *nextPlayer, bool *boardFilled, QList<int> *completedSquares);
 
-    /**
-     * Undo last move.
-     * @param nextPlayer index of current player after undo
-     * @return true if one or more lines were undone
-     */
-    bool undo(int *nextPlayer);
+		/**
+		 * Undo last move.
+		 * @param nextPlayer index of current player after undo
+		 * @return true if one or more lines were undone
+		 */
+		bool undo(int *nextPlayer);
 		
 		/**
 		 * @return true if the line completes at least one square, false otherwise
@@ -74,13 +75,29 @@ class Board : public QObject
 		 */
 		static int pointsToIndex(QPoint p1, QPoint p2, int w, int h);
 
-    /**
-     * @param lineIndex the index of the line
-     * @param p1 the first resulting point of the line
-     * @param p2 the second resulting point of the line
-     * @return true if conversion was successful, false otherwise
-     */
-    bool indexToPoints(const int lineIndex, QPoint *p1, QPoint *p2);
+		/**
+		 * @param lineIndex the index of the line
+		 * @param p1 the first resulting point of the line
+		 * @param p2 the second resulting point of the line
+		 * @return true if conversion was successful, false otherwise
+		 */
+		bool indexToPoints(const int lineIndex, QPoint *p1, QPoint *p2);
+		
+		/**
+		 * @param a first point on dots and boxes board (upper / left point)
+		 * @param b second piont on dots and boxes board (lower / right point)
+		 * @param w board width in boxes
+		 * @param h board height in boxes
+		 */
+		QPair<QPoint, QPoint> pointsToCoins(QPoint a, QPoint b, int w, int h);
+		
+		/**
+		 * @param a first coin on strings & coins board (upper / left coin)
+		 * @param b second coin on strings & coins board (lower / right coin)
+		 * @param w board width in coins
+		 * @param h board height in coins
+		 */
+		QPair<QPoint, QPoint> coinsToPoints(QPoint a, QPoint b, int w, int h);
 		
 		/**
 		 * @param sidesOfSquare output parameter: the indices of the four lines surrounding the square

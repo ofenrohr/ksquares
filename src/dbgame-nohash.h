@@ -218,6 +218,7 @@ namespace dabble_nohash
 		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory);
 		
 		QList<bool> previousLines;
+		int lastHistoryIndex;
 		Coords indexToPoints(const int lineIndex);
 		
 		QElapsedTimer dabbleTimer;
