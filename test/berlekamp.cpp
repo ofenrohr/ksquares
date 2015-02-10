@@ -14,6 +14,7 @@
 // generated
 #include "testboardpath.h"
 
+// http://wilson.engr.wisc.edu/boxes/solve/3.html
 class berlekamp : public QObject
 {
 	Q_OBJECT

@@ -284,8 +284,11 @@ int DBGame::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareO
 	kDebug() << "nummoves: " << nummoves;
 	kDebug() << "rgmoves[nummoves-1] = (" << rgmoves[nummoves-1].move->node[0]->x << ", " << rgmoves[nummoves-1].move->node[0]->y << ") -- (" << rgmoves[nummoves-1].move->node[1]->x << ", " << rgmoves[nummoves-1].move->node[1]->y << ")";
 	
-	QPoint p1c(rgmoves[nummoves-1].move->node[0]->x, rgmoves[nummoves-1].move->node[0]->y);
-	QPoint p2c(rgmoves[nummoves-1].move->node[1]->x, rgmoves[nummoves-1].move->node[1]->y);
+// 	QPoint p1c(rgmoves[nummoves-1].move->node[0]->x, rgmoves[nummoves-1].move->node[0]->y);
+// 	QPoint p2c(rgmoves[nummoves-1].move->node[1]->x, rgmoves[nummoves-1].move->node[1]->y);
+	Coords c = rgmoves[nummoves-1].move->GetCoords();
+	QPoint p1c(c.x1, c.y1);
+	QPoint p2c(c.x2, c.y2);
 	QPair<QPoint, QPoint> p12 = Board::coinsToPoints(p1c, p2c, width - 1, height - 1);
 	kDebug() << "point notation: " << p12.first << " -- " << p12.second;
 	line = Board::pointsToIndex(p12.first, p12.second, width - 1, height - 1);
