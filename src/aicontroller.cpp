@@ -15,6 +15,7 @@
 #include "aiAlphaBeta.h"
 #include "dbgame.h"
 #include "dbgame-nohash.h"
+#include "qdab.h"
 
 #include <ctime>
 #include <kdebug.h>
@@ -112,6 +113,9 @@ KSquaresAi::Ptr aiController::getAi()
 				m_game->gameLimit = -5;
 				ai = KSquaresAi::Ptr(m_game);
 			}
+		case 6:
+			if (ai.isNull())
+				ai = KSquaresAi::Ptr(new QDab(playerId, maxPlayerId, width, height, level, aiThinkTime));
 		break;
 	}
 	return ai;
