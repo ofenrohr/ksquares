@@ -44,13 +44,11 @@ int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwn
 	kDebug() << "state: " << socket.state();
 	
 	QString testMessage = "{\"params\": [{\"Timeout\": 10000, \"Board\": {\"H\": 1, \"S\": [0, 0], \"Now\": 1, \"Turn\": 1, \"V\": 0}, \"Algorithm\": \"quctann\"}], \"id\": 1423674120, \"method\": \"Server.MakeMove\"}";
-	QByteArray sendBA;
-	QDataStream out(&sendBA, QIODevice::WriteOnly);
-	out.setVersion(QDataStream::Qt_4_0);
-	out << testMessage;
+	QByteArray sendBA = testMessage.toAscii();
 	kDebug() << "state before write: " << socket.state();
 	socket.write(sendBA);
 	kDebug() << "state after write: " << socket.state();
+	kDebug() << "send: " << sendBA;
 	
 	socket.waitForBytesWritten();
 	kDebug() << "test message sent";
@@ -65,17 +63,25 @@ int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwn
 	}
 	*/
 	
-	kDebug() << "canReadLine: " << socket.canReadLine();
-	while (!socket.canReadLine())
+	QByteArray responseBA;
+	bool done = false;
+	while (!done)
 	{
 		if (socket.state() != QAbstractSocket::ConnectedState)
 		{
 			kDebug() << "state: " << socket.state();
 			break;
 		}
+		socket.waitForReadyRead(100);
+		//kDebug() << ".";
+		if (socket.bytesAvailable() > 0)
+		{
+			kDebug() << "got sth!";
+			responseBA.append(socket.readAll());
+			kDebug() << ": " << responseBA;
+		}
+		done = responseBA.count('{') > 0 && responseBA.count('{') == responseBA.count('}');
 	}
-	
-	QByteArray responseBA = socket.readLine();
 	
 	kDebug() << "response ba: " << responseBA;
 

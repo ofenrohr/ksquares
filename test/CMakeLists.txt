@@ -21,6 +21,7 @@ set( ksquarestest_SRCS
 	../src/boardAnalysis.cpp
 	../src/dbgame.cpp
 	../src/dbgame-nohash.cpp
+	../src/qdab.cpp
 )
 
 kde4_add_kcfg_files(ksquarestest_SRCS GENERATE_MOC settings.kcfgc) #GENERATE_MOC is not needed but it doesn't work without it for some reason :S
@@ -36,6 +37,7 @@ link_libraries(
   ${KDE4_KDECORE_LIBS}
   ${QT_QTTEST_LIBRARY}
   ${KDE4_KDEUI_LIBS}
+  ${KDE4_KIO_LIBS}
   kdegames
 )
 
