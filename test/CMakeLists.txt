@@ -2,6 +2,7 @@ ENABLE_TESTING()
 cmake_minimum_required(VERSION 2.8)
 
 FIND_PACKAGE( Qt4 REQUIRED QT_USE_QT* )
+find_package(QJSON REQUIRED)
 
 INCLUDE( ${QT_USE_FILE} )
 
@@ -26,7 +27,7 @@ set( ksquarestest_SRCS
 
 kde4_add_kcfg_files(ksquarestest_SRCS GENERATE_MOC settings.kcfgc) #GENERATE_MOC is not needed but it doesn't work without it for some reason :S
 
-include_directories( ../src )
+include_directories( ../src ${QJSON_INCLUDE_DIR} )
 
 
 set(TESTBOARDPATH "${CMAKE_CURRENT_SOURCE_DIR}/boards")
@@ -38,6 +39,7 @@ link_libraries(
   ${QT_QTTEST_LIBRARY}
   ${KDE4_KDEUI_LIBS}
   ${KDE4_KIO_LIBS}
+  ${QJSON_LIBRARIES}
   kdegames
 )
 

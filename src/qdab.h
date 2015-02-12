@@ -25,10 +25,14 @@ class QDab : public KSquaresAi
 		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory);
 		QString getName() { return "qdab"; }
 		
+		bool tainted;
+		
 	private:
 		QElapsedTimer qdabTimer;
 		int timeout;
 		int playerId;
+		
+		int randomMove(const QList<bool> &lines);
 		
 		//QTcpSocket *socket;
 };

@@ -1,4 +1,6 @@
 
+find_package(QJSON REQUIRED)
+
 set(ksquares_SRCS
 	main.cpp
 	ksquareswindow.cpp
@@ -28,7 +30,7 @@ set(ksquares_SRCS
 	qdab.cpp
 )
 
-include_directories(${CMAKE_SOURCE_DIR}/libkdegames/highscore)
+include_directories(${CMAKE_SOURCE_DIR}/libkdegames/highscore ${QJSON_INCLUDE_DIR})
 
 kde4_add_ui_files(ksquares_SRCS newgamewidget.ui scoreswidget.ui prefs_ai.ui prefs_display.ui)
 
@@ -37,7 +39,7 @@ kde4_add_kcfg_files(ksquares_SRCS GENERATE_MOC settings.kcfgc) #GENERATE_MOC is 
 kde4_add_app_icon(ksquares_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/hi*-app-ksquares.png")
 kde4_add_executable(ksquares ${ksquares_SRCS})
 
-target_link_libraries(ksquares ${KDE4_KDEUI_LIBS} ${KDE4_KIO_LIBS} kdegames)
+target_link_libraries(ksquares ${KDE4_KDEUI_LIBS} ${KDE4_KIO_LIBS} kdegames ${QJSON_LIBRARIES})
 
 install(TARGETS ksquares ${INSTALL_TARGETS_DEFAULT_ARGS})
 
