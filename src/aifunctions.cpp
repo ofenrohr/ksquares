@@ -14,7 +14,7 @@
 
 aiFunctions::aiFunctions(int w, int h) : width(w), height(h)
 {
-	kDebug() << "width, height: " << width << " x " << height;
+	//kDebug() << "width, height: " << width << " x " << height;
 	linesSize = toLinesSize(width, height);
 }
 

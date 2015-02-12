@@ -41,6 +41,43 @@ int QDab::randomMove(const QList<bool> &lines)
 	return freeLines.at(qrand() % freeLines.size());
 }
 
+// def num2move(self, value, who, step=-1):
+// ty, x, y = 1, -1, -1
+// if (value&(1<<31)) != 0:
+// 		ty = 0 # horizon
+// for i in range(5)[::step]:
+// 		for j in range(6)[::step]:
+// 				if (value&1) == 1:
+// 						if ty == 0: x, y = j, i
+// 						else: x, y = i, j
+// 						break
+// 				value >>= 1
+// 		if x != -1:
+// 				break
+// return (ty, x, y, who)
+
+/*
+int QDab::numToMove(int h, int v)
+{
+	int x = -1, y = -1;
+	int val = h != 0 ? h : v;
+	for (int i = 0; i < 5; i++)
+	{
+		for (int j = 0; j < 6; j++)
+		{
+			if (val&1)
+			{
+				x = h != 0 ? i : j;
+				y = h != 0 ? j : i;
+			}
+			val >>= 1;
+		}
+		if (x != -1)
+			break;
+	}
+	return 
+*/
+
 // self.dab.thinking = True
 // self.dab.queue_draw()
 // if self.dab.first == 0:
@@ -188,6 +225,44 @@ int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwn
 	unsigned long long rh = resultHV["H"].toULongLong();
 	unsigned long long rv = resultHV["V"].toULongLong();
 	kDebug() << "result hv: " << rh << ", " << rv;
+	
+	for (int i = 0; i <= 30; i++)
+	{
+		if ( (1<<i) & rh )
+		{
+			//h |= (1<<(p1.x()*6+p1.y()));
+			QPoint pa(i % 6, (i / 6));
+			QPoint pb(pa.x(), pa.y() + 1);
+			int idx = Board::pointsToIndex(pa, pb, 5, 5);
+			kDebug() << "H: i: " << i << ", idx: " << idx << ", pa: " << pa << ", pb: " << pb;
+			if (idx >= newLines.size() || idx < 0)
+			{
+				kDebug() << "error: invalid index from points! idx: " << idx << ", pa: " << pa << ", pb: " << pb;
+				continue;
+			}
+			if (!newLines[idx])
+				return idx;
+			else
+				kDebug() << "old line: " << idx << ", pa: " << pa << ", pb: " << pb;
+		}
+		
+		if ( (1<<i) & rv )
+		{
+			QPoint pa(i / 6, 5 - (i % 6));
+			QPoint pb(pa.x() + 1, pa.y());
+			int idx = Board::pointsToIndex(pa, pb, 5, 5);
+			kDebug() << "V: i: " << i << ", idx: " << idx << ", pa: " << pa << ", pb: " << pb;
+			if (idx >= newLines.size() || idx < 0)
+			{
+				kDebug() << "error: invalid index from points! idx: " << idx << ", pa: " << pa << ", pb: " << pb;
+				continue;
+			}
+			if (!newLines[idx])
+				return idx;
+			else
+				kDebug() << "old line: " << idx << ", pa: " << pa << ", pb: " << pb;
+		}
+	}
 // ms = (res["result"]["H"], res["result"]["V"])
 // moves = []
 // for i in range(2):
@@ -202,5 +277,20 @@ int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwn
 // 						break
 // self.dab.move(moves[0])
 // moves.remove(moves[0])
+
+// def num2move(self, value, who, step=-1):
+// ty, x, y = 1, -1, -1
+// if (value&(1<<31)) != 0:
+// 		ty = 0 # horizon
+// for i in range(5)[::step]:
+// 		for j in range(6)[::step]:
+// 				if (value&1) == 1:
+// 						if ty == 0: x, y = j, i
+// 						else: x, y = i, j
+// 						break
+// 				value >>= 1
+// 		if x != -1:
+// 				break
+// return (ty, x, y, who)
 	return -1;
 }
