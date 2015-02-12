@@ -24,13 +24,11 @@ class QDab : public KSquaresAi
 		
 		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory);
 		QString getName() { return "qdab"; }
-	
-	public slots:
-		//void displayError(QAbstractSocket::SocketError err);
-		//void recvData();
 		
 	private:
 		QElapsedTimer qdabTimer;
+		int timeout;
+		int playerId;
 		
 		//QTcpSocket *socket;
 };

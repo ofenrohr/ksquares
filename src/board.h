@@ -94,7 +94,7 @@ class Board : public QObject
 		 * @param height board height in boxes
 		 * @return true if conversion was successful, false otherwise
 		 */
-		static bool indexToPoints(const int lineIndex, QPoint *p1, QPoint *p2, const int width, const int height);
+		static bool indexToPoints(const int lineIndex, QPoint *p1, QPoint *p2, const int width, const int height, const bool invert = true);
 		/**
 		 * @param a first point on dots and boxes board (upper / left point)
 		 * @param b second piont on dots and boxes board (lower / right point)

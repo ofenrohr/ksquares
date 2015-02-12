@@ -153,7 +153,7 @@ bool Board::indexToPoints(const int lineIndex, QPoint *p1, QPoint *p2)
 	return indexToPoints(lineIndex, p1, p2, width_, height_);
 }
 
-bool Board::indexToPoints(const int lineIndex, QPoint *p1, QPoint *p2, const int width, const int height)
+bool Board::indexToPoints(const int lineIndex, QPoint *p1, QPoint *p2, const int width, const int height, const bool invert)
 {
   int index2 = lineIndex % ( ( 2 * width ) + 1 );
   p1->setY( lineIndex / ( ( 2 * width ) + 1) );
@@ -170,8 +170,11 @@ bool Board::indexToPoints(const int lineIndex, QPoint *p1, QPoint *p2, const int
     p2->setY(p1->y() + 1);
     p2->setX(p1->x());
   }
-  p1->setY(height - p1->y());
-  p2->setY(height - p2->y());
+  if (invert)
+	{
+		p1->setY(height - p1->y());
+		p2->setY(height - p2->y());
+	}
   return true;
 }
 
