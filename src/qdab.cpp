@@ -141,14 +141,14 @@ int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwn
 		QPoint p1, p2;
 		// qdab origin is at bottom right
 		// ksquares origin is at top left
-		Board::indexToPoints(i, &p1, &p2, 5, 5, true);
-		p1.setX(5 - p1.x());
-		p2.setX(5 - p2.x());
+		Board::indexToPoints(i, &p1, &p2, 5, 5, false);
+// 		p1.setX(5 - p1.x());
+// 		p2.setX(5 - p2.x());
 		kDebug() << "dir,x,y: ("<< (p1.x() != p2.x() ? 0 : 1) <<", " << p1.x() << "," << p1.y() << ")";
 		if (p1.x() != p2.x())
-			v |= (1<<(p2.y()*6+p2.x()));
+			v |= (1<<(p1.x()*6+p1.y()));
 		else
-			h |= (1<<(p2.x()*6+p2.y()));
+			h |= (1<<(p1.y()*6+p1.x()));
 	}
 	
 	int turn = 1;
@@ -234,8 +234,8 @@ int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwn
 	{
 		if ( (1<<i) & rh )
 		{
-			QPoint pb(5 - (i / 6), 5 - (i % 6));
-			QPoint pa(pb.x(), pb.y() - 1);
+			QPoint pa((i % 6), (i / 6));
+			QPoint pb(pa.x(), pa.y() + 1);
 			int idx = Board::pointsToIndex(pa, pb, 5, 5);
 			kDebug() << "H: i: " << i << ", idx: " << idx << ", pa: " << pa << ", pb: " << pb;
 			if (idx >= newLines.size() || idx < 0)
@@ -251,8 +251,8 @@ int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwn
 		
 		if ( (1<<i) & rv )
 		{
-			QPoint pb(5 - (i % 6), 5 - (i / 6));
-			QPoint pa(pb.x() - 1, pb.y());
+			QPoint pa((i/ 6), (i % 6));
+			QPoint pb(pa.x() + 1, pa.y());
 			int idx = Board::pointsToIndex(pa, pb, 5, 5);
 			kDebug() << "V: i: " << i << ", idx: " << idx << ", pa: " << pa << ", pb: " << pb;
 			if (idx >= newLines.size() || idx < 0)
