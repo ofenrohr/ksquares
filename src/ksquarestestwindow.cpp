@@ -31,6 +31,7 @@
 KSquaresTestWindow::KSquaresTestWindow() : KXmlGuiWindow(), m_view(new GameBoardView(this)), m_scene(0)
 {
 	sGame = new KSquaresGame();
+	thread = NULL;
 
 	m_view->setRenderHints(QPainter::Antialiasing);
 	m_view->setFrameStyle(QFrame::NoFrame);
@@ -45,6 +46,11 @@ KSquaresTestWindow::KSquaresTestWindow() : KXmlGuiWindow(), m_view(new GameBoard
 	statusBar()->show();
 	
 	resultStr = "Hard: 0, AlphaBeta: 0";
+}
+
+KSquaresTestWindow::~KSquaresTestWindow()
+{
+	delete sGame;
 }
 
 void KSquaresTestWindow::gameNew()
@@ -74,8 +80,8 @@ void KSquaresTestWindow::gameNew()
 		playerList.append(KSquaresPlayer(i==0?"Hard":"AlphaBeta", color, false));
 	}
 
-	int width = 6;
-	int height = 6;
+	int width = 3;
+	int height = 2;
 	
 	//create physical board
 	GameBoardScene* temp = m_scene;
@@ -87,17 +93,17 @@ void KSquaresTestWindow::gameNew()
 	m_view->setBoardSize();	//refresh board zooming
 
 	// create AI players
-	aiController::Ptr aic0(new aiController(0, 1, width, height, 2));
-	aiController::Ptr aic1(new aiController(0, 1, width, height, 3));
 	aiList.clear();
+	aiController::Ptr aic0(new aiController(0, 1, width, height, 2));
+	aiController::Ptr aic1(new aiController(1, 1, width, height, 3));
 	aiList.append(aic0);
 	aiList.append(aic1);
 	
 	//start game etc.
 	sGame->createGame(playerList, width, height);
-	connect(m_scene, SIGNAL(lineDrawn(int)), sGame, SLOT(addLineToIndex(int)));
+	//connect(m_scene, SIGNAL(lineDrawn(int)), sGame, SLOT(addLineToIndex(int)));
 	connect(sGame, SIGNAL(drawLine(int,QColor)), m_scene, SLOT(drawLine(int,QColor)));
-	connect(sGame, SIGNAL(highlightMove(int)), m_scene, SLOT(highlightLine(int)));
+	//connect(sGame, SIGNAL(highlightMove(int)), m_scene, SLOT(highlightLine(int)));
 	connect(sGame, SIGNAL(drawSquare(int,QColor)), m_scene, SLOT(drawSquare(int,QColor)));
 	connect(sGame, SIGNAL(takeTurnSig(KSquaresPlayer*)), this, SLOT(playerTakeTurn(KSquaresPlayer*)));
 	connect(sGame, SIGNAL(gameOver(QVector<KSquaresPlayer>)), this, SLOT(gameOver(QVector<KSquaresPlayer>)));
@@ -118,8 +124,15 @@ void KSquaresTestWindow::playerTakeTurn(KSquaresPlayer* currentPlayer)
 void KSquaresTestWindow::aiChooseLine()
 {
 	kDebug() << "aiChooseLine";
+	
+	if (thread != NULL) {
+		//thread->quit();
+		QTimer::singleShot(100, this, SLOT(aiChooseLine()));
+		kDebug() << "waiting for previous thread to exit";
+		return;
+	}
 	// https://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
-	QThread* thread = new QThread;
+	thread = new QThread;
 	aiControllerWorker *worker = new aiControllerWorker(aiList[sGame->currentPlayerId()], sGame->board()->lines(), sGame->board()->squares(), sGame->board()->getLineHistory());
 	worker->moveToThread(thread);
 	//connect(worker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
@@ -129,6 +142,10 @@ void KSquaresTestWindow::aiChooseLine()
 	connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
 	connect(worker, SIGNAL(lineChosen(int)), this, SLOT(aiChoseLine(int)));
 	thread->start();
+	/*
+	int line = aiList[sGame->currentPlayerId()]->chooseLine(sGame->board()->lines(), sGame->board()->squares(), sGame->board()->getLineHistory());
+	sGame->addLineToIndex(line);
+	*/
 }
 
 void KSquaresTestWindow::aiChoseLine(const int &line)

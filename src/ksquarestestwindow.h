@@ -33,6 +33,7 @@ class KSquaresTestWindow : public KXmlGuiWindow
 	public:
 		///Constructor
 		KSquaresTestWindow();
+		~KSquaresTestWindow();
 
 	public slots:
 		void gameNew();
@@ -55,6 +56,8 @@ class KSquaresTestWindow : public KXmlGuiWindow
 		///Result map
 		QMap<int, int> results;
 		QString resultStr;
+		
+		QThread* thread;
 };
 
 #endif // KSQUARESDEMOWINDOW_H

@@ -40,6 +40,10 @@ aiAlphaBeta::aiAlphaBeta(int newPlayerId, int newMaxPlayerId, int newWidth, int 
 
 aiAlphaBeta::~aiAlphaBeta()
 {
+	kDebug() << "aiAlphaBeta destruct";
+	QList<QPair<bool *, KSquares::BoardAnalysis> > hashValues = analysisHash->values();
+	for (int i = 0; i < hashValues.size(); i++)
+		delete hashValues[i].first;
 	delete analysisHash;
 	delete[] lines;
 	delete heuristic;
@@ -355,6 +359,7 @@ float aiAlphaBeta::evaluate(aiBoard::Ptr board)
 
 KSquares::BoardAnalysis aiAlphaBeta::getAnalysis(aiBoard::Ptr board)
 {
+	/*
 	if (analysisHash->contains(board))
 	{
 		QList<QPair<bool *, KSquares::BoardAnalysis> > entries = analysisHash->values(board);
@@ -374,11 +379,12 @@ KSquares::BoardAnalysis aiAlphaBeta::getAnalysis(aiBoard::Ptr board)
 			}
 		}
 	}
+	*/
 	
 	KSquares::BoardAnalysis analysis = BoardAnalysisFunctions::analyseBoard(board, lineSortList);
-	bool *linesCopy = new bool[board->linesSize];
-	memcpy(linesCopy, board->lines, board->linesSize);
-	analysisHash->insertMulti(board, QPair<bool *, KSquares::BoardAnalysis>(linesCopy, analysis));
+	//bool *linesCopy = new bool[board->linesSize];
+	//memcpy(linesCopy, board->lines, board->linesSize);
+	//analysisHash->insertMulti(board, QPair<bool *, KSquares::BoardAnalysis>(linesCopy, analysis));
 	return analysis;
 }
 

@@ -117,6 +117,7 @@ class aiControllerWorker : public QObject
 	public:
 		aiControllerWorker(aiController::Ptr aic, const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &newLineHistory)
 		{
+			kDebug() << "aiControllerWorker constr";
 			aicontroller = aic;
 			lines = newLines;
 			squares = newSquareOwners;
@@ -127,6 +128,7 @@ class aiControllerWorker : public QObject
 		void process()
 		//void chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners)
 		{
+			kDebug() << "aiControllerWorker process...";
 			int line = aicontroller->chooseLine(lines, squares, lineHistory);
 			emit lineChosen(line);
 			emit finished();

@@ -30,6 +30,7 @@ public:
 	void doMove(int line);
 	void undoMove(int line);
 	
+	bool deleteLines;
 	bool *lines;
 	int linesSize;
 	int width;

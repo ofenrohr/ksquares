@@ -14,11 +14,13 @@
 
 aiBoard::aiBoard(bool *newLines, int newLinesSize, int newWidth, int newHeight, const QList<int> newSquareOwners, int newPlayerId, int newMaxPlayerId) : lines(newLines), linesSize(newLinesSize), width(newWidth), height(newHeight), squareOwners(newSquareOwners), playerId(newPlayerId), maxPlayerId(newMaxPlayerId)
 {
+	deleteLines = false;
 }
 
 aiBoard::aiBoard(Board *board)
 {
 	linesSize = board->lines().size();
+	deleteLines = true;
 	lines = new bool[linesSize];
 	for (int i = 0; i < linesSize; i++)
 		lines[i] = board->lines()[i];
@@ -31,6 +33,9 @@ aiBoard::aiBoard(Board *board)
 
 aiBoard::~aiBoard()
 {
+	kDebug() << "aiBoard destruct";
+	if (deleteLines)
+		delete[] lines;
 }
 
 void aiBoard::doMove(int line)
@@ -41,7 +46,7 @@ void aiBoard::doMove(int line)
 		QString lineDebug = "";
 		for (int i = 0; i < linesSize; i++)
 			lineDebug += lines[i] ? "1" : "0";
-		//kDebug() << "WARNING: adding an invalid line! line = " << line << ", lines = " << lineDebug;
+		kDebug() << "WARNING: adding an invalid line! line = " << line << ", lines = " << lineDebug;
 		//return;
 	}
 	
