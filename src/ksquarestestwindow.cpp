@@ -46,11 +46,16 @@ KSquaresTestWindow::KSquaresTestWindow() : KXmlGuiWindow(), m_view(new GameBoard
 	statusBar()->show();
 	
 	resultStr = "Hard: 0, AlphaBeta: 0";
+	
+	outstandingChooseLineCalls = 0;
+	firstSetup = true;
 }
 
 KSquaresTestWindow::~KSquaresTestWindow()
 {
 	delete sGame;
+	if (thread != NULL)
+		delete thread;
 }
 
 void KSquaresTestWindow::gameNew()
@@ -77,11 +82,11 @@ void KSquaresTestWindow::gameNew()
 			default:
 				kError() << "KSquaresGame::playerSquareComplete(); currentPlayerId() != 0|1|2|3";
 		}
-		playerList.append(KSquaresPlayer(i==0?"Hard":"AlphaBeta", color, false));
+		playerList.append(KSquaresPlayer(i==0?"QDab":"AlphaBeta", color, false));
 	}
 
-	int width = 3;
-	int height = 2;
+	int width = 5;
+	int height = 5;
 	
 	//create physical board
 	GameBoardScene* temp = m_scene;
@@ -94,19 +99,23 @@ void KSquaresTestWindow::gameNew()
 
 	// create AI players
 	aiList.clear();
-	aiController::Ptr aic0(new aiController(0, 1, width, height, 2));
-	aiController::Ptr aic1(new aiController(1, 1, width, height, 3));
+	aiController::Ptr aic0(new aiController(0, 1, width, height, 6, 10000));
+	aiController::Ptr aic1(new aiController(1, 1, width, height, 3, 10000));
 	aiList.append(aic0);
 	aiList.append(aic1);
 	
 	//start game etc.
 	sGame->createGame(playerList, width, height);
-	//connect(m_scene, SIGNAL(lineDrawn(int)), sGame, SLOT(addLineToIndex(int)));
+	if (firstSetup)
+	{
+		firstSetup = false;
+		//connect(m_scene, SIGNAL(lineDrawn(int)), sGame, SLOT(addLineToIndex(int)));
+		connect(sGame, SIGNAL(gameOver(QVector<KSquaresPlayer>)), this, SLOT(gameOver(QVector<KSquaresPlayer>)));
+		connect(sGame, SIGNAL(takeTurnSig(KSquaresPlayer*)), this, SLOT(playerTakeTurn(KSquaresPlayer*)));
+	}
 	connect(sGame, SIGNAL(drawLine(int,QColor)), m_scene, SLOT(drawLine(int,QColor)));
 	//connect(sGame, SIGNAL(highlightMove(int)), m_scene, SLOT(highlightLine(int)));
 	connect(sGame, SIGNAL(drawSquare(int,QColor)), m_scene, SLOT(drawSquare(int,QColor)));
-	connect(sGame, SIGNAL(takeTurnSig(KSquaresPlayer*)), this, SLOT(playerTakeTurn(KSquaresPlayer*)));
-	connect(sGame, SIGNAL(gameOver(QVector<KSquaresPlayer>)), this, SLOT(gameOver(QVector<KSquaresPlayer>)));
 
 	sGame->start();
 	
@@ -118,28 +127,43 @@ void KSquaresTestWindow::playerTakeTurn(KSquaresPlayer* currentPlayer)
 	kDebug() << "playerTakeTurn";
 	statusBar()->changeItem(currentPlayer->name(), 0);
 	statusBar()->changeItem(resultStr, 1);
+	outstandingChooseLineCalls++;
+	kDebug() << "calling aiChooseLine";
 	aiChooseLine();
 }
 
 void KSquaresTestWindow::aiChooseLine()
 {
-	kDebug() << "aiChooseLine";
+	outstandingChooseLineCalls--;
+	kDebug() << "aiChooseLine (outstanding calls: " << outstandingChooseLineCalls << ")";
+	if (!sGame->isRunning())
+	{
+		kDebug() << "ERROR: game not running, not choosing any line!";
+		return;
+	}
 	
 	if (thread != NULL) {
 		//thread->quit();
-		QTimer::singleShot(100, this, SLOT(aiChooseLine()));
-		kDebug() << "waiting for previous thread to exit";
-		return;
-	}
+		//kDebug() << "waiting for previous thread to exit, isFinished: " << thread->isFinished();
+		if (!thread->isFinished())
+		{
+			//thread->quit();
+			kDebug() << "rescheduling aiChooseLine";
+			outstandingChooseLineCalls++;
+			QTimer::singleShot(150, this, SLOT(aiChooseLine()));
+			return;
+		}
+	} else {
 	// https://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
-	thread = new QThread;
+		thread = new QThread;
+	}
 	aiControllerWorker *worker = new aiControllerWorker(aiList[sGame->currentPlayerId()], sGame->board()->lines(), sGame->board()->squares(), sGame->board()->getLineHistory());
 	worker->moveToThread(thread);
 	//connect(worker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
 	connect(thread, SIGNAL(started()), worker, SLOT(process()));
 	connect(worker, SIGNAL(finished()), thread, SLOT(quit()));
 	connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater()));
-	connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
+	//connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
 	connect(worker, SIGNAL(lineChosen(int)), this, SLOT(aiChoseLine(int)));
 	thread->start();
 	/*

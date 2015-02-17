@@ -123,6 +123,11 @@ class aiControllerWorker : public QObject
 			squares = newSquareOwners;
 			lineHistory = newLineHistory;
 		}
+		
+		~aiControllerWorker()
+		{
+			kDebug() << "aiControllerWorker destructor";
+		}
 
 	public slots:
 		void process()
@@ -132,6 +137,7 @@ class aiControllerWorker : public QObject
 			int line = aicontroller->chooseLine(lines, squares, lineHistory);
 			emit lineChosen(line);
 			emit finished();
+			kDebug() << "aiControllerWorker done...";
 		}
 
 	signals:

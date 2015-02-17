@@ -77,6 +77,10 @@ class KSquaresGame : public QObject
 		 */
 		void stop() {gameInProgress = false;}
 		/**
+		 * Status of the game
+		 */
+		bool isRunning() {return gameInProgress;}
+		/**
 		 * Externally determined player switch, for network game
 		 */
 		void switchPlayer();

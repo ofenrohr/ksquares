@@ -130,6 +130,7 @@ void KSquaresGame::addLineToIndex(int index)
 	// announce the current player
 	if (gameInProgress)
 	{
+		kDebug() << "emitting takeTurnSig";
 		emit takeTurnSig(currentPlayer());
 	}
 }

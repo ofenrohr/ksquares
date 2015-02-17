@@ -58,6 +58,9 @@ class KSquaresTestWindow : public KXmlGuiWindow
 		QString resultStr;
 		
 		QThread* thread;
+		
+		int outstandingChooseLineCalls;
+		bool firstSetup;
 };
 
 #endif // KSQUARESDEMOWINDOW_H
