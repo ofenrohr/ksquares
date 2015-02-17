@@ -45,13 +45,18 @@ void executeAi(Board *board, int player, QString name, QList<int> expectedLines)
 		return;
 	}
 	
-	QTextStream summary(&file);
+	QString summaryStr = "";
+	QTextStream summary(&summaryStr);
 	
 	summary << "Summary for " << name << ": \n";
 	for (int i = 0; i <= aiController::getMaxAiLevel(); i++)
 	{
 		aiController aic(player, 1, board->width(), board->height(), i);
 		KSquaresAi::Ptr ai = aic.getAi();
+		if (!ai->enabled())
+			continue;
+		else
+			kDebug() << "AI " << ai->getName() << " is enabled";
 		int aiLine = ai->chooseLine(board->lines(), board->squares(), board->getLineHistory());
 		if (expectedLines.contains(aiLine))
 		{
@@ -65,8 +70,12 @@ void executeAi(Board *board, int player, QString name, QList<int> expectedLines)
 			summary << "\n";
 		}
 	}
+	kDebug() << "summary: " << summaryStr;
 	
+	QTextStream summaryFile(&file);
+	summaryFile << summaryStr;
 	file.close();
+	kDebug() << "summary written to: " << filename;
 }
 
 /**

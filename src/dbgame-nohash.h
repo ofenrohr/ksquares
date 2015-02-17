@@ -215,6 +215,7 @@ namespace dabble_nohash
 		
 		// KSquares stuff
 		QString getName() { return "dabble"; }
+		bool enabled() { return false; }
 		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory);
 		
 		QList<bool> previousLines;

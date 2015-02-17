@@ -44,6 +44,7 @@ class KSquaresAi : public aiFunctions, public BoardAnalysisFunctions
 		//virtual ~KSquaresAi() = 0; 
 		virtual int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory) = 0;
 		virtual QString getName() = 0;
+		virtual bool enabled() { kDebug() << "KSquaresAI -> enabled"; return true; }
 };
 
 class aiController : public QObject
