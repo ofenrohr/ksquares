@@ -15,6 +15,7 @@
 #include <QElapsedTimer>
 #include <QProcess>
 #include <QTextStream>
+#include <QQueue>
 
 
 class Knox : public QObject, public KSquaresAi
@@ -54,8 +55,7 @@ class Knox : public QObject, public KSquaresAi
 		bool goFirstEntered;
 		bool enterMove;
 		int linesSentCnt;
-		bool knoxMoved;
-		QString lastKnoxMove;
+		QQueue<QString> knoxMoveQueue;
 		int lastKnoxMoveOffset;
 };
 

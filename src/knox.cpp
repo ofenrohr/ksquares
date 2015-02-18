@@ -30,9 +30,8 @@ Knox::Knox(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int
 	goFirstEntered = false;
 	enterMove = false;
 	linesSentCnt = 0;
-	knoxMoved = false;
-	lastKnoxMove = "";
 	lastKnoxMoveOffset = 0;
+	knoxMoveQueue.clear();
 	
 	QString knoxExecutable = QString(EXTERNALAIPATH) + "/knox/knox";
 	kDebug() << "starting knox: " << knoxExecutable;
@@ -93,12 +92,19 @@ void Knox::processError(const QProcess::ProcessError &error)
 		case QProcess::ReadError: info = "An error occurred when attempting to read from the process. For example, the process may not be running."; break;
 		case QProcess::UnknownError: info = "An unknown error occurred. This is the default return value of error()."; break;
 	}
+	kDebug() << "****************************************************************";
+	kDebug() << "***                        KNOX ERROR                        ***";
+	kDebug() << "****************************************************************";
 	kDebug() << "knox error: " << info;
+	kDebug() << "entered opponent name: " << opponentName;
 }
 
 void Knox::processStateChanged(const QProcess::ProcessState &newState)
 {
 	kDebug() << "processStateChanged!";
+	kDebug() << "****************************************************************";
+	kDebug() << "***                    KNOX STATE CHANGED                    ***";
+	kDebug() << "****************************************************************";
 	QString state = "";
 	switch (newState)
 	{
@@ -131,7 +137,7 @@ void Knox::processReadyReadStandardOutput()
 	kDebug() << "processReadyReadStandardOutput!";
 	knox->setReadChannel(QProcess::StandardOutput);
 	QByteArray knoxStdOutTmp = knox->readAll();
-	kDebug() << knoxStdOutTmp;
+	kDebug() << "knox stdout: " << QString(knoxStdOutTmp);
 	knoxStdOutStream << knoxStdOutTmp;
 	knoxStdOutStream.flush();
 	if (!opponentNameEntered)
@@ -176,14 +182,17 @@ void Knox::processReadyReadStandardOutput()
 		enterMove = false;
 	}
 	
-	int movePos = knoxStdOut.indexOf("My move: ", lastKnoxMoveOffset);
-	if (movePos >= 0)
+	int movePos = -1;
+	do
 	{
+		movePos = knoxStdOut.indexOf("My move: ", lastKnoxMoveOffset);
+		if (movePos < 0)
+			continue;
 		lastKnoxMoveOffset = movePos+9;
-		knoxMoved = true;
-		lastKnoxMove = knoxStdOut.mid(lastKnoxMoveOffset, knoxStdOut.indexOf("\n", lastKnoxMoveOffset)-lastKnoxMoveOffset-9);
-		kDebug() << "knox made a move: " << lastKnoxMove;
-	}
+		QString mv = knoxStdOut.mid(lastKnoxMoveOffset, 5);
+		knoxMoveQueue.enqueue(mv);
+		kDebug() << "knox made a move: " << mv;
+	} while (movePos >= 0);
 }
 
 
@@ -202,75 +211,101 @@ int Knox::randomMove(const QList<bool> &lines)
 
 int Knox::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory)
 {
+	kDebug() << "knox choose line...";
 	QCoreApplication::processEvents();
 	
 	while (!opponentNameEntered || !goFirstEntered)
 	{
 		kDebug() << "waiting for knox setup to complete...";
-		QCoreApplication::processEvents();
-	}
-	
-	knoxMoved = false;
-	lastKnoxMove = "";
-	
-	// desperation...
-	connect(knox, SIGNAL(readyReadStandardOutput()), this, SLOT(processReadyReadStandardOutput()));
-	
-	// send new lines to knox
-	while (linesSentCnt < lineHistory.size())
-	{
-		if (!enterMove)
-		{
-			QCoreApplication::processEvents();
-			continue;
-		}
-		QPoint p1;
-		QPoint p2;
-		Board::indexToPoints(lineHistory[linesSentCnt].line, &p1, &p2, width, height);
-		kDebug() << "line " << lineHistory[linesSentCnt].line << " = " << p1 << " - " << p2;
-		QString knoxMove = "";
-		knoxMove += p1.x() + 'a';
-		knoxMove += QString::number(p1.y() + 1);
-		knoxMove += "-";
-		knoxMove += p2.x() + 'a';
-		knoxMove += QString::number(p2.y() + 1);
-		kDebug() << "converted to knox move: " << knoxMove;
-		knoxMove += "\n";
-		knoxStdOutStream << knoxMove;
-		enterMove = false;
-		
-		linesSentCnt++;
-		knox->write(knoxMove.toAscii());
-		knox->write("\n");
-		if (!knox->waitForBytesWritten())
-		{
-			kDebug() << "sending move might have failed!";
-		}
-	}
-	
-	timeoutTimer.restart();
-	while (!knoxMoved)
-	{
 		if (knox->state() != QProcess::Running)
 		{
 			kDebug() << "ERROR: knox process is not running...";
 			return randomMove(newLines);
 		}
-		//kDebug() << "enter move = " << enterMove;
-		if (timeoutTimer.hasExpired(timeout))
+		if (!knox->waitForReadyRead(1000))
 		{
-			kDebug() << "reached knox timeout, aborting...";
-			kDebug() << "ERROR: this game is tainted!";
-			kDebug() << "knox output" << knoxStdOut;
-			return randomMove(newLines);
-			//processReadyReadStandardOutput();
+			kDebug() << "ERROR: knox doesn't answer";
 		}
-		//kDebug() << "waiting for knox to make a move";
 		QCoreApplication::processEvents();
 	}
 	
-	QPoint p1(lastKnoxMove.at(0).toAscii()-'a', height - (lastKnoxMove.at(1).toAscii()-'0'-1) );
-	QPoint p2(lastKnoxMove.at(3).toAscii()-'a', height - (lastKnoxMove.at(4).toAscii()-'0'-1) );
+	if (knoxMoveQueue.size() <= 0)
+	{
+		kDebug() << "no knox move in queue";
+		// send new lines to knox
+		int sentMoveCnt = 0;
+		while (linesSentCnt < lineHistory.size())
+		{
+			if (!enterMove)
+			{
+				if (knox->state() != QProcess::Running)
+				{
+					kDebug() << "ERROR: knox process is not running...";
+					return randomMove(newLines);
+				}
+				if (!knox->waitForReadyRead(1000))
+				{
+					kDebug() << "ERROR: knox doesn't request move";
+				}
+				QCoreApplication::processEvents();
+				continue;
+			}
+			QPoint p1;
+			QPoint p2;
+			Board::indexToPoints(lineHistory[linesSentCnt].line, &p1, &p2, width, height);
+			kDebug() << "line " << lineHistory[linesSentCnt].line << " = " << p1 << " - " << p2;
+			QString knoxMove = "";
+			knoxMove += p1.x() + 'a';
+			knoxMove += QString::number(p1.y() + 1);
+			knoxMove += "-";
+			knoxMove += p2.x() + 'a';
+			knoxMove += QString::number(p2.y() + 1);
+			kDebug() << "converted to knox move: " << knoxMove;
+			knoxMove += "\n";
+			knoxStdOutStream << knoxMove;
+			enterMove = false;
+			
+			linesSentCnt++;
+			sentMoveCnt++;
+			knox->write(knoxMove.toAscii());
+			if (!knox->waitForBytesWritten(1000))
+			{
+				kDebug() << "sending move might have failed!";
+			}
+			knox->waitForReadyRead(1000);
+		}
+		if (sentMoveCnt == 0)
+		{
+			kDebug() << "didn't send any move to knox.";
+			kDebug() << "knox move queue size: " << knoxMoveQueue.size();
+			//kDebug() << "knox output: " << knoxStdOut;
+		}
+		
+		timeoutTimer.restart();
+		while (knoxMoveQueue.size() == 0)
+		{
+			if (knox->state() != QProcess::Running)
+			{
+				kDebug() << "ERROR: knox process is not running...";
+				return randomMove(newLines);
+			}
+			//kDebug() << "enter move = " << enterMove;
+			//if (timeoutTimer.hasExpired(timeout))
+			//{
+				//kDebug() << "reached knox timeout, doing nothing...";
+			//}
+			if (!knox->waitForReadyRead(1000))
+			{
+				//kDebug() << "ERROR: knox doesn't answer while waiting for move from knox";
+			}
+			//kDebug() << "waiting for knox to make a move";
+			QCoreApplication::processEvents();
+		}
+	}
+	
+	QString knoxMv = knoxMoveQueue.dequeue();
+	QPoint p1(knoxMv.at(0).toAscii()-'a', height - (knoxMv.at(1).toAscii()-'0'-1) );
+	QPoint p2(knoxMv.at(3).toAscii()-'a', height - (knoxMv.at(4).toAscii()-'0'-1) );
 	kDebug() << "knox made move at: " << p1 << ", " << p2;
 	int line = Board::pointsToIndex(p1, p2, width, height);
 	linesSentCnt++;
