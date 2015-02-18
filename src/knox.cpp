@@ -43,6 +43,7 @@ Knox::Knox(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int
 	connect(knox, SIGNAL(readyReadStandardError()), this, SLOT(processReadyReadStandardError()));
 	connect(knox, SIGNAL(readyReadStandardOutput()), this, SLOT(processReadyReadStandardOutput()));
 	knox->start(knoxExecutable);
+	knox->setReadChannel(QProcess::StandardOutput);
 	if (!knox->waitForStarted())
 	{
 		kDebug() << "ERROR: starting knox failed!";
@@ -211,6 +212,10 @@ int Knox::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwn
 	
 	knoxMoved = false;
 	lastKnoxMove = "";
+	
+	// desperation...
+	connect(knox, SIGNAL(readyReadStandardOutput()), this, SLOT(processReadyReadStandardOutput()));
+	
 	// send new lines to knox
 	while (linesSentCnt < lineHistory.size())
 	{
@@ -236,6 +241,7 @@ int Knox::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwn
 		
 		linesSentCnt++;
 		knox->write(knoxMove.toAscii());
+		knox->write("\n");
 		if (!knox->waitForBytesWritten())
 		{
 			kDebug() << "sending move might have failed!";
@@ -245,6 +251,11 @@ int Knox::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwn
 	timeoutTimer.restart();
 	while (!knoxMoved)
 	{
+		if (knox->state() != QProcess::Running)
+		{
+			kDebug() << "ERROR: knox process is not running...";
+			return randomMove(newLines);
+		}
 		//kDebug() << "enter move = " << enterMove;
 		if (timeoutTimer.hasExpired(timeout))
 		{
@@ -252,6 +263,7 @@ int Knox::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwn
 			kDebug() << "ERROR: this game is tainted!";
 			kDebug() << "knox output" << knoxStdOut;
 			return randomMove(newLines);
+			//processReadyReadStandardOutput();
 		}
 		//kDebug() << "waiting for knox to make a move";
 		QCoreApplication::processEvents();
