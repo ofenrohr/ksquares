@@ -16,6 +16,7 @@
 #include "dbgame.h"
 #include "dbgame-nohash.h"
 #include "qdab.h"
+#include "knox.h"
 
 #include <ctime>
 #include <kdebug.h>
@@ -72,7 +73,21 @@ int aiController::chooseLine(const QList<bool> &newLines, const QList<int> &newS
 {
 	KSquaresAi::Ptr ai = getAi();
 	
-	return ai->chooseLine(newLines, newSquareOwners, lineHistory);
+	int retryCnt = 0;
+	while (retryCnt < 3)
+	{
+		int line = ai->chooseLine(newLines, newSquareOwners, lineHistory);
+		if (line < 0)
+		{
+			retryCnt++;
+			kDebug() << "ai returned line index < 0, retry " << retryCnt;
+		}
+		else
+		{
+			return line;
+		}
+	}
+	return -1;
 }
 
 KSquaresAi::Ptr aiController::getAi()
@@ -116,6 +131,10 @@ KSquaresAi::Ptr aiController::getAi()
 		case 6:
 			if (ai.isNull())
 				ai = KSquaresAi::Ptr(new QDab(playerId, maxPlayerId, width, height, level, aiThinkTime));
+		break;
+		case 7:
+			if (ai.isNull())
+				ai = KSquaresAi::Ptr(new Knox(playerId, maxPlayerId, width, height, level, aiThinkTime));
 		break;
 	}
 	return ai;

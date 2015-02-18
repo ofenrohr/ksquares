@@ -161,6 +161,11 @@ p, li { white-space: pre-wrap; }
           <string>QDab client</string>
          </property>
         </item>
+        <item>
+         <property name="text">
+          <string>Knox</string>
+         </property>
+        </item>
        </widget>
       </item>
       <item row="2" column="0">
@@ -239,6 +244,11 @@ p, li { white-space: pre-wrap; }
         <item>
          <property name="text">
           <string>QDab client</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Knox</string>
          </property>
         </item>
        </widget>
@@ -321,6 +331,11 @@ p, li { white-space: pre-wrap; }
           <string>QDab client</string>
          </property>
         </item>
+        <item>
+         <property name="text">
+          <string>Knox</string>
+         </property>
+        </item>
        </widget>
       </item>
       <item row="4" column="0">
@@ -399,6 +414,11 @@ p, li { white-space: pre-wrap; }
         <item>
          <property name="text">
           <string>QDab client</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Knox</string>
          </property>
         </item>
        </widget>

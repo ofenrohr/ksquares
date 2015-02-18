@@ -28,6 +28,7 @@ set(ksquares_SRCS
 	boardAnalysis.cpp
 	dbgame-nohash.cpp
 	qdab.cpp
+	knox.cpp
 )
 
 include_directories(${CMAKE_SOURCE_DIR}/libkdegames/highscore ${QJSON_INCLUDE_DIR})
@@ -43,6 +44,10 @@ target_link_libraries(ksquares ${KDE4_KDEUI_LIBS} ${KDE4_KIO_LIBS} kdegames ${QJ
 
 install(TARGETS ksquares ${INSTALL_TARGETS_DEFAULT_ARGS})
 
+# setup where to find external AIs
+set(EXTERNALAIPATH "${CMAKE_CURRENT_SOURCE_DIR}/../aux/")
+configure_file( externalaipath.h.in ${CMAKE_CURRENT_BINARY_DIR}/generated/externalaipath.h )
+include_directories( ${CMAKE_CURRENT_BINARY_DIR}/generated/ )
 
 ########### install files ###############
 
