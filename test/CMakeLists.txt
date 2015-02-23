@@ -23,6 +23,7 @@ set( ksquarestest_SRCS
 	../src/dbgame.cpp
 	../src/dbgame-nohash.cpp
 	../src/qdab.cpp
+	../src/knox.cpp
 )
 
 kde4_add_kcfg_files(ksquarestest_SRCS GENERATE_MOC settings.kcfgc) #GENERATE_MOC is not needed but it doesn't work without it for some reason :S
@@ -31,9 +32,13 @@ include_directories( ../src ${QJSON_INCLUDE_DIR} )
 
 
 set(TESTBOARDPATH "${CMAKE_CURRENT_SOURCE_DIR}/boards")
+set(EXTERNALAIPATH "${CMAKE_CURRENT_SOURCE_DIR}/../aux/")
 
+configure_file( ../src/externalaipath.h.in ${CMAKE_CURRENT_BINARY_DIR}/generated/externalaipath.h )
 configure_file( testboardpath.h.in ${CMAKE_CURRENT_BINARY_DIR}/generated/testboardpath.h )
+
 include_directories( ${CMAKE_CURRENT_BINARY_DIR}/generated/ )
+
 link_libraries(
   ${KDE4_KDECORE_LIBS}
   ${QT_QTTEST_LIBRARY}

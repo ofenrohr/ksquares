@@ -54,6 +54,7 @@ class Dabble : public QObject, public KSquaresAi
 		QString dabbleStdOut;
 		
 		bool dabbleExited;
+		QQueue<int> moveQueue;
 };
 
 #endif

@@ -278,9 +278,9 @@ bool KSquaresIO::saveGame(QString filename, KSquaresGame *sGame)
 				file.close();
 				return false;
 			}
-			kDebug() << "conversion step one: dots and boxes coordinates: " << p1 << ", " << p2;
+			//kDebug() << "conversion step one: dots and boxes coordinates: " << p1 << ", " << p2;
 			QPair<QPoint, QPoint> dblPoints = Board::pointsToCoins(p1, p2, sGame->board()->width(), sGame->board()->height());
-			kDebug() << "conversion step two: strings and coins coordinated: " << dblPoints.first << ", " << dblPoints.second;
+			//kDebug() << "conversion step two: strings and coins coordinated: " << dblPoints.first << ", " << dblPoints.second;
 			outStream << "(" << dblPoints.first.x() << ", " << dblPoints.first.y() << ") - (" << dblPoints.second.x() << ", " << dblPoints.second.y() << ")\n";
 		} 
 	}

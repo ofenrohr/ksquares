@@ -31,6 +31,7 @@ Dabble::Dabble(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight,
 	timeoutTimer = QElapsedTimer();
 	
 	dabbleExited = true;
+	dabble = NULL;
 }
 
 Dabble::~Dabble()
@@ -156,7 +157,7 @@ void Dabble::processReadyReadStandardOutput()
 	kDebug() << "processReadyReadStandardOutput!";
 	dabble->setReadChannel(QProcess::StandardOutput);
 	QByteArray dabbleStdOutTmp = dabble->readAll();
-	kDebug() << "dabble stdout: " << QString(dabbleStdOutTmp);
+	//kDebug() << "dabble stdout: " << QString(dabbleStdOutTmp);
 	dabbleStdOutStream << dabbleStdOutTmp;
 }
 
@@ -177,6 +178,14 @@ int Dabble::randomMove(const QList<bool> &lines)
 int Dabble::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory)
 {
 	kDebug() << "dabble choose line...";
+	
+	if (moveQueue.size() > 0)
+	{
+		kDebug() << "found move in queue, not calling dabble...";
+		int dblMove = moveQueue.dequeue();
+		return dblMove;
+	}
+	
 	QCoreApplication::processEvents();
 	
 	// TODO: create savegame
@@ -200,14 +209,7 @@ int Dabble::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareO
 	// TODO: read dabble.log
 	QString line;
 	int moveCnt = 0;
-	/*
-	while ((pos = moveRegex.indexIn(dabbleStdOut, pos)) != -1) {
-		QStringList list;
-		list << moveRegex.cap(0);
-		pos += moveRegex.matchedLength();
-		kDebug() << "matched move: " << list;
-	}
-	*/
+	
 	do
 	{
 		line = dabbleStdOutStream.readLine();
@@ -217,7 +219,6 @@ int Dabble::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareO
 			moveCnt++;
 			if (moveCnt > lineHistory.size())
 			{
-				kDebug() << "found a new move by dabble!";
 				QRegExp moveRegex("\\(([\\d]+), ([\\d]+)\\) - \\(([\\d]+), ([\\d]+)\\)");
 				int pos = moveRegex.indexIn(line);
 				if (pos < 0)
@@ -229,12 +230,24 @@ int Dabble::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareO
 					QPoint p1(moveRegex.cap(1).toInt(), moveRegex.cap(2).toInt());
 					QPoint p2(moveRegex.cap(3).toInt(), moveRegex.cap(4).toInt());
 					kDebug() << "parsed new dabble move: " << p1 << ", " << p2;
+					QPair<QPoint, QPoint> dnbPoints = Board::coinsToPoints(p1, p2, width, height);
+					kDebug() << "dabble move converted to dots and boxes coordinates: " << dnbPoints.first << ", " << dnbPoints.second;
+					int lineIdx = Board::pointsToIndex(dnbPoints.first, dnbPoints.second, width, height);
+					kDebug() << "line index of dabble move: " << lineIdx;
+					moveQueue.enqueue(lineIdx);
 				}
 			}
 		}
 	} while (!line.isNull());
-
-	return randomMove(newLines);
+	
+	if (moveQueue.size() <= 0)
+	{
+		kDebug() << "ERROR: didn't parse any dabble move! is dabble setup correctly? take a look at aux/dabble/README";
+		return randomMove(newLines);
+	}
+	
+	int dblMove = moveQueue.dequeue();
+	return dblMove;
 }
 
 #include "dbgame.moc"
