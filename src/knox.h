@@ -27,8 +27,10 @@ class Knox : public QObject, public KSquaresAi
 		
 		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory);
 		QString getName() { return "knox"; }
+		virtual bool tainted() { return isTainted; }
+		virtual long lastMoveTime() { return 0; }
 		
-		bool tainted;
+		bool isTainted;
 	
 	public slots:
 		void processError(const QProcess::ProcessError &error);

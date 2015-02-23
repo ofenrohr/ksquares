@@ -14,18 +14,29 @@
 
 #include <QElapsedTimer>
 #include <QTcpSocket>
+#include <QProcess>
 
 
-class QDab : public KSquaresAi
+class QDab : public QObject, public KSquaresAi
 {
+	Q_OBJECT
 	public:
 		QDab(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel, int thinkTime = 5000);
 		~QDab();
 		
 		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory);
 		QString getName() { return "qdab"; }
+		virtual bool tainted() { return isTainted; }
+		virtual long lastMoveTime() { return 0; }
 		
-		bool tainted;
+		bool isTainted;
+	
+	public slots:
+		void processError(const QProcess::ProcessError &error);
+		void processStateChanged(const QProcess::ProcessState &newState);
+		void processFinished(const int &exitCode, const QProcess::ExitStatus &exitStatus);
+		void processReadyReadStandardError();
+		void processReadyReadStandardOutput();
 		
 	private:
 		QElapsedTimer qdabTimer;
@@ -35,6 +46,11 @@ class QDab : public KSquaresAi
 		int randomMove(const QList<bool> &lines);
 		
 		//QTcpSocket *socket;
+		QProcess *qdabServer;
+		QTextStream qdabStdErrStream;
+		QTextStream qdabStdOutStream;
+		QString qdabStdErr;
+		QString qdabStdOut;
 };
 
 #endif

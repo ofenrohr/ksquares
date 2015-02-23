@@ -27,11 +27,13 @@ class Dabble : public QObject, public KSquaresAi
 		
 		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory);
 		QString getName() { return dabbleNohash ? "dabble-nohash" : "dabble"; }
+		virtual bool tainted() { return isTainted; }
+		virtual long lastMoveTime() { return 0; }
 		
 		void initProcess();
 		void teardownProcess();
 		
-		bool tainted;
+		bool isTainted;
 	
 	public slots:
 		void processError(const QProcess::ProcessError &error);

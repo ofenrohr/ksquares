@@ -45,6 +45,8 @@ class KSquaresAi : public aiFunctions, public BoardAnalysisFunctions
 		virtual int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory) = 0;
 		virtual QString getName() = 0;
 		virtual bool enabled() { kDebug() << "KSquaresAI -> enabled"; return true; }
+		virtual bool tainted() { return false; } // used for error signaling with external ai
+		virtual long lastMoveTime() { return 0; } // time used to calculate move
 };
 
 class aiController : public QObject

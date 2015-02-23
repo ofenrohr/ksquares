@@ -33,6 +33,8 @@ class aiAlphaBeta : public KSquaresAi
 		
 		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory);
 		QString getName() { return "alphabeta"; }
+		virtual bool tainted() { return false; }
+		virtual long lastMoveTime() { return 0; }
 		
 		void setDepth(int d) { searchDepth = d; }
 		float alphabeta(aiBoard::Ptr board, int depth, int *line, float alpha = -INFINITY, float beta = INFINITY/*, int parentNode = -1*/);
