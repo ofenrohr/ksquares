@@ -21,7 +21,7 @@ set( ksquarestest_SRCS
 	../src/lineSorter.cpp
 	../src/boardAnalysis.cpp
 	../src/dbgame.cpp
-	../src/dbgame-nohash.cpp
+#	../src/dbgame-nohash.cpp
 	../src/qdab.cpp
 	../src/knox.cpp
 )

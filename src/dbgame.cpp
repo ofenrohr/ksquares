@@ -32,6 +32,7 @@ Dabble::Dabble(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight,
 	
 	dabbleExited = true;
 	dabble = NULL;
+	dabbleNohash = newLevel != 0;
 }
 
 Dabble::~Dabble()
@@ -53,7 +54,7 @@ void Dabble::initProcess()
 		}
 	}
 	QString wineExecutable = "wine";
-	QString dabbleExecutable = QString(EXTERNALAIPATH) + "/dabble/dabble.exe";
+	QString dabbleExecutable = QString(EXTERNALAIPATH) + (dabbleNohash ? "/dabble/dabble_nohash.exe" : "/dabble/dabble.exe");
 	QStringList dabbleArguments;
 	dabbleArguments << dabbleExecutable << "/tmp/input.dabble.dbl" << QString::number(timeout / 1000);
 	dabble = new QProcess();
@@ -77,11 +78,13 @@ void Dabble::teardownProcess()
 	kDebug() << "teardownProcess()";
 	if (dabble!=NULL)
 	{
+		/*
 		disconnect(dabble, SIGNAL(error(QProcess::ProcessError)), this, SLOT(processError(QProcess::ProcessError)));
 		disconnect(dabble, SIGNAL(stateChanged(QProcess::ProcessState)), this, SLOT(processStateChanged(QProcess::ProcessState)));
 		disconnect(dabble, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(processFinished(int, QProcess::ExitStatus)));
 		disconnect(dabble, SIGNAL(readyReadStandardError()), this, SLOT(processReadyReadStandardError()));
 		disconnect(dabble, SIGNAL(readyReadStandardOutput()), this, SLOT(processReadyReadStandardOutput()));
+		*/
 		if (dabble->state() != QProcess::NotRunning)
 		{
 			kDebug() << "trying to kill dabble process";

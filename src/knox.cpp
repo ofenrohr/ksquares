@@ -34,14 +34,16 @@ Knox::Knox(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int
 	knoxMoveQueue.clear();
 	
 	QString knoxExecutable = QString(EXTERNALAIPATH) + "/knox/knox";
-	kDebug() << "starting knox: " << knoxExecutable;
+	QStringList knoxArguments;
+	knoxArguments << QString::number(timeout / 1000) << QString::number(width) << QString::number(height);
 	knox = new QProcess();
 	connect(knox, SIGNAL(error(QProcess::ProcessError)), this, SLOT(processError(QProcess::ProcessError)));
 	connect(knox, SIGNAL(stateChanged(QProcess::ProcessState)), this, SLOT(processStateChanged(QProcess::ProcessState)));
 	connect(knox, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(processFinished(int, QProcess::ExitStatus)));
 	connect(knox, SIGNAL(readyReadStandardError()), this, SLOT(processReadyReadStandardError()));
 	connect(knox, SIGNAL(readyReadStandardOutput()), this, SLOT(processReadyReadStandardOutput()));
-	knox->start(knoxExecutable);
+	kDebug() << "starting knox: " << knoxExecutable << ", ARGS: " << knoxArguments;
+	knox->start(knoxExecutable, knoxArguments);
 	knox->setReadChannel(QProcess::StandardOutput);
 	if (!knox->waitForStarted())
 	{
@@ -53,6 +55,14 @@ Knox::Knox(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int
 	}
 	
 	timeoutTimer = QElapsedTimer();
+	
+	if (newWidth > 9 || newHeight > 9)
+	{
+		kDebug() << "****************************************************************";
+		kDebug() << "***                           ERROR                          ***";
+		kDebug() << "****************************************************************";
+		kDebug() << "knox only works with up to 9x9 boxes games!";
+	}
 }
 
 Knox::~Knox()

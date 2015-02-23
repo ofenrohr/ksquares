@@ -26,7 +26,7 @@ set(ksquares_SRCS
 	ksquarestestwindow.cpp
 	lineSorter.cpp
 	boardAnalysis.cpp
-	dbgame-nohash.cpp
+#	dbgame-nohash.cpp
 	qdab.cpp
 	knox.cpp
 )

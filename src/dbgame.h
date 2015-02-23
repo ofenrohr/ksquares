@@ -26,7 +26,7 @@ class Dabble : public QObject, public KSquaresAi
 		~Dabble();
 		
 		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory);
-		QString getName() { return "dabble"; }
+		QString getName() { return dabbleNohash ? "dabble-nohash" : "dabble"; }
 		
 		void initProcess();
 		void teardownProcess();
@@ -55,6 +55,7 @@ class Dabble : public QObject, public KSquaresAi
 		
 		bool dabbleExited;
 		QQueue<int> moveQueue;
+		bool dabbleNohash;
 };
 
 #endif
