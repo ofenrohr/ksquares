@@ -1,0 +1,64 @@
+diff -r 098b3c6b183b references/knox/knox.cpp
+--- a/references/knox/knox.cpp	Mon Feb 23 17:17:06 2015 +0100
++++ b/references/knox/knox.cpp	Mon Feb 23 23:33:16 2015 +0100
+@@ -7,18 +7,45 @@
+ #include "knox.h"
+ 
+ 
+-inline void init_game( DBGame *& );
++inline void init_game( DBGame *& , int , int );
+ extern "C" void HMETIS_PartRecursive( int, int, int *, int *, int *, int *,
+                                       int, int, int *, int *, int * );
+ 
+ using namespace std;
+ 
+ 
+-int main()
++int main(int argc, char **argv)
+    {
++		int width = 5;
++		int height = 5;
++		if (argc > 1)
++		{
++		  int tmpThinkTime = atoi(argv[1]);
++			if (tmpThinkTime > 0)
++			{
++				cout << "Think time set via command line argument. TIME_LIMIT = " << tmpThinkTime << endl;
++				TIME_LIMIT = tmpThinkTime;
++			}
++		}
++		if (argc > 3)
++		{
++			int customWidth = atoi(argv[2]);
++			int customHeight = atoi(argv[3]);
++			if (width > 0 && width < 10 && height > 0 && height < 10)
++			{
++				width = customWidth;
++				height = customHeight;
++				cout << "Board size set via command line argument. WIDTH = " << width << ", HEIGHT = " << height << endl;
++			}
++			else
++			{
++				cerr << "invalid width or height (only range from 1 to 9 allowed)" << endl;
++			}
++		}
++		
+    DBGame *game = NULL;
+ 
+-   init_game( game );           // get input from user and init game
++   init_game( game , width , height );           // get input from user and init game
+ 
+    // for each turn, play a move
+    // --------------------------
+@@ -41,9 +68,9 @@
+ //+------------------------------------------------------+
+ //| get game params from user and call game constructors |
+ //+------------------------------------------------------+
+-inline void init_game( DBGame *& game )
++inline void init_game( DBGame *& game , int width , int height)
+    {
+-   game = new DBGame( 5, 5 );          // get a new game
++   game = new DBGame( width, height );          // get a new game
+ 
+    cout << "\nEnter Opponent's name: ";
+    cin >> game->filename;
