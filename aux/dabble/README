@@ -1,0 +1,10 @@
+This is a modified version built from Dabble version 1.3. 
+You can pass two command line parameters:
+
+dabble[_nohash].exe [SAVEGAME [TIMEOUT]]
+
+Where SAVEGAME must be a path to a dabble compatible file containing a game that
+is not completed and TIMEOUT is the time in seconds for dabble to complete a 
+single move. When there are command line arguments dabble will only show a
+window for a very short time and exit after it calculated the next move. That
+move is available in dabble.log in the current working directory.
