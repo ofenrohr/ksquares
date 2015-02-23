@@ -198,7 +198,42 @@ int Dabble::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareO
 	teardownProcess();
 	
 	// TODO: read dabble.log
-	
+	QString line;
+	int moveCnt = 0;
+	/*
+	while ((pos = moveRegex.indexIn(dabbleStdOut, pos)) != -1) {
+		QStringList list;
+		list << moveRegex.cap(0);
+		pos += moveRegex.matchedLength();
+		kDebug() << "matched move: " << list;
+	}
+	*/
+	do
+	{
+		line = dabbleStdOutStream.readLine();
+		if (line.startsWith("DABBLE MOVE: "))
+		{
+			//kDebug() << "found a move by dabble...";
+			moveCnt++;
+			if (moveCnt > lineHistory.size())
+			{
+				kDebug() << "found a new move by dabble!";
+				QRegExp moveRegex("\\(([\\d]+), ([\\d]+)\\) - \\(([\\d]+), ([\\d]+)\\)");
+				int pos = moveRegex.indexIn(line);
+				if (pos < 0)
+				{
+					kDebug() << "sth went wrong when parsing dabble move in line: " << line;
+				}
+				else
+				{
+					QPoint p1(moveRegex.cap(1).toInt(), moveRegex.cap(2).toInt());
+					QPoint p2(moveRegex.cap(3).toInt(), moveRegex.cap(4).toInt());
+					kDebug() << "parsed new dabble move: " << p1 << ", " << p2;
+				}
+			}
+		}
+	} while (!line.isNull());
+
 	return randomMove(newLines);
 }
 
