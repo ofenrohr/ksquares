@@ -8,3 +8,16 @@ is not completed and TIMEOUT is the time in seconds for dabble to complete a
 single move. When there are command line arguments dabble will only show a
 window for a very short time and exit after it calculated the next move. That
 move is available in dabble.log in the current working directory.
+
+This version of dabble has been compiled with Visual Studio 2013. To get dabble
+running on your Linux system you need the correct DLLs. You can get those with
+
+sh winetricks vcrun2013
+
+If winetricks fails to install the DLLs with the following error message:
+sha1sum mismatch!  Rename /home/USERNAME/.cache/winetricks/vcrun2013/vcredist_x86.exe and try again.
+You have to edit winetricks on line 7344: run
+sha1sum /home/USERNAME/.cache/winetricks/vcrun2013/vcredist_x86.exe
+and replace the hash on line 7344 in winetricks.
+The winetricks script in this directory worked on 23.02.2015 after modifing the
+hash.
