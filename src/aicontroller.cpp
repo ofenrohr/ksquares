@@ -109,14 +109,7 @@ KSquaresAi::Ptr aiController::getAi()
 		break;
 		case 4:
 			if (ai.isNull())
-			{
-				kDebug() << "creating dabble ai";
-				dabble::DBGame *m_game = new dabble::DBGame(width+1, height+1);
-				m_game->searchDepth = 20;
-				m_game->timeLimit = 5;
-				m_game->gameLimit = -5;
-				ai = KSquaresAi::Ptr(m_game);
-			}
+				ai = KSquaresAi::Ptr(new Dabble(playerId, maxPlayerId, width, height, level, aiThinkTime));
 		break;
 		case 5:
 			if (ai.isNull())

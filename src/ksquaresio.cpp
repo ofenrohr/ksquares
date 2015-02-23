@@ -262,28 +262,31 @@ bool KSquaresIO::saveGame(QString filename, KSquaresGame *sGame)
 	
 	QTextStream outStream(&file);
 
-	if (filename.endsWith(".dbl"))
+	if (filename.endsWith(".dabble.dbl"))
 	{
-		// save in wrong dabble format
-		outStream << sGame->board()->width() << "," <<  sGame->board()->height() << "\n";
+		// save in dabble format
+		outStream << (sGame->board()->width()+1) << "," << (sGame->board()->height()+1) << "\n";
 		QList<Board::Move> history = sGame->board()->getLineHistory();
 
 		for (int i = 0; i < history.size(); i++) 
 		{
 			QPoint p1;
 			QPoint p2;
-			if (!sGame->board()->indexToPoints(history[i].line, &p1, &p2))
+			if (!Board::indexToPoints(history[i].line, &p1, &p2, sGame->board()->width(), sGame->board()->height(), false))
 			{
 				kDebug() << "KSquaresIO::saveGame error: invalid line in history";
 				file.close();
 				return false;
 			}
-			outStream << "(" << p1.x() << ", " << (sGame->board()->height() - p1.y()) << ") - (" << p2.x() << ", " << (sGame->board()->height() - p2.y()) << ")\n";
+			kDebug() << "conversion step one: dots and boxes coordinates: " << p1 << ", " << p2;
+			QPair<QPoint, QPoint> dblPoints = Board::pointsToCoins(p1, p2, sGame->board()->width(), sGame->board()->height());
+			kDebug() << "conversion step two: strings and coins coordinated: " << dblPoints.first << ", " << dblPoints.second;
+			outStream << "(" << dblPoints.first.x() << ", " << dblPoints.first.y() << ") - (" << dblPoints.second.x() << ", " << dblPoints.second.y() << ")\n";
 		} 
 	}
-	else if (filename.endsWith(".dabble.dbl"))
+	else if (filename.endsWith(".dbl"))
 	{
-		// save in dabble format
+		// save in wrong dabble format
 		outStream << sGame->board()->width() << "," <<  sGame->board()->height() << "\n";
 		QList<Board::Move> history = sGame->board()->getLineHistory();
 

@@ -28,6 +28,9 @@ class Dabble : public QObject, public KSquaresAi
 		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory);
 		QString getName() { return "dabble"; }
 		
+		void initProcess();
+		void teardownProcess();
+		
 		bool tainted;
 	
 	public slots:
@@ -49,6 +52,8 @@ class Dabble : public QObject, public KSquaresAi
 		QTextStream dabbleStdOutStream;
 		QString dabbleStdErr;
 		QString dabbleStdOut;
+		
+		bool dabbleExited;
 };
 
 #endif

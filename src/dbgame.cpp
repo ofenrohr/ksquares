@@ -7,13 +7,15 @@
  *   (at your option) any later version.                                   *
  ***************************************************************************/
 
-#include "dabble.h"
+#include "dbgame.h"
 
 #include <QString>
 #include <QDataStream>
 #include <QByteArray>
 #include <QDateTime>
 #include <QCoreApplication>
+
+#include "ksquaresio.h"
 
 // generated
 #include "externalaipath.h"
@@ -26,13 +28,9 @@ Dabble::Dabble(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight,
 	dabbleStdOutStream.setString(&dabbleStdOut);
 	dabbleStdErrStream.setString(&dabbleStdErr);
 	
-	
-	if (!dabble->waitForReadyRead())
-	{
-		kDebug() << "Waiting for ready read failed";
-	}
-	
 	timeoutTimer = QElapsedTimer();
+	
+	dabbleExited = true;
 }
 
 Dabble::~Dabble()
@@ -42,6 +40,7 @@ Dabble::~Dabble()
 
 void Dabble::initProcess()
 {
+	kDebug() << "initProcess()";
 	if (dabble)
 	{
 		kDebug() << "WARNING: dabble already running!!! tearing it down...";
@@ -52,26 +51,29 @@ void Dabble::initProcess()
 			return;
 		}
 	}
+	QString wineExecutable = "wine";
 	QString dabbleExecutable = QString(EXTERNALAIPATH) + "/dabble/dabble.exe";
 	QStringList dabbleArguments;
-	dabbleArguments << "/tmp/dabble_input.dbl" << (thinkTime / 1000);
-	kDebug() << "starting dabble: " << dabbleExecutable << ", args: " << dabbleArguments;
+	dabbleArguments << dabbleExecutable << "/tmp/input.dabble.dbl" << QString::number(timeout / 1000);
 	dabble = new QProcess();
 	connect(dabble, SIGNAL(error(QProcess::ProcessError)), this, SLOT(processError(QProcess::ProcessError)));
 	connect(dabble, SIGNAL(stateChanged(QProcess::ProcessState)), this, SLOT(processStateChanged(QProcess::ProcessState)));
 	connect(dabble, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(processFinished(int, QProcess::ExitStatus)));
 	connect(dabble, SIGNAL(readyReadStandardError()), this, SLOT(processReadyReadStandardError()));
 	connect(dabble, SIGNAL(readyReadStandardOutput()), this, SLOT(processReadyReadStandardOutput()));
-	dabble->start(dabbleExecutable, dabbleArguments);
+	kDebug() << "starting dabble: " << wineExecutable << ", args: " << dabbleArguments;
+	dabble->start(wineExecutable, dabbleArguments);
 	dabble->setReadChannel(QProcess::StandardOutput);
 	if (!dabble->waitForStarted())
 	{
 		kDebug() << "ERROR: starting dabble failed!";
 	}
+	dabbleExited = false;
 }
 
 void Dabble::teardownProcess()
 {
+	kDebug() << "teardownProcess()";
 	if (dabble!=NULL)
 	{
 		disconnect(dabble, SIGNAL(error(QProcess::ProcessError)), this, SLOT(processError(QProcess::ProcessError)));
@@ -135,6 +137,8 @@ void Dabble::processFinished(const int &exitCode, const QProcess::ExitStatus &ex
 	kDebug() << "processFinished!";
 	kDebug() << "dabble exit code: " << exitCode;
 	kDebug() << "dabble exit status: " << (exitStatus == QProcess::NormalExit ? "normal" : "crash");
+	
+	dabbleExited = true;
 }
 
 void Dabble::processReadyReadStandardError()
@@ -175,6 +179,15 @@ int Dabble::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareO
 	kDebug() << "dabble choose line...";
 	QCoreApplication::processEvents();
 	
+	// TODO: create savegame
+	KSquaresGame ksqGame;
+	QList<int> isHumanList;
+	for (int i = 0; i < 2; i++)
+		isHumanList.append(i != playerId ? 1 : 0);
+	ksqGame.createGame(KSquaresGame::createPlayers(2, isHumanList), width, height);
+	for (int i = 0; i < lineHistory.size(); i++)
+		ksqGame.addLineToIndex(lineHistory[i].line);
+	KSquaresIO::saveGame("/tmp/input.dabble.dbl", &ksqGame);
 	initProcess();
 	
 	while (!dabbleExited)
@@ -182,12 +195,11 @@ int Dabble::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareO
 		QCoreApplication::processEvents();
 	}
 	
-	int line = -1;
-	
-	
 	teardownProcess();
 	
-	return line;
+	// TODO: read dabble.log
+	
+	return randomMove(newLines);
 }
 
-#include "dabble.moc"
+#include "dbgame.moc"
