@@ -21,6 +21,10 @@
 #include <KLocale>
 #include <kstandardgameaction.h>
 
+//qjson
+#include <qjson/parser.h>
+#include <qjson/serializer.h>
+
 //generated
 #include "settings.h"
 
@@ -31,6 +35,8 @@
 KSquaresTestWindow::KSquaresTestWindow() : KXmlGuiWindow(), m_view(new GameBoardView(this)), m_scene(0)
 {
 	initTestSetup();
+	saveStatus();
+	
 	sGame = new KSquaresGame();
 	thread = NULL;
 
@@ -57,6 +63,82 @@ KSquaresTestWindow::~KSquaresTestWindow()
 	delete sGame;
 	if (thread != NULL)
 		delete thread;
+}
+
+void KSquaresTestWindow::saveStatus()
+{
+	QVariantList setupList;
+	for (int i = 0; i < testSetups.size(); i++)
+		setupList << testSetups[i].toQVariant();
+	QVariantList resultList;
+	for (int i = 0; i < testResults.size(); i++)
+		resultList << testResults[i].toQVariant();
+	QVariantMap statusMap;
+	statusMap["setups"] = setupList;
+	statusMap["results"] = resultList;
+	
+	QJson::Serializer serializer;
+	bool ok;
+	QByteArray json = serializer.serialize(setupList, &ok);
+
+	if (ok) {
+		kDebug() << "Setup as json: " << json;
+	} else {
+		kDebug() << "Something went wrong:" << serializer.errorMessage();
+	}
+
+}
+
+QVariant AITestSetup::toQVariant()
+{
+	QVariantMap map;
+	map["levelP1"] = levelP1;
+	map["levelP2"] = levelP2;
+	map["timeout"] = timeout;
+	QVariantMap boardSizeMap;
+	boardSizeMap["width"] = boardSize.x();
+	boardSizeMap["height"] = boardSize.y();
+	map["boardSize"] = boardSizeMap;
+	return map;
+}
+
+void AITestSetup::fromQVariant(QVariant var)
+{
+	QVariantMap map = var.toMap();
+	levelP1 = map["levelP1"].toInt();
+	levelP2 = map["levelP2"].toInt();
+	timeout = map["timeout"].toInt();
+	boardSize = QPoint();
+	boardSize.setX(map["boardSize"].toMap()["width"].toInt());
+	boardSize.setY(map["boardSize"].toMap()["height"].toInt());
+}
+
+QVariant AITestResult::toQVariant()
+{
+	QVariantMap map;
+	map["setup"] = setup.toQVariant();
+	QVariantList moveList;
+	for (int i = 0; i < moves.size(); i++)
+		moveList << moves[i];
+	map["moves"] = moveList;
+	QVariantList timeP1List;
+	for (int i = 0; i < timeP1.size(); i++)
+		timeP1List << timeP1[i];
+	map["timeP1"] = timeP1List;
+	QVariantList timeP2List;
+	for (int i = 0; i < timeP2.size(); i++)
+		timeP2List << timeP2[i];
+	map["timeP2"] = timeP2List;
+	map["taintedP1"] = taintedP1;
+	map["taintedP2"] = taintedP2;
+	map["scoreP1"] = scoreP1;
+	map["scoreP2"] = scoreP2;
+	return map;
+}
+
+void AITestResult::fromQVariant(QVariant map)
+{
+	
 }
 
 void KSquaresTestWindow::initTestSetup()
@@ -194,6 +276,7 @@ void KSquaresTestWindow::gameNew()
 		QCoreApplication::quit();
 	}
 	currentSetup = testSetups.takeFirst();
+	currentResult = AITestResult();
 	
 	//create players
 	QVector<KSquaresPlayer> playerList;
@@ -318,6 +401,8 @@ void KSquaresTestWindow::aiChoseLine(const int &line)
 {
 	kDebug() << "aiChoseLine";
 	sGame->addLineToIndex(line);
+	currentResult.moves.append(line);
+	
 }
 
 void KSquaresTestWindow::gameOver(const QVector<KSquaresPlayer> & playerList)
@@ -325,11 +410,14 @@ void KSquaresTestWindow::gameOver(const QVector<KSquaresPlayer> & playerList)
 	kDebug() << "Game Over";
 	kDebug() << "score p1 ai: " << playerList[0].score();
 	kDebug() << "score p2 ai: " << playerList[1].score();
-	if (playerList[0].score() > playerList[1].score())
-		results[0]++;
-	else
-		results[1]++;
-	resultStr = "Hard: " + QString::number(results[0]) + ", AlphaBeta: " + QString::number(results[1]);
+	resultStr = "Remaining games: " + QString::number(testSetups.size());
+	
+	currentResult.setup = currentSetup;
+	currentResult.taintedP1 = aiList[0].getAi().tainted();
+	currentResult.taintedP1 = aiList[1].getAi().tainted();
+	currentResult.scoreP1 = playerList[0].score();
+	currentResult.scoreP2 = playerList[1].score();
+	
 	QTimer::singleShot(1000, this, SLOT(gameNew()));
 }
 

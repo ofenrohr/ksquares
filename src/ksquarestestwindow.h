@@ -14,6 +14,7 @@
 
 #include <QList>
 #include <QPoint>
+#include <QVariant>
 
 #include "ksquaresgame.h"
 #include "aicontroller.h"
@@ -29,22 +30,31 @@ class GameBoardScene;
  * @author Matt Williams <matt@milliams.com>
  */
 
-typedef struct AITestSetup_ {
+class AITestSetup {
+public:
 	int levelP1;
 	int levelP2;
 	int timeout;
 	QPoint boardSize;
-} AITestSetup;
+	
+	QVariant toQVariant();
+	void fromQVariant(QVariant map);
+};
 
-typedef struct AITestResult_ {
+class AITestResult {
+public:
 	AITestSetup setup;
+	QList<int> moves;
 	QList<int> timeP1;
 	QList<int> timeP2;
 	bool taintedP1;
 	bool taintedP2;
 	int scoreP1;
 	int scoreP2;
-} AITestResult;
+	
+	QVariant toQVariant();
+	void fromQVariant(QVariant map);
+};
 
 class KSquaresTestWindow : public KXmlGuiWindow
 {
@@ -82,10 +92,12 @@ class KSquaresTestWindow : public KXmlGuiWindow
 		int outstandingChooseLineCalls;
 		bool firstSetup;
 		
+		void saveStatus();
 		void initTestSetup();
 		QList<AITestSetup> testSetups;
 		QList<AITestResult> testResults;
 		AITestSetup currentSetup;
+		AITestResult currentResult;
 };
 
 #endif // KSQUARESDEMOWINDOW_H
