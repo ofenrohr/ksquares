@@ -51,6 +51,8 @@ class QDab : public QObject, public KSquaresAi
 		QTextStream qdabStdOutStream;
 		QString qdabStdErr;
 		QString qdabStdOut;
+		
+		bool qdabServerListening;
 };
 
 #endif

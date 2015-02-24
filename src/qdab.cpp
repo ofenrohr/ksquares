@@ -13,6 +13,7 @@
 #include <QDataStream>
 #include <QByteArray>
 #include <QDateTime>
+#include <QCoreApplication>
 
 #include <qjson/parser.h>
 
@@ -24,28 +25,66 @@ QDab::QDab(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int
 	timeout = thinkTime;
 	playerId = newPlayerId;
 	isTainted = false;
+	qdabServerListening = false;
+	qdabStdOutStream.setString(&qdabStdOut);
+	qdabStdErrStream.setString(&qdabStdErr);
 	
 	// start qdab server
+	QString qdabWorkingDirectory = QString(EXTERNALAIPATH) + "/qdab";
 	QString qdabServerExecutable = QString(EXTERNALAIPATH) + "/qdab/server";
 	QStringList qdabServerArguments;
-	qdabServerArguments << QString::number(timeout / 1000) << QString::number(width) << QString::number(height);
+	QProcessEnvironment qdabEnvironment = QProcessEnvironment::systemEnvironment();
+	QString libPath = "";
+	if (qdabEnvironment.contains("LD_LIBRARY_PATH"))
+		libPath = qdabEnvironment.value("LD_LIBRARY_PATH") + ":";
+	libPath.append(qdabWorkingDirectory);
+	qdabEnvironment.insert("LD_LIBRARY_PATH", libPath);
+	
 	qdabServer = new QProcess();
 	connect(qdabServer, SIGNAL(error(QProcess::ProcessError)), this, SLOT(processError(QProcess::ProcessError)));
 	connect(qdabServer, SIGNAL(stateChanged(QProcess::ProcessState)), this, SLOT(processStateChanged(QProcess::ProcessState)));
 	connect(qdabServer, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(processFinished(int, QProcess::ExitStatus)));
 	connect(qdabServer, SIGNAL(readyReadStandardError()), this, SLOT(processReadyReadStandardError()));
 	connect(qdabServer, SIGNAL(readyReadStandardOutput()), this, SLOT(processReadyReadStandardOutput()));
+	
 	kDebug() << "starting qdabServer: " << qdabServerExecutable << ", ARGS: " << qdabServerArguments;
+	qdabServer->setWorkingDirectory(qdabWorkingDirectory);
+	qdabServer->setProcessEnvironment(qdabEnvironment);
 	qdabServer->start(qdabServerExecutable, qdabServerArguments);
-	qdabServer->setReadChannel(QProcess::StandardOutput);
+	qdabServer->setReadChannel(QProcess::StandardError);
+	
+	QCoreApplication::processEvents();
 	if (!qdabServer->waitForStarted())
 	{
 		kDebug() << "ERROR: starting qdabServer failed!";
+	}
+	if (!qdabServer->waitForReadyRead())
+	{
+		kDebug() << "Waiting for ready read failed";
 	}
 }
 
 QDab::~QDab()
 {
+	if (qdabServer!=NULL)
+	{
+		disconnect(qdabServer, SIGNAL(error(QProcess::ProcessError)), this, SLOT(processError(QProcess::ProcessError)));
+		disconnect(qdabServer, SIGNAL(stateChanged(QProcess::ProcessState)), this, SLOT(processStateChanged(QProcess::ProcessState)));
+		disconnect(qdabServer, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(processFinished(int, QProcess::ExitStatus)));
+		disconnect(qdabServer, SIGNAL(readyReadStandardError()), this, SLOT(processReadyReadStandardError()));
+		disconnect(qdabServer, SIGNAL(readyReadStandardOutput()), this, SLOT(processReadyReadStandardOutput()));
+		if (qdabServer->state() != QProcess::NotRunning)
+		{
+			kDebug() << "trying to kill qdabServer process";
+			qdabServer->kill();
+			qdabServer->terminate();
+			if (qdabServer->waitForFinished())
+				kDebug() << "killed qdabServer";
+			else
+				kDebug() << "killing qdabServer failed!";
+		}
+		delete qdabServer;
+	}
 }
 
 
@@ -62,97 +101,22 @@ int QDab::randomMove(const QList<bool> &lines)
 	return freeLines.at(qrand() % freeLines.size());
 }
 
-// def num2move(self, value, who, step=-1):
-// ty, x, y = 1, -1, -1
-// if (value&(1<<31)) != 0:
-// 		ty = 0 # horizon
-// for i in range(5)[::step]:
-// 		for j in range(6)[::step]:
-// 				if (value&1) == 1:
-// 						if ty == 0: x, y = j, i
-// 						else: x, y = i, j
-// 						break
-// 				value >>= 1
-// 		if x != -1:
-// 				break
-// return (ty, x, y, who)
-
-/*
-int QDab::numToMove(int h, int v)
-{
-	int x = -1, y = -1;
-	int val = h != 0 ? h : v;
-	for (int i = 0; i < 5; i++)
-	{
-		for (int j = 0; j < 6; j++)
-		{
-			if (val&1)
-			{
-				x = h != 0 ? i : j;
-				y = h != 0 ? j : i;
-			}
-			val >>= 1;
-		}
-		if (x != -1)
-			break;
-	}
-	return 
-*/
-
-// self.dab.thinking = True
-// self.dab.queue_draw()
-// if self.dab.first == 0:
-// 		s0, s1 = self.dab.human, self.dab.robot
-// else:
-// 		s1, s0 = self.dab.human, self.dab.robot
-// now = 0
-// if self.dab.who != self.dab.first:
-// 		now = 1
-
-// #algorithm = "alphabeta"
-// #algorithm = "uct"
-// #algorithm = "uctann"
-// #algorithm = "quct"
-// algorithm = "quctann"
-// timeout = int(10 + 60 * self.dab.timeout_offset) * 1000
-// s = socket.create_connection(("0.0.0.0", 12345))
-// arg = {"id": int(time.time()), "method": "Server.MakeMove",
-// 				"params": [{"Algorithm": algorithm,
-// 										"Board": {"H": h, "V": v, "S": [s0, s1], "Now": now, "Turn": self.dab.turn},
-// 									"Timeout": timeout}]}
-// data = simplejson.dumps(arg).encode()
-// print "send: " + data
-// s.sendall(data)
-// data = s.recv(1024).decode()
-// s.close()
-// print "recv: " + data
-// res = simplejson.loads(data)
-// ms = (res["result"]["H"], res["result"]["V"])
-// moves = []
-// for i in range(2):
-// 		for n in range(30):
-// 				if ((1<<n)&ms[i]) != 0:
-// 						moves.append(self.dab.num2move(((1<<n)|(i<<31)), 1, 1))
-// while len(moves) > 1:
-// 		for m in moves:
-// 				if not self.dab.change(m):
-// 						self.dab.move(m)
-// 						moves.remove(m)
-// 						break
-// self.dab.move(moves[0])
-// moves.remove(moves[0])
-// self.dab.thinking = False
-// self.dab.queue_draw()
 
 int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory)
 {
-// h, v = 0, 0
-// for move in self.dab.record:
-// 		x, y = move[1], move[2]
-// 		if move[0] == 0:
-// 				v |= (1<<(y*6+x))
-// 		else:
-// 				h |= (1<<(x*6+y))
+	QCoreApplication::processEvents();
+	if (!qdabServer->state() == QProcess::Running)
+	{
+		kDebug() << "WARNING: qdab server not running";
+		qdabServer->waitForStarted();
+		kDebug() << "wait for started returned, trying to get move";
+	}
+	if (!qdabServerListening)
+	{
+		kDebug() << "WARNING: qdab server might not be listening...";
+		qdabServer->waitForReadyRead();
+	}
+	
 	uint h = 0;
 	uint v = 0;
 	for (int i = 0; i < newLines.size(); i++)
@@ -163,9 +127,7 @@ int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwn
 		// qdab origin is at bottom right
 		// ksquares origin is at top left
 		Board::indexToPoints(i, &p1, &p2, 5, 5, false);
-// 		p1.setX(5 - p1.x());
-// 		p2.setX(5 - p2.x());
-		kDebug() << "dir,x,y: ("<< (p1.x() != p2.x() ? 0 : 1) <<", " << p1.x() << "," << p1.y() << ")";
+		//kDebug() << "dir,x,y: ("<< (p1.x() != p2.x() ? 0 : 1) <<", " << p1.x() << "," << p1.y() << ")";
 		if (p1.x() != p2.x())
 			v |= (1<<(p1.x()*6+p1.y()));
 		else
@@ -287,35 +249,7 @@ int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwn
 				kDebug() << "old line: " << idx << ", pa: " << pa << ", pb: " << pb;
 		}
 	}
-// ms = (res["result"]["H"], res["result"]["V"])
-// moves = []
-// for i in range(2):
-// 		for n in range(30):
-// 				if ((1<<n)&ms[i]) != 0:
-// 						moves.append(self.dab.num2move(((1<<n)|(i<<31)), 1, 1))
-// while len(moves) > 1:
-// 		for m in moves:
-// 				if not self.dab.change(m):
-// 						self.dab.move(m)
-// 						moves.remove(m)
-// 						break
-// self.dab.move(moves[0])
-// moves.remove(moves[0])
 
-// def num2move(self, value, who, step=-1):
-// ty, x, y = 1, -1, -1
-// if (value&(1<<31)) != 0:
-// 		ty = 0 # horizon
-// for i in range(5)[::step]:
-// 		for j in range(6)[::step]:
-// 				if (value&1) == 1:
-// 						if ty == 0: x, y = j, i
-// 						else: x, y = i, j
-// 						break
-// 				value >>= 1
-// 		if x != -1:
-// 				break
-// return (ty, x, y, who)
 	return -1;
 }
 
@@ -369,6 +303,12 @@ void QDab::processReadyReadStandardError()
 	kDebug() << qdabStdErrTmp;
 	qdabStdErrStream << qdabStdErrTmp;
 	qdabStdErrStream.flush();
+	//kDebug() << "qdab stderr: " << QString(qdabStdErrTmp);
+	if (qdabStdErr.contains("Server runing on"))
+	{
+		kDebug() << "qdab server is listening";
+		qdabServerListening = true;
+	}
 }
 
 void QDab::processReadyReadStandardOutput()
@@ -376,9 +316,9 @@ void QDab::processReadyReadStandardOutput()
 	kDebug() << "processReadyReadStandardOutput!";
 	qdabServer->setReadChannel(QProcess::StandardOutput);
 	QByteArray qdabStdOutTmp = qdabServer->readAll();
-	//kDebug() << "qdab stdout: " << QString(qdabStdOutTmp);
 	qdabStdOutStream << qdabStdOutTmp;
 	qdabStdOutStream.flush();
+	//kDebug() << "qdab stdout: " << QString(qdabStdOutTmp);
 }
 
 #include "qdab.moc"
