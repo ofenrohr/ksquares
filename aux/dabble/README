@@ -21,3 +21,5 @@ sha1sum /home/USERNAME/.cache/winetricks/vcrun2013/vcredist_x86.exe
 and replace the hash on line 7344 in winetricks.
 The winetricks script in this directory worked on 23.02.2015 after modifing the
 hash.
+
+If you are using Arch-Linux install wine and cabextract, then execute 'sh winetricks vcrun2013'.
