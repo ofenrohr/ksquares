@@ -96,29 +96,29 @@ KSquaresAi::Ptr aiController::getAi()
 	{
 		default:
 			kDebug() << "Unknown ai level " << level;
-		case 0:
-		case 1:
-		case 2:
+		case KSquares::AI_EASY:
+		case KSquares::AI_MEDIUM:
+		case KSquares::AI_HARD:
 			//kDebug() << "creating aiEasyMediumHard: w = " << width << ", h = " << height;
 			ai = KSquaresAi::Ptr(new aiEasyMediumHard(playerId, width, height, level));
 		break;
-		case 3:
+		case KSquares::AI_VERYHARD:
 			//kDebug() << "creating aiAlphaBeta";
 			if (ai.isNull())
 				ai = KSquaresAi::Ptr(new aiAlphaBeta(playerId, maxPlayerId, width, height, level, aiThinkTime));
 		break;
-		case 4:
+		case KSquares::AI_DABBLE:
 			if (ai.isNull())
 				ai = KSquaresAi::Ptr(new Dabble(playerId, maxPlayerId, width, height, 0, aiThinkTime));
 		break;
-		case 5:
+		case KSquares::AI_DABBLENOHASH:
 			if (ai.isNull())
 				ai = KSquaresAi::Ptr(new Dabble(playerId, maxPlayerId, width, height, 1, aiThinkTime));
-		case 6:
+		case KSquares::AI_QDAB:
 			if (ai.isNull())
 				ai = KSquaresAi::Ptr(new QDab(playerId, maxPlayerId, width, height, level, aiThinkTime));
 		break;
-		case 7:
+		case KSquares::AI_KNOX:
 			if (ai.isNull())
 				ai = KSquaresAi::Ptr(new Knox(playerId, maxPlayerId, width, height, level, aiThinkTime));
 		break;

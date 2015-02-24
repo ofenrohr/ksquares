@@ -34,6 +34,21 @@
  * @author Tom Vincent Peters <kde@vincent-peters.de>
  */
 
+namespace KSquares
+{
+	enum AILevel
+	{
+		AI_EASY, 
+		AI_MEDIUM, 
+		AI_HARD, 
+		AI_VERYHARD, 
+		AI_DABBLE, 
+		AI_DABBLENOHASH, 
+		AI_QDAB, 
+		AI_KNOX
+	};
+}
+
 class KSquaresAi : public aiFunctions, public BoardAnalysisFunctions
 {
 	public:

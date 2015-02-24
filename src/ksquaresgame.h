@@ -96,7 +96,10 @@ class KSquaresGame : public QObject
 		 * @return the game board
 		 */
 		Board* board() {return &board_;}
-		
+		/**
+		 * @return list of players
+		 */
+		QVector<KSquaresPlayer> getPlayers() {return players;}
 
 	public Q_SLOTS:
 		/**
