@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2014 by Tom Vincent Peters   <kde@vincent-peters.de>    *
+ *   Copyright (C) 2015 by Tom Vincent Peters   <kde@vincent-peters.de>    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -23,11 +23,9 @@ class GameBoardView;
 class GameBoardScene;
 
 /**
- * @short Mainwindow class for demonstration mode
+ * @short Test various AIs.
  *
- * Creates a very simple mainwindow and continuously plays 4 computer players against eachother.
- *
- * @author Matt Williams <matt@milliams.com>
+ * @author Tom Vincent Peters <kde@vincent-peters.de>
  */
 
 class AITestSetup {
