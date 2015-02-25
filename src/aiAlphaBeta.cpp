@@ -317,6 +317,12 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 			*line = linePool[poolIndex];
 		}
 		*/
+		/*
+		if (line != NULL)
+		{
+			kDebug() << "line " << (*moveSequences)[i][0] << ": " << val;
+		}
+		*/
 		if (val > bestValue)
 		{
 			bestValue = val;
@@ -327,8 +333,8 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 				*line = (*moveSequences)[i][0];
 			}
 			// put the current item in front (reordering for iterative deepening)
-			moveSequences->prepend((*moveSequences)[i]);
-			moveSequences->removeAt(i+1);
+			//moveSequences->prepend((*moveSequences)[i]);
+			//moveSequences->removeAt(i+1);
 		}
 		
 		if (val > alpha)

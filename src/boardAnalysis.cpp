@@ -120,7 +120,7 @@ KSquares::BoardAnalysis BoardAnalysisFunctions::analyseBoard(aiBoard::Ptr board,
 	}
 	
 	// look for safe moves
-	//analysis.safeLines = safeMoves(board->width, board->height, board->linesSize, board->lines);
+	analysis.safeLines = aiFunctions::safeMoves(board->width, board->height, board->linesSize, board->lines);
 	
 	// undo capture moves
 	for (int i = 0; i < analysis.chains.size(); i++)
@@ -312,9 +312,10 @@ QSharedPointer<QList<QList<int> > > BoardAnalysisFunctions::getMoveSequences(aiB
 	//QList<int> ignoreLines;
 	for (int i = 0; i < board->linesSize; i++)
 		if (!board->lines[i] && !baseMoveSequence.contains(i) && !ignoreLines.contains(i))
-			//freeLines.append(i);
-			freeLinesMap.insert(lineSortList[i], i);
-	freeLines = freeLinesMap.values();
+			freeLines.append(i);
+			//freeLinesMap.insert(lineSortList[i], i);
+	//freeLines = freeLinesMap.values();
+	qSort(freeLines.begin(), freeLines.end(), LineSorter(board->width,board->height,board->linesSize));
 	//kDebug() << "free lines: " << freeLines;
 	if (freeLines.size() == 0 && baseMoveSequence.size() > 0)
 		moveSequences->append(baseMoveSequence);

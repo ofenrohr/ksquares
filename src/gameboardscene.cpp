@@ -53,7 +53,6 @@ GameBoardScene::GameBoardScene(int newWidth, int newHeight, QObject *parent) : Q
 		addLine(QLineF(0, spacing*iHeight, spacing*width, spacing*iHeight), feintPen);
 	}
 	
-	/*
 	for(int i = 0; i < (2*width*height + width + height); i++)
 	{
 		// used for debugging ai
@@ -75,7 +74,6 @@ GameBoardScene::GameBoardScene(int newWidth, int newHeight, QObject *parent) : Q
 		addItem(txt);
 		update(txt->boundingRect());
 	}
-	*/
 	
 	setBackgroundBrush(QBrush(Qt::white));
 	
