@@ -55,18 +55,24 @@ float aiHeuristic::evaluate(aiBoard::Ptr board, int ownPlayerId)
 	{
 		div += 1.0;
 		result += evalSquaresCnt(board);
+		if (debug)
+			kDebug() << "result after evalSquaresCnt: " << result;
 	}
 	
 	if (enableScores)
 	{
 		div += 1.0;
 		result += evalScores(board);
+		if (debug)
+			kDebug() << "result after evalScores: " << result;
 	}
 	
 	if (enableLongChainRule)
 	{
 		div += 1.0;
 		result += evalLongChainRule(board);
+		if (debug)
+			kDebug() << "result after evalLongChainRule: " << result;
 	}
 	
 	if (div == 0.0) return 0;
@@ -116,8 +122,13 @@ float aiHeuristic::evalScores(aiBoard::Ptr board)
 		if (scores.contains(i))
 			enemyScore += scores[i];
 	}
-	
-	return (float)score - (float)enemyScore / (float)(board->width * board->height);
+	if (debug)
+	{
+		kDebug() << "scoreMap: " << scores;
+		kDebug() << "ownScore: " << score;
+		kDebug() << "enemyScore: " << enemyScore;
+	}
+	return ((float)score - (float)enemyScore) / (float)(board->width * board->height);
 }
 
 float aiHeuristic::evalLongChainRule(aiBoard::Ptr board)

@@ -99,8 +99,8 @@ int aiAlphaBeta::chooseLine(const QList<bool> &newLines, const QList<int> &newSq
 		alphabetaTimer.restart();
 	}
 	int line = -1;
-	//float evalResult = alphabetaIterativeDeepening(board, searchDepth, &line);
-	float evalResult = alphabeta(board, searchDepth, &line);
+	float evalResult = alphabetaIterativeDeepening(board, searchDepth, &line);
+	//float evalResult = alphabeta(board, searchDepth, &line);
 	kDebug() << "alphabeta END " << line;
 	
 	kDebug() << "alphabeta eval result = " << evalResult;
@@ -317,12 +317,7 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 			*line = linePool[poolIndex];
 		}
 		*/
-		/*
-		if (line != NULL)
-		{
-			kDebug() << "line " << (*(analysis.moveSequences))[i][0] << ": " << val;
-		}
-		*/
+		
 		if (val > bestValue)
 		{
 			bestValue = val;
