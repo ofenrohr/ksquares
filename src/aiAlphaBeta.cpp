@@ -141,7 +141,7 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 //	bool isEndgame = false;
 	//KSquares::BoardAnalysis analysis = aiFunctions::analyseBoard(board);
 	KSquares::BoardAnalysis analysis = getAnalysis(board);
-	QSharedPointer<QList<QList<int> > > moveSequences = analysis.moveSequences;//getMoveSequences(board, analysis, &isEndgame);
+	//QSharedPointer<QList<QList<int> > > moveSequences = analysis.moveSequences;//getMoveSequences(board, analysis, &isEndgame);
 	
 // 	int thisNode = debugNodeCnt;
 // 	debugNodeCnt++;
@@ -173,7 +173,7 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 // 		*/
 // 	}
 	
-	if (moveSequences->size() == 0) // game is over
+	if (analysis.moveSequences->size() == 0) // game is over
 	{
 		//kDebug() << "terminal node - board filled";
 		// TODO: remove check
@@ -289,30 +289,30 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 	
 	//int localLine = -1;
 	float bestValue = -INFINITY;
-	for (int i = 0; i < moveSequences->size() && (!alphabetaTimer.hasExpired(alphabetaTimeout) || line != NULL); i++)
+	for (int i = 0; i < analysis.moveSequences->size() && (!alphabetaTimer.hasExpired(alphabetaTimeout) || line != NULL); i++)
 	{
-		//if ((*moveSequences)[i].size() == 0)
+		//if ((*analysis.moveSequences)[i].size() == 0)
 		//	kDebug() << "empty move sequence!";
 		int prevPlayer = board->playerId;
-		for (int j = 0; j < (*moveSequences)[i].size(); j++)
+		for (int j = 0; j < (*(analysis.moveSequences))[i].size(); j++)
 		{
-			board->doMove((*moveSequences)[i][j]);
+			board->doMove((*(analysis.moveSequences))[i][j]);
 		}
 		// TODO: remove this check
 		if (prevPlayer == board->playerId && board->squareOwners.contains(-1))
 		{
-			kDebug() << "ERROR: sth went really wrong! player didn't change after move sequence: " << (*moveSequences)[i];
+			kDebug() << "ERROR: sth went really wrong! player didn't change after move sequence: " << (*(analysis.moveSequences))[i];
 			kDebug() << "ERROR: board: " << aiFunctions::boardToString(board);
 		}
 		float val = -alphabeta(board, depth - 1, NULL, -beta, -alpha/*, thisNode*/);
-		for (int j = (*moveSequences)[i].size() -1; j >= 0; j--)
+		for (int j = (*(analysis.moveSequences))[i].size() -1; j >= 0; j--)
 		{
-			board->undoMove((*moveSequences)[i][j]);
+			board->undoMove((*(analysis.moveSequences))[i][j]);
 		}
 		/*
 		if (val == bestValue && line != NULL) // randomly select other result if it is as good as the best one found
 		{
-			linePool.append((*moveSequences)[i][0]);
+			linePool.append((*(analysis.moveSequences))[i][0]);
 			int poolIndex = ((float) rand()/(RAND_MAX + 1.0)) * (linePool.size()-1);
 			*line = linePool[poolIndex];
 		}
@@ -320,7 +320,7 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 		/*
 		if (line != NULL)
 		{
-			kDebug() << "line " << (*moveSequences)[i][0] << ": " << val;
+			kDebug() << "line " << (*(analysis.moveSequences))[i][0] << ": " << val;
 		}
 		*/
 		if (val > bestValue)
@@ -329,12 +329,12 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 			if (line != NULL)
 			{
 				//linePool.clear();
-				//linePool.append((*moveSequences)[i][0]);
-				*line = (*moveSequences)[i][0];
+				//linePool.append((*(analysis.moveSequences))[i][0]);
+				*line = (*(analysis.moveSequences))[i][0];
 			}
 			// put the current item in front (reordering for iterative deepening)
-			//moveSequences->prepend((*moveSequences)[i]);
-			//moveSequences->removeAt(i+1);
+			//(analysis.moveSequences)->prepend((*(analysis.moveSequences))[i]);
+			//(analysis.moveSequences)->removeAt(i+1);
 		}
 		
 		if (val > alpha)
@@ -348,8 +348,8 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 		
 	}
 	//kDebug() << localLine << " ";
-	//if (bestValue == -INFINITY && moveSequences->size() > 0 && line != NULL)
-	//	*line = (*moveSequences)[0][0];
+	//if (bestValue == -INFINITY && (analysis.moveSequences)->size() > 0 && line != NULL)
+	//	*line = (*(analysis.moveSequences))[0][0];
 	
 // 	if (debug && searchDepth - depth <= debugDepth && !debugEvalOnly)
 // 	{

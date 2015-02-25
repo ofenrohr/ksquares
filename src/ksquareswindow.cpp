@@ -327,6 +327,13 @@ void KSquaresWindow::loadGame()
   {
     return;
   }
+	ais.clear();
+	for (int i = 0; i < 2; i++)
+	{
+		int aiLevel = getAiLevel(i);
+		ais.append(aiController::Ptr(new aiController(i, 1, Settings::boardWidth(), Settings::boardHeight(), aiLevel, Settings::aiThinkTime()*1000)));
+	}
+	
   QList<int> lines;
   KSquaresIO::loadGame(filename, sGame, &lines);
   resetBoard(sGame->board()->width(), sGame->board()->height());
@@ -383,7 +390,9 @@ void KSquaresWindow::aiChooseLine()
 	
 	// https://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
 	QThread* thread = new QThread;
-	aiControllerWorker *worker = new aiControllerWorker(ais.at(sGame->currentPlayerId()), sGame->board()->lines(), sGame->board()->squares(), sGame->board()->getLineHistory());
+	kDebug() << "ais.size() = " << ais.size();
+	aiController::Ptr aic = ais.at(sGame->currentPlayerId());
+	aiControllerWorker *worker = new aiControllerWorker(aic, sGame->board()->lines(), sGame->board()->squares(), sGame->board()->getLineHistory());
 	worker->moveToThread(thread);
 	//connect(worker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
 	connect(thread, SIGNAL(started()), worker, SLOT(process()));

@@ -79,7 +79,7 @@ inline uint qHash(const aiBoard &key)
 	//kDebug() << "qHash aiBoard called!";
 	uint ret = 0;
 	uint add = 1;
-	uint i = 0;
+	int i = 0;
 	while (add > 0 && i < key.hashLines->size())
 	{
 		if (key.lines[key.hashLines->at(i)])
@@ -100,7 +100,7 @@ inline uint qHash(const aiBoard::Ptr &key)
 	}
 	uint ret = 0;
 	uint add = 1;
-	uint i = 0;
+	int i = 0;
 	while (add > 0 && i < key->hashLines->size())
 	{
 		if (key->lines[key->hashLines->at(i)])
