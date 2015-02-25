@@ -12,6 +12,8 @@
 
 //qt
 #include <QTimer>
+#include <QFile>
+#include <QTextStream>
 
 //kde
 #include <KApplication>
@@ -34,8 +36,10 @@
 
 KSquaresTestWindow::KSquaresTestWindow() : KXmlGuiWindow(), m_view(new GameBoardView(this)), m_scene(0)
 {
-	initTestSetup();
-	saveStatus();
+	testSetups = QList<AITestSetup>();
+	testResults = QList<AITestResult>();
+	
+	initTest();
 	
 	sGame = new KSquaresGame();
 	thread = NULL;
@@ -52,7 +56,7 @@ KSquaresTestWindow::KSquaresTestWindow() : KXmlGuiWindow(), m_view(new GameBoard
 	statusBar()->insertPermanentItem(i18n("Results"), 1);
 	statusBar()->show();
 	
-	resultStr = "results";
+	updateResultStr();
 	
 	outstandingChooseLineCalls = 0;
 	firstSetup = true;
@@ -79,14 +83,63 @@ void KSquaresTestWindow::saveStatus()
 	
 	QJson::Serializer serializer;
 	bool ok;
-	QByteArray json = serializer.serialize(setupList, &ok);
+	QByteArray json = serializer.serialize(statusMap, &ok);
 
 	if (ok) {
 		kDebug() << "Setup as json: " << json;
 	} else {
 		kDebug() << "Something went wrong:" << serializer.errorMessage();
+		return;
 	}
 
+	QFile file("ksquares-test-status.json");
+	if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate))
+	{
+		kDebug() << "KSquaresTest error: Can't open file";
+		return;
+	}
+	
+	QTextStream outStream(&file);
+	outStream << json;
+	file.close();
+}
+
+bool KSquaresTestWindow::loadStatus()
+{
+	QFile file("ksquares-test-status.json");
+	if (!file.open(QIODevice::ReadOnly))
+	{
+		kDebug() << "No previous test status file found";
+		return false;
+	}
+	
+	QJson::Parser jsonParser;
+	bool parseOk;
+	QVariantMap map = jsonParser.parse(&file, &parseOk).toMap();
+	
+	if (!parseOk)
+	{
+		kDebug() << "parsing failed! json error: " << jsonParser.errorString();
+		return false;
+	}
+	
+	QVariantList setups = map["setups"].toList();
+	testSetups.clear();
+	for (int i = 0; i < setups.size(); i++)
+	{
+		AITestSetup setup;
+		setup.fromQVariant(setups[i]);
+		testSetups.append(setup);
+	}
+	QVariantList results = map["results"].toList();
+	testResults.clear();
+	for (int i = 0; i < results.size(); i++)
+	{
+		AITestResult result;
+		result.fromQVariant(results[i]);
+		testResults.append(result);
+	}
+	return true;
 }
 
 QVariant AITestSetup::toQVariant()
@@ -136,14 +189,35 @@ QVariant AITestResult::toQVariant()
 	return map;
 }
 
-void AITestResult::fromQVariant(QVariant map)
+void AITestResult::fromQVariant(QVariant var)
 {
-	
+	QVariantMap map = var.toMap();
+	setup.fromQVariant(map["setup"]);
+	moves.clear();
+	QVariantList moveList = map["moves"].toList();
+	for (int i = 0; i < moveList.size(); i++)
+		moves.append(moveList[i].toInt());
+	timeP1.clear();
+	QVariantList timeP1List = map["timeP1"].toList();
+	for (int i = 0; i < timeP1List.size(); i++)
+		timeP1.append(timeP1List[i].toInt());
+	timeP2.clear();
+	QVariantList timeP2List = map["timeP2"].toList();
+	for (int i = 0; i < timeP2List.size(); i++)
+		timeP2.append(timeP2List[i].toInt());
+	taintedP1 = map["taintedP1"].toBool();
+	taintedP2 = map["taintedP2"].toBool();
+	scoreP1 = map["scoreP1"].toInt();
+	scoreP2 = map["scoreP2"].toInt();
 }
 
-void KSquaresTestWindow::initTestSetup()
+void KSquaresTestWindow::initTest()
 {
 	testSetups.clear();
+	testResults.clear();
+	
+	if (loadStatus())
+		return;
 	
 	for (int i = 0; i < 5; i++)
 	{
@@ -270,13 +344,26 @@ void KSquaresTestWindow::initTestSetup()
 
 void KSquaresTestWindow::gameNew()
 {
+	// load test setup
 	if (testSetups.size() <= 0)
 	{
 		kDebug() << "no more testSetups, exit application";
 		QCoreApplication::quit();
+		exit(0);
+		return;
 	}
 	currentSetup = testSetups.takeFirst();
 	currentResult = AITestResult();
+
+	int width = currentSetup.boardSize.x();
+	int height = currentSetup.boardSize.y();
+	
+	// create AI players
+	aiList.clear();
+	aiController::Ptr aic0(new aiController(0, 1, width, height, currentSetup.levelP1, currentSetup.timeout));
+	aiController::Ptr aic1(new aiController(1, 1, width, height, currentSetup.levelP2, currentSetup.timeout));
+	aiList.append(aic0);
+	aiList.append(aic1);
 	
 	//create players
 	QVector<KSquaresPlayer> playerList;
@@ -300,11 +387,8 @@ void KSquaresTestWindow::gameNew()
 			default:
 				kError() << "KSquaresGame::playerSquareComplete(); currentPlayerId() != 0|1|2|3";
 		}
-		playerList.append(KSquaresPlayer(i==0?"QDab":"AlphaBeta", color, false));
+		playerList.append(KSquaresPlayer(aiList[i]->getAi()->getName(), color, false));
 	}
-
-	int width = currentSetup.boardSize.x();
-	int height = currentSetup.boardSize.y();
 	
 	//create physical board
 	GameBoardScene* temp = m_scene;
@@ -314,13 +398,6 @@ void KSquaresTestWindow::gameNew()
 	delete temp;
 
 	m_view->setBoardSize();	//refresh board zooming
-
-	// create AI players
-	aiList.clear();
-	aiController::Ptr aic0(new aiController(0, 1, width, height, currentSetup.levelP1, currentSetup.timeout));
-	aiController::Ptr aic1(new aiController(1, 1, width, height, currentSetup.levelP2, currentSetup.timeout));
-	aiList.append(aic0);
-	aiList.append(aic1);
 	
 	//start game etc.
 	sGame->createGame(playerList, width, height);
@@ -410,15 +487,24 @@ void KSquaresTestWindow::gameOver(const QVector<KSquaresPlayer> & playerList)
 	kDebug() << "Game Over";
 	kDebug() << "score p1 ai: " << playerList[0].score();
 	kDebug() << "score p2 ai: " << playerList[1].score();
-	resultStr = "Remaining games: " + QString::number(testSetups.size());
 	
 	currentResult.setup = currentSetup;
-	currentResult.taintedP1 = aiList[0].getAi().tainted();
-	currentResult.taintedP1 = aiList[1].getAi().tainted();
+	currentResult.taintedP1 = aiList[0]->getAi()->tainted();
+	currentResult.taintedP1 = aiList[1]->getAi()->tainted();
 	currentResult.scoreP1 = playerList[0].score();
 	currentResult.scoreP2 = playerList[1].score();
 	
+	testResults.append(currentResult);
+	
+	updateResultStr();
+	saveStatus();
+	
 	QTimer::singleShot(1000, this, SLOT(gameNew()));
+}
+
+void KSquaresTestWindow::updateResultStr()
+{
+	resultStr = "Remaining games: " + QString::number(testSetups.size());
 }
 
 #include "ksquarestestwindow.moc"

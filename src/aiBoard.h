@@ -23,7 +23,7 @@ class aiBoard
 public:
 	typedef QSharedPointer<aiBoard> Ptr;
 	
-	aiBoard(bool *newLines, int newLinesSize, int newWidth, int newHeight, const QList<int> newSquareOwners, int playerId, int maxPlayerId);
+	aiBoard(bool *newLines, int newLinesSize, int newWidth, int newHeight, const QList<int> newSquareOwners, int playerId, int maxPlayerId, QList<int> *newHashLines = NULL);
 	aiBoard(Board *board);
 	~aiBoard();
 	
@@ -38,6 +38,8 @@ public:
 	QList<int> squareOwners;
 	int playerId;
 	int maxPlayerId;
+	
+	QList<int> *hashLines;
 };
 
 // the == operator and qHash are required to use an aiBoard as a key for QHash to reuse previous analysis of the board
@@ -78,9 +80,9 @@ inline uint qHash(const aiBoard &key)
 	uint ret = 0;
 	uint add = 1;
 	uint i = 0;
-	while (add > 0)
+	while (add > 0 && i < key.hashLines->size())
 	{
-		if (key.lines[i])
+		if (key.lines[key.hashLines->at(i)])
 			ret += add;
 		add <<= 1;
 		i++;
@@ -91,12 +93,17 @@ inline uint qHash(const aiBoard &key)
 inline uint qHash(const aiBoard::Ptr &key)
 {
 	//kDebug() << "qHash aiBoard::Ptr called!";
+	if (key->hashLines == NULL)
+	{
+		kDebug() << "ERROR: hashLines is NULL";
+		return 1;
+	}
 	uint ret = 0;
 	uint add = 1;
 	uint i = 0;
-	while (add > 0)
+	while (add > 0 && i < key->hashLines->size())
 	{
-		if (key->lines[i])
+		if (key->lines[key->hashLines->at(i)])
 			ret += add;
 		add <<= 1;
 		i++;

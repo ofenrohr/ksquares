@@ -25,6 +25,8 @@
 #include <cmath>
 
 
+typedef QPair<bool *, KSquares::BoardAnalysis> TranspositionEntry;
+
 class aiAlphaBeta : public KSquaresAi
 {
 	public:
@@ -33,6 +35,7 @@ class aiAlphaBeta : public KSquaresAi
 		
 		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory);
 		QString getName() { return "alphabeta"; }
+		virtual bool enabled() { return true; }
 		virtual bool tainted() { return false; }
 		virtual long lastMoveTime() { return 0; }
 		
@@ -84,9 +87,12 @@ class aiAlphaBeta : public KSquaresAi
 		/// circular sorting map for board lines (see j. k. barker and r. e. korf - solving dots-and-boxes)
 		QList<int> lineSortList;
 		/// map of previous board analysis
-		QHash<aiBoard::Ptr, QPair<bool *, KSquares::BoardAnalysis> > *analysisHash;
+		QHash<aiBoard::Ptr, QPair<TranspositionEntry, TranspositionEntry> > *analysisHash;
 		/// remember how many turns ai played
 		int turn;
+		
+		QList<int> *hashLines;
+		void clearTranspositionTable();
 		
 		/// enable debugging
 		bool debug;

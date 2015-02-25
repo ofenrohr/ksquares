@@ -33,20 +33,32 @@ aiAlphaBeta::aiAlphaBeta(int newPlayerId, int newMaxPlayerId, int newWidth, int 
 	debugDepth = searchDepth;
 	LineSorter sorter(width, height, linesSize);
 	lineSortList = sorter.getSortMap();
-	analysisHash = new QHash<aiBoard::Ptr, QPair<bool *, KSquares::BoardAnalysis> >();
+	analysisHash = new QHash<aiBoard::Ptr, QPair<TranspositionEntry, TranspositionEntry> >();
 	alphabetaTimer = QElapsedTimer();
 	turn = 0;
+	hashLines = new QList<int>();
 }
 
 aiAlphaBeta::~aiAlphaBeta()
 {
 	kDebug() << "aiAlphaBeta destruct";
-	QList<QPair<bool *, KSquares::BoardAnalysis> > hashValues = analysisHash->values();
-	for (int i = 0; i < hashValues.size(); i++)
-		delete hashValues[i].first;
+	clearTranspositionTable();
 	delete analysisHash;
 	delete[] lines;
 	delete heuristic;
+	delete hashLines;
+}
+
+void aiAlphaBeta::clearTranspositionTable()
+{
+	QList<QPair<TranspositionEntry, TranspositionEntry> > hashValues = analysisHash->values();
+	for (int i = 0; i < hashValues.size(); i++)
+	{
+		delete[] hashValues[i].first.first;
+		delete[] hashValues[i].second.first;
+	}
+	
+	analysisHash->clear();
 }
 
 int aiAlphaBeta::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory)
@@ -56,14 +68,23 @@ int aiAlphaBeta::chooseLine(const QList<bool> &newLines, const QList<int> &newSq
 		kFatal() << "something went terribly wrong: newLines.size() != linesSize";
 	}
 	// put lines into local board representation
-	for (int i = 0; i < linesSize; ++i) lines[i] = newLines[i];
+	hashLines->clear();
+	for (int i = 0; i < linesSize; ++i)
+	{
+		lines[i] = newLines[i];
+		if (!lines[i] && hashLines->size() <= 32)
+			hashLines->append(i);
+	}
 	// remember square owner table
 	squareOwners = newSquareOwners;
+	// clean up
+	clearTranspositionTable();
 	// do the ai stuff:
 	kDebug() << "incoming board:" << boardToString(lines, linesSize, width, height);
 	
 	// do sth smart
-	aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(lines, linesSize, width, height, squareOwners, playerId, maxPlayerId));
+	aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(lines, linesSize, width, height, squareOwners, playerId, maxPlayerId, hashLines));
+	
 	
 	kDebug() << "alphabeta START";
 	timerHasExpiredBefore = false;
@@ -359,13 +380,13 @@ float aiAlphaBeta::evaluate(aiBoard::Ptr board)
 
 KSquares::BoardAnalysis aiAlphaBeta::getAnalysis(aiBoard::Ptr board)
 {
-	/*
+	KSquares::BoardAnalysis analysis;
 	if (analysisHash->contains(board))
 	{
-		QList<QPair<bool *, KSquares::BoardAnalysis> > entries = analysisHash->values(board);
-		for (int j = 0; j < entries.size(); j++)
+		QPair<TranspositionEntry, TranspositionEntry> entries = analysisHash->value(board);
+		for (int j = 0; j < 2; j++)
 		{
-			QPair<bool *, KSquares::BoardAnalysis> entry = entries[j];//analysisHash->value(board);
+			TranspositionEntry entry = j == 0 ? entries.first : entries.second;
 			bool sameBoard = true;
 			for (int i = 0; i < board->linesSize && sameBoard; i++)
 			{
@@ -378,13 +399,43 @@ KSquares::BoardAnalysis aiAlphaBeta::getAnalysis(aiBoard::Ptr board)
 				return entry.second;
 			}
 		}
+		
+		// same hash but not same board -> apply two big replacement scheme
+		analysis = BoardAnalysisFunctions::analyseBoard(board, lineSortList);
+		if (analysis.moveSequences->size() > entries.first.second.moveSequences->size())
+		{
+			delete[] entries.second.first;
+			entries.second = entries.first;
+			bool *linesCopy = new bool[board->linesSize];
+			memcpy(linesCopy, board->lines, board->linesSize);
+			entries.first = QPair<bool *, KSquares::BoardAnalysis>(linesCopy, analysis);
+			analysisHash->insert(board, entries);
+		}
+		else
+		{
+			delete[] entries.second.first;
+			bool *linesCopy = new bool[board->linesSize];
+			memcpy(linesCopy, board->lines, board->linesSize);
+			entries.second = QPair<bool *, KSquares::BoardAnalysis>(linesCopy, analysis);
+			analysisHash->insert(board, entries);
+		}
 	}
-	*/
+	else
+	{
+		analysis = BoardAnalysisFunctions::analyseBoard(board, lineSortList);
+		
+		bool *linesCopy = new bool[board->linesSize];
+		memcpy(linesCopy, board->lines, board->linesSize);
+		bool *linesCopy2 = new bool[board->linesSize];
+		memcpy(linesCopy2, board->lines, board->linesSize);
+		
+		QPair<TranspositionEntry, TranspositionEntry> newEntry;
+		newEntry.first = QPair<bool *, KSquares::BoardAnalysis>(linesCopy, analysis);
+		newEntry.second = QPair<bool *, KSquares::BoardAnalysis>(linesCopy2, analysis); // TODO: insert NULL pointer and check for them instead?
+		
+		analysisHash->insert(board, newEntry);
+	}
 	
-	KSquares::BoardAnalysis analysis = BoardAnalysisFunctions::analyseBoard(board, lineSortList);
-	//bool *linesCopy = new bool[board->linesSize];
-	//memcpy(linesCopy, board->lines, board->linesSize);
-	//analysisHash->insertMulti(board, QPair<bool *, KSquares::BoardAnalysis>(linesCopy, analysis));
 	return analysis;
 }
 

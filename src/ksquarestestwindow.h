@@ -91,11 +91,14 @@ class KSquaresTestWindow : public KXmlGuiWindow
 		bool firstSetup;
 		
 		void saveStatus();
-		void initTestSetup();
+		bool loadStatus();
+		void initTest();
 		QList<AITestSetup> testSetups;
 		QList<AITestResult> testResults;
 		AITestSetup currentSetup;
 		AITestResult currentResult;
+		
+		void updateResultStr();
 };
 
 #endif // KSQUARESDEMOWINDOW_H

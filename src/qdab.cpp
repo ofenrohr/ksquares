@@ -62,6 +62,12 @@ QDab::QDab(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int
 	{
 		kDebug() << "Waiting for ready read failed";
 	}
+	
+	if (newWidth != 5 || newHeight != 5)
+	{
+		kDebug() << "ERROR: qdab only supports 5x5 boards!";
+		isTainted = true;
+	}
 }
 
 QDab::~QDab()
