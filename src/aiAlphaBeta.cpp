@@ -63,6 +63,9 @@ void aiAlphaBeta::clearTranspositionTable()
 
 int aiAlphaBeta::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory)
 {
+	QElapsedTimer moveTimer;
+	moveTimer.start();
+	
 	if (newLines.size() != linesSize)
 	{
 		kFatal() << "something went terribly wrong: newLines.size() != linesSize";
@@ -113,11 +116,14 @@ int aiAlphaBeta::chooseLine(const QList<bool> &newLines, const QList<int> &newSq
 		if (freeLines.size() <= 0)
 		{
 			kDebug() << "no valid lines left!";
+			turnTime = moveTimer.elapsed();
 			return 0;
 		}
+		turnTime = moveTimer.elapsed();
 		return freeLines.at(qrand() % freeLines.size());
 	}
 	
+	turnTime = moveTimer.elapsed();
 	return line;
 }
 

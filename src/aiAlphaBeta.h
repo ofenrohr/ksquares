@@ -37,7 +37,7 @@ class aiAlphaBeta : public KSquaresAi
 		QString getName() { return "alphabeta"; }
 		virtual bool enabled() { return true; }
 		virtual bool tainted() { return false; }
-		virtual long lastMoveTime() { return 0; }
+		virtual long lastMoveTime() { return turnTime; }
 		
 		void setDepth(int d) { searchDepth = d; }
 		float alphabeta(aiBoard::Ptr board, int depth, int *line, float alpha = -INFINITY, float beta = INFINITY/*, int parentNode = -1*/);
@@ -93,6 +93,9 @@ class aiAlphaBeta : public KSquaresAi
 		
 		QList<int> *hashLines;
 		void clearTranspositionTable();
+		
+		/// time logging
+		int turnTime;
 		
 		/// enable debugging
 		bool debug;
