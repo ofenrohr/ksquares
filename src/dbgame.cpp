@@ -58,6 +58,9 @@ void Dabble::initProcess()
 	QStringList dabbleArguments;
 	dabbleArguments << dabbleExecutable << "/tmp/input.dabble.dbl" << QString::number(timeout / 1000);
 	dabble = new QProcess();
+	qRegisterMetaType<QProcess::ProcessError>("QProcess::ProcessError");
+	qRegisterMetaType<QProcess::ProcessState>("QProcess::ProcessState");
+	qRegisterMetaType<QProcess::ExitStatus>("QProcess::ExitStatus");
 	connect(dabble, SIGNAL(error(QProcess::ProcessError)), this, SLOT(processError(QProcess::ProcessError)));
 	connect(dabble, SIGNAL(stateChanged(QProcess::ProcessState)), this, SLOT(processStateChanged(QProcess::ProcessState)));
 	connect(dabble, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(processFinished(int, QProcess::ExitStatus)));
@@ -78,13 +81,12 @@ void Dabble::teardownProcess()
 	kDebug() << "teardownProcess()";
 	if (dabble!=NULL)
 	{
-		/*
 		disconnect(dabble, SIGNAL(error(QProcess::ProcessError)), this, SLOT(processError(QProcess::ProcessError)));
 		disconnect(dabble, SIGNAL(stateChanged(QProcess::ProcessState)), this, SLOT(processStateChanged(QProcess::ProcessState)));
 		disconnect(dabble, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(processFinished(int, QProcess::ExitStatus)));
 		disconnect(dabble, SIGNAL(readyReadStandardError()), this, SLOT(processReadyReadStandardError()));
 		disconnect(dabble, SIGNAL(readyReadStandardOutput()), this, SLOT(processReadyReadStandardOutput()));
-		*/
+		
 		if (dabble->state() != QProcess::NotRunning)
 		{
 			kDebug() << "trying to kill dabble process";
@@ -101,7 +103,7 @@ void Dabble::teardownProcess()
 }
 
 
-void Dabble::processError(const QProcess::ProcessError &error)
+void Dabble::processError(const QProcess::ProcessError error)
 {
 	kDebug() << "Got error signal from dabble!";
 	QString info = "";
@@ -120,7 +122,7 @@ void Dabble::processError(const QProcess::ProcessError &error)
 	kDebug() << "dabble error: " << info;
 }
 
-void Dabble::processStateChanged(const QProcess::ProcessState &newState)
+void Dabble::processStateChanged(const QProcess::ProcessState newState)
 {
 	kDebug() << "processStateChanged!";
 	kDebug() << "****************************************************************";
@@ -136,7 +138,7 @@ void Dabble::processStateChanged(const QProcess::ProcessState &newState)
 	kDebug() << "dabble state: " << state;
 }
 
-void Dabble::processFinished(const int &exitCode, const QProcess::ExitStatus &exitStatus)
+void Dabble::processFinished(const int &exitCode, const QProcess::ExitStatus exitStatus)
 {
 	kDebug() << "processFinished!";
 	kDebug() << "dabble exit code: " << exitCode;

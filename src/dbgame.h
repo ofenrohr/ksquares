@@ -37,9 +37,9 @@ class Dabble : public QObject, public KSquaresAi
 		bool isTainted;
 	
 	public slots:
-		void processError(const QProcess::ProcessError &error);
-		void processStateChanged(const QProcess::ProcessState &newState);
-		void processFinished(const int &exitCode, const QProcess::ExitStatus &exitStatus);
+		void processError(const QProcess::ProcessError error);
+		void processStateChanged(const QProcess::ProcessState newState);
+		void processFinished(const int &exitCode, const QProcess::ExitStatus exitStatus);
 		void processReadyReadStandardError();
 		void processReadyReadStandardOutput();
 		
