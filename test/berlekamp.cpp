@@ -24,12 +24,12 @@ class berlekamp : public QObject
 		void testBerlekamp003(); // 7
 		void testBerlekamp004(); // 12 (22, 23)
 		void testBerlekamp005(); // 0
-		void testBerlekamp006(); // 10
+		void testBerlekamp006(); // 10 (7, 19, 22)
 		void testBerlekamp007(); // 9
 		void testBerlekamp008(); // 0
 		void testBerlekamp009(); // 0
 		void testBerlekamp010(); // 11
-		void testBerlekamp011(); // 2
+		void testBerlekamp011(); // 2 (20, 21)
 		void testBerlekamp012(); // 15
 		void testBerlekamp013(); // 17
 };
@@ -203,7 +203,10 @@ void berlekamp::testBerlekamp006()
 	}
 	
 	QList<int> expectedLines;
+	expectedLines.append(7);
 	expectedLines.append(10);
+	expectedLines.append(19);
+	expectedLines.append(22);
 	executeAi(sGame->board(), lines.size() % 2, "berlekamp-06", expectedLines);
 }
 
@@ -309,6 +312,8 @@ void berlekamp::testBerlekamp011()
 	
 	QList<int> expectedLines;
 	expectedLines.append(2);
+	expectedLines.append(20);
+	expectedLines.append(21);
 	executeAi(sGame->board(), sGame->board()->currentPlayer(), "berlekamp-11", expectedLines);
 }
 
