@@ -28,7 +28,7 @@ class QDab : public QObject, public KSquaresAi
 		QString getName() { return "qdab"; }
 		virtual bool enabled() { return false; }
 		virtual bool tainted() { return isTainted; }
-		virtual long lastMoveTime() { return 0; }
+		virtual long lastMoveTime() { return lastTurnTime; }
 		
 		bool isTainted;
 	
@@ -54,6 +54,8 @@ class QDab : public QObject, public KSquaresAi
 		QString qdabStdOut;
 		
 		bool qdabServerListening;
+		
+		long lastTurnTime;
 };
 
 #endif

@@ -99,6 +99,7 @@ class KSquaresTestWindow : public KXmlGuiWindow
 		AITestResult currentResult;
 		
 		void updateResultStr();
+		void generateLatexResults();
 };
 
 #endif // KSQUARESDEMOWINDOW_H

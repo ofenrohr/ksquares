@@ -342,16 +342,170 @@ void KSquaresTestWindow::initTest()
 	*/
 }
 
+QPair<int, int> orderedLevels(int a, int b)
+{
+	int l1 = a;
+	int l2 = b;
+	if (l2 < l1)
+	{
+		l1 = b;
+		l2 = a;
+	}
+	return QPair<int, int>(l1, l2);
+}
+
+QString setupType(AITestSetup setup)
+{
+	QPair<int, int> lvls = orderedLevels(setup.levelP1, setup.levelP2);
+	return QString::number(lvls.first) + "-" + QString::number(lvls.second) + ":" + QString::number(setup.boardSize.x()) + "x" + QString::number(setup.boardSize.y());
+}
+
+QString prettyAiLevel(int level)
+{
+	switch (level)
+	{
+		case KSquares::AI_EASY: return "KSquares (Leicht)";
+		case KSquares::AI_MEDIUM: return "KSquares (Mittel)";
+		case KSquares::AI_HARD: return "KSquares (Schwer)";
+		case KSquares::AI_VERYHARD: return "KSquares (AlphaBeta)";
+		case KSquares::AI_DABBLE: return "Dabble";
+		case KSquares::AI_DABBLENOHASH: return "Dabble (NoHash)";
+		case KSquares::AI_QDAB: return "QDab";
+		case KSquares::AI_KNOX: return "Knox";
+		default: return "Unbekannt";
+	}
+	return "Unbekannt";
+}
+
+QString latexResultGroup(QList<AITestResult> group)
+{
+	if (group.size() <= 0)
+		return "";
+	
+	QPair<int, int> lvls = orderedLevels(group[0].setup.levelP1, group[0].setup.levelP2);
+	QPair<int, int> winsP1(0,0); // winsP1.second = number of times Player2 (levelP2) won when going first
+	QPair<int, int> winsP2(0,0); // winsP2.first = number of times Player1 (levelP1) won when going second
+	QPair<int, int> losesP1(0,0);
+	QPair<int, int> losesP2(0,0);
+	QPair<int, int> tainted(0,0);
+	QPair<int, int> avgTime(0,0);
+	QPair<unsigned long long, unsigned long long> allTime(0,0);
+	QPair<unsigned long, unsigned long> timeDiv(0,0);
+	
+	//QString tmp = "";
+	for (int i = 0; i < group.size(); i++)
+	{
+		AITestResult res = group[i];
+		//tmp += "% setup.levelP1 = " + QString::number(res.setup.levelP1) + ", setup.levelP2 = " + QString::number(res.setup.levelP2);
+		//tmp += " setup.scoreP1 = " + QString::number(res.scoreP1) + ", setup.scoreP2 = " + QString::number(res.scoreP2) + "\n";
+		if (res.setup.levelP1 == lvls.first) // Player 1 is going first (player 1 is res.*P1)
+		{
+			if (res.taintedP1)
+				tainted.first++;
+			if (res.taintedP2)
+				tainted.second++;
+			
+			if (res.scoreP1 > res.scoreP2)
+			{
+				winsP1.first++;
+				losesP2.second++;
+			}
+			if (res.scoreP1 < res.scoreP2)
+			{
+				winsP2.second++;
+				losesP1.first++;
+			}
+			
+			for (int i = 0; i < res.timeP1.size(); i++)
+			{
+				allTime.first += res.timeP1[i];
+			}
+			timeDiv.first += res.timeP1.size();
+			for (int i = 0; i < res.timeP2.size(); i++)
+			{
+				allTime.second += res.timeP2[i];
+			}
+			timeDiv.second += res.timeP2.size();
+		}
+		else // Player 1 is going second (player 1 is res.*P2)
+		{
+			if (res.taintedP1)
+				tainted.second++;
+			if (res.taintedP2)
+				tainted.first++;
+			
+			if (res.scoreP1 > res.scoreP2)
+			{
+				winsP1.second++;
+				losesP2.first++;
+			}
+			if (res.scoreP1 < res.scoreP2)
+			{
+				winsP2.first++;
+				losesP1.second++;
+			}
+			
+			for (int i = 0; i < res.timeP1.size(); i++)
+			{
+				allTime.second += res.timeP1[i];
+			}
+			timeDiv.second += res.timeP1.size();
+			for (int i = 0; i < res.timeP2.size(); i++)
+			{
+				allTime.first += res.timeP2[i];
+			}
+			timeDiv.first += res.timeP2.size();
+		}
+	}
+	if (timeDiv.first != 0)
+		avgTime.first = allTime.first / timeDiv.first;
+	if (timeDiv.second != 0)
+		avgTime.second = allTime.second / timeDiv.second;
+	
+	QString ret = "\n\n\\begin{table}[H]\n";
+	ret += "  \\begin{tabular}{c|cccc}\n";
+	ret += "    & \\specialcell{Gewonnen \\\\(Sp. 1 / Sp. 2)} & \\specialcell{Verloren \\\\(Sp. 1 / Sp. 2)} & Crashes & $\\emptyset$ Zugzeit (ms) \\\\ \\hline\n";
+	ret += "    "+prettyAiLevel(lvls.first)+" & "+QString::number(winsP1.first)+" / "+QString::number(winsP2.first)+" & "+QString::number(losesP1.first)+" / "+QString::number(losesP2.first)+" & "+QString::number(tainted.first)+" & "+QString::number(avgTime.first)+" \\\\\n";
+	ret += "    "+prettyAiLevel(lvls.second)+" & "+QString::number(winsP1.second)+" / "+QString::number(winsP2.second)+" & "+QString::number(losesP1.second)+" / "+QString::number(losesP2.second)+" & "+QString::number(tainted.second)+" & "+QString::number(avgTime.second)+" \\\\\n";
+	ret += "  \\end{tabular}\n";
+	ret += "  \\caption{Ergebnisse von "+prettyAiLevel(lvls.first)+" gegen "+prettyAiLevel(lvls.second)+" auf $"+QString::number(group[0].setup.boardSize.x())+" \\times "+QString::number(group[0].setup.boardSize.y())+"$}\n";
+	ret += "\\end{table}\n";
+	
+	return ret;
+}
+
+void KSquaresTestWindow::generateLatexResults()
+{
+	QMap<QString, QList<AITestResult> > resultGroupsMap;
+	for (int i = 0; i < testResults.size(); i++)
+	{
+		resultGroupsMap[setupType(testResults[i].setup)].append(testResults[i]);
+	}
+	QList< QList<AITestResult> > resultGroups = resultGroupsMap.values();
+	kDebug() << resultGroups.size() << " result groups.";
+	
+	QString tex = "\n\n\\newcommand{\\specialcell}[2][c]{%\n";
+  tex += "\\begin{tabular}[#1]{@{}c@{}}#2\\end{tabular}}\n\n";
+	for (int i = 0; i < resultGroups.size(); i++)
+	{
+		tex += latexResultGroup(resultGroups[i]) + "\n";
+	}
+	kDebug() << tex;
+}
+
 void KSquaresTestWindow::gameNew()
 {
+	generateLatexResults();
 	// load test setup
 	if (testSetups.size() <= 0)
 	{
 		kDebug() << "no more testSetups, exit application";
+		generateLatexResults();
 		QCoreApplication::quit();
 		exit(0);
 		return;
 	}
+	
 	currentSetup = testSetups.takeFirst();
 	currentResult = AITestResult();
 
@@ -452,7 +606,7 @@ void KSquaresTestWindow::aiChooseLine()
 			//thread->quit();
 			kDebug() << "rescheduling aiChooseLine";
 			outstandingChooseLineCalls++;
-			QTimer::singleShot(150, this, SLOT(aiChooseLine()));
+			QTimer::singleShot(10, this, SLOT(aiChooseLine()));
 			return;
 		}
 	} else {
@@ -477,6 +631,11 @@ void KSquaresTestWindow::aiChooseLine()
 void KSquaresTestWindow::aiChoseLine(const int &line)
 {
 	kDebug() << "aiChoseLine";
+	if (sGame->currentPlayerId() == 0)
+		currentResult.timeP1.append(aiList[sGame->currentPlayerId()]->lastMoveTime());
+	else
+		currentResult.timeP2.append(aiList[sGame->currentPlayerId()]->lastMoveTime());
+	
 	sGame->addLineToIndex(line);
 	currentResult.moves.append(line);
 	

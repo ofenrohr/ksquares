@@ -33,6 +33,8 @@ Dabble::Dabble(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight,
 	dabbleExited = true;
 	dabble = NULL;
 	dabbleNohash = newLevel != 0;
+	
+	turnTimer = QElapsedTimer();
 }
 
 Dabble::~Dabble()
@@ -132,7 +134,10 @@ void Dabble::processStateChanged(const QProcess::ProcessState newState)
 	switch (newState)
 	{
 		case QProcess::NotRunning: state = "NotRunning"; break;
-		case QProcess::Starting: state = "Starting"; break;
+		case QProcess::Starting: 
+			state = "Starting"; 
+			turnTimer.start();
+		break;
 		case QProcess::Running: state = "Running"; break;
 	}
 	kDebug() << "dabble state: " << state;
@@ -177,6 +182,7 @@ int Dabble::randomMove(const QList<bool> &lines)
 		if (!lines[i])
 			freeLines.append(i);
 	}
+	lastTurnTime = -1;
 	return freeLines.at(qrand() % freeLines.size());
 }
 
@@ -188,6 +194,7 @@ int Dabble::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareO
 	{
 		kDebug() << "found move in queue, not calling dabble...";
 		int dblMove = moveQueue.dequeue();
+		lastTurnTime = turnTimer.elapsed();
 		return dblMove;
 	}
 	
@@ -252,6 +259,7 @@ int Dabble::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareO
 	}
 	
 	int dblMove = moveQueue.dequeue();
+	lastTurnTime = turnTimer.elapsed();
 	return dblMove;
 }
 

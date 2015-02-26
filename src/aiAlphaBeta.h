@@ -95,7 +95,7 @@ class aiAlphaBeta : public KSquaresAi
 		void clearTranspositionTable();
 		
 		/// time logging
-		int turnTime;
+		long turnTime;
 		
 		/// enable debugging
 		bool debug;
@@ -108,6 +108,12 @@ class aiAlphaBeta : public KSquaresAi
 		long lastEvalTime;
 		QElapsedTimer alphabetaTimer;
 		long alphabetaTimeout;
+};
+
+class MoveSequenceSorter
+{
+public:
+	bool operator()(QPair<int, float> a, QPair<int, float> b) const;
 };
 
 #endif

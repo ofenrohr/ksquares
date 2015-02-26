@@ -29,7 +29,7 @@ class Dabble : public QObject, public KSquaresAi
 		QString getName() { return dabbleNohash ? "dabble-nohash" : "dabble"; }
 		virtual bool enabled() { return !dabbleNohash; }
 		virtual bool tainted() { return isTainted; }
-		virtual long lastMoveTime() { return 0; }
+		virtual long lastMoveTime() { return lastTurnTime; }
 		
 		void initProcess();
 		void teardownProcess();
@@ -59,6 +59,9 @@ class Dabble : public QObject, public KSquaresAi
 		bool dabbleExited;
 		QQueue<int> moveQueue;
 		bool dabbleNohash;
+		
+		QElapsedTimer turnTimer;
+		long lastTurnTime;
 };
 
 #endif

@@ -20,7 +20,7 @@ class aiEasyMediumHard : public KSquaresAi
 		QString getName();
 		virtual bool enabled() { return true; }
 		virtual bool tainted() { return false; }
-		virtual long lastMoveTime() { return 0; }
+		virtual long lastMoveTime() { return lastTurnTime; }
 		/**
 		 * Finds chains on board that can be taken by the player to move
 		 * this is public to make testing easier
@@ -54,4 +54,6 @@ class aiEasyMediumHard : public KSquaresAi
 		QList<int> squareOwners;
 		/// Array of the lines on the board
 		bool *lines;
+		/// time logging
+		long lastTurnTime;
 };

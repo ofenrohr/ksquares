@@ -29,7 +29,7 @@ class Knox : public QObject, public KSquaresAi
 		QString getName() { return "knox"; }
 		virtual bool enabled() { return true; }
 		virtual bool tainted() { return isTainted; }
-		virtual long lastMoveTime() { return 0; }
+		virtual long lastMoveTime() { return lastTurnTime; }
 		
 		bool isTainted;
 	
@@ -60,6 +60,7 @@ class Knox : public QObject, public KSquaresAi
 		int linesSentCnt;
 		QQueue<QString> knoxMoveQueue;
 		int lastKnoxMoveOffset;
+		long lastTurnTime;
 };
 
 #endif

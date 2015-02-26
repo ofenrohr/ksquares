@@ -14,6 +14,7 @@
 #include <QByteArray>
 #include <QDateTime>
 #include <QCoreApplication>
+#include <QElapsedTimer>
 
 // generated
 #include "externalaipath.h"
@@ -216,6 +217,7 @@ int Knox::randomMove(const QList<bool> &lines)
 		if (!lines[i])
 			freeLines.append(i);
 	}
+	lastTurnTime = -1;
 	return freeLines.at(qrand() % freeLines.size());
 }
 
@@ -238,6 +240,9 @@ int Knox::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwn
 		}
 		QCoreApplication::processEvents();
 	}
+	
+	QElapsedTimer turnTimer;
+	turnTimer.start();
 	
 	if (knoxMoveQueue.size() <= 0)
 	{
@@ -320,6 +325,7 @@ int Knox::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwn
 	int line = Board::pointsToIndex(p1, p2, width, height);
 	linesSentCnt++;
 	
+	lastTurnTime = turnTimer.elapsed();
 	return line;
 }
 

@@ -61,7 +61,7 @@ class KSquaresAi : public aiFunctions, public BoardAnalysisFunctions
 		virtual QString getName() = 0;
 		virtual bool enabled() { kDebug() << "KSquaresAI -> enabled"; return true; }
 		virtual bool tainted() { return false; } // used for error signaling with external ai
-		virtual long lastMoveTime() { return 0; } // time used to calculate move
+		virtual long lastMoveTime() { return -3; } // time used to calculate move
 };
 
 class aiController : public QObject
@@ -102,6 +102,8 @@ class aiController : public QObject
 		
 		KSquaresAi::Ptr getAi();
 		static int getMaxAiLevel() { return 7; }
+		
+		long lastMoveTime() {return lastTurnTime;}
 
 	protected:
 		
@@ -120,6 +122,8 @@ class aiController : public QObject
 		KSquaresAi::Ptr ai;
 		/// time in ms for ai to come up with move
 		int aiThinkTime;
+		/// time logging
+		long lastTurnTime;
 };
 
 // see http://qt-project.org/doc/qt-4.8/qthread.html#details

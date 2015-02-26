@@ -102,8 +102,11 @@ int aiAlphaBeta::chooseLine(const QList<bool> &newLines, const QList<int> &newSq
 		alphabetaTimer.restart();
 	}
 	int line = -1;
+#ifdef KSQUARES_ALPHABETA_ITERATIVE_DEEPENING
 	float evalResult = alphabetaIterativeDeepening(board, searchDepth, &line);
-	//float evalResult = alphabeta(board, searchDepth, &line);
+#else
+	float evalResult = alphabeta(board, searchDepth, &line);
+#endif
 	kDebug() << "alphabeta END " << line;
 	
 	kDebug() << "alphabeta eval result = " << evalResult;
@@ -294,6 +297,7 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 	}
 	
 	//int localLine = -1;
+	QList<QPair<int, float> > moveSeqValues;
 	float bestValue = -INFINITY;
 	for (int i = 0; i < analysis.moveSequences->size() && (!alphabetaTimer.hasExpired(alphabetaTimeout) || line != NULL); i++)
 	{
@@ -323,7 +327,7 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 			*line = linePool[poolIndex];
 		}
 		*/
-		
+		moveSeqValues.append(QPair<int, float>(i, val));
 		if (val > bestValue)
 		{
 			bestValue = val;
@@ -348,6 +352,17 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 		}
 		
 	}
+	
+#ifdef KSQUARES_ALPHABETA_ITERATIVE_DEEPENING
+	qSort(moveSeqValues.begin(), moveSeqValues.end(), MoveSequenceSorter());
+	QList<QList<int> > tmpMoveSeqs;
+	for (int j = 0; j < moveSeqValues.size(); j++)
+	{
+		tmpMoveSeqs.append((*(analysis.moveSequences))[moveSeqValues[j].first]);
+	}
+	analysis.moveSequences->clear();
+	analysis.moveSequences->append(tmpMoveSeqs);
+#endif
 	//kDebug() << localLine << " ";
 	//if (bestValue == -INFINITY && (analysis.moveSequences)->size() > 0 && line != NULL)
 	//	*line = (*(analysis.moveSequences))[0][0];
@@ -476,4 +491,9 @@ void aiAlphaBeta::setDebugEvalOnly(bool e)
 QString aiAlphaBeta::getDebugDot()
 {
 	return debugDot;
+}
+
+bool MoveSequenceSorter::operator()(QPair<int, float> a, QPair<int, float> b) const
+{
+	return a.second > b.second;
 }

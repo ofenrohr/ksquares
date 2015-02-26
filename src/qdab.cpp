@@ -68,6 +68,8 @@ QDab::QDab(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int
 		kDebug() << "ERROR: qdab only supports 5x5 boards!";
 		isTainted = true;
 	}
+	
+	lastTurnTime = -1;
 }
 
 QDab::~QDab()
@@ -104,6 +106,7 @@ int QDab::randomMove(const QList<bool> &lines)
 		if (!lines[i])
 			freeLines.append(i);
 	}
+	lastTurnTime = -1;
 	return freeLines.at(qrand() % freeLines.size());
 }
 
@@ -171,6 +174,9 @@ int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwn
 	kDebug() << "request: " << sendBA;
 	socket.waitForBytesWritten();
 	
+	QElapsedTimer turnTimer;
+	turnTimer.start();
+	
 	// get response from qdab server
 	QByteArray responseBA;
 	bool done = false;
@@ -191,6 +197,8 @@ int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwn
 	}
 	
 	kDebug() << "response: " << responseBA;
+	
+	lastTurnTime = turnTimer.elapsed();
 	
 	// parse response from qdab server
 	QJson::Parser jsonParser;

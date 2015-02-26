@@ -1,4 +1,6 @@
 
+#add_definitions(-DKSQUARES_ALPHABETA_ITERATIVE_DEEPENING)
+
 find_package(QJSON REQUIRED)
 
 set(ksquares_SRCS

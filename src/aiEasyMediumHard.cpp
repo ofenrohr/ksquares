@@ -10,6 +10,7 @@
 #include "aiEasyMediumHard.h"
 
 #include <KDebug>
+#include <QElapsedTimer>
 
 aiEasyMediumHard::aiEasyMediumHard(int newPlayerId, int newWidth, int newHeight, int newLevel) : KSquaresAi(newWidth, newHeight), playerId(newPlayerId), level(newLevel)
 {
@@ -17,6 +18,7 @@ aiEasyMediumHard::aiEasyMediumHard(int newPlayerId, int newWidth, int newHeight,
 	height = newHeight;
 	linesSize = toLinesSize(width, height);
 	lines = new bool[linesSize];
+	lastTurnTime = -1;
 }
 
 QString aiEasyMediumHard::getName()
@@ -32,6 +34,9 @@ QString aiEasyMediumHard::getName()
 
 int aiEasyMediumHard::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory)
 {
+	QElapsedTimer turnTimer;
+	turnTimer.start();
+	
 	if (newLines.size() != linesSize)
 	{
 		kFatal() << "something went terribly wrong: newLines.size() != linesSize";
@@ -55,12 +60,14 @@ int aiEasyMediumHard::chooseLine(const QList<bool> &newLines, const QList<int> &
 			if(choices.size() > 0)
 			{
 				//kDebug() << "AI: 4. Drawing line at index:" << choices.at(0);
+				lastTurnTime = turnTimer.elapsed();
 				return choices.at(0);
 			}
 		}
 		float randomFloat = ((float) rand()/(RAND_MAX + 1.0))*(choiceList.size()-1);
 		int randChoice = (short)(randomFloat)/1;
 		//kDebug() << "AI: 1. Drawing line at index:" << choiceList.at(randChoice);
+		lastTurnTime = turnTimer.elapsed();
 		return choiceList.at(randChoice);
 	}
 	
@@ -73,6 +80,7 @@ int aiEasyMediumHard::chooseLine(const QList<bool> &newLines, const QList<int> &
 		int randChoice = (short)(randomFloat)/1;
 		//kDebug() << "choiceList: " << choiceList;
 		//kDebug() << "AI: 2. Drawing line at index:" << choiceList.at(randChoice);
+		lastTurnTime = turnTimer.elapsed();
 		return choiceList.at(randChoice);
 	}
 	
@@ -101,6 +109,7 @@ int aiEasyMediumHard::chooseLine(const QList<bool> &newLines, const QList<int> &
 			float randomFloat = ((float) rand()/(RAND_MAX + 1.0))*(goodChoiceList.size()-1);
 			int randChoice = (short)(randomFloat)/1;
 			//kDebug() << "AI: 3. Drawing line at index:" << goodChoiceList.at(randChoice);
+			lastTurnTime = turnTimer.elapsed();
 			return goodChoiceList.at(randChoice);
 		}
 	}
@@ -110,9 +119,11 @@ int aiEasyMediumHard::chooseLine(const QList<bool> &newLines, const QList<int> &
 		float randomFloat = ((float) rand()/(RAND_MAX + 1.0))*(choiceList.size()-1);
 		int randChoice = (short)(randomFloat)/1;
 		//kDebug() << "AI: 3. Drawing line at index:" << choiceList.at(randChoice);
+		lastTurnTime = turnTimer.elapsed();
 		return choiceList.at(randChoice);
 	}
-        return 0;
+	lastTurnTime = turnTimer.elapsed();
+	return 0;
 }
 
 QList<int> aiEasyMediumHard::chooseLeastDamaging(const QList<int> &choiceList) const

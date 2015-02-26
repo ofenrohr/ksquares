@@ -30,6 +30,7 @@ aiController::aiController(int newPlayerId, int newMaxPlayerId, int newWidth, in
 	//lines = new bool[linesSize];
 	srand( (unsigned)time( NULL ) );
 	//kDebug() << "AI: Starting AI level" << level;
+	lastTurnTime = -2;
 }
 
 aiController::~aiController()
@@ -84,6 +85,7 @@ int aiController::chooseLine(const QList<bool> &newLines, const QList<int> &newS
 		}
 		else
 		{
+			lastTurnTime = ai->lastMoveTime();
 			return line;
 		}
 	}
