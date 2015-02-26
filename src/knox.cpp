@@ -82,7 +82,7 @@ void Knox::setupProcess()
 				do
 				{
 					line = inStream.readLine();
-					QRegExp moveRegex("^([\\d]+): .*");
+					QRegExp moveRegex("([\\d]+): ");
 					int pos = moveRegex.indexIn(line);
 					if (pos >= 0)
 					{
@@ -96,6 +96,7 @@ void Knox::setupProcess()
 				}
 				else
 					linesSentCnt--;
+				knoxlog.close();
 			}
 			else
 				linesSentCnt--;
@@ -154,7 +155,7 @@ void Knox::destroyProcess()
 		}
 		delete knox;
 	}
-	knox = NULL;
+	//knox = NULL;
 }
 
 void Knox::processError(const QProcess::ProcessError &error)
@@ -302,7 +303,7 @@ int Knox::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwn
 		{
 			kDebug() << "ERROR: knox process is not running...";
 			
-			if (knoxStartedCnt < 5)
+			if (knoxStartedCnt < 50)
 			{
 				kDebug() << "Knox crashed, trying to recover stuff... attempt " << knoxStartedCnt;
 				setupProcess();
