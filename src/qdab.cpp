@@ -41,6 +41,9 @@ QDab::QDab(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int
 	qdabEnvironment.insert("LD_LIBRARY_PATH", libPath);
 	
 	qdabServer = new QProcess();
+	qRegisterMetaType<QProcess::ProcessError>("QProcess::ProcessError");
+	qRegisterMetaType<QProcess::ProcessState>("QProcess::ProcessState");
+	qRegisterMetaType<QProcess::ExitStatus>("QProcess::ExitStatus");
 	connect(qdabServer, SIGNAL(error(QProcess::ProcessError)), this, SLOT(processError(QProcess::ProcessError)));
 	connect(qdabServer, SIGNAL(stateChanged(QProcess::ProcessState)), this, SLOT(processStateChanged(QProcess::ProcessState)));
 	connect(qdabServer, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(processFinished(int, QProcess::ExitStatus)));

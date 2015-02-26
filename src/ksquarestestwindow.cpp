@@ -618,9 +618,9 @@ void KSquaresTestWindow::aiChooseLine()
 	//connect(worker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
 	connect(thread, SIGNAL(started()), worker, SLOT(process()));
 	connect(worker, SIGNAL(finished()), thread, SLOT(quit()));
+	connect(worker, SIGNAL(lineChosen(int)), this, SLOT(aiChoseLine(int)));
 	connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater()));
 	//connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
-	connect(worker, SIGNAL(lineChosen(int)), this, SLOT(aiChoseLine(int)));
 	thread->start();
 	/*
 	int line = aiList[sGame->currentPlayerId()]->chooseLine(sGame->board()->lines(), sGame->board()->squares(), sGame->board()->getLineHistory());

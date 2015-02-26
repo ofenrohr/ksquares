@@ -45,6 +45,7 @@ class Knox : public QObject, public KSquaresAi
 		int timeout;
 		int playerId;
 		
+		void setupProcess();
 		int randomMove(const QList<bool> &lines);
 		
 		//QTcpSocket *socket;
@@ -61,6 +62,7 @@ class Knox : public QObject, public KSquaresAi
 		QQueue<QString> knoxMoveQueue;
 		int lastKnoxMoveOffset;
 		long lastTurnTime;
+		bool knoxCrashed;
 };
 
 #endif

@@ -26,34 +26,11 @@ Knox::Knox(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int
 	isTainted = false;
 	knoxStdOutStream.setString(&knoxStdOut);
 	knoxStdErrStream.setString(&knoxStdErr);
-	opponentNameEntered = false;
-	opponentName = "";
-	goFirstEntered = false;
-	enterMove = false;
 	linesSentCnt = 0;
 	lastKnoxMoveOffset = 0;
 	knoxMoveQueue.clear();
 	
-	QString knoxExecutable = QString(EXTERNALAIPATH) + "/knox/knox";
-	QStringList knoxArguments;
-	knoxArguments << QString::number(timeout / 1000) << QString::number(width) << QString::number(height);
-	knox = new QProcess();
-	connect(knox, SIGNAL(error(QProcess::ProcessError)), this, SLOT(processError(QProcess::ProcessError)));
-	connect(knox, SIGNAL(stateChanged(QProcess::ProcessState)), this, SLOT(processStateChanged(QProcess::ProcessState)));
-	connect(knox, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(processFinished(int, QProcess::ExitStatus)));
-	connect(knox, SIGNAL(readyReadStandardError()), this, SLOT(processReadyReadStandardError()));
-	connect(knox, SIGNAL(readyReadStandardOutput()), this, SLOT(processReadyReadStandardOutput()));
-	kDebug() << "starting knox: " << knoxExecutable << ", ARGS: " << knoxArguments;
-	knox->start(knoxExecutable, knoxArguments);
-	knox->setReadChannel(QProcess::StandardOutput);
-	if (!knox->waitForStarted())
-	{
-		kDebug() << "ERROR: starting knox failed!";
-	}
-	if (!knox->waitForReadyRead())
-	{
-		kDebug() << "Waiting for ready read failed";
-	}
+	setupProcess();
 	
 	timeoutTimer = QElapsedTimer();
 	
@@ -90,6 +67,39 @@ Knox::~Knox()
 }
 
 
+void Knox::setupProcess()
+{
+	knoxCrashed = false;
+	opponentNameEntered = false;
+	opponentName = "";
+	goFirstEntered = false;
+	enterMove = false;
+	
+	QString knoxExecutable = QString(EXTERNALAIPATH) + "/knox/knox-nometis";
+	QStringList knoxArguments;
+	knoxArguments << QString::number(timeout / 1000) << QString::number(width) << QString::number(height);
+	knox = new QProcess();
+	qRegisterMetaType<QProcess::ProcessError>("QProcess::ProcessError");
+	qRegisterMetaType<QProcess::ProcessState>("QProcess::ProcessState");
+	qRegisterMetaType<QProcess::ExitStatus>("QProcess::ExitStatus");
+	connect(knox, SIGNAL(error(QProcess::ProcessError)), this, SLOT(processError(QProcess::ProcessError)));
+	connect(knox, SIGNAL(stateChanged(QProcess::ProcessState)), this, SLOT(processStateChanged(QProcess::ProcessState)));
+	connect(knox, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(processFinished(int, QProcess::ExitStatus)));
+	connect(knox, SIGNAL(readyReadStandardError()), this, SLOT(processReadyReadStandardError()));
+	connect(knox, SIGNAL(readyReadStandardOutput()), this, SLOT(processReadyReadStandardOutput()));
+	kDebug() << "starting knox: " << knoxExecutable << ", ARGS: " << knoxArguments;
+	knox->start(knoxExecutable, knoxArguments);
+	knox->setReadChannel(QProcess::StandardOutput);
+	if (!knox->waitForStarted())
+	{
+		kDebug() << "ERROR: starting knox failed!";
+	}
+	if (!knox->waitForReadyRead())
+	{
+		kDebug() << "Waiting for ready read failed";
+	}
+}
+
 void Knox::processError(const QProcess::ProcessError &error)
 {
 	kDebug() << "Got error signal from knox!";
@@ -108,6 +118,7 @@ void Knox::processError(const QProcess::ProcessError &error)
 	kDebug() << "****************************************************************";
 	kDebug() << "knox error: " << info;
 	kDebug() << "entered opponent name: " << opponentName;
+	knoxCrashed = true;
 }
 
 void Knox::processStateChanged(const QProcess::ProcessState &newState)
@@ -229,7 +240,7 @@ int Knox::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwn
 	while (!opponentNameEntered || !goFirstEntered)
 	{
 		kDebug() << "waiting for knox setup to complete...";
-		if (knox->state() != QProcess::Running)
+		if (knox->state() != QProcess::Running || knoxCrashed)
 		{
 			kDebug() << "ERROR: knox process is not running...";
 			return randomMove(newLines);
@@ -253,7 +264,7 @@ int Knox::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwn
 		{
 			if (!enterMove)
 			{
-				if (knox->state() != QProcess::Running)
+				if (knox->state() != QProcess::Running || knoxCrashed)
 				{
 					kDebug() << "ERROR: knox process is not running...";
 					return randomMove(newLines);
@@ -299,7 +310,7 @@ int Knox::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwn
 		timeoutTimer.restart();
 		while (knoxMoveQueue.size() == 0)
 		{
-			if (knox->state() != QProcess::Running)
+			if (knox->state() != QProcess::Running || knoxCrashed)
 			{
 				kDebug() << "ERROR: knox process is not running...";
 				return randomMove(newLines);
