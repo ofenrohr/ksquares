@@ -30,6 +30,9 @@ Knox::Knox(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int
 	lastKnoxMoveOffset = 0;
 	knoxMoveQueue.clear();
 	knoxStartedCnt = 0;
+	opponentName = "";
+	goFirstEntered = false;
+
 	knox = NULL;
 	
 	setupProcess();
@@ -55,7 +58,15 @@ void Knox::setupProcess()
 {
 	knoxCrashed = false;
 	opponentNameEntered = false;
+	//opponentName = "";
+	//goFirstEntered = false;
 	enterMove = false;
+	knoxStdOut = "";
+	knoxStdErr = "";
+	lastKnoxMoveOffset = 0;
+	knoxMoveQueue.clear();
+	if (linesSentCnt > 0) // looks like knox crashed before, resend last line
+		linesSentCnt--;
 	
 	knoxStartedCnt++;
 	
