@@ -576,13 +576,6 @@ void KSquaresTestWindow::playerTakeTurn(KSquaresPlayer* currentPlayer)
 	kDebug() << "playerTakeTurn";
 	statusBar()->changeItem(currentPlayer->name(), 0);
 	statusBar()->changeItem(resultStr, 1);
-	
-	if (aiList[sGame->currentPlayerId()]->getAi()->tainted())
-	{
-		kDebug() << "ERROR: game is tainted! aborting";
-		gameOver(sGame->getPlayers());
-		return;
-	}
 	outstandingChooseLineCalls++;
 	kDebug() << "calling aiChooseLine";
 	aiChooseLine();
@@ -635,6 +628,13 @@ void KSquaresTestWindow::aiChoseLine(const int &line)
 		currentResult.timeP1.append(aiList[sGame->currentPlayerId()]->lastMoveTime());
 	else
 		currentResult.timeP2.append(aiList[sGame->currentPlayerId()]->lastMoveTime());
+	
+	if (aiList[sGame->currentPlayerId()]->getAi()->tainted())
+	{
+		kDebug() << "ERROR: game is tainted! aborting";
+		gameOver(sGame->getPlayers());
+		return;
+	}
 	
 	sGame->addLineToIndex(line);
 	currentResult.moves.append(line);
