@@ -145,10 +145,15 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 		return eval;
 	}
 	
+#ifdef KSQUARES_ALPHABETA_ITERATIVE_DEEPENING
 	QList<QPair<int, float> > moveSeqValues;
+#endif
 	float bestValue = -INFINITY;
+	int analyzedRootChildren = 0;
 	for (int i = 0; i < analysis.moveSequences->size() && (!alphabetaTimer.hasExpired(alphabetaTimeout) || line != NULL); i++)
 	{
+		if (!alphabetaTimer.hasExpired(alphabetaTimeout) && line != NULL)
+			analyzedRootChildren++;
 		int prevPlayer = board->playerId;
 		for (int j = 0; j < (*(analysis.moveSequences))[i].size(); j++)
 		{
@@ -160,12 +165,14 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 			kDebug() << "ERROR: sth went really wrong! player didn't change after move sequence: " << (*(analysis.moveSequences))[i];
 			kDebug() << "ERROR: board: " << aiFunctions::boardToString(board);
 		}
-		float val = -alphabeta(board, depth - 1, NULL, -beta, -alpha/*, thisNode*/);
+		float val = -alphabeta(board, depth - 1, NULL, -beta, -alpha);
 		for (int j = (*(analysis.moveSequences))[i].size() -1; j >= 0; j--)
 		{
 			board->undoMove((*(analysis.moveSequences))[i][j]);
 		}
+#ifdef KSQUARES_ALPHABETA_ITERATIVE_DEEPENING
 		moveSeqValues.append(QPair<int, float>(i, val));
+#endif
 		if (val > bestValue)
 		{
 			bestValue = val;
@@ -195,6 +202,36 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 	}
 	analysis.moveSequences->clear();
 	analysis.moveSequences->append(tmpMoveSeqs);
+#else
+	// if search only analyzed very few (10%) children of root node do a shallow heuristic based search!
+	if (line != NULL && alphabetaTimer.hasExpired(alphabetaTimeout) && 1.0 / (double)analysis.moveSequences->size() * (double)analyzedRootChildren < 0.1)
+	{
+		kDebug() << "original alphabeta search didn't analyze enough root children, doing shallow search";
+		bestValue = -INFINITY;
+		for (int i = 0; i < analysis.moveSequences->size(); i++)
+		{
+			for (int j = 0; j < (*(analysis.moveSequences))[i].size(); j++)
+			{
+				board->doMove((*(analysis.moveSequences))[i][j]);
+			}
+			KSquares::BoardAnalysis tmpAnalysis = getAnalysis(board);
+			heuristic->setAnalysis(tmpAnalysis);
+			float val = -evaluate(board);
+			for (int j = (*(analysis.moveSequences))[i].size() -1; j >= 0; j--)
+			{
+				board->undoMove((*(analysis.moveSequences))[i][j]);
+			}
+			if (val > bestValue)
+			{
+				bestValue = val;
+				if (line != NULL)
+				{
+					*line = (*(analysis.moveSequences))[i][0];
+				}
+			}
+			
+		}
+	}
 #endif
 	
 	return bestValue;

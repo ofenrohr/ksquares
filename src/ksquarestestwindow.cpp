@@ -462,7 +462,7 @@ QString latexResultGroup(QList<AITestResult> group)
 	if (timeDiv.second != 0)
 		avgTime.second = allTime.second / timeDiv.second;
 	
-	QString ret = "\n\n\\begin{table}[H]\n";
+	QString ret = "\\begin{table}[H]\n";
 	ret += "  \\begin{tabular}{c|cccc}\n";
 	ret += "    & \\specialcell{Gewonnen \\\\(Sp. 1 / Sp. 2)} & \\specialcell{Verloren \\\\(Sp. 1 / Sp. 2)} & Crashes & $\\emptyset$ Zugzeit (ms) \\\\ \\hline\n";
 	ret += "    "+prettyAiLevel(lvls.first)+" & "+QString::number(winsP1.first)+" / "+QString::number(winsP2.first)+" & "+QString::number(losesP1.first)+" / "+QString::number(losesP2.first)+" & "+QString::number(tainted.first)+" & "+QString::number(avgTime.first)+" \\\\\n";

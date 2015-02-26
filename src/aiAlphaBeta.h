@@ -40,7 +40,7 @@ class aiAlphaBeta : public KSquaresAi
 		virtual long lastMoveTime() { return turnTime; }
 		
 		void setDepth(int d) { searchDepth = d; }
-		float alphabeta(aiBoard::Ptr board, int depth, int *line, float alpha = -INFINITY, float beta = INFINITY/*, int parentNode = -1*/);
+		float alphabeta(aiBoard::Ptr board, int depth, int *line, float alpha = -INFINITY, float beta = INFINITY);
 		float alphabetaIterativeDeepening(aiBoard::Ptr board, int depth, int *line);
 		/**
 		 * Calls evaluation from aiHeuristic
