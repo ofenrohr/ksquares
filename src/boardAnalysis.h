@@ -20,7 +20,6 @@ class BoardAnalysisFunctions
 		 * Looks for chains on the board and returns chains and valid move sequences
 		 */
 		static KSquares::BoardAnalysis analyseBoard(aiBoard::Ptr board);
-		static KSquares::BoardAnalysis analyseBoard(aiBoard::Ptr board, QList<int> &lineSortList);
 		/**
 		 * Generates the double dealing sequence for the given chain.
 		 * @return the double dealing variant of the given chain. if the chain is short or unknown an empty list will be returned
@@ -35,8 +34,7 @@ class BoardAnalysisFunctions
 		 * Generates a move list. Chains are returned twice if applicable:
 		 * one sequence with chain fully taken and one with double dealing.
 		 */
-		//QSharedPointer<QList<QList<int> > > getMoveSequences(aiBoard::Ptr board, KSquares::BoardAnalysis &analysis, bool *isEndgame = NULL);
-		static QSharedPointer<QList<QList<int> > > getMoveSequences(aiBoard::Ptr board, KSquares::BoardAnalysis &analysis, QList<int> &lineSortList, bool *isEndgame = NULL);
+		static QSharedPointer<QList<QList<int> > > getMoveSequences(aiBoard::Ptr board, KSquares::BoardAnalysis &analysis, bool *isEndgame = NULL);
 };
 
 #endif

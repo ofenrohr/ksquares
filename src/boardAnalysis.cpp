@@ -14,13 +14,6 @@
 
 KSquares::BoardAnalysis BoardAnalysisFunctions::analyseBoard(aiBoard::Ptr board)
 {
-	LineSorter sorter(board->width, board->height, board->linesSize);
-	QList<int> lineSortList = sorter.getSortMap();
-	return analyseBoard(board, lineSortList);
-}
-
-KSquares::BoardAnalysis BoardAnalysisFunctions::analyseBoard(aiBoard::Ptr board, QList<int> &lineSortList)
-{
 	KSquares::BoardAnalysis analysis;
 	
 	// look for capturable chains
@@ -131,7 +124,7 @@ KSquares::BoardAnalysis BoardAnalysisFunctions::analyseBoard(aiBoard::Ptr board,
 			board->undoMove(analysis.chains[i].lines[j]);
 	}
 	
-	analysis.moveSequences = getMoveSequences(board, analysis, lineSortList);
+	analysis.moveSequences = getMoveSequences(board, analysis);
 	
 	return analysis;
 }
@@ -208,7 +201,7 @@ QSharedPointer<QList<QList<int> > > BoardAnalysisFunctions::getMoveSequences(aiB
 }
 */
 
-QSharedPointer<QList<QList<int> > > BoardAnalysisFunctions::getMoveSequences(aiBoard::Ptr board, KSquares::BoardAnalysis &analysis, QList<int> &lineSortList, bool *isEndgame)
+QSharedPointer<QList<QList<int> > > BoardAnalysisFunctions::getMoveSequences(aiBoard::Ptr board, KSquares::BoardAnalysis &analysis, bool *isEndgame)
 {
 	QSharedPointer<QList<QList<int> > > moveSequences(new QList<QList<int> >);
 	QList<QList<int> > chainSacrificeSequences;
@@ -306,17 +299,13 @@ QSharedPointer<QList<QList<int> > > BoardAnalysisFunctions::getMoveSequences(aiB
 	// add full capture version
 	// move sequences for open chains + free lines
 	// get free lines and filter them
-	QList<int> freeLines; // = aiFunctions::getFreeLines(board->lines, board->linesSize);
+	QList<int> freeLines;
 	QMap<int, int> freeLinesMap;
 	QList<int> ignoreLines = ignoreCornerLines(board);
-	//QList<int> ignoreLines;
 	for (int i = 0; i < board->linesSize; i++)
 		if (!board->lines[i] && !baseMoveSequence.contains(i) && !ignoreLines.contains(i))
 			freeLines.append(i);
-			//freeLinesMap.insert(lineSortList[i], i);
-	//freeLines = freeLinesMap.values();
 	qSort(freeLines.begin(), freeLines.end(), LineSorter(board->width,board->height,board->linesSize));
-	//kDebug() << "free lines: " << freeLines;
 	if (freeLines.size() == 0 && baseMoveSequence.size() > 0)
 		moveSequences->append(baseMoveSequence);
 	// add one sequence for each long and loop chain

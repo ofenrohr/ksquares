@@ -82,14 +82,8 @@ class aiAlphaBeta : public KSquaresAi
 		aiHeuristic *heuristic;
 		/// search depth
 		int searchDepth;
-		///
-		QList<int> linePool;
-		/// circular sorting map for board lines (see j. k. barker and r. e. korf - solving dots-and-boxes)
-		QList<int> lineSortList;
 		/// map of previous board analysis
 		QHash<aiBoard::Ptr, QPair<TranspositionEntry, TranspositionEntry> > *analysisHash;
-		/// remember how many turns ai played
-		int turn;
 		
 		QList<int> *hashLines;
 		void clearTranspositionTable();
@@ -97,15 +91,6 @@ class aiAlphaBeta : public KSquaresAi
 		/// time logging
 		long turnTime;
 		
-		/// enable debugging
-		bool debug;
-		int debugDepth;
-		QString debugDot;
-		int debugNodeCnt;
-		bool debugEvalOnly;
-		bool timerHasExpiredBefore;
-		long maxEvalTime;
-		long lastEvalTime;
 		QElapsedTimer alphabetaTimer;
 		long alphabetaTimeout;
 };
