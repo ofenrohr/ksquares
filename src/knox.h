@@ -65,6 +65,7 @@ class Knox : public QObject, public KSquaresAi
 		long lastTurnTime;
 		bool knoxCrashed;
 		int knoxStartedCnt;
+		bool knoxRecovering;
 };
 
 #endif

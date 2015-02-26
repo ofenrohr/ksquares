@@ -15,6 +15,8 @@
 #include <QDateTime>
 #include <QCoreApplication>
 #include <QElapsedTimer>
+#include <QFile>
+#include <QRegExp>
 
 // generated
 #include "externalaipath.h"
@@ -32,6 +34,7 @@ Knox::Knox(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int
 	knoxStartedCnt = 0;
 	opponentName = "";
 	goFirstEntered = false;
+	knoxRecovering = false;
 
 	knox = NULL;
 	
@@ -65,8 +68,41 @@ void Knox::setupProcess()
 	knoxStdErr = "";
 	lastKnoxMoveOffset = 0;
 	knoxMoveQueue.clear();
+	knoxRecovering = true;
 	if (linesSentCnt > 0) // looks like knox crashed before, resend last line
-		linesSentCnt--;
+	{
+		QFile knoxlog(opponentName);
+		if (knoxlog.exists())
+		{
+			if (knoxlog.open(QIODevice::ReadOnly))
+			{
+				QTextStream inStream(&knoxlog);
+				QString line = "";
+				int lastTurnInKnoxLog = -1;
+				do
+				{
+					line = inStream.readLine();
+					QRegExp moveRegex("^([\\d]+): .*");
+					int pos = moveRegex.indexIn(line);
+					if (pos >= 0)
+					{
+						lastTurnInKnoxLog = moveRegex.cap(1).toInt();
+					}
+				} while (!line.isNull());
+				if (lastTurnInKnoxLog > 0)
+				{
+					kDebug() << "knox log contains " << lastTurnInKnoxLog << " moves";
+					linesSentCnt = lastTurnInKnoxLog - 1;
+				}
+				else
+					linesSentCnt--;
+			}
+			else
+				linesSentCnt--;
+		}
+		else
+			linesSentCnt--;
+	}
 	
 	knoxStartedCnt++;
 	
@@ -153,7 +189,7 @@ void Knox::processStateChanged(const QProcess::ProcessState &newState)
 	{
 		case QProcess::NotRunning: state = "NotRunning"; break;
 		case QProcess::Starting: state = "Starting"; break;
-		case QProcess::Running: state = "Running"; break;
+		case QProcess::Running: state = "Running"; knoxRecovering = false; break;
 	}
 	kDebug() << "knox state: " << state;
 }
@@ -262,7 +298,7 @@ int Knox::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwn
 	while (!opponentNameEntered || !goFirstEntered)
 	{
 		kDebug() << "waiting for knox setup to complete...";
-		if (knox->state() != QProcess::Running || knoxCrashed)
+		if ((knox->state() != QProcess::Running || knoxCrashed) && !knoxRecovering)
 		{
 			kDebug() << "ERROR: knox process is not running...";
 			
