@@ -367,7 +367,7 @@ QString prettyAiLevel(int level)
 		case KSquares::AI_EASY: return "KSquares (Leicht)";
 		case KSquares::AI_MEDIUM: return "KSquares (Mittel)";
 		case KSquares::AI_HARD: return "KSquares (Schwer)";
-		case KSquares::AI_VERYHARD: return "KSquares (AlphaBeta)";
+		case KSquares::AI_VERYHARD: return "KSquares ($\\alpha\\beta$)";
 		case KSquares::AI_DABBLE: return "Dabble";
 		case KSquares::AI_DABBLENOHASH: return "Dabble (NoHash)";
 		case KSquares::AI_QDAB: return "QDab";
@@ -465,8 +465,8 @@ QString latexResultGroup(QList<AITestResult> group)
 	QString ret = "\\begin{table}[H]\n";
 	ret += "  \\begin{tabular}{c|cccc}\n";
 	ret += "    & \\specialcell{Gewonnen \\\\(Sp. 1 / Sp. 2)} & \\specialcell{Verloren \\\\(Sp. 1 / Sp. 2)} & Crashes & $\\emptyset$ Zugzeit (ms) \\\\ \\hline\n";
-	ret += "    "+prettyAiLevel(lvls.first)+" & "+QString::number(winsP1.first)+" / "+QString::number(winsP2.first)+" & "+QString::number(losesP1.first)+" / "+QString::number(losesP2.first)+" & "+QString::number(tainted.first)+" & "+QString::number(avgTime.first)+" \\\\\n";
-	ret += "    "+prettyAiLevel(lvls.second)+" & "+QString::number(winsP1.second)+" / "+QString::number(winsP2.second)+" & "+QString::number(losesP1.second)+" / "+QString::number(losesP2.second)+" & "+QString::number(tainted.second)+" & "+QString::number(avgTime.second)+" \\\\\n";
+	ret += "    "+prettyAiLevel(lvls.first)+" & $"+QString::number(winsP1.first + winsP2.first)+"$ ($"+QString::number(winsP1.first)+"$ / $"+QString::number(winsP2.first)+"$) & $"+QString::number(losesP1.first + losesP2.first)+"$ ($"+QString::number(losesP1.first)+"$ / $"+QString::number(losesP2.first)+"$) & $"+QString::number(tainted.first)+"$ & $"+QString::number(avgTime.first)+"$ \\\\\n";
+	ret += "    "+prettyAiLevel(lvls.second)+" & $"+QString::number(winsP1.second + winsP2.second)+"$ ($"+QString::number(winsP1.second)+"$ / $"+QString::number(winsP2.second)+"$) & $"+QString::number(losesP1.second + losesP2.second)+"$ ($"+QString::number(losesP1.second)+"$ / $"+QString::number(losesP2.second)+"$) & $"+QString::number(tainted.second)+"$ & $"+QString::number(avgTime.second)+"$ \\\\\n";
 	ret += "  \\end{tabular}\n";
 	ret += "  \\caption{Ergebnisse von "+prettyAiLevel(lvls.first)+" gegen "+prettyAiLevel(lvls.second)+" auf $"+QString::number(group[0].setup.boardSize.x())+" \\times "+QString::number(group[0].setup.boardSize.y())+"$}\n";
 	ret += "\\end{table}\n";
