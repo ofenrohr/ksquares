@@ -31,6 +31,7 @@ set(ksquares_SRCS
 #	dbgame-nohash.cpp
 	qdab.cpp
 	knox.cpp
+	aiMCTS.cpp
 )
 
 include_directories(${CMAKE_SOURCE_DIR}/libkdegames/highscore ${QJSON_INCLUDE_DIR})
