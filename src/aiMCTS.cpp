@@ -18,6 +18,7 @@
 #include <QPair>
 
 #include "boardAnalysis.h"
+#include "aiEasyMediumHard.h"
 
 aiMCTS::aiMCTS(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel, int thinkTime) : KSquaresAi(newWidth, newHeight), playerId(newPlayerId), maxPlayerId(newMaxPlayerId), level(newLevel), mctsTimeout(thinkTime)
 {
@@ -46,7 +47,7 @@ MCTSNode::MCTSNode()
 	inTree = false;
 }
 
-int aiMCTS::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory)
+int aiMCTS::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &/*lineHistory*/)
 {
 	QElapsedTimer moveTimer;
 	moveTimer.start();
@@ -152,15 +153,21 @@ MCTSNode::Ptr aiMCTS::selection(MCTSNode::Ptr node)
 	MCTSNode::Ptr selectedNode;
 	double bestVal = -INFINITY;
 	double C = 1.4;
-	double lnnp = log(node->visitedCnt);
+	double lnnp = log(node->visitedCnt+1);
 	for (int i = 0; i < node->children.size(); i++)
 	{
-		double uctVal = (double)node->children[i]->value + C * sqrt(lnnp / (double)node->children[i]->visitedCnt);
+		double uctVal = node->children[i]->value + C * sqrt(lnnp / (double)(node->children[i]->visitedCnt+1));
 		if (uctVal > bestVal)
 		{
 			bestVal = uctVal;
 			selectedNode = node->children[i];
 		}
+	}
+	
+	if (selectedNode.isNull())
+	{
+		kDebug() << "selected node is null, no child has been selected?!";
+		return selectedNode;
 	}
 	
 	if (selectedNode->inTree)
@@ -178,10 +185,43 @@ void aiMCTS::expansion(MCTSNode::Ptr node)
 
 void aiMCTS::simulation(MCTSNode::Ptr node)
 {
-	
+	// prepare simulation
+	aiEasyMediumHard simAi(0, board->width, board->height, KSquares::AI_HARD); // TODO: try what happens with AI_MEDIUM and AI_EASY
+	QVector<int> simulationHistory;
+	int missingLines = 0;
+	for (int i = 0; i < board->linesSize; i++)
+		if (!board->lines[i])
+			missingLines++;
+	simulationHistory.reserve(missingLines);
+	// do simulation
+	while (missingLines > 0)
+	{
+		int line = simAi.chooseLine(board->lines);
+		board->doMove(line);
+		simulationHistory.append(line);
+		missingLines--;
+	}
+	// get simulation result
+	for (int i = 0; i < board->squareOwners.size(); i++)
+	{
+		node->fullValue += board->squareOwners[i] == playerId ? 1 : -1;
+	}
+	node->value = node->fullValue;
+	// undo simulation
+	for (int i = simulationHistory.size() -1; i >= 0; i--)
+	{
+		board->undoMove(simulationHistory[i]);
+	}
 }
 
 void aiMCTS::backpropagation(MCTSNode::Ptr node)
 {
-	
+	MCTSNode::Ptr tmpNode = node;
+	int addValue = node->value;
+	while (!tmpNode->parent.isNull())
+	{
+		tmpNode->visitedCnt++;
+		tmpNode->fullValue += addValue;
+		tmpNode = tmpNode->parent;
+	}
 }

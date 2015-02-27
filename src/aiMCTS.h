@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2014 by Tom Vincent Peters   <kde@vincent-peters.de>    *
+ *   Copyright (C) 2015 by Tom Vincent Peters   <kde@vincent-peters.de>    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -7,8 +7,8 @@
  *   (at your option) any later version.                                   *
  ***************************************************************************/
 
-#ifndef AIALPHABETA_H
-#define AIALPHABETA_H
+#ifndef AIMCTS_H
+#define AIMCTS_H
 
 #include "aicontroller.h"
 #include "aifunctions.h"
@@ -29,6 +29,7 @@ class MCTSNode
 		
 		long visitedCnt;
 		double value;
+		long fullValue;
 		QList<int> moveSequence; // lines drawn to get from parent node to this one
 		MCTSNode::Ptr parent;
 		QList<MCTSNode::Ptr> children;

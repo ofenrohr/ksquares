@@ -20,7 +20,7 @@
 // generated
 #include "externalaipath.h"
 
-QDab::QDab(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel, int thinkTime) : KSquaresAi(newWidth, newHeight)
+QDab::QDab(int newPlayerId, int /*newMaxPlayerId*/, int newWidth, int newHeight, int /*newLevel*/, int thinkTime) : KSquaresAi(newWidth, newHeight)
 {
 	timeout = thinkTime;
 	playerId = newPlayerId;
@@ -114,7 +114,7 @@ int QDab::randomMove(const QList<bool> &lines)
 }
 
 
-int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory)
+int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &/*newSquareOwners*/, const QList<Board::Move> &lineHistory)
 {
 	QCoreApplication::processEvents();
 	if (!qdabServer->state() == QProcess::Running)

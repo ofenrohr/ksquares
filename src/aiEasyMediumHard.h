@@ -21,6 +21,8 @@ class aiEasyMediumHard : public KSquaresAi
 		virtual bool enabled() { return true; }
 		virtual bool tainted() { return false; }
 		virtual long lastMoveTime() { return lastTurnTime; }
+		
+		int chooseLine(bool *linesB);
 		/**
 		 * Finds chains on board that can be taken by the player to move
 		 * this is public to make testing easier

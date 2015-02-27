@@ -20,7 +20,7 @@
 // generated
 #include "externalaipath.h"
 
-Dabble::Dabble(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel, int thinkTime) : KSquaresAi(newWidth, newHeight)
+Dabble::Dabble(int newPlayerId, int /*newMaxPlayerId*/, int newWidth, int newHeight, int newLevel, int thinkTime) : KSquaresAi(newWidth, newHeight)
 {
 	timeout = thinkTime;
 	playerId = newPlayerId;
@@ -186,7 +186,7 @@ int Dabble::randomMove(const QList<bool> &lines)
 	return freeLines.at(qrand() % freeLines.size());
 }
 
-int Dabble::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory)
+int Dabble::chooseLine(const QList<bool> &newLines, const QList<int> &/*newSquareOwners*/, const QList<Board::Move> &lineHistory)
 {
 	kDebug() << "dabble choose line...";
 	

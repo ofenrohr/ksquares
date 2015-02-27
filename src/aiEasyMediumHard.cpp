@@ -32,17 +32,23 @@ QString aiEasyMediumHard::getName()
 	}
 }
 
-int aiEasyMediumHard::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory)
+int aiEasyMediumHard::chooseLine(const QList<bool> &newLines, const QList<int> &, const QList<Board::Move> &)
 {
-	QElapsedTimer turnTimer;
-	turnTimer.start();
-	
 	if (newLines.size() != linesSize)
 	{
 		kFatal() << "something went terribly wrong: newLines.size() != linesSize";
 	}
 	// put lines into local board representation
 	for (int i = 0; i < linesSize; ++i) lines[i] = newLines[i];
+	return chooseLine(lines);
+}
+
+int aiEasyMediumHard::chooseLine(bool *linesB)
+{
+	QElapsedTimer turnTimer;
+	turnTimer.start();
+	
+	lines = linesB;
 	// remember square owner table (might not be necessary)
 	//squareOwners = newSquareOwners;
 	// do the ai stuff:
@@ -272,6 +278,9 @@ QList<int> aiEasyMediumHard::chooseLeastDamaging(const QList<int> &choiceList) c
         loopChains.append(chainSetI);
       break;
 			case KSquares::CHAIN_SPECIAL:
+				// not relevant for this ai
+			break;
+			case KSquares::CHAIN_UNKNOWN:
 				// not relevant for this ai
 			break;
       default:
