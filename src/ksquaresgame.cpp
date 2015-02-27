@@ -85,7 +85,7 @@ void KSquaresGame::resetEverything()
 	lastLine = -1;
 }
 
-void KSquaresGame::addLineToIndex(int index)
+bool KSquaresGame::addLineToIndex(int index)
 {
 	kDebug() << "KSquaresGame::addLineToIndex";
 	bool nextPlayer;
@@ -97,7 +97,7 @@ void KSquaresGame::addLineToIndex(int index)
 	if (!board_.addLine(index, &nextPlayer, &boardFilled, &completedSquares))
 	{
 		kDebug() << "Warning: tryied to add invalid / already taken line with index " << index;
-		return;
+		return false;
 	}
 	kDebug() << "added line. index: " << index << ", next player: " << nextPlayer << ", board filled: " << boardFilled << ", completed squares count: " << completedSquares.size();
 	// draw the line
@@ -133,6 +133,8 @@ void KSquaresGame::addLineToIndex(int index)
 		kDebug() << "emitting takeTurnSig";
 		emit takeTurnSig(currentPlayer());
 	}
+	
+	return true;
 }
 
 #include "ksquaresgame.moc"

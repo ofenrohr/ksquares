@@ -186,6 +186,8 @@ QVariant AITestResult::toQVariant()
 	map["taintedP2"] = taintedP2;
 	map["scoreP1"] = scoreP1;
 	map["scoreP2"] = scoreP2;
+	map["crashesP1"] = crashesP1;
+	map["crashesP2"] = crashesP2;
 	return map;
 }
 
@@ -209,6 +211,16 @@ void AITestResult::fromQVariant(QVariant var)
 	taintedP2 = map["taintedP2"].toBool();
 	scoreP1 = map["scoreP1"].toInt();
 	scoreP2 = map["scoreP2"].toInt();
+	if (map.contains("crashesP1") && map.contains("crashesP2"))
+	{
+		crashesP1 = map["crashesP1"].toInt();
+		crashesP2 = map["crashesP2"].toInt();
+	}
+	else
+	{
+		crashesP1 = 0;
+		crashesP2 = 0;
+	}
 }
 
 void KSquaresTestWindow::initTest()
@@ -223,7 +235,7 @@ void KSquaresTestWindow::initTest()
 	{
 		AITestSetup setup;
 		setup.levelP1 = KSquares::AI_VERYHARD;
-		setup.levelP2 = KSquares::AI_KNOX;
+		setup.levelP2 = KSquares::AI_HARD;
 		setup.timeout = 5000;
 		setup.boardSize = QPoint(5,5);
 		testSetups.append(setup);
@@ -231,7 +243,7 @@ void KSquaresTestWindow::initTest()
 	for (int i = 0; i < 10; i++)
 	{
 		AITestSetup setup;
-		setup.levelP1 = KSquares::AI_KNOX;
+		setup.levelP1 = KSquares::AI_HARD;
 		setup.levelP2 = KSquares::AI_VERYHARD;
 		setup.timeout = 5000;
 		setup.boardSize = QPoint(5,5);
@@ -424,6 +436,8 @@ QString latexResultGroup(QList<AITestResult> group)
 				tainted.first++;
 			if (res.taintedP2)
 				tainted.second++;
+			tainted.first += res.crashesP1;
+			tainted.second += res.crashesP2;
 			
 			if (res.scoreP1 > res.scoreP2)
 			{
@@ -453,6 +467,8 @@ QString latexResultGroup(QList<AITestResult> group)
 				tainted.second++;
 			if (res.taintedP2)
 				tainted.first++;
+			tainted.second += res.crashesP1;
+			tainted.first += res.crashesP2;
 			
 			if (res.scoreP1 > res.scoreP2)
 			{
@@ -656,9 +672,14 @@ void KSquaresTestWindow::aiChoseLine(const int &line)
 		return;
 	}
 	
-	sGame->addLineToIndex(line);
-	currentResult.moves.append(line);
+	if (!sGame->addLineToIndex(line))
+	{
+		kDebug() << "ERROR: ai made invalid move! game is tainted! aborting";
+		gameOver(sGame->getPlayers());
+		return;
+	}
 	
+	currentResult.moves.append(line);
 }
 
 void KSquaresTestWindow::gameOver(const QVector<KSquaresPlayer> & playerList)
@@ -669,7 +690,9 @@ void KSquaresTestWindow::gameOver(const QVector<KSquaresPlayer> & playerList)
 	
 	currentResult.setup = currentSetup;
 	currentResult.taintedP1 = aiList[0]->getAi()->tainted();
-	currentResult.taintedP1 = aiList[1]->getAi()->tainted();
+	currentResult.taintedP2 = aiList[1]->getAi()->tainted();
+	currentResult.crashesP1 = aiList[0]->getAi()->crashCount();
+	currentResult.crashesP2 = aiList[1]->getAi()->crashCount();
 	currentResult.scoreP1 = playerList[0].score();
 	currentResult.scoreP2 = playerList[1].score();
 	

@@ -62,6 +62,7 @@ class KSquaresAi : public aiFunctions, public BoardAnalysisFunctions
 		virtual bool enabled() { kDebug() << "KSquaresAI -> enabled"; return true; }
 		virtual bool tainted() { return false; } // used for error signaling with external ai
 		virtual long lastMoveTime() { return -3; } // time used to calculate move
+		virtual int crashCount() { return 0; } // times the ai crashed and could be recovered
 };
 
 class aiController : public QObject

@@ -47,6 +47,8 @@ public:
 	QList<int> timeP2;
 	bool taintedP1;
 	bool taintedP2;
+	int crashesP1;
+	int crashesP2;
 	int scoreP1;
 	int scoreP2;
 	

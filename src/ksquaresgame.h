@@ -105,7 +105,7 @@ class KSquaresGame : public QObject
 		/**
 		 * @param index the index of the line to add
 		 */
-		void addLineToIndex(int index);
+		bool addLineToIndex(int index);
 
 	protected:
 		/**

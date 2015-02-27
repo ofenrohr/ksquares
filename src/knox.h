@@ -30,6 +30,7 @@ class Knox : public QObject, public KSquaresAi
 		virtual bool enabled() { return true; }
 		virtual bool tainted() { return isTainted; }
 		virtual long lastMoveTime() { return lastTurnTime; }
+		virtual int crashCount() { return crashCnt; }
 		
 		bool isTainted;
 	
@@ -66,6 +67,7 @@ class Knox : public QObject, public KSquaresAi
 		bool knoxCrashed;
 		int knoxStartedCnt;
 		bool knoxRecovering;
+		int crashCnt;
 };
 
 #endif

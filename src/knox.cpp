@@ -49,6 +49,8 @@ Knox::Knox(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int
 		kDebug() << "****************************************************************";
 		kDebug() << "knox only works with up to 9x9 boxes games!";
 	}
+	
+	crashCnt = 0;
 }
 
 Knox::~Knox()
@@ -69,9 +71,9 @@ void Knox::setupProcess()
 	lastKnoxMoveOffset = 0;
 	knoxMoveQueue.clear();
 	knoxRecovering = true;
-	if (linesSentCnt > 0) // looks like knox crashed before, resend last line
+	if (knoxRecovering) // looks like knox crashed before, analyze what knox knows about the game
 	{
-		QFile knoxlog(opponentName);
+		QFile knoxlog(opponentName.trimmed());
 		if (knoxlog.exists())
 		{
 			if (knoxlog.open(QIODevice::ReadOnly))
@@ -79,19 +81,28 @@ void Knox::setupProcess()
 				QTextStream inStream(&knoxlog);
 				QString line = "";
 				int lastTurnInKnoxLog = -1;
+				QList<QString> knoxMovesInLog;
 				do
 				{
 					line = inStream.readLine();
-					QRegExp moveRegex("([\\d]+): ");
+					kDebug() << "knoxlog: " << line;
+					QRegExp moveRegex("^([\\d]+): ([\\w][\\d]-[\\w][\\d])");
 					int pos = moveRegex.indexIn(line);
 					if (pos >= 0)
 					{
+						kDebug() << "knox move in log: " << moveRegex.cap(1) << " -> " << moveRegex.cap(2);
 						lastTurnInKnoxLog = moveRegex.cap(1).toInt();
+						knoxMovesInLog.append(moveRegex.cap(2));
 					}
 				} while (!line.isNull());
 				if (lastTurnInKnoxLog > 0)
 				{
 					kDebug() << "knox log contains " << lastTurnInKnoxLog << " moves";
+					for (int i = linesSentCnt; i < lastTurnInKnoxLog; i++)
+					{
+						kDebug() << "found move in knox log that hasn't been made in ksquares: " << knoxMovesInLog.at(i);
+						knoxMoveQueue.enqueue(knoxMovesInLog.at(i));
+					}
 					linesSentCnt = lastTurnInKnoxLog - 1;
 				}
 				else
@@ -104,6 +115,8 @@ void Knox::setupProcess()
 		else
 			linesSentCnt--;
 	}
+	if (linesSentCnt < 0)
+		linesSentCnt = 0;
 	
 	knoxStartedCnt++;
 	
@@ -177,6 +190,7 @@ void Knox::processError(const QProcess::ProcessError &error)
 	kDebug() << "knox error: " << info;
 	kDebug() << "entered opponent name: " << opponentName;
 	knoxCrashed = true;
+	crashCnt ++;
 }
 
 void Knox::processStateChanged(const QProcess::ProcessState &newState)
@@ -216,7 +230,9 @@ void Knox::processReadyReadStandardOutput()
 {
 	kDebug() << "processReadyReadStandardOutput!";
 	knox->setReadChannel(QProcess::StandardOutput);
-	QByteArray knoxStdOutTmp = knox->readAll();
+	QByteArray knoxStdOutTmp;
+	if (knox->bytesAvailable() > 0)
+		knoxStdOutTmp = knox->readAll();
 	kDebug() << "knox stdout: " << QString(knoxStdOutTmp);
 	knoxStdOutStream << knoxStdOutTmp;
 	knoxStdOutStream.flush();
@@ -227,6 +243,8 @@ void Knox::processReadyReadStandardOutput()
 			uint stamp = QDateTime::currentDateTime().toTime_t();
 			if (opponentName.isEmpty())
 				opponentName = "ksquares-" + QString::number(stamp) + "\n";
+			else
+				goFirstEntered = true;
 			knox->write(opponentName.toAscii());
 			if (!knox->waitForBytesWritten())
 			{
@@ -296,9 +314,18 @@ int Knox::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwn
 	kDebug() << "knox choose line...";
 	QCoreApplication::processEvents();
 	
+	QElapsedTimer startupTimer;
+	startupTimer.start();
+	
 	while (!opponentNameEntered || !goFirstEntered)
 	{
-		kDebug() << "waiting for knox setup to complete...";
+		kDebug() << "waiting for knox setup to complete... opponentNameEntered = " << opponentNameEntered << ", goFirstEntered = " << goFirstEntered;
+		if (startupTimer.hasExpired(timeout*5))
+		{
+			kDebug() << "Knox exeeded timeout*5, restarting knox...";
+			setupProcess();
+			return chooseLine(newLines, newSquareOwners, lineHistory);
+		}
 		if ((knox->state() != QProcess::Running || knoxCrashed) && !knoxRecovering)
 		{
 			kDebug() << "ERROR: knox process is not running...";
@@ -344,6 +371,13 @@ int Knox::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwn
 				if (!knox->waitForReadyRead(1000))
 				{
 					kDebug() << "ERROR: knox doesn't request move";
+					//kDebug() << "knox stdout: " << knoxStdOut;
+					if (turnTimer.hasExpired(timeout*5))
+					{
+						kDebug() << "Knox exeeded timeout*5, restarting knox...";
+						setupProcess();
+						return chooseLine(newLines, newSquareOwners, lineHistory);
+					}
 				}
 				QCoreApplication::processEvents();
 				continue;
@@ -382,6 +416,12 @@ int Knox::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwn
 		timeoutTimer.restart();
 		while (knoxMoveQueue.size() == 0)
 		{
+			if (turnTimer.hasExpired(timeout*5))
+			{
+				kDebug() << "Knox exeeded timeout*5, restarting knox...";
+				setupProcess();
+				return chooseLine(newLines, newSquareOwners, lineHistory);
+			}
 			if (knox->state() != QProcess::Running || knoxCrashed)
 			{
 				kDebug() << "ERROR: knox process is not running...";
