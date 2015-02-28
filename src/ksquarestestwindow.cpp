@@ -234,6 +234,62 @@ void KSquaresTestWindow::initTest()
 	for (int i = 0; i < 10; i++)
 	{
 		AITestSetup setup;
+		setup.levelP1 = KSquares::AI_MCTS_A;
+		setup.levelP2 = KSquares::AI_MCTS_B;
+		setup.timeout = 5000;
+		setup.boardSize = QPoint(5,5);
+		testSetups.append(setup);
+	}
+	for (int i = 0; i < 10; i++)
+	{
+		AITestSetup setup;
+		setup.levelP1 = KSquares::AI_MCTS_B;
+		setup.levelP2 = KSquares::AI_MCTS_A;
+		setup.timeout = 5000;
+		setup.boardSize = QPoint(5,5);
+		testSetups.append(setup);
+	}
+	for (int i = 0; i < 10; i++)
+	{
+		AITestSetup setup;
+		setup.levelP1 = KSquares::AI_MCTS_A;
+		setup.levelP2 = KSquares::AI_MCTS_C;
+		setup.timeout = 5000;
+		setup.boardSize = QPoint(5,5);
+		testSetups.append(setup);
+	}
+	for (int i = 0; i < 10; i++)
+	{
+		AITestSetup setup;
+		setup.levelP1 = KSquares::AI_MCTS_C;
+		setup.levelP2 = KSquares::AI_MCTS_A;
+		setup.timeout = 5000;
+		setup.boardSize = QPoint(5,5);
+		testSetups.append(setup);
+	}
+	for (int i = 0; i < 10; i++)
+	{
+		AITestSetup setup;
+		setup.levelP1 = KSquares::AI_MCTS_B;
+		setup.levelP2 = KSquares::AI_MCTS_C;
+		setup.timeout = 5000;
+		setup.boardSize = QPoint(5,5);
+		testSetups.append(setup);
+	}
+	for (int i = 0; i < 10; i++)
+	{
+		AITestSetup setup;
+		setup.levelP1 = KSquares::AI_MCTS_C;
+		setup.levelP2 = KSquares::AI_MCTS_B;
+		setup.timeout = 5000;
+		setup.boardSize = QPoint(5,5);
+		testSetups.append(setup);
+	}
+	return;
+	
+	for (int i = 0; i < 10; i++)
+	{
+		AITestSetup setup;
 		setup.levelP1 = KSquares::AI_VERYHARD;
 		setup.levelP2 = KSquares::AI_HARD;
 		setup.timeout = 5000;
@@ -249,7 +305,7 @@ void KSquaresTestWindow::initTest()
 		setup.boardSize = QPoint(5,5);
 		testSetups.append(setup);
 	}
-	return;
+	//return;
 	
 	for (int i = 0; i < 5; i++)
 	{
@@ -404,6 +460,9 @@ QString prettyAiLevel(int level)
 		case KSquares::AI_DABBLENOHASH: return "Dabble (NoHash)";
 		case KSquares::AI_QDAB: return "QDab";
 		case KSquares::AI_KNOX: return "Knox";
+		case KSquares::AI_MCTS_A: return "KSquares (MCTS-1)";
+		case KSquares::AI_MCTS_B: return "KSquares (MCTS-2)";
+		case KSquares::AI_MCTS_C: return "KSquares (MCTS-3)";
 		default: return "Unbekannt";
 	}
 	return "Unbekannt";

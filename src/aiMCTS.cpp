@@ -29,6 +29,15 @@ aiMCTS::aiMCTS(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight,
 	for (int i = 0; i < linesSize; i++)
 		lines[i] = false;
 	mctsTimer = QElapsedTimer();
+	switch (level)
+	{
+		default:
+			level = KSquares::AI_EASY;
+		case KSquares::AI_EASY:
+		case KSquares::AI_MEDIUM:
+		case KSquares::AI_HARD:
+		break;
+	}
 }
 
 aiMCTS::~aiMCTS()
@@ -140,7 +149,10 @@ MCTSNode::Ptr aiMCTS::selection(MCTSNode::Ptr node)
 			MCTSNode::Ptr newNode(new MCTSNode());
 			newNode->moveSequence.append(analysis.moveSequences->at(i));
 			newNode->parent = node;
-			node->children.append(newNode);
+			if (qrand() % 2)
+				node->children.append(newNode);
+			else
+				node->children.prepend(newNode);
 		}
 	}
 	
@@ -152,7 +164,7 @@ MCTSNode::Ptr aiMCTS::selection(MCTSNode::Ptr node)
 	// actual selection
 	MCTSNode::Ptr selectedNode;
 	double bestVal = -INFINITY;
-	double C = 1.4;
+	double C = 4;
 	double lnnp = log(node->visitedCnt+1);
 	for (int i = 0; i < node->children.size(); i++)
 	{
@@ -186,7 +198,7 @@ void aiMCTS::expansion(MCTSNode::Ptr node)
 void aiMCTS::simulation(MCTSNode::Ptr node)
 {
 	// prepare simulation
-	aiEasyMediumHard simAi(0, board->width, board->height, KSquares::AI_HARD); // TODO: try what happens with AI_MEDIUM and AI_EASY
+	aiEasyMediumHard simAi(0, board->width, board->height, level); // TODO: try what happens with AI_MEDIUM and AI_EASY
 	QVector<int> simulationHistory;
 	int missingLines = 0;
 	for (int i = 0; i < board->linesSize; i++)
@@ -222,6 +234,7 @@ void aiMCTS::backpropagation(MCTSNode::Ptr node)
 	{
 		tmpNode->visitedCnt++;
 		tmpNode->fullValue += addValue;
+		tmpNode->value = (double)tmpNode->fullValue / (double)tmpNode->visitedCnt;
 		tmpNode = tmpNode->parent;
 	}
 }

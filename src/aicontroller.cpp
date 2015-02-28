@@ -125,9 +125,17 @@ KSquaresAi::Ptr aiController::getAi()
 			if (ai.isNull())
 				ai = KSquaresAi::Ptr(new Knox(playerId, maxPlayerId, width, height, level, aiThinkTime));
 		break;
-		case KSquares::AI_MCTS:
+		case KSquares::AI_MCTS_A:
 			if (ai.isNull())
-				ai = KSquaresAi::Ptr(new aiMCTS(playerId, maxPlayerId, width, height, level, aiThinkTime));
+				ai = KSquaresAi::Ptr(new aiMCTS(playerId, maxPlayerId, width, height, KSquares::AI_EASY, aiThinkTime));
+		break;
+		case KSquares::AI_MCTS_B:
+			if (ai.isNull())
+				ai = KSquaresAi::Ptr(new aiMCTS(playerId, maxPlayerId, width, height, KSquares::AI_MEDIUM, aiThinkTime));
+		break;
+		case KSquares::AI_MCTS_C:
+			if (ai.isNull())
+				ai = KSquaresAi::Ptr(new aiMCTS(playerId, maxPlayerId, width, height, KSquares::AI_HARD, aiThinkTime));
 		break;
 	}
 	return ai;
