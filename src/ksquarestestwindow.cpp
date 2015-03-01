@@ -271,6 +271,43 @@ void KSquaresTestWindow::initTest()
 	for (int i = 0; i < 5; i++)
 	{
 		AITestSetup setup;
+		setup.levelP1 = KSquares::AI_VERYHARD;
+		setup.levelP2 = KSquares::AI_MCTS_B;
+		setup.timeout = 30000;
+		setup.boardSize = QPoint(6,6);
+		testSetups.append(setup);
+	}
+	for (int i = 0; i < 5; i++)
+	{
+		AITestSetup setup;
+		setup.levelP1 = KSquares::AI_MCTS_B;
+		setup.levelP2 = KSquares::AI_VERYHARD;
+		setup.timeout = 30000;
+		setup.boardSize = QPoint(6,6);
+		testSetups.append(setup);
+	}
+	for (int i = 0; i < 5; i++)
+	{
+		AITestSetup setup;
+		setup.levelP1 = KSquares::AI_VERYHARD;
+		setup.levelP2 = KSquares::AI_MCTS_B;
+		setup.timeout = 30000;
+		setup.boardSize = QPoint(7,7);
+		testSetups.append(setup);
+	}
+	for (int i = 0; i < 5; i++)
+	{
+		AITestSetup setup;
+		setup.levelP1 = KSquares::AI_MCTS_B;
+		setup.levelP2 = KSquares::AI_VERYHARD;
+		setup.timeout = 30000;
+		setup.boardSize = QPoint(7,7);
+		testSetups.append(setup);
+	}
+	
+	for (int i = 0; i < 5; i++)
+	{
+		AITestSetup setup;
 		setup.levelP1 = KSquares::AI_DABBLENOHASH;
 		setup.levelP2 = KSquares::AI_HARD;
 		setup.timeout = 30000;
@@ -768,9 +805,9 @@ QString latexResultGroup(QList<AITestResult> group)
 	
 	QString ret = "\\begin{table}[H]\n";
 	ret += "  \\begin{tabular}{c|cccc}\n";
-	ret += "    \\specialcell{Spieler 1\\\\Spieler 2} & \\specialcell{Gewonnen \\\\(Sp. 1 / Sp. 2)} & \\specialcell{Verloren \\\\(Sp. 1 / Sp. 2)} & \\specialcell{Spiele\\\\(Crashes)} & $\\emptyset$ Zugzeit (ms) \\\\ \\hline\n";
-	ret += "    "+prettyAiLevel(lvls.first)+" & $"+QString::number(winsP1.first + winsP2.first)+"$ ($"+QString::number(winsP1.first)+"$ / $"+QString::number(winsP2.first)+"$) & $"+QString::number(losesP1.first + losesP2.first)+"$ ($"+QString::number(losesP1.first)+"$ / $"+QString::number(losesP2.first)+"$) & $"+QString::number(group.size())+"$ ($"+QString::number(tainted.first)+"$) & $"+QString::number(avgTime.first)+"$ \\\\\n";
-	ret += "    "+prettyAiLevel(lvls.second)+" & $"+QString::number(winsP1.second + winsP2.second)+"$ ($"+QString::number(winsP1.second)+"$ / $"+QString::number(winsP2.second)+"$) & $"+QString::number(losesP1.second + losesP2.second)+"$ ($"+QString::number(losesP1.second)+"$ / $"+QString::number(losesP2.second)+"$) & $"+QString::number(group.size())+"$ ($"+QString::number(tainted.second)+"$) & $"+QString::number(avgTime.second)+"$ \\\\\n";
+	ret += "    \\specialcell{Spieler 1\\\\Spieler 2} & \\specialcell{Gewonnen \\\\(Sp. 1 / Sp. 2)} & Spiele & Crashes & $\\emptyset$ Zugzeit (ms) \\\\ \\hline\n";
+	ret += "    "+prettyAiLevel(lvls.first)+" & $"+QString::number(winsP1.first + winsP2.first)+"$ ($"+QString::number(winsP1.first)+"$ / $"+QString::number(winsP2.first)+"$) &  $"+QString::number(group.size())+"$ & $"+QString::number(tainted.first)+"$ & $"+QString::number(avgTime.first)+"$ \\\\\n";
+	ret += "    "+prettyAiLevel(lvls.second)+" & $"+QString::number(winsP1.second + winsP2.second)+"$ ($"+QString::number(winsP1.second)+"$ / $"+QString::number(winsP2.second)+"$) & $"+QString::number(group.size())+"$ & $"+QString::number(tainted.second)+"$ & $"+QString::number(avgTime.second)+"$ \\\\\n";
 	ret += "  \\end{tabular}\n";
 	ret += "  \\caption{Ergebnisse von "+prettyAiLevel(lvls.first)+" gegen "+prettyAiLevel(lvls.second)+" auf $"+QString::number(group[0].setup.boardSize.x())+" \\times "+QString::number(group[0].setup.boardSize.y())+"$ Spielfeld bei maximal $"+QString::number(group[0].setup.timeout/1000)+"$ Sekunden Bedenkzeit}\n";
 	ret += "\\end{table}\n";
