@@ -856,8 +856,8 @@ KSquares::ChainType aiFunctions::classifyChain(int width, int height, const QLis
   // did we visit all squares?
   if (squares->size() != squareVisited.size())
   {
-    kDebug() << "ERROR: didn't visit all squares (squares cnt = " << squares->size() << ", squares visited cnt = " << squareVisited.size() << "), board: " << boardToString(lines, toLinesSize(width, height), width, height) << "chain: " << chain << " as board: " << linelistToString(chain, toLinesSize(width, height), width, height);
-		printSquares(squareVisited, width, height);
+    //kDebug() << "ERROR: didn't visit all squares (squares cnt = " << squares->size() << ", squares visited cnt = " << squareVisited.size() << "), board: " << boardToString(lines, toLinesSize(width, height), width, height) << "chain: " << chain << " as board: " << linelistToString(chain, toLinesSize(width, height), width, height);
+		//printSquares(squareVisited, width, height);
     return KSquares::CHAIN_UNKNOWN;
   }
   

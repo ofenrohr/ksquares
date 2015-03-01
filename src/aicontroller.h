@@ -45,7 +45,10 @@ namespace KSquares
 		AI_DABBLE, 
 		AI_DABBLENOHASH, 
 		AI_QDAB, 
-		AI_KNOX
+		AI_KNOX,
+		AI_MCTS_A,
+		AI_MCTS_B,
+		AI_MCTS_C
 	};
 }
 
@@ -102,7 +105,7 @@ class aiController : public QObject
 		static QList<int> autoFill(int safeMovesLeft, int width, int height);
 		
 		KSquaresAi::Ptr getAi();
-		static int getMaxAiLevel() { return 7; }
+		static int getMaxAiLevel() { return 10; }
 		
 		long lastMoveTime() {return lastTurnTime;}
 

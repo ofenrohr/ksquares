@@ -52,7 +52,7 @@ void aiAlphaBeta::clearTranspositionTable()
 	analysisHash->clear();
 }
 
-int aiAlphaBeta::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory)
+int aiAlphaBeta::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &/*lineHistory*/)
 {
 	QElapsedTimer moveTimer;
 	moveTimer.start();
@@ -78,9 +78,9 @@ int aiAlphaBeta::chooseLine(const QList<bool> &newLines, const QList<int> &newSq
 	alphabetaTimer.start();
 	int line = -1;
 #ifdef KSQUARES_ALPHABETA_ITERATIVE_DEEPENING
-	float evalResult = alphabetaIterativeDeepening(board, searchDepth, &line);
+	alphabetaIterativeDeepening(board, searchDepth, &line);
 #else
-	float evalResult = alphabeta(board, searchDepth, &line);
+	alphabeta(board, searchDepth, &line);
 #endif
 	
 	if (line < 0 || line >= linesSize)

@@ -21,7 +21,7 @@
 // generated
 #include "externalaipath.h"
 
-Knox::Knox(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel, int thinkTime) : KSquaresAi(newWidth, newHeight)
+Knox::Knox(int newPlayerId, int /*newMaxPlayerId*/, int newWidth, int newHeight, int /*newLevel*/, int thinkTime) : KSquaresAi(newWidth, newHeight)
 {
 	timeout = thinkTime;
 	playerId = newPlayerId;

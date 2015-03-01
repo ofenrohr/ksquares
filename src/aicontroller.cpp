@@ -17,6 +17,7 @@
 //#include "dbgame-nohash.h"
 #include "qdab.h"
 #include "knox.h"
+#include "aiMCTS.h"
 
 #include <ctime>
 #include <kdebug.h>
@@ -123,6 +124,18 @@ KSquaresAi::Ptr aiController::getAi()
 		case KSquares::AI_KNOX:
 			if (ai.isNull())
 				ai = KSquaresAi::Ptr(new Knox(playerId, maxPlayerId, width, height, level, aiThinkTime));
+		break;
+		case KSquares::AI_MCTS_A:
+			if (ai.isNull())
+				ai = KSquaresAi::Ptr(new aiMCTS(playerId, maxPlayerId, width, height, KSquares::AI_EASY, aiThinkTime));
+		break;
+		case KSquares::AI_MCTS_B:
+			if (ai.isNull())
+				ai = KSquaresAi::Ptr(new aiMCTS(playerId, maxPlayerId, width, height, KSquares::AI_MEDIUM, aiThinkTime));
+		break;
+		case KSquares::AI_MCTS_C:
+			if (ai.isNull())
+				ai = KSquaresAi::Ptr(new aiMCTS(playerId, maxPlayerId, width, height, KSquares::AI_HARD, aiThinkTime));
 		break;
 	}
 	return ai;
