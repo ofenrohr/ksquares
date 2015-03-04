@@ -67,11 +67,8 @@ void alphabeta::testAlphaBeta001()
 	
 	aiBoard::Ptr board(new aiBoard(sGame->board()));
 	
-	QList<int> lineSortList;
-	for (int i = 0; i < lines.size(); i++)
-		lineSortList.append(i);
 	KSquares::BoardAnalysis analysis = BoardAnalysisFunctions::analyseBoard(board);
-	QList<QList<int> > moveSequences = *aiAlphaBeta::getMoveSequences(board, analysis, lineSortList);
+	QList<QList<int> > moveSequences = *aiAlphaBeta::getMoveSequences(board, analysis);
 	
 	kDebug() << "generated move sequences: " << moveSequences;
 	
@@ -163,11 +160,8 @@ void alphabeta::testAlphaBeta003()
 	
 	aiBoard::Ptr board(new aiBoard(sGame->board()));
 	
-	QList<int> lineSortList;
-	for (int i = 0; i < lines.size(); i++)
-		lineSortList.append(i);
 	KSquares::BoardAnalysis analysis = BoardAnalysisFunctions::analyseBoard(board);
-	QList<QList<int> > moveSequences = *aiAlphaBeta::getMoveSequences(board, analysis, lineSortList);
+	QList<QList<int> > moveSequences = *aiAlphaBeta::getMoveSequences(board, analysis);
 	
 	kDebug() << moveSequences;
 }
@@ -192,18 +186,18 @@ void alphabeta::testBerlekamp007()
 	expectedLines.append(9);
 	
 	aiAlphaBeta ai(lines.size() % 2, 1, sGame->board()->width(), sGame->board()->height(), -1);
-	ai.setDebug(true);
+//	ai.setDebug(true);
 	int aiLine = ai.chooseLine(sGame->board()->lines(), sGame->board()->squares(), sGame->board()->getLineHistory());
 	// write dot tree to file
 	QFile file("/tmp/berlekamp-7.dot");
-	if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate))
-	{
-		kDebug() << "error: Can't open file";
-		return;
-	}
-	QTextStream fileoutput(&file);
-	fileoutput << "graph {\n" << ai.getDebugDot() << "}";
-	file.close();
+// // 	if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate))
+// // 	{
+// // 		kDebug() << "error: Can't open file";
+// // 		return;
+// // 	}
+// // 	QTextStream fileoutput(&file);
+// // 	fileoutput << "graph {\n" << ai.getDebugDot() << "}";
+// // 	file.close();
 	
 	QVERIFY(expectedLines.contains(aiLine));
 }
@@ -254,20 +248,20 @@ void alphabeta::testAlphaBeta004()
 	
 	aiAlphaBeta ai(0, 1, board->width, board->height, -1);
 	ai.setDepth(1);
-	ai.setDebug(true);
+// 	ai.setDebug(true);
 	int aiLine = ai.chooseLine(sGame->board()->lines(), sGame->board()->squares(), sGame->board()->getLineHistory());
 	kDebug() << "ai line = " << aiLine;
 	
 	// write dot tree to file
-	QFile file("/tmp/berlekamp-1.dot");
-	if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate))
-	{
-		kDebug() << "error: Can't open file";
-		return;
-	}
-	QTextStream fileoutput(&file);
-	fileoutput << "graph {\n" << ai.getDebugDot() << "}";
-	file.close();
+// 	QFile file("/tmp/berlekamp-1.dot");
+// 	if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate))
+// 	{
+// 		kDebug() << "error: Can't open file";
+// 		return;
+// 	}
+// 	QTextStream fileoutput(&file);
+// 	fileoutput << "graph {\n" << ai.getDebugDot() << "}";
+// 	file.close();
 	
 	// do sth not so smart
 	bool nextPlayer, gameOver = false;
@@ -279,15 +273,15 @@ void alphabeta::testAlphaBeta004()
 	kDebug() << "ai line 2 = " << aiLine2;
 	
 	// write dot tree to file
-	QFile file2("/tmp/berlekamp-1-2.dot");
-	if (!file2.open(QIODevice::ReadWrite | QIODevice::Truncate))
-	{
-		kDebug() << "error: Can't open file";
-		return;
-	}
-	QTextStream fileoutput2(&file2);
-	fileoutput2 << "graph {\n" << ai.getDebugDot() << "}";
-	file2.close();
+// 	QFile file2("/tmp/berlekamp-1-2.dot");
+// 	if (!file2.open(QIODevice::ReadWrite | QIODevice::Truncate))
+// 	{
+// 		kDebug() << "error: Can't open file";
+// 		return;
+// 	}
+// 	QTextStream fileoutput2(&file2);
+// 	fileoutput2 << "graph {\n" << ai.getDebugDot() << "}";
+// 	file2.close();
 }
 
 
@@ -332,21 +326,21 @@ void alphabeta::testAlphaBeta005()
 	
 	
 	aiAlphaBeta ai(0, 1, board->width, board->height, -1);
-	ai.setDebug(true);
+// 	ai.setDebug(true);
 	int aiLine = ai.chooseLine(sGame->board()->lines(), sGame->board()->squares(), sGame->board()->getLineHistory());
 	
 	kDebug() << "aiLine 0: " << aiLine;
 	
 	// write dot tree to file
-	QFile file("/tmp/2x2-tree.dot");
-	if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate))
-	{
-		kDebug() << "error: Can't open file";
-		return;
-	}
-	QTextStream fileoutput(&file);
-	fileoutput << "graph {\n" << ai.getDebugDot() << "}";
-	file.close();
+// 	QFile file("/tmp/2x2-tree.dot");
+// 	if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate))
+// 	{
+// 		kDebug() << "error: Can't open file";
+// 		return;
+// 	}
+// 	QTextStream fileoutput(&file);
+// 	fileoutput << "graph {\n" << ai.getDebugDot() << "}";
+// 	file.close();
 	
 	/*
 	bool nextPlayer, gameOver = false;
@@ -417,12 +411,12 @@ void alphabeta::testBerlekamp004()
 	
 	board->doMove(12);
 	aiAlphaBeta ai(0, 1, board->width, board->height, -1);
-	ai.setDebug(true);
+// 	ai.setDebug(true);
 // 	QList<QPair<int, int> > debugLines; // line, depth
 // 	debugLines.append(QPair<int,int>(22, 1));
 // 	debugLines.append(QPair<int,int>(12, 1));
 // 	ai.setDebugLines(debugLines);
-	ai.setDebugDepth(3);
+// 	ai.setDebugDepth(3);
 	
 	int aiLine = ai.chooseLine(sGame->board()->lines(), sGame->board()->squares(), sGame->board()->getLineHistory());
 	kDebug() << "aiLine 0: " << aiLine;
@@ -436,15 +430,15 @@ void alphabeta::testBerlekamp004()
 	*/
 	
 	// write dot tree to file
-	QFile file("/tmp/berlekamp-6-tree.dot");
-	if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate))
-	{
-		kDebug() << "error: Can't open file";
-		return;
-	}
-	QTextStream fileoutput(&file);
-	fileoutput << "graph {\n" << ai.getDebugDot() << "}";
-	file.close();
+// 	QFile file("/tmp/berlekamp-6-tree.dot");
+// 	if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate))
+// 	{
+// 		kDebug() << "error: Can't open file";
+// 		return;
+// 	}
+// 	QTextStream fileoutput(&file);
+// 	fileoutput << "graph {\n" << ai.getDebugDot() << "}";
+// 	file.close();
 	
 	/*
 	bool nextPlayer, gameOver = false;
@@ -476,10 +470,7 @@ void alphabeta::testMoveSeq001()
 	
 	kDebug() << "analysis: " << analysis;
 	
-	QList<int> lineSortList;
-	for (int i = 0; i < lines.size(); i++)
-	lineSortList.append(i);
-	QList<QList<int> > moveSequences = *aiAlphaBeta::getMoveSequences(board, analysis, lineSortList);
+	QList<QList<int> > moveSequences = *aiAlphaBeta::getMoveSequences(board, analysis);
 	
 	kDebug() << "move sequences: " << moveSequences;
 	
@@ -503,10 +494,7 @@ void alphabeta::testMoveSeq002()
 	
 	kDebug() << "analysis: " << analysis;
 	
-	QList<int> lineSortList;
-	for (int i = 0; i < lines.size(); i++)
-	lineSortList.append(i);
-	QList<QList<int> > moveSequences = *aiAlphaBeta::getMoveSequences(board, analysis, lineSortList);
+	QList<QList<int> > moveSequences = *aiAlphaBeta::getMoveSequences(board, analysis);
 	
 	kDebug() << "move sequences: " << moveSequences;
 	
@@ -534,10 +522,7 @@ void alphabeta::testMoveSeq003()
 	
 	kDebug() << "analysis: " << analysis;
 	
-	QList<int> lineSortList;
-	for (int i = 0; i < lines.size(); i++)
-	lineSortList.append(i);
-	QList<QList<int> > moveSequences = *aiAlphaBeta::getMoveSequences(board, analysis, lineSortList);
+	QList<QList<int> > moveSequences = *aiAlphaBeta::getMoveSequences(board, analysis);
 	
 	kDebug() << "move sequences: " << moveSequences;
 	
@@ -560,22 +545,22 @@ void alphabeta::testEmptyBoard001()
 	QList<Board::Move> lineHistory;
 	
 	aiAlphaBeta ai(0, 1, w, h, -1);
-	ai.setDebug(true);
-	ai.setDebugEvalOnly(true);
+// 	ai.setDebug(true);
+// 	ai.setDebugEvalOnly(true);
 	int line = ai.chooseLine(lines, squares, lineHistory);
 	
 	kDebug() << "line = " << line;
 	
 	// write dot tree to file
-	QFile file("/tmp/eval-only.dot");
-	if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate))
-	{
-		kDebug() << "error: Can't open file";
-		return;
-	}
-	QTextStream fileoutput(&file);
-	fileoutput << "graph {\n" << ai.getDebugDot() << "}";
-	file.close();
+// 	QFile file("/tmp/eval-only.dot");
+// 	if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate))
+// 	{
+// 		kDebug() << "error: Can't open file";
+// 		return;
+// 	}
+// 	QTextStream fileoutput(&file);
+// 	fileoutput << "graph {\n" << ai.getDebugDot() << "}";
+// 	file.close();
 }
 
 void alphabeta::testHeuristic002()
