@@ -11,7 +11,6 @@
 #define AIHEURISTIC_H
 
 #include "aiBoard.h"
-#include "aistructs.h"
 
 /**
  * Used to evaluate a dots and boxes board.
@@ -41,8 +40,6 @@ protected:
 	void analyseChains(aiBoard::Ptr board);
 	bool chainsAnalysed;
 	KSquares::BoardAnalysis analysis;
-	
-	//void findJointSquares(aiBoard::Ptr board, QList<KSquares::JointSquare> &jointSquares);
 	
 	bool debug;
 };

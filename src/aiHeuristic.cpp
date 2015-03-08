@@ -150,65 +150,7 @@ float aiHeuristic::evalLongChainRule(aiBoard::Ptr board)
 		if (analysis.chains[analysis.capturableShortChains[i]].squares.size() > 1)
 			return 1;
 	}
-	
-	QList<int> shortChainLines;
-	QList<int> addedChains;
-	int jointCnt = 0;
-	QList<KSquares::Chain> lcrChains;
-	int longChainCnt = 0;
-	for (int i = 0; i < board->squareOwners.size(); i++)
-	{
-		int borderLines[4];
-		int valence = aiFunctions::countBorderLines(board->width, board->height, borderLines, i, board->lines);
-		if (valence <= 1)
-		{
-			jointCnt++;
-			//jointSquares.append(i);
-			for (int j = 0; j < analysis.chainsAfterCapture.size(); j++)
-			{
-				for (int k = 0; k < 4; k++)
-				{
-					if (board->lines[borderLines[k]])
-						continue;
-					if (analysis.chainsAfterCapture[j].lines.contains(borderLines[k]))
-					{
-						if (analysis.chainsAfterCapture[j].type == KSquares::CHAIN_SHORT)
-						{
-							if (!addedChains.contains(j))
-							{
-								addedChains.append(j);
-								shortChainLines.append(analysis.chainsAfterCapture[j].lines);
-								kDebug() << analysis.chainsAfterCapture[j];
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	if (shortChainLines.size() > 0)
-	{
-		//kDebug() << "short chain lines before doMove: " << shortChainLines;
-		for (int i = 0; i < shortChainLines.size(); i++)
-		{
-			board->doMove(shortChainLines[i]);
-		}
-		aiFunctions::findChains(board, &lcrChains);
-		for (int i = shortChainLines.size()-1; i >= 0; i--)
-		{
-			board->undoMove(shortChainLines[i]);
-		}
-		for (int i = 0; i < lcrChains.size(); i++)
-		{
-			if (lcrChains[i].type == KSquares::CHAIN_LONG)
-			{
-				longChainCnt++;
-			}
-		}
-	}
-	
-	//int lcr = (dots + analysis.openLongChains.size()) % 2 != board->playerId ? -1 : 1;
-	int lcr = (dots + longChainCnt - jointCnt) % 2 != board->playerId ? -1 : 1;
+	int lcr = (dots + analysis.openLongChains.size()) % 2 != board->playerId ? -1 : 1;
 	
 	if (debug)
 	{
@@ -221,34 +163,6 @@ float aiHeuristic::evalLongChainRule(aiBoard::Ptr board)
 	
 	return lcr;
 }
-
-/*
-void aiHeuristic::findJointSquares(aiBoard::Ptr board, QList<KSquares::JointSquare> &jointSquares)
-{
-	for (int i = 0; i < board->squareOwners.size(); i++)
-	{
-		int borderLines[4];
-		int valence = aiFunctions::countBorderLines(board->width, board->height, borderLines, i, board->lines);
-		if (valence <= 1)
-		{
-			//jointSquares.append(i);
-			for (int j = 0; j < analysis.chainsAfterCapture.size(); j++)
-			{
-				for (int k = 0; k < 4; k++)
-				{
-					if (analysis.chainsAfterCapture[j].lines.contains(borderLines[k]))
-					{
-						KSquares::JointSquare jsq;
-						jsq.jointIdx = i;
-						jsq.connectedChains.append(j);
-						jointSquares.append(jsq);
-					}
-				}
-			}
-		}
-	}
-}
-*/
 
 void aiHeuristic::setAnalysis(KSquares::BoardAnalysis &a)
 {
