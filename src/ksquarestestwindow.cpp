@@ -232,11 +232,30 @@ void KSquaresTestWindow::initTest()
 		return;
 	
 	
+	for (int i = 0; i < 5; i++)
+	{
+		AITestSetup setup;
+		setup.levelP1 = KSquares::AI_VERYHARD;
+		setup.levelP2 = KSquares::AI_HARD;
+		setup.timeout = 30000;
+		setup.boardSize = QPoint(7,7);
+		testSetups.append(setup);
+	}
+	for (int i = 0; i < 5; i++)
+	{
+		AITestSetup setup;
+		setup.levelP1 = KSquares::AI_HARD;
+		setup.levelP2 = KSquares::AI_VERYHARD;
+		setup.timeout = 30000;
+		setup.boardSize = QPoint(7,7);
+		testSetups.append(setup);
+	}
+	return;
 	for (int i = 0; i < 10; i++)
 	{
 		AITestSetup setup;
 		setup.levelP1 = KSquares::AI_MCTS_B;
-		setup.levelP2 = KSquares::AI_VERYHARD;
+		setup.levelP2 = KSquares::AI_HARD;
 		setup.timeout = 30000;
 		setup.boardSize = QPoint(5,5);
 		testSetups.append(setup);
@@ -244,8 +263,27 @@ void KSquaresTestWindow::initTest()
 	for (int i = 0; i < 10; i++)
 	{
 		AITestSetup setup;
-		setup.levelP1 = KSquares::AI_VERYHARD;
+		setup.levelP1 = KSquares::AI_HARD;
 		setup.levelP2 = KSquares::AI_MCTS_B;
+		setup.timeout = 30000;
+		setup.boardSize = QPoint(5,5);
+		testSetups.append(setup);
+	}
+	return;
+	for (int i = 0; i < 10; i++)
+	{
+		AITestSetup setup;
+		setup.levelP1 = KSquares::AI_DABBLE;
+		setup.levelP2 = KSquares::AI_HARD;
+		setup.timeout = 30000;
+		setup.boardSize = QPoint(5,5);
+		testSetups.append(setup);
+	}
+	for (int i = 0; i < 10; i++)
+	{
+		AITestSetup setup;
+		setup.levelP1 = KSquares::AI_HARD;
+		setup.levelP2 = KSquares::AI_DABBLE;
 		setup.timeout = 30000;
 		setup.boardSize = QPoint(5,5);
 		testSetups.append(setup);

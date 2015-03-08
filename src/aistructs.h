@@ -27,6 +27,13 @@ namespace KSquares
 		friend QDebug operator<<(QDebug dbg, const KSquares::LSConnection_t &con) { dbg.nospace() << "LSConnection(l: " << con.line << ", s: " << con.square << ")"; return dbg.maybeSpace(); }
 	} LSConnection;
 	
+	// used in heuristic
+	typedef struct JointSquare_
+	{
+		int jointIdx;
+		QList<int> connectedChains;
+	} JointSquare;
+	
 	typedef struct BoardAnalysis_t
 	{
 		// capturable chains
