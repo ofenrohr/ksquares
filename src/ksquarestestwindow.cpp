@@ -250,7 +250,7 @@ void KSquaresTestWindow::initTest()
 		setup.boardSize = QPoint(7,7);
 		testSetups.append(setup);
 	}
-	return;
+	//return;
 	for (int i = 0; i < 10; i++)
 	{
 		AITestSetup setup;
@@ -269,7 +269,7 @@ void KSquaresTestWindow::initTest()
 		setup.boardSize = QPoint(5,5);
 		testSetups.append(setup);
 	}
-	return;
+	//return;
 	for (int i = 0; i < 10; i++)
 	{
 		AITestSetup setup;
@@ -288,7 +288,7 @@ void KSquaresTestWindow::initTest()
 		setup.boardSize = QPoint(5,5);
 		testSetups.append(setup);
 	}
-	return;
+	//return;
 	for (int i = 0; i < 10; i++)
 	{
 		AITestSetup setup;
@@ -307,7 +307,7 @@ void KSquaresTestWindow::initTest()
 		setup.boardSize = QPoint(5,5);
 		testSetups.append(setup);
 	}
-	return;
+	//return;
 	for (int i = 0; i < 5; i++)
 	{
 		AITestSetup setup;
@@ -418,7 +418,7 @@ void KSquaresTestWindow::initTest()
 		setup.boardSize = QPoint(7,7);
 		testSetups.append(setup);
 	}
-	return;
+	//return;
 	for (int i = 0; i < 5; i++)
 	{
 		AITestSetup setup;
@@ -474,7 +474,7 @@ void KSquaresTestWindow::initTest()
 		testSetups.append(setup);
 	}
 	
-	return;
+	//return;
 	
 	for (int i = 0; i < 10; i++)
 	{
@@ -557,7 +557,7 @@ void KSquaresTestWindow::initTest()
 		setup.boardSize = QPoint(5,5);
 		testSetups.append(setup);
 	}
-	return;
+	//return;
 	
 	for (int i = 0; i < 10; i++)
 	{
@@ -628,7 +628,7 @@ void KSquaresTestWindow::initTest()
 		testSetups.append(setup);
 	}
 	
-	return;
+	//return;
 	
 	for (int i = 0; i < 5; i++)
 	{
@@ -709,48 +709,6 @@ void KSquaresTestWindow::initTest()
 			testSetups.append(setup);
 		}
 	}
-	
-	/*
-	QList<int> timeouts;
-	timeouts << 5 << 10 << 30;
-	
-	QList<KSquares::AILevel> aiLevelList;
-	aiLevelList << KSquares::AI_EASY << KSquares::AI_MEDIUM << KSquares::AI_HARD << KSquares::AI_VERYHARD << KSquares::AI_DABBLE << KSquares::AI_QDAB << KSquares::AI_KNOX;
-	
-	QList<QPoint> boardSizes;
-	boardSizes << QPoint(5,5);
-	
-	long maxRequiredTime = 0;
-	
-	for (int t = 0; t < timeouts.size(); t++)
-	{	
-		for (int a1 = 0; a1 < aiLevelList.size(); a1++)
-		{
-			for (int a2 = 0; a2 < aiLevelList.size(); a2++)
-			{
-				if (a1 == a2)
-					continue;
-				for (int b = 0; b < boardSizes.size(); b++)
-				{
-					for (int i = 0; i < 20 - t*5; i++)
-					{
-						AITestSetup setup;
-						setup.levelP1 = aiLevelList[a1];
-						setup.levelP2 = aiLevelList[a2];
-						setup.timeout = timeouts[t] * 1000;
-						setup.boardSize = boardSizes[b];
-						testSetups.append(setup);
-						
-						maxRequiredTime += timeouts[t] * aiFunctions::toLinesSize(boardSizes[b].x(), boardSizes[b].y());
-					}
-				}
-			}
-		}
-	}
-	
-	kDebug() << "generated " << testSetups.size() << " test setups";
-	kDebug() << "maximum required time: " << maxRequiredTime;
-	*/
 }
 
 QPair<int, int> orderedLevels(int a, int b)
