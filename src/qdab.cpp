@@ -113,6 +113,23 @@ int QDab::randomMove(const QList<bool> &lines)
 	return freeLines.at(qrand() % freeLines.size());
 }
 
+// def num2move(self, value, who, step=-1):
+//         ty, x, y = 1, -1, -1
+//         if (value&(1<<31)) != 0:
+//             ty = 0 # horizon
+//         for i in range(5)[::step]:
+//             for j in range(6)[::step]:
+//                 if (value&1) == 1:
+//                     if ty == 0: x, y = j, i
+//                     else: x, y = i, j
+//                     break
+//                 value >>= 1
+//             if x != -1:
+//                 break
+//         return (ty, x, y, who)
+
+
+
 
 int QDab::getMoveFromQueue(const QList<bool> linesList)
 {
@@ -174,6 +191,7 @@ int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &/*newSquareO
 	
 	uint h = 0;
 	uint v = 0;
+	// send all moves from history
 	for (int i = 0; i < newLines.size(); i++)
 	{
 		if (!newLines[i])
@@ -188,6 +206,25 @@ int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &/*newSquareO
 		else
 			h |= (1<<(p1.y()*6+p1.x()));
 	}
+	
+	// only send the newest move sequence
+// 	int lastPlayer = -1;
+// 	for (int i = lineHistory.size()-1; i >= 0; i--)
+// 	{
+// 		if (lastPlayer == -1)
+// 		{
+// 			lastPlayer = lineHistory[i].player;
+// 		}
+// 		if (lineHistory[i].player != lastPlayer)
+// 			break;
+// 		QPoint p1, p2;
+// 		Board::indexToPoints(lineHistory[i].line, &p1, &p2, 5, 5, false);
+// 		//kDebug() << "dir,x,y: ("<< (p1.x() != p2.x() ? 0 : 1) <<", " << p1.x() << "," << p1.y() << ")";
+// 		if (p1.x() != p2.x())
+// 			v |= (1<<(p1.x()*6+p1.y()));
+// 		else
+// 			h |= (1<<(p1.y()*6+p1.x()));
+// 	}
 	
 	int turn = 1;
 	int tmpPlr = 0;
