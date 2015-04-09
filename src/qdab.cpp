@@ -114,6 +114,44 @@ int QDab::randomMove(const QList<bool> &lines)
 }
 
 
+int QDab::getMoveFromQueue(const QList<bool> linesList)
+{
+	kDebug() << "Current move queue: " << moveQueue;
+	if (moveQueue.size() <= 0)
+	{
+		kDebug() << "ERROR: move queue is empty!";
+		return -1;
+	}
+	for (int i = 0; i < moveQueue.size(); i++)
+	{
+		int line = moveQueue[i];
+		QList<int> adjacentSquares = squaresFromLine(line);
+		for (int j = 0; j < adjacentSquares.size(); j++)
+		{
+			int adjacentSquareLines[4];
+			linesFromSquare(adjacentSquareLines, adjacentSquares[j]);
+			int cnt = 0;
+			for (int k = 0; k < 4; k++)
+			{
+				if (linesList[adjacentSquareLines[k]])
+					cnt++;
+			}
+			if (cnt == 3)
+			{
+				kDebug() << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
+				kDebug() << "returning move from queue: " << line;
+				kDebug() << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
+				
+				moveQueue.removeAt(i);
+				return line;
+			}
+		}
+	}
+	kDebug() << "returning last move from queue";
+	return moveQueue.takeLast();
+}
+
+
 int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &/*newSquareOwners*/, const QList<Board::Move> &lineHistory)
 {
 	QCoreApplication::processEvents();
@@ -127,6 +165,11 @@ int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &/*newSquareO
 	{
 		kDebug() << "WARNING: qdab server might not be listening...";
 		qdabServer->waitForReadyRead();
+	}
+	
+	if (moveQueue.size() > 0)
+	{
+		return getMoveFromQueue(newLines);
 	}
 	
 	uint h = 0;
@@ -230,7 +273,7 @@ int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &/*newSquareO
 	unsigned long long rv = resultHV["V"].toULongLong();
 	kDebug() << "result hv: " << rh << ", " << rv;
 	
-	for (int i = 0; i <= 30; i++)
+	for (int i = 0; i < 30; i++)
 	{
 		if ( (1<<i) & rh )
 		{
@@ -241,12 +284,15 @@ int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &/*newSquareO
 			if (idx >= newLines.size() || idx < 0)
 			{
 				kDebug() << "error: invalid index from points! idx: " << idx << ", pa: " << pa << ", pb: " << pb;
-				continue;
+				//continue;
 			}
-			if (!newLines[idx])
-				return idx;
 			else
-				kDebug() << "old line: " << idx << ", pa: " << pa << ", pb: " << pb;
+			{
+				if (!newLines[idx])
+					moveQueue.append(idx);
+				else
+					kDebug() << "old line: " << idx << ", pa: " << pa << ", pb: " << pb;
+			}
 		}
 		
 		if ( (1<<i) & rv )
@@ -258,16 +304,19 @@ int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &/*newSquareO
 			if (idx >= newLines.size() || idx < 0)
 			{
 				kDebug() << "error: invalid index from points! idx: " << idx << ", pa: " << pa << ", pb: " << pb;
-				continue;
+				//continue;
 			}
-			if (!newLines[idx])
-				return idx;
 			else
-				kDebug() << "old line: " << idx << ", pa: " << pa << ", pb: " << pb;
+			{
+				if (!newLines[idx])
+					moveQueue.append(idx);
+				else
+					kDebug() << "old line: " << idx << ", pa: " << pa << ", pb: " << pb;
+			}
 		}
 	}
 
-	return -1;
+	return getMoveFromQueue(newLines);
 }
 
 void QDab::processError(const QProcess::ProcessError &error)
