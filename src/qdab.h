@@ -59,6 +59,8 @@ class QDab : public QObject, public KSquaresAi
 		
 		QList<int> moveQueue;
 		int getMoveFromQueue(const QList<bool> lines);
+		
+		int turn;
 };
 
 #endif

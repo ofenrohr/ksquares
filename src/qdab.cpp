@@ -24,6 +24,7 @@ QDab::QDab(int newPlayerId, int /*newMaxPlayerId*/, int newWidth, int newHeight,
 {
 	timeout = thinkTime;
 	playerId = newPlayerId;
+	turn = playerId;
 	isTainted = false;
 	qdabServerListening = false;
 	qdabStdOutStream.setString(&qdabStdOut);
@@ -169,7 +170,7 @@ int QDab::getMoveFromQueue(const QList<bool> linesList)
 }
 
 
-int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &/*newSquareOwners*/, const QList<Board::Move> &lineHistory)
+int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &/*lineHistory*/)
 {
 	QCoreApplication::processEvents();
 	if (!qdabServer->state() == QProcess::Running)
@@ -226,15 +227,25 @@ int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &/*newSquareO
 // 			h |= (1<<(p1.y()*6+p1.x()));
 // 	}
 	
-	int turn = 1;
-	int tmpPlr = 0;
-	for (int i = 0; i < lineHistory.size(); i++)
+// 	int turn = 1;
+// 	int tmpPlr = 0;
+// 	for (int i = 0; i < lineHistory.size(); i++)
+// 	{
+// 		if (tmpPlr != lineHistory[i].player)
+// 		{
+// 			tmpPlr = lineHistory[i].player;
+// 			turn++;
+// 		}
+// 	}
+
+	int s0 = 0;
+	int s1 = 0;
+	for (int i = 0; i < newSquareOwners.size(); i++)
 	{
-		if (tmpPlr != lineHistory[i].player)
-		{
-			tmpPlr = lineHistory[i].player;
-			turn++;
-		}
+		if (newSquareOwners[i] == 0)
+			s0++;
+		if (newSquareOwners[i] == 1)
+			s1++;
 	}
 	
 	// send stuff to qdab server
@@ -251,7 +262,7 @@ int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &/*newSquareO
 	
 	uint id = QDateTime::currentDateTime().toTime_t();
 	
-	QString request = "{\"params\": [{\"Timeout\": "+QString::number(timeout)+", \"Board\": {\"H\": "+QString::number(h)+", \"S\": [0, 0], \"Now\": "+QString::number(playerId)+", \"Turn\": "+QString::number(turn)+", \"V\": "+QString::number(v)+"}, \"Algorithm\": \"quctann\"}], \"id\": "+QString::number(id)+", \"method\": \"Server.MakeMove\"}";
+	QString request = "{\"params\": [{\"Timeout\": "+QString::number(timeout)+", \"Board\": {\"H\": "+QString::number(h)+", \"S\": ["+QString::number(s0)+", "+QString::number(s1)+"], \"Now\": "+QString::number(playerId)+", \"Turn\": "+QString::number(turn)+", \"V\": "+QString::number(v)+"}, \"Algorithm\": \"quctann\"}], \"id\": "+QString::number(id)+", \"method\": \"Server.MakeMove\"}";
 	QByteArray sendBA = request.toAscii();
 	socket.write(sendBA);
 	kDebug() << "request: " << sendBA;
@@ -259,6 +270,8 @@ int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &/*newSquareO
 	
 	QElapsedTimer turnTimer;
 	turnTimer.start();
+	
+	turn += 2;
 	
 	// get response from qdab server
 	QByteArray responseBA;
