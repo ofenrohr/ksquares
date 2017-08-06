@@ -32,7 +32,7 @@ Knox::Knox(int newPlayerId, int /*newMaxPlayerId*/, int newWidth, int newHeight,
 	lastKnoxMoveOffset = 0;
 	knoxMoveQueue.clear();
 	knoxStartedCnt = 0;
-	opponentName = "";
+	opponentName = QStringLiteral("");
 	goFirstEntered = false;
 	knoxRecovering = false;
 
@@ -66,8 +66,8 @@ void Knox::setupProcess()
 	//opponentName = "";
 	//goFirstEntered = false;
 	enterMove = false;
-	knoxStdOut = "";
-	knoxStdErr = "";
+	knoxStdOut = QStringLiteral("");
+	knoxStdErr = QStringLiteral("");
 	lastKnoxMoveOffset = 0;
 	knoxMoveQueue.clear();
 	knoxRecovering = true;
@@ -79,14 +79,14 @@ void Knox::setupProcess()
 			if (knoxlog.open(QIODevice::ReadOnly))
 			{
 				QTextStream inStream(&knoxlog);
-				QString line = "";
+				QString line;
 				int lastTurnInKnoxLog = -1;
 				QList<QString> knoxMovesInLog;
 				do
 				{
 					line = inStream.readLine();
 					qDebug() << "knoxlog: " << line;
-					QRegExp moveRegex("^([\\d]+): ([\\w][\\d]-[\\w][\\d])");
+					QRegExp moveRegex(QStringLiteral("^([\\d]+): ([\\w][\\d]-[\\w][\\d])"));
 					int pos = moveRegex.indexIn(line);
 					if (pos >= 0)
 					{
@@ -120,7 +120,7 @@ void Knox::setupProcess()
 	
 	knoxStartedCnt++;
 	
-	QString knoxExecutable = QString(EXTERNALAIPATH) + "/knox/knox";
+	QString knoxExecutable = QStringLiteral(EXTERNALAIPATH) + QStringLiteral("/knox/knox");
 	QStringList knoxArguments;
 	knoxArguments << QString::number(timeout / 1000) << QString::number(width) << QString::number(height);
 	if (knox != NULL)
@@ -174,15 +174,15 @@ void Knox::destroyProcess()
 void Knox::processError(const QProcess::ProcessError &error)
 {
 	qDebug() << "Got error signal from knox!";
-	QString info = "";
+	QString info;
 	switch (error)
 	{
-		case QProcess::FailedToStart: info = "The process failed to start. Either the invoked program is missing, or you may have insufficient permissions to invoke the program."; break;
-		case QProcess::Crashed: info = "The process crashed some time after starting successfully."; break;
-		case QProcess::Timedout: info = "The last waitFor...() function timed out. The state of QProcess is unchanged, and you can try calling waitFor...() again."; break;
-		case QProcess::WriteError: info = "An error occurred when attempting to write to the process. For example, the process may not be running, or it may have closed its input channel."; break;
-		case QProcess::ReadError: info = "An error occurred when attempting to read from the process. For example, the process may not be running."; break;
-		case QProcess::UnknownError: info = "An unknown error occurred. This is the default return value of error()."; break;
+		case QProcess::FailedToStart: info = QStringLiteral("The process failed to start. Either the invoked program is missing, or you may have insufficient permissions to invoke the program."); break;
+		case QProcess::Crashed: info = QStringLiteral("The process crashed some time after starting successfully."); break;
+		case QProcess::Timedout: info = QStringLiteral("The last waitFor...() function timed out. The state of QProcess is unchanged, and you can try calling waitFor...() again."); break;
+		case QProcess::WriteError: info = QStringLiteral("An error occurred when attempting to write to the process. For example, the process may not be running, or it may have closed its input channel."); break;
+		case QProcess::ReadError: info = QStringLiteral("An error occurred when attempting to read from the process. For example, the process may not be running."); break;
+		case QProcess::UnknownError: info = QStringLiteral("An unknown error occurred. This is the default return value of error()."); break;
 	}
 	qDebug() << "****************************************************************";
 	qDebug() << "***                        KNOX ERROR                        ***";
@@ -199,12 +199,12 @@ void Knox::processStateChanged(const QProcess::ProcessState &newState)
 	qDebug() << "****************************************************************";
 	qDebug() << "***                    KNOX STATE CHANGED                    ***";
 	qDebug() << "****************************************************************";
-	QString state = "";
+	QString state;
 	switch (newState)
 	{
-		case QProcess::NotRunning: state = "NotRunning"; break;
-		case QProcess::Starting: state = "Starting"; break;
-		case QProcess::Running: state = "Running"; knoxRecovering = false; break;
+		case QProcess::NotRunning: state = QStringLiteral("NotRunning"); break;
+		case QProcess::Starting: state = QStringLiteral("Starting"); break;
+		case QProcess::Running: state = QStringLiteral("Running"); knoxRecovering = false; break;
 	}
 	qDebug() << "knox state: " << state;
 }
@@ -233,19 +233,19 @@ void Knox::processReadyReadStandardOutput()
 	QByteArray knoxStdOutTmp;
 	if (knox->bytesAvailable() > 0)
 		knoxStdOutTmp = knox->readAll();
-	qDebug() << "knox stdout: " << QString(knoxStdOutTmp);
+	qDebug() << "knox stdout: " << QString::fromStdString(knoxStdOutTmp.toStdString());
 	knoxStdOutStream << knoxStdOutTmp;
 	knoxStdOutStream.flush();
 	if (!opponentNameEntered)
 	{
-		if (knoxStdOut.contains("Enter Opponent's name: "))
+		if (knoxStdOut.contains(QStringLiteral("Enter Opponent's name: ")))
 		{
 			uint stamp = QDateTime::currentDateTime().toTime_t();
 			if (opponentName.isEmpty())
-				opponentName = "ksquares-" + QString::number(stamp) + "\n";
+				opponentName = QStringLiteral("ksquares-") + QString::number(stamp) + QStringLiteral("\n");
 			else
 				goFirstEntered = true;
-			knox->write(opponentName.toAscii());
+			knox->write(opponentName.toLatin1());
 			if (!knox->waitForBytesWritten())
 			{
 				qDebug() << "entering opponent name might have failed!";
@@ -257,10 +257,10 @@ void Knox::processReadyReadStandardOutput()
 	}
 	if (opponentNameEntered && !goFirstEntered)
 	{
-		if (knoxStdOut.contains("Do You want to go first? (Y or N)"))
+		if (knoxStdOut.contains(QStringLiteral("Do You want to go first? (Y or N)")))
 		{
-			QString goFirst = playerId == 1 ? "Y\n" : "N\n";
-			knox->write(goFirst.toAscii());
+			QString goFirst = playerId == 1 ? QStringLiteral("Y\n") : QStringLiteral("N\n");
+			knox->write(goFirst.toLatin1());
 			if (!knox->waitForBytesWritten())
 			{
 				qDebug() << "entering answer to go first question failed!";
@@ -271,7 +271,7 @@ void Knox::processReadyReadStandardOutput()
 		}
 	}
 	
-	if (knoxStdOut.endsWith("Enter move (e.g. a1-b1) "))
+	if (knoxStdOut.endsWith(QStringLiteral("Enter move (e.g. a1-b1) ")))
 	{
 		enterMove = true;
 		qDebug() << "knox accepts move";
@@ -284,7 +284,7 @@ void Knox::processReadyReadStandardOutput()
 	int movePos = -1;
 	do
 	{
-		movePos = knoxStdOut.indexOf("My move: ", lastKnoxMoveOffset);
+		movePos = knoxStdOut.indexOf(QStringLiteral("My move: "), lastKnoxMoveOffset);
 		if (movePos < 0)
 			continue;
 		lastKnoxMoveOffset = movePos+9;
@@ -386,20 +386,20 @@ int Knox::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwn
 			QPoint p2;
 			Board::indexToPoints(lineHistory[linesSentCnt].line, &p1, &p2, width, height);
 			qDebug() << "line " << lineHistory[linesSentCnt].line << " = " << p1 << " - " << p2;
-			QString knoxMove = "";
+			QString knoxMove;
 			knoxMove += p1.x() + 'a';
 			knoxMove += QString::number(p1.y() + 1);
-			knoxMove += "-";
+			knoxMove += QStringLiteral("-");
 			knoxMove += p2.x() + 'a';
 			knoxMove += QString::number(p2.y() + 1);
 			qDebug() << "converted to knox move: " << knoxMove;
-			knoxMove += "\n";
+			knoxMove += QStringLiteral("\n");
 			knoxStdOutStream << knoxMove;
 			enterMove = false;
 			
 			linesSentCnt++;
 			sentMoveCnt++;
-			knox->write(knoxMove.toAscii());
+			knox->write(knoxMove.toLatin1());
 			if (!knox->waitForBytesWritten(1000))
 			{
 				qDebug() << "sending move might have failed!";
@@ -448,8 +448,8 @@ int Knox::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwn
 	}
 	
 	QString knoxMv = knoxMoveQueue.dequeue();
-	QPoint p1(knoxMv.at(0).toAscii()-'a', height - (knoxMv.at(1).toAscii()-'0'-1) );
-	QPoint p2(knoxMv.at(3).toAscii()-'a', height - (knoxMv.at(4).toAscii()-'0'-1) );
+	QPoint p1(knoxMv.at(0).toLatin1()-'a', height - (knoxMv.at(1).toLatin1()-'0'-1) );
+	QPoint p2(knoxMv.at(3).toLatin1()-'a', height - (knoxMv.at(4).toLatin1()-'0'-1) );
 	qDebug() << "knox made move at: " << p1 << ", " << p2;
 	int line = Board::pointsToIndex(p1, p2, width, height);
 	linesSentCnt++;
@@ -458,4 +458,4 @@ int Knox::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwn
 	return line;
 }
 
-#include "knox.moc"
+//#include "knox.moc"

@@ -63,7 +63,7 @@ int aiMCTS::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareO
 	
 	if (newLines.size() != linesSize)
 	{
-		kFatal() << "something went terribly wrong: newLines.size() != linesSize";
+		qCritical() << "something went terribly wrong: newLines.size() != linesSize";
 	}
 	for (int i = 0; i < linesSize; i++)
 		lines[i] = newLines[i];

@@ -14,18 +14,21 @@
 #include <QTimer>
 #include <QFile>
 #include <QTextStream>
+#include <QJsonDocument>
+#include <QDebug>
 
 //kde
 //#include <KApplication>
 //#include <KStatusBar>
 #include <KActionCollection>
-#include <kdebug.h>
 //#include <KLocale>
 #include <kstandardgameaction.h>
 
 //qjson
 #include <qjson/parser.h>
 #include <qjson/serializer.h>
+#include <klocalizedstring.h>
+#include <sstream>
 
 //generated
 #include "settings.h"
@@ -49,12 +52,12 @@ KSquaresTestWindow::KSquaresTestWindow() : KXmlGuiWindow(), m_view(new GameBoard
 	m_view->setDisabled(true);
 	setCentralWidget(m_view);
 
-	KStandardGameAction::quit(kapp, SLOT(quit()), actionCollection());
+	KStandardGameAction::quit(qApp, SLOT(quit()), actionCollection());
 	setupGUI();
 
-	statusBar()->insertPermanentItem(i18n("Current Player"), 0);
-	statusBar()->insertPermanentItem(i18n("Results"), 1);
-	statusBar()->show();
+	//statusBar()->addPermanentWidget(m_player);
+	//statusBar()->insertPermanentItem(i18n("Results"), 1);
+	//statusBar()->show();
 	
 	updateResultStr();
 	
@@ -78,9 +81,10 @@ void KSquaresTestWindow::saveStatus()
 	for (int i = 0; i < testResults.size(); i++)
 		resultList << testResults[i].toQVariant();
 	QVariantMap statusMap;
-	statusMap["setups"] = setupList;
-	statusMap["results"] = resultList;
-	
+	statusMap[QStringLiteral("setups")] = setupList;
+	statusMap[QStringLiteral("results")] = resultList;
+
+	/*
 	QJson::Serializer serializer;
 	bool ok;
 	QByteArray json = serializer.serialize(statusMap, &ok);
@@ -91,8 +95,11 @@ void KSquaresTestWindow::saveStatus()
 		qDebug() << "Something went wrong:" << serializer.errorMessage();
 		return;
 	}
+	 */
+	QJsonDocument statusMapJSon = QJsonDocument::fromVariant(statusMap);
+	QByteArray json = statusMapJSon.toJson();
 
-	QFile file("ksquares-test-status.json");
+	QFile file(QStringLiteral("ksquares-test-status.json"));
 	if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate))
 	{
 		qDebug() << "KSquaresTest error: Can't open file";
@@ -106,13 +113,24 @@ void KSquaresTestWindow::saveStatus()
 
 bool KSquaresTestWindow::loadStatus()
 {
-	QFile file("ksquares-test-status.json");
+	QFile file(QStringLiteral("ksquares-test-status.json"));
 	if (!file.open(QIODevice::ReadOnly))
 	{
 		qDebug() << "No previous test status file found";
 		return false;
 	}
-	
+
+	QJsonParseError jsonParseError;
+	QJsonDocument mapJSon = QJsonDocument::fromJson(file.readAll(), &jsonParseError);
+
+	if (jsonParseError.error != QJsonParseError::NoError)
+	{
+		qDebug() << "parsing failed! json error: " << jsonParseError.errorString();
+		return false;
+	}
+	QVariantMap map = mapJSon.toVariant().toMap();
+
+	/*
 	QJson::Parser jsonParser;
 	bool parseOk;
 	QVariantMap map = jsonParser.parse(&file, &parseOk).toMap();
@@ -122,8 +140,9 @@ bool KSquaresTestWindow::loadStatus()
 		qDebug() << "parsing failed! json error: " << jsonParser.errorString();
 		return false;
 	}
+	*/
 	
-	QVariantList setups = map["setups"].toList();
+	QVariantList setups = map[QStringLiteral("setups")].toList();
 	testSetups.clear();
 	for (int i = 0; i < setups.size(); i++)
 	{
@@ -131,7 +150,7 @@ bool KSquaresTestWindow::loadStatus()
 		setup.fromQVariant(setups[i]);
 		testSetups.append(setup);
 	}
-	QVariantList results = map["results"].toList();
+	QVariantList results = map[QStringLiteral("results")].toList();
 	testResults.clear();
 	for (int i = 0; i < results.size(); i++)
 	{
@@ -145,76 +164,76 @@ bool KSquaresTestWindow::loadStatus()
 QVariant AITestSetup::toQVariant()
 {
 	QVariantMap map;
-	map["levelP1"] = levelP1;
-	map["levelP2"] = levelP2;
-	map["timeout"] = timeout;
+	map[QStringLiteral("levelP1")] = levelP1;
+	map[QStringLiteral("levelP2")] = levelP2;
+	map[QStringLiteral("timeout")] = timeout;
 	QVariantMap boardSizeMap;
-	boardSizeMap["width"] = boardSize.x();
-	boardSizeMap["height"] = boardSize.y();
-	map["boardSize"] = boardSizeMap;
+	boardSizeMap[QStringLiteral("width")] = boardSize.x();
+	boardSizeMap[QStringLiteral("height")] = boardSize.y();
+	map[QStringLiteral("boardSize")] = boardSizeMap;
 	return map;
 }
 
 void AITestSetup::fromQVariant(QVariant var)
 {
 	QVariantMap map = var.toMap();
-	levelP1 = map["levelP1"].toInt();
-	levelP2 = map["levelP2"].toInt();
-	timeout = map["timeout"].toInt();
+	levelP1 = map[QStringLiteral("levelP1")].toInt();
+	levelP2 = map[QStringLiteral("levelP2")].toInt();
+	timeout = map[QStringLiteral("timeout")].toInt();
 	boardSize = QPoint();
-	boardSize.setX(map["boardSize"].toMap()["width"].toInt());
-	boardSize.setY(map["boardSize"].toMap()["height"].toInt());
+	boardSize.setX(map[QStringLiteral("boardSize")].toMap()[QStringLiteral("width")].toInt());
+	boardSize.setY(map[QStringLiteral("boardSize")].toMap()[QStringLiteral("height")].toInt());
 }
 
 QVariant AITestResult::toQVariant()
 {
 	QVariantMap map;
-	map["setup"] = setup.toQVariant();
+	map[QStringLiteral("setup")] = setup.toQVariant();
 	QVariantList moveList;
 	for (int i = 0; i < moves.size(); i++)
 		moveList << moves[i];
-	map["moves"] = moveList;
+	map[QStringLiteral("moves")] = moveList;
 	QVariantList timeP1List;
 	for (int i = 0; i < timeP1.size(); i++)
 		timeP1List << timeP1[i];
-	map["timeP1"] = timeP1List;
+	map[QStringLiteral("timeP1")] = timeP1List;
 	QVariantList timeP2List;
 	for (int i = 0; i < timeP2.size(); i++)
 		timeP2List << timeP2[i];
-	map["timeP2"] = timeP2List;
-	map["taintedP1"] = taintedP1;
-	map["taintedP2"] = taintedP2;
-	map["scoreP1"] = scoreP1;
-	map["scoreP2"] = scoreP2;
-	map["crashesP1"] = crashesP1;
-	map["crashesP2"] = crashesP2;
+	map[QStringLiteral("timeP2")] = timeP2List;
+	map[QStringLiteral("taintedP1")] = taintedP1;
+	map[QStringLiteral("taintedP2")] = taintedP2;
+	map[QStringLiteral("scoreP1")] = scoreP1;
+	map[QStringLiteral("scoreP2")] = scoreP2;
+	map[QStringLiteral("crashesP1")] = crashesP1;
+	map[QStringLiteral("crashesP2")] = crashesP2;
 	return map;
 }
 
 void AITestResult::fromQVariant(QVariant var)
 {
 	QVariantMap map = var.toMap();
-	setup.fromQVariant(map["setup"]);
+	setup.fromQVariant(map[QStringLiteral("setup")]);
 	moves.clear();
-	QVariantList moveList = map["moves"].toList();
+	QVariantList moveList = map[QStringLiteral("moves")].toList();
 	for (int i = 0; i < moveList.size(); i++)
 		moves.append(moveList[i].toInt());
 	timeP1.clear();
-	QVariantList timeP1List = map["timeP1"].toList();
+	QVariantList timeP1List = map[QStringLiteral("timeP1")].toList();
 	for (int i = 0; i < timeP1List.size(); i++)
 		timeP1.append(timeP1List[i].toInt());
 	timeP2.clear();
-	QVariantList timeP2List = map["timeP2"].toList();
+	QVariantList timeP2List = map[QStringLiteral("timeP2")].toList();
 	for (int i = 0; i < timeP2List.size(); i++)
 		timeP2.append(timeP2List[i].toInt());
-	taintedP1 = map["taintedP1"].toBool();
-	taintedP2 = map["taintedP2"].toBool();
-	scoreP1 = map["scoreP1"].toInt();
-	scoreP2 = map["scoreP2"].toInt();
-	if (map.contains("crashesP1") && map.contains("crashesP2"))
+	taintedP1 = map[QStringLiteral("taintedP1")].toBool();
+	taintedP2 = map[QStringLiteral("taintedP2")].toBool();
+	scoreP1 = map[QStringLiteral("scoreP1")].toInt();
+	scoreP2 = map[QStringLiteral("scoreP2")].toInt();
+	if (map.contains(QStringLiteral("crashesP1")) && map.contains(QStringLiteral("crashesP2")))
 	{
-		crashesP1 = map["crashesP1"].toInt();
-		crashesP2 = map["crashesP2"].toInt();
+		crashesP1 = map[QStringLiteral("crashesP1")].toInt();
+		crashesP2 = map[QStringLiteral("crashesP2")].toInt();
 	}
 	else
 	{
@@ -726,33 +745,41 @@ QPair<int, int> orderedLevels(int a, int b)
 QString setupType(AITestSetup setup)
 {
 	QPair<int, int> lvls = orderedLevels(setup.levelP1, setup.levelP2);
-	return QString::number(lvls.first) + "-" + QString::number(lvls.second) + ":" + QString::number(setup.boardSize.x()) + "x" + QString::number(setup.boardSize.y()) + "@" + QString::number(setup.timeout) + "ms";
+	return QString::number(lvls.first) +
+			QStringLiteral("-") +
+			QString::number(lvls.second) +
+			QStringLiteral(":") +
+			QString::number(setup.boardSize.x()) +
+			QStringLiteral("x") +
+			QString::number(setup.boardSize.y()) +
+			QStringLiteral("@") +
+			QString::number(setup.timeout) +
+			QStringLiteral("ms");
 }
 
 QString prettyAiLevel(int level)
 {
 	switch (level)
 	{
-		case KSquares::AI_EASY: return "KSquares (Leicht)";
-		case KSquares::AI_MEDIUM: return "KSquares (Mittel)";
-		case KSquares::AI_HARD: return "KSquares (Schwer)";
-		case KSquares::AI_VERYHARD: return "KSquares ($\\alpha\\beta$)";
-		case KSquares::AI_DABBLE: return "Dabble";
-		case KSquares::AI_DABBLENOHASH: return "Dabble (NoHash)";
-		case KSquares::AI_QDAB: return "QDab";
-		case KSquares::AI_KNOX: return "Knox";
-		case KSquares::AI_MCTS_A: return "KSquares (MCTS-1)";
-		case KSquares::AI_MCTS_B: return "KSquares (MCTS-2)";
-		case KSquares::AI_MCTS_C: return "KSquares (MCTS-3)";
-		default: return "Unbekannt";
+		case KSquares::AI_EASY: return QStringLiteral("KSquares (Leicht)");
+		case KSquares::AI_MEDIUM: return QStringLiteral("KSquares (Mittel)");
+		case KSquares::AI_HARD: return QStringLiteral("KSquares (Schwer)");
+		case KSquares::AI_VERYHARD: return QStringLiteral("KSquares ($\\alpha\\beta$)");
+		case KSquares::AI_DABBLE: return QStringLiteral("Dabble");
+		case KSquares::AI_DABBLENOHASH: return QStringLiteral("Dabble (NoHash)");
+		case KSquares::AI_QDAB: return QStringLiteral("QDab");
+		case KSquares::AI_KNOX: return QStringLiteral("Knox");
+		case KSquares::AI_MCTS_A: return QStringLiteral("KSquares (MCTS-1)");
+		case KSquares::AI_MCTS_B: return QStringLiteral("KSquares (MCTS-2)");
+		case KSquares::AI_MCTS_C: return QStringLiteral("KSquares (MCTS-3)");
+		default: return QStringLiteral("Unbekannt");
 	}
-	return "Unbekannt";
 }
 
 QString latexResultGroup(QList<AITestResult> group)
 {
 	if (group.size() <= 0)
-		return "";
+		return QString();
 	
 	QPair<int, int> lvls = orderedLevels(group[0].setup.levelP1, group[0].setup.levelP2);
 	QPair<int, int> winsP1(0,0); // winsP1.second = number of times Player2 (levelP2) won when going first
@@ -837,17 +864,19 @@ QString latexResultGroup(QList<AITestResult> group)
 		avgTime.first = allTime.first / timeDiv.first;
 	if (timeDiv.second != 0)
 		avgTime.second = allTime.second / timeDiv.second;
+
+	QString strret;
+	QTextStream ret(&strret);
+	ret << "\\begin{table}[H]\n";
+	ret << "  \\begin{tabular}{c|cccc}\n";
+	ret << "    \\specialcell{Spieler 1\\\\Spieler 2} & \\specialcell{Gewonnen \\\\(Sp. 1 / Sp. 2)} & Spiele & Crashes & $\\emptyset$ Zugzeit (ms) \\\\ \\hline\n";
+	ret << "    " << prettyAiLevel(lvls.first) << " & $" << QString::number(winsP1.first + winsP2.first) << "$ ($" << QString::number(winsP1.first) << "$ / $" << QString::number(winsP2.first) << "$) &  $" << QString::number(group.size()) << "$ & $" << QString::number(tainted.first) << "$ & $" << QString::number(avgTime.first) << "$ \\\\\n";
+	ret << "    " << prettyAiLevel(lvls.second) << " & $" << QString::number(winsP1.second + winsP2.second) << "$ ($" << QString::number(winsP1.second) << "$ / $" << QString::number(winsP2.second) << "$) & $" << QString::number(group.size()) << "$ & $" << QString::number(tainted.second) << "$ & $" << QString::number(avgTime.second) << "$ \\\\\n";
+	ret << "  \\end{tabular}\n";
+	ret << "  \\caption{Ergebnisse von " << prettyAiLevel(lvls.first) << " gegen " << prettyAiLevel(lvls.second) << " auf $" << QString::number(group[0].setup.boardSize.x()) << " \\times " << QString::number(group[0].setup.boardSize.y()) << "$ Spielfeld bei maximal $" << QString::number(group[0].setup.timeout/1000) << "$ Sekunden Bedenkzeit}\n";
+	ret << "\\end{table}\n";
 	
-	QString ret = "\\begin{table}[H]\n";
-	ret += "  \\begin{tabular}{c|cccc}\n";
-	ret += "    \\specialcell{Spieler 1\\\\Spieler 2} & \\specialcell{Gewonnen \\\\(Sp. 1 / Sp. 2)} & Spiele & Crashes & $\\emptyset$ Zugzeit (ms) \\\\ \\hline\n";
-	ret += "    "+prettyAiLevel(lvls.first)+" & $"+QString::number(winsP1.first + winsP2.first)+"$ ($"+QString::number(winsP1.first)+"$ / $"+QString::number(winsP2.first)+"$) &  $"+QString::number(group.size())+"$ & $"+QString::number(tainted.first)+"$ & $"+QString::number(avgTime.first)+"$ \\\\\n";
-	ret += "    "+prettyAiLevel(lvls.second)+" & $"+QString::number(winsP1.second + winsP2.second)+"$ ($"+QString::number(winsP1.second)+"$ / $"+QString::number(winsP2.second)+"$) & $"+QString::number(group.size())+"$ & $"+QString::number(tainted.second)+"$ & $"+QString::number(avgTime.second)+"$ \\\\\n";
-	ret += "  \\end{tabular}\n";
-	ret += "  \\caption{Ergebnisse von "+prettyAiLevel(lvls.first)+" gegen "+prettyAiLevel(lvls.second)+" auf $"+QString::number(group[0].setup.boardSize.x())+" \\times "+QString::number(group[0].setup.boardSize.y())+"$ Spielfeld bei maximal $"+QString::number(group[0].setup.timeout/1000)+"$ Sekunden Bedenkzeit}\n";
-	ret += "\\end{table}\n";
-	
-	return ret;
+	return strret;
 }
 
 void KSquaresTestWindow::generateLatexResults()
@@ -860,11 +889,11 @@ void KSquaresTestWindow::generateLatexResults()
 	QList< QList<AITestResult> > resultGroups = resultGroupsMap.values();
 	qDebug() << resultGroups.size() << " result groups.";
 	
-	QString tex = "\n\n\\newcommand{\\specialcell}[2][c]{%\n";
-  tex += "\\begin{tabular}[#1]{@{}c@{}}#2\\end{tabular}}\n\n";
+	QString tex = QStringLiteral("\n\n\\newcommand{\\specialcell}[2][c]{%\n");
+    tex += QStringLiteral("\\begin{tabular}[#1]{@{}c@{}}#2\\end{tabular}}\n\n");
 	for (int i = 0; i < resultGroups.size(); i++)
 	{
-		tex += latexResultGroup(resultGroups[i]) + "\n";
+		tex += latexResultGroup(resultGroups[i]) + QStringLiteral("\n");
 	}
 	qDebug() << tex;
 }
@@ -915,7 +944,7 @@ void KSquaresTestWindow::gameNew()
 				color = Qt::yellow;
 				break;
 			default:
-				kError() << "KSquaresGame::playerSquareComplete(); currentPlayerId() != 0|1|2|3";
+				qCritical() << "KSquaresGame::playerSquareComplete(); currentPlayerId() != 0|1|2|3";
 		}
 		playerList.append(KSquaresPlayer(aiList[i]->getAi()->getName(), color, false));
 	}
@@ -950,8 +979,8 @@ void KSquaresTestWindow::gameNew()
 void KSquaresTestWindow::playerTakeTurn(KSquaresPlayer* currentPlayer)
 {
 	qDebug() << "playerTakeTurn";
-	statusBar()->changeItem(currentPlayer->name(), 0);
-	statusBar()->changeItem(resultStr, 1);
+	//statusBar()->changeItem(currentPlayer->name(), 0);
+	//statusBar()->changeItem(resultStr, 1);
 	outstandingChooseLineCalls++;
 	qDebug() << "calling aiChooseLine";
 	aiChooseLine();
@@ -1046,7 +1075,7 @@ void KSquaresTestWindow::gameOver(const QVector<KSquaresPlayer> & playerList)
 
 void KSquaresTestWindow::updateResultStr()
 {
-	resultStr = "Remaining games: " + QString::number(testSetups.size());
+	resultStr = QStringLiteral("Remaining games: ") + QString::number(testSetups.size());
 }
 
 #include "ksquarestestwindow.moc"

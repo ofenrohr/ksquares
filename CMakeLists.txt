@@ -3,6 +3,8 @@ PROJECT(ksquares)
 #ENABLE_TESTING()
 # set(CMAKE_CXX_FLAGS "-Wno-cpp") # don't use this on release, added to disable warnings about some deprecated stuff
 
+set (CMAKE_CXX_STANDARD 11)
+
 cmake_minimum_required (VERSION 2.8.12 FATAL_ERROR)
 set (QT_MIN_VERSION "5.3.0")
 set (KF5_MIN_VERSION "5.15.0")

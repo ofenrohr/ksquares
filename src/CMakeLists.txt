@@ -35,11 +35,13 @@ set(ksquares_SRCS
 	aiMCTS.cpp
 )
 
-include_directories(${CMAKE_SOURCE_DIR}/libKF5KDEGames/highscore ${QJSON_INCLUDE_DIR})
+include_directories(${CMAKE_SOURCE_DIR}/libKF5KDEGames/highscore)
 
 ki18n_wrap_ui(ksquares_SRCS newgamewidget.ui scoreswidget.ui prefs_ai.ui prefs_display.ui)
 
 kconfig_add_kcfg_files(ksquares_SRCS GENERATE_MOC settings.kcfgc) #GENERATE_MOC is not needed but it doesn't work without it for some reason :S
+
+set(CMAKE_AUTOMOC ON)
 
 file(GLOB ICONS_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/*-apps-ksquares.png")
 ecm_add_app_icon(ksquares_SRCS ICONS ${ICONS_SRCS})

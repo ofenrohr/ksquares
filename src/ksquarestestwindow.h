@@ -15,6 +15,7 @@
 #include <QList>
 #include <QPoint>
 #include <QVariant>
+#include <QtWidgets/QLabel>
 
 #include "ksquaresgame.h"
 #include "aicontroller.h"
@@ -83,6 +84,8 @@ class KSquaresTestWindow : public KXmlGuiWindow
 		KSquaresGame* sGame;
 		///List of AI players
 		QList<aiController::Ptr> aiList;
+		QLabel *m_player;
+    	QLabel *m_results;
 		///Result map
 		QMap<int, int> results;
 		QString resultStr;

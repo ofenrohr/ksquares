@@ -16,6 +16,8 @@
 #include <QCoreApplication>
 
 #include <qjson/parser.h>
+#include <QtCore/QJsonDocument>
+#include <QtCore/QJsonParseError>
 
 // generated
 #include "externalaipath.h"
@@ -30,13 +32,13 @@ QDab::QDab(int newPlayerId, int /*newMaxPlayerId*/, int newWidth, int newHeight,
 	qdabStdErrStream.setString(&qdabStdErr);
 	
 	// start qdab server
-	QString qdabWorkingDirectory = QStringLiteral(EXTERNALAIPATH) + "/qdab";
-	QString qdabServerExecutable = QStringLiteral(EXTERNALAIPATH) + "/qdab/server";
+	QString qdabWorkingDirectory = QStringLiteral(EXTERNALAIPATH) + QStringLiteral("/qdab");
+	QString qdabServerExecutable = QStringLiteral(EXTERNALAIPATH) + QStringLiteral("/qdab/server");
 	QStringList qdabServerArguments;
 	QProcessEnvironment qdabEnvironment = QProcessEnvironment::systemEnvironment();
 	QString libPath;
 	if (qdabEnvironment.contains(QStringLiteral("LD_LIBRARY_PATH")))
-		libPath = qdabEnvironment.value(QStringLiteral("LD_LIBRARY_PATH")) + ":";
+		libPath = qdabEnvironment.value(QStringLiteral("LD_LIBRARY_PATH")) + QStringLiteral(":");
 	libPath.append(qdabWorkingDirectory);
 	qdabEnvironment.insert(QStringLiteral("LD_LIBRARY_PATH"), libPath);
 	
@@ -117,7 +119,7 @@ int QDab::randomMove(const QList<bool> &lines)
 int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &/*newSquareOwners*/, const QList<Board::Move> &lineHistory)
 {
 	QCoreApplication::processEvents();
-	if (!qdabServer->state() == QProcess::Running)
+	if (qdabServer->state() != QProcess::Running)
 	{
 		qDebug() << "WARNING: qdab server not running";
 		qdabServer->waitForStarted();
@@ -171,7 +173,20 @@ int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &/*newSquareO
 	
 	uint id = QDateTime::currentDateTime().toTime_t();
 	
-	QString request = "{\"params\": [{\"Timeout\": "+QString::number(timeout)+", \"Board\": {\"H\": "+QString::number(h)+", \"S\": [0, 0], \"Now\": "+QString::number(playerId)+", \"Turn\": "+QString::number(turn)+", \"V\": "+QString::number(v)+"}, \"Algorithm\": \"quctann\"}], \"id\": "+QString::number(id)+", \"method\": \"Server.MakeMove\"}";
+	QString request =
+			QStringLiteral("{\"params\": [{\"Timeout\": ") +
+			QString::number(timeout) +
+			QStringLiteral(", \"Board\": {\"H\": ") +
+            QString::number(h)+
+            QStringLiteral(", \"S\": [0, 0], \"Now\": ") +
+            QString::number(playerId)+
+            QStringLiteral(", \"Turn\": ") +
+            QString::number(turn)+
+            QStringLiteral(", \"V\": ") +
+            QString::number(v)+
+            QStringLiteral("}, \"Algorithm\": \"quctann\"}], \"id\": ") +
+            QString::number(id)+
+            QStringLiteral(", \"method\": \"Server.MakeMove\"}");
 	QByteArray sendBA = request.toLatin1(); // was: toAscii()
 	socket.write(sendBA);
 	qDebug() << "request: " << sendBA;
@@ -204,30 +219,34 @@ int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &/*newSquareO
 	lastTurnTime = turnTimer.elapsed();
 	
 	// parse response from qdab server
+    /*
 	QJson::Parser jsonParser;
 	bool parseOk;
 	QVariantMap result = jsonParser.parse(responseBA, &parseOk).toMap();
-	
-	if (!parseOk)
+	*/
+	QJsonParseError jsonParseError;
+	QJsonDocument json = QJsonDocument::fromJson(responseBA, &jsonParseError);
+	if (jsonParseError.error != QJsonParseError::ParseError::NoError)
 	{
-		qDebug() << "parsing failed! json error: " << jsonParser.errorString();
+		qDebug() << "parsing failed! json error: " << jsonParseError.errorString();
 		return randomMove(newLines);
 	}
-	
+	QVariantMap result = json.toVariant().toMap();
+
 	qDebug() << "parsed json: " << result;
-	if (result["id"] != id)
+	if (result[QStringLiteral("id")] != id)
 	{
-		qDebug() << "ids dont match, aborting. original id = " << id << ", recv id = " << result["id"];
+		qDebug() << "ids dont match, aborting. original id = " << id << ", recv id = " << result[QStringLiteral("id")];
 		return randomMove(newLines);
 	}
-	if (!result["error"].isNull())
+	if (!result[QStringLiteral("error")].isNull())
 	{
-		qDebug() << "qdab error: " << result["error"];
+		qDebug() << "qdab error: " << result[QStringLiteral("error")];
 		return randomMove(newLines);
 	}
-	QVariantMap resultHV = result["result"].toMap();
-	unsigned long long rh = resultHV["H"].toULongLong();
-	unsigned long long rv = resultHV["V"].toULongLong();
+	QVariantMap resultHV = result[QStringLiteral("result")].toMap();
+	unsigned long long rh = resultHV[QStringLiteral("H")].toULongLong();
+	unsigned long long rv = resultHV[QStringLiteral("V")].toULongLong();
 	qDebug() << "result hv: " << rh << ", " << rv;
 	
 	for (int i = 0; i <= 30; i++)
@@ -338,4 +357,4 @@ void QDab::processReadyReadStandardOutput()
 	//qDebug() << "qdab stdout: " << QString(qdabStdOutTmp);
 }
 
-#include "qdab.moc"
+//#include "qdab.moc"

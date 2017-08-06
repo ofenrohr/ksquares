@@ -56,7 +56,7 @@ void Dabble::initProcess()
 		}
 	}
 	QString wineExecutable = QStringLiteral("wine");
-	QString dabbleExecutable = QStringLiteral(EXTERNALAIPATH) + (dabbleNohash ? "/dabble/dabble_nohash.exe" : "/dabble/dabble.exe");
+	QString dabbleExecutable = QStringLiteral(EXTERNALAIPATH) + (dabbleNohash ? QStringLiteral("/dabble/dabble_nohash.exe") : QStringLiteral("/dabble/dabble.exe"));
 	QStringList dabbleArguments;
 	dabbleArguments << dabbleExecutable << QStringLiteral("/tmp/input.dabble.dbl") << QString::number(timeout / 1000);
 	dabble = new QProcess();
@@ -263,4 +263,4 @@ int Dabble::chooseLine(const QList<bool> &newLines, const QList<int> &/*newSquar
 	return dblMove;
 }
 
-#include "dbgame.moc"
+//#include "dbgame.moc"
