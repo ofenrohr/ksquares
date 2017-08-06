@@ -10,7 +10,7 @@
 #include "board.h"
 
 //kde
-#include <KDebug>
+#include <QDebug>
 
 Board::Board()
 {
@@ -71,7 +71,7 @@ bool Board::addLine(int lineIndex, bool *nextPlayer, bool *boardFilled, QList<in
 			currentPlayerId_++;
 		}
 	}
-	//kDebug() << "current player id: " << currentPlayerId_;
+	//qDebug() << "current player id: " << currentPlayerId_;
 	*boardFilled = !lineList_.contains(false); // game over?
 	return true;
 }
@@ -109,14 +109,14 @@ int Board::pointsToIndex(QPoint p1, QPoint p2, int w, int h)
 	int ret = -1;
 	if ( (p1-p2).manhattanLength() != 1)
 	{
-		kDebug() << "KSquaresIO::pointsToIndex error: manhattanLength != 1";
+		qDebug() << "KSquaresIO::pointsToIndex error: manhattanLength != 1";
 		return ret;
 	}
 	if (p1.x() > w || p1.y() > h || p2.x() > w || p2.y() > h ||
 			p1.x() < 0 || p1.y() < 0 || p2.x() < 0 || p2.y() < 0
 	)
 	{
-		kDebug() << "KSquaresIO::pointsToIndex error: invalid points";
+		qDebug() << "KSquaresIO::pointsToIndex error: invalid points";
 		return ret;
 	}
 	
@@ -143,7 +143,7 @@ int Board::pointsToIndex(QPoint p1, QPoint p2, int w, int h)
 		ret = pa.y() * w + pa.y() * (w+1) + pa.x();
 	}
 	
-	//kDebug() << p1 << " - " << p2 << " = " << ret;
+	//qDebug() << p1 << " - " << p2 << " = " << ret;
 	
 	return ret;
 }
@@ -217,7 +217,7 @@ void Board::linesFromSquare(QList<int> *linesFromSquare, int squareIndex) const
 
 QList<int> Board::squaresFromLine(int lineIndex) const
 {
-	//kDebug() << "Line:" << lineIndex;
+	//qDebug() << "Line:" << lineIndex;
 	QList<int> squareList;
 	if (lineDirection(lineIndex) == KSquares::HORIZONTAL)
 	{
@@ -238,8 +238,8 @@ QList<int> Board::squaresFromLine(int lineIndex) const
 		if(lineIndex%((2*width_)+1) == 2*width_)
 			squareList.removeAt(0);
 	}
-	//kDebug() << "Size:" << squareList.size();
-	//kDebug() << "squares:" << squareList.at(0) << " " << squareList.at(1);
+	//qDebug() << "Size:" << squareList.size();
+	//qDebug() << "squares:" << squareList.at(0) << " " << squareList.at(1);
 	return squareList;
 }
 

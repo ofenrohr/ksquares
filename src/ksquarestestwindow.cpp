@@ -16,11 +16,11 @@
 #include <QTextStream>
 
 //kde
-#include <KApplication>
-#include <KStatusBar>
+//#include <KApplication>
+//#include <KStatusBar>
 #include <KActionCollection>
 #include <kdebug.h>
-#include <KLocale>
+//#include <KLocale>
 #include <kstandardgameaction.h>
 
 //qjson
@@ -86,16 +86,16 @@ void KSquaresTestWindow::saveStatus()
 	QByteArray json = serializer.serialize(statusMap, &ok);
 
 	if (ok) {
-		kDebug() << "Setup as json: " << json;
+		qDebug() << "Setup as json: " << json;
 	} else {
-		kDebug() << "Something went wrong:" << serializer.errorMessage();
+		qDebug() << "Something went wrong:" << serializer.errorMessage();
 		return;
 	}
 
 	QFile file("ksquares-test-status.json");
 	if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate))
 	{
-		kDebug() << "KSquaresTest error: Can't open file";
+		qDebug() << "KSquaresTest error: Can't open file";
 		return;
 	}
 	
@@ -109,7 +109,7 @@ bool KSquaresTestWindow::loadStatus()
 	QFile file("ksquares-test-status.json");
 	if (!file.open(QIODevice::ReadOnly))
 	{
-		kDebug() << "No previous test status file found";
+		qDebug() << "No previous test status file found";
 		return false;
 	}
 	
@@ -119,7 +119,7 @@ bool KSquaresTestWindow::loadStatus()
 	
 	if (!parseOk)
 	{
-		kDebug() << "parsing failed! json error: " << jsonParser.errorString();
+		qDebug() << "parsing failed! json error: " << jsonParser.errorString();
 		return false;
 	}
 	
@@ -858,7 +858,7 @@ void KSquaresTestWindow::generateLatexResults()
 		resultGroupsMap[setupType(testResults[i].setup)].append(testResults[i]);
 	}
 	QList< QList<AITestResult> > resultGroups = resultGroupsMap.values();
-	kDebug() << resultGroups.size() << " result groups.";
+	qDebug() << resultGroups.size() << " result groups.";
 	
 	QString tex = "\n\n\\newcommand{\\specialcell}[2][c]{%\n";
   tex += "\\begin{tabular}[#1]{@{}c@{}}#2\\end{tabular}}\n\n";
@@ -866,7 +866,7 @@ void KSquaresTestWindow::generateLatexResults()
 	{
 		tex += latexResultGroup(resultGroups[i]) + "\n";
 	}
-	kDebug() << tex;
+	qDebug() << tex;
 }
 
 void KSquaresTestWindow::gameNew()
@@ -875,7 +875,7 @@ void KSquaresTestWindow::gameNew()
 	// load test setup
 	if (testSetups.size() <= 0)
 	{
-		kDebug() << "no more testSetups, exit application";
+		qDebug() << "no more testSetups, exit application";
 		generateLatexResults();
 		QCoreApplication::quit();
 		exit(0);
@@ -949,31 +949,31 @@ void KSquaresTestWindow::gameNew()
 
 void KSquaresTestWindow::playerTakeTurn(KSquaresPlayer* currentPlayer)
 {
-	kDebug() << "playerTakeTurn";
+	qDebug() << "playerTakeTurn";
 	statusBar()->changeItem(currentPlayer->name(), 0);
 	statusBar()->changeItem(resultStr, 1);
 	outstandingChooseLineCalls++;
-	kDebug() << "calling aiChooseLine";
+	qDebug() << "calling aiChooseLine";
 	aiChooseLine();
 }
 
 void KSquaresTestWindow::aiChooseLine()
 {
 	outstandingChooseLineCalls--;
-	kDebug() << "aiChooseLine (outstanding calls: " << outstandingChooseLineCalls << ")";
+	qDebug() << "aiChooseLine (outstanding calls: " << outstandingChooseLineCalls << ")";
 	if (!sGame->isRunning())
 	{
-		kDebug() << "ERROR: game not running, not choosing any line!";
+		qDebug() << "ERROR: game not running, not choosing any line!";
 		return;
 	}
 	
 	if (thread != NULL) {
 		//thread->quit();
-		//kDebug() << "waiting for previous thread to exit, isFinished: " << thread->isFinished();
+		//qDebug() << "waiting for previous thread to exit, isFinished: " << thread->isFinished();
 		if (!thread->isFinished())
 		{
 			//thread->quit();
-			kDebug() << "rescheduling aiChooseLine";
+			qDebug() << "rescheduling aiChooseLine";
 			outstandingChooseLineCalls++;
 			QTimer::singleShot(10, this, SLOT(aiChooseLine()));
 			return;
@@ -999,7 +999,7 @@ void KSquaresTestWindow::aiChooseLine()
 
 void KSquaresTestWindow::aiChoseLine(const int &line)
 {
-	kDebug() << "aiChoseLine";
+	qDebug() << "aiChoseLine";
 	if (sGame->currentPlayerId() == 0)
 		currentResult.timeP1.append(aiList[sGame->currentPlayerId()]->lastMoveTime());
 	else
@@ -1007,14 +1007,14 @@ void KSquaresTestWindow::aiChoseLine(const int &line)
 	
 	if (aiList[sGame->currentPlayerId()]->getAi()->tainted())
 	{
-		kDebug() << "ERROR: game is tainted! aborting";
+		qDebug() << "ERROR: game is tainted! aborting";
 		gameOver(sGame->getPlayers());
 		return;
 	}
 	
 	if (!sGame->addLineToIndex(line))
 	{
-		kDebug() << "ERROR: ai made invalid move! game is tainted! aborting";
+		qDebug() << "ERROR: ai made invalid move! game is tainted! aborting";
 		gameOver(sGame->getPlayers());
 		return;
 	}
@@ -1024,9 +1024,9 @@ void KSquaresTestWindow::aiChoseLine(const int &line)
 
 void KSquaresTestWindow::gameOver(const QVector<KSquaresPlayer> & playerList)
 {
-	kDebug() << "Game Over";
-	kDebug() << "score p1 ai: " << playerList[0].score();
-	kDebug() << "score p2 ai: " << playerList[1].score();
+	qDebug() << "Game Over";
+	qDebug() << "score p1 ai: " << playerList[0].score();
+	qDebug() << "score p2 ai: " << playerList[1].score();
 	
 	currentResult.setup = currentSetup;
 	currentResult.taintedP1 = aiList[0]->getAi()->tainted();

@@ -20,10 +20,9 @@
 #include "ui_prefs_ai.h"
 #include "ui_prefs_display.h"
 
-class KToggleAction;
 class GameBoardView;
 class GameBoardScene;
-
+class QLabel;
 /**
  * @short Mainwindow class
  *
@@ -34,20 +33,20 @@ class GameBoardScene;
 
 class KSquaresWindow : public KXmlGuiWindow
 {
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		///Constructor
-		KSquaresWindow();
-		~KSquaresWindow();
+public:
+    ///Constructor
+    KSquaresWindow();
+    ~KSquaresWindow();
 
-	public slots:
-		void  showHighscores();
-		//void  configureHighscores();
-		///Launch the new game dialog and create a new game
-		void gameNew();
-		///Start a new game with the same settings (read from KConfig Settings)
-		void gameReset();
+public slots:
+    void  showHighscores();
+    //void  configureHighscores();
+    ///Launch the new game dialog and create a new game
+    void gameNew();
+    ///Start a new game with the same settings (read from KConfig Settings)
+    void gameReset();
     ///Resize the visible board
     void resetBoard(int width, int height);
     ///Load game from file
@@ -56,49 +55,42 @@ class KSquaresWindow : public KXmlGuiWindow
     void saveGame();
     ///Save game to specific file
     void saveGameAs();
-		///Get Level of Ai for player id
-		int getAiLevel(int playerId);
-		void aiChoseLine(const int &line); // testing only
-		
+    ///Get Level of Ai for player id
+    int getAiLevel(int playerId);
+    void aiChoseLine(const int &line); // testing only
+
 //	signals:
 //		void startAi(const QList<bool> &lines, const QList<int> &squares);
 
-	private slots:
-		void aiChooseLine(); // testing only
-		void initObject();
-		void optionsPreferences();
-		void playerTakeTurn(KSquaresPlayer* currentPlayer);
-		void gameOver(const QVector<KSquaresPlayer> &_playerList);	//when KSquaresGame says the game is over. Display score board
+private slots:
+    void aiChooseLine(); // testing only
+    void initObject();
+    void optionsPreferences();
+    void playerTakeTurn(KSquaresPlayer *currentPlayer);
+    void gameOver(const QVector<KSquaresPlayer> &_playerList);  //when KSquaresGame says the game is over. Display score board
 
-	private:
-		enum StatusBarItem
-		{
-			statusplayer,
-			statusnetwork
-		};
+private:
 
-		//void setupAccel();
-		void setupActions();
-		Ui::prefs_ai ui_prefs_ai;
-		Ui::prefs_display ui_prefs_display;
-		///The game board view
-		GameBoardView *m_view;
-		///The game scene
-		GameBoardScene *m_scene;
-		///The game controller
-		KSquaresGame* sGame;
-		// Remember last network move
-		int m_lastx1, m_lasty1, m_lastx2, m_lasty2;
-
-		//KToggleAction *m_toolbarAction;
-		//KToggleAction *m_statusbarAction;
+    //void setupAccel();
+    void setupActions();
+    Ui::prefs_ai ui_prefs_ai;
+    Ui::prefs_display ui_prefs_display;
+    ///The game board view
+    GameBoardView *m_view;
+    ///The game scene
+    GameBoardScene *m_scene;
+    ///The game controller
+    KSquaresGame *sGame;
+    // Remember last network move
+    int m_lastx1, m_lasty1, m_lastx2, m_lasty2;
+    QLabel *m_player;
     void connectSignalsAndSlots();
 
-		// path to the last saved game
-		QString savegamePath;
+    // path to the last saved game
+    QString savegamePath;
 
-		// ais for players
-		QList<aiController::Ptr> ais;
+    // ais for players
+    QList<aiController::Ptr> ais;
 };
 
 #endif // KSQUARESWINDOW_H

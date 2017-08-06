@@ -29,7 +29,7 @@
  * @li The more advanced player will, at the end of a large run of squares leave a small area at the end, forcing the opponent to take only that small section, leaving another large area open to him.
  * @li The even more advanced player will fight for control over the game. This means that he will count the chains forming in the last phase of the "random line" game phase and thus make sure that he will be the one who gets the first long chain. This works like a Nim game somehow.
  * Currently, the first three points are implemented.
- * 
+ *
  * @author Matt Williams <matt@milliams.com>
  * @author Tom Vincent Peters <kde@vincent-peters.de>
  */
@@ -62,7 +62,7 @@ class KSquaresAi : public aiFunctions, public BoardAnalysisFunctions
 		//virtual ~KSquaresAi() = 0; 
 		virtual int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory) = 0;
 		virtual QString getName() = 0;
-		virtual bool enabled() { kDebug() << "KSquaresAI -> enabled"; return true; }
+		virtual bool enabled() { qDebug() << "KSquaresAI -> enabled"; return true; }
 		virtual bool tainted() { return false; } // used for error signaling with external ai
 		virtual long lastMoveTime() { return -3; } // time used to calculate move
 		virtual int crashCount() { return 0; } // times the ai crashed and could be recovered
@@ -143,7 +143,7 @@ class aiControllerWorker : public QObject
 	public:
 		aiControllerWorker(aiController::Ptr aic, const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &newLineHistory)
 		{
-			kDebug() << "aiControllerWorker constr";
+			qDebug() << "aiControllerWorker constr";
 			aicontroller = aic;
 			lines = newLines;
 			squares = newSquareOwners;
@@ -152,18 +152,18 @@ class aiControllerWorker : public QObject
 		
 		~aiControllerWorker()
 		{
-			kDebug() << "aiControllerWorker destructor";
+			qDebug() << "aiControllerWorker destructor";
 		}
 
 	public slots:
 		void process()
 		//void chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners)
 		{
-			kDebug() << "aiControllerWorker process...";
+			qDebug() << "aiControllerWorker process...";
 			int line = aicontroller->chooseLine(lines, squares, lineHistory);
 			emit lineChosen(line);
 			emit finished();
-			kDebug() << "aiControllerWorker done...";
+			qDebug() << "aiControllerWorker done...";
 		}
 
 	signals:

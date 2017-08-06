@@ -15,7 +15,7 @@
 
 #include <QList>
 #include <QSharedPointer>
-#include <KDebug>
+#include <QDebug>
 
 
 class aiBoard
@@ -76,7 +76,7 @@ inline bool operator==(const aiBoard::Ptr &b1, const aiBoard::Ptr &b2)
 
 inline uint qHash(const aiBoard &key)
 {
-	//kDebug() << "qHash aiBoard called!";
+	//qDebug() << "qHash aiBoard called!";
 	uint ret = 0;
 	uint add = 1;
 	int i = 0;
@@ -92,10 +92,10 @@ inline uint qHash(const aiBoard &key)
 
 inline uint qHash(const aiBoard::Ptr &key)
 {
-	//kDebug() << "qHash aiBoard::Ptr called!";
+	//qDebug() << "qHash aiBoard::Ptr called!";
 	if (key->hashLines == NULL)
 	{
-		kDebug() << "ERROR: hashLines is NULL";
+		qDebug() << "ERROR: hashLines is NULL";
 		return 1;
 	}
 	uint ret = 0;

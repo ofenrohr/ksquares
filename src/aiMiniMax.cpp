@@ -10,7 +10,7 @@
 #include "aiMiniMax.h"
 
 #include <limits>
-#include <KDebug>
+#include <QDebug>
 #include <cmath>
 #include <algorithm>
 #include <QElapsedTimer>
@@ -44,7 +44,7 @@ int aiMiniMax::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 	// remember square owner table
 	squareOwners = newSquareOwners;
 	// do the ai stuff:
-	kDebug() << "incoming board:" << boardToString(lines, linesSize, width, height);
+	qDebug() << "incoming board:" << boardToString(lines, linesSize, width, height);
 	
 	// do sth smart
 	aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(lines, linesSize, width, height, squareOwners, playerId, maxPlayerId));
@@ -54,12 +54,12 @@ int aiMiniMax::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 	
 	if (line < 0 || line >= linesSize)
 	{
-		kDebug() << "minimax didn't return a correct line: " << line;
-		kDebug() << "coosing random valid move";
+		qDebug() << "minimax didn't return a correct line: " << line;
+		qDebug() << "coosing random valid move";
 		QList<int> freeLines = aiFunctions::getFreeLines(lines, linesSize);
 		if (freeLines.size() <= 0)
 		{
-			kDebug() << "no valid lines left!";
+			qDebug() << "no valid lines left!";
 			return 0;
 		}
 		return freeLines.at(qrand() % freeLines.size());
@@ -80,12 +80,12 @@ float aiMiniMax::minimax(aiBoard::Ptr board, int depth, int *line, int parentNod
 	{
 		if (!minimaxTimer.isValid())
 		{
-			kDebug() << "starting minimax timer";
+			qDebug() << "starting minimax timer";
 			minimaxTimer.start();
 		}
 		else
 		{
-			kDebug() << "restarting minimax timer";
+			qDebug() << "restarting minimax timer";
 			minimaxTimer.restart();
 		}
 	}
@@ -107,7 +107,7 @@ float aiMiniMax::minimax(aiBoard::Ptr board, int depth, int *line, int parentNod
 		debugDot.append("\"];\n");
 		if (parentNode != -1)
 		{
-			//kDebug() << debugDot;
+			//qDebug() << debugDot;
 			debugDot.append("  n");
 			debugDot.append(QString::number(thisNode));
 			debugDot.append(" -- n");
@@ -118,7 +118,7 @@ float aiMiniMax::minimax(aiBoard::Ptr board, int depth, int *line, int parentNod
 	
 	if (freeLines.size() == 0) // game is over
 	{
-		//kDebug() << "terminal node";
+		//qDebug() << "terminal node";
 		int winner = aiFunctions::getLeader(board->squareOwners);
 		if (winner == -2) // draw
 			return 0;
@@ -133,15 +133,15 @@ float aiMiniMax::minimax(aiBoard::Ptr board, int depth, int *line, int parentNod
 	if (line == NULL && minimaxTimer.hasExpired(minimaxTimeout)) 
 	{
 		terminalNode = true;
-		kDebug() << "minimax timeout reached, not going deeper";
+		qDebug() << "minimax timeout reached, not going deeper";
 	}
 	if (terminalNode)
 	{
-		//kDebug() << "evaluating board:" << boardToString(board->lines, board->linesSize, board->width, board->height);
+		//qDebug() << "evaluating board:" << boardToString(board->lines, board->linesSize, board->width, board->height);
 		int eval = evaluate(board);
 		if (debug && false)
 		{
-			//kDebug() << "result: " << eval;
+			//qDebug() << "result: " << eval;
 			debugDot.append("  e");
 			debugDot.append(QString::number(thisNode));
 			debugDot.append("[label=\"");

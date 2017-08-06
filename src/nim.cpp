@@ -41,7 +41,8 @@ All other rights retained.
 #include <fstream>
 #include <stdlib.h>
 #include <string.h>
-#include <KDebug>
+#include <QDebug>
+#include <sstream>
 
 using namespace std;
 using namespace nim;
@@ -91,11 +92,11 @@ NimString::NimString( ifstream &infile )
 	int nimber = find_value( conf );
 
 	if (nimber == LOONY)
-		kDebug() << "nimber = L\n" << "";
+		qDebug() << "nimber = L\n" << "";
 	else
-		kDebug() << "nimber = " << nimber << "\n" << "";
+		qDebug() << "nimber = " << nimber << "\n" << "";
 
-	kDebug() << "The 1-step followers are:\n\n";
+	qDebug() << "The 1-step followers are:\n\n";
 	print_followers();
 
 }
@@ -104,7 +105,7 @@ int NimString::getNimber( aiBoard::Ptr board )
 {
 	if (board->width > MAX_COLS || board->height > MAX_ROWS)
 	{
-		kDebug() << "can't calculate nimber for board > " << MAX_ROWS << " x " << MAX_COLS;
+		qDebug() << "can't calculate nimber for board > " << MAX_ROWS << " x " << MAX_COLS;
 		return -123456;
 	}
 	
@@ -154,9 +155,9 @@ int NimString::getNimber( aiBoard::Ptr board )
 	int nimber = find_value( conf );
 	
 	if (nimber == LOONY)
-		kDebug() << "nimber = L\n" << "";
+		qDebug() << "nimber = L\n" << "";
 	else
-		kDebug() << "nimber = " << nimber << "\n" << "";
+		qDebug() << "nimber = " << nimber << "\n" << "";
 	
 	return nimber;
 }
@@ -414,18 +415,18 @@ void NimString::print_game()
 
 	for (int i = 0; i < last_row + 2; i++)
 	{
-		QString lineStr = "";
+		std::stringstream lineStr;
 		for (int j = 0; j < last_col + 2; j++)
 
 			if (line[i][j] >= ' ' && line[i][j] <= '|')
-				lineStr.append( line[i][j] );
+				lineStr << line[i][j];
 			else
 				break;
 
-		kDebug() << lineStr;
+		qDebug() << QString::fromStdString(lineStr.str());
 	}
 
-	kDebug() << "";
+	qDebug() << "";
 }
 
 
@@ -454,15 +455,15 @@ void NimString::print_followers()
 
 	for (int i = 0; i < last_row + 2; i++)
 	{
-		QString lineStr = "";
+		std::stringstream lineStr;
 		for (int j=0; j < last_col + 2; j++)
 
 			if (line[i][j] >= ' ' && line[i][j] <= '|')
-				lineStr.append( line[i][j] );
+				lineStr << line[i][j];
 			else
 				break;
 
-		kDebug() << "";
+		qDebug() << "";
 	}
 }
 

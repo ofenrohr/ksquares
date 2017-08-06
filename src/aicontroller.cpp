@@ -20,17 +20,17 @@
 #include "aiMCTS.h"
 
 #include <ctime>
-#include <kdebug.h>
+#include <QDebug>
 
 #include <QSet>
 
 aiController::aiController(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel, int thinkTime) : playerId(newPlayerId), maxPlayerId(newMaxPlayerId), width(newWidth), height(newHeight), level(newLevel), aiThinkTime(thinkTime)
 {
-	//kDebug() << "aiController init: nw = " << newWidth << ", nh = " << newHeight << ", w = " << width << ", h = " << height;
+	//qDebug() << "aiController init: nw = " << newWidth << ", nh = " << newHeight << ", w = " << width << ", h = " << height;
 	//linesSize = aiFunctions::toLinesSize(width, height);
 	//lines = new bool[linesSize];
 	srand( (unsigned)time( NULL ) );
-	//kDebug() << "AI: Starting AI level" << level;
+	//qDebug() << "AI: Starting AI level" << level;
 	lastTurnTime = -2;
 }
 
@@ -51,12 +51,12 @@ QList<int> aiController::autoFill(int safeMovesLeft, int width, int height)
 	}
 	// add a random safe moves while there are safe moves left
 	QList<int> next;
-	//kDebug() << safeMoves().isEmpty();
+	//qDebug() << safeMoves().isEmpty();
 	while( !( (next = aiFunctions::safeMoves(width, height, linesSize, lines)).isEmpty() ) )
 	{
 		int nextLine = next[rand() % next.size()];
 		lines[nextLine] = true;
-		//kDebug() << nextLine;
+		//qDebug() << nextLine;
 		fillLines << nextLine;
 	}
 	
@@ -82,7 +82,7 @@ int aiController::chooseLine(const QList<bool> &newLines, const QList<int> &newS
 		if (line < 0)
 		{
 			retryCnt++;
-			kDebug() << "ai returned line index < 0, retry " << retryCnt;
+			qDebug() << "ai returned line index < 0, retry " << retryCnt;
 		}
 		else
 		{
@@ -98,15 +98,15 @@ KSquaresAi::Ptr aiController::getAi()
 	switch (level)
 	{
 		default:
-			kDebug() << "Unknown ai level " << level;
+			qDebug() << "Unknown ai level " << level;
 		case KSquares::AI_EASY:
 		case KSquares::AI_MEDIUM:
 		case KSquares::AI_HARD:
-			//kDebug() << "creating aiEasyMediumHard: w = " << width << ", h = " << height;
+			//qDebug() << "creating aiEasyMediumHard: w = " << width << ", h = " << height;
 			ai = KSquaresAi::Ptr(new aiEasyMediumHard(playerId, width, height, level));
 		break;
 		case KSquares::AI_VERYHARD:
-			//kDebug() << "creating aiAlphaBeta";
+			//qDebug() << "creating aiAlphaBeta";
 			if (ai.isNull())
 				ai = KSquaresAi::Ptr(new aiAlphaBeta(playerId, maxPlayerId, width, height, level, aiThinkTime));
 		break;
@@ -140,3 +140,4 @@ KSquaresAi::Ptr aiController::getAi()
 	}
 	return ai;
 }
+

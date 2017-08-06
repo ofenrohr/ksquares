@@ -14,11 +14,11 @@
 #include <QTimer>
 
 //kde
-#include <KApplication>
-#include <KStatusBar>
+#include <QApplication>
+#include <QStatusBar>
 #include <KActionCollection>
-#include <kdebug.h>
-#include <KLocale>
+#include <QDebug>
+#include <KLocalizedString>
 #include <kstandardgameaction.h>
 
 //generated
@@ -29,31 +29,29 @@
 
 KSquaresDemoWindow::KSquaresDemoWindow() : KXmlGuiWindow(), m_view(new GameBoardView(this)), m_scene(0)
 {
-	sGame = new KSquaresGame();
-	connect(sGame, SIGNAL(takeTurnSig(KSquaresPlayer*)), this, SLOT(playerTakeTurn(KSquaresPlayer*)));
-	connect(sGame, SIGNAL(gameOver(QVector<KSquaresPlayer>)), this, SLOT(gameOver(QVector<KSquaresPlayer>)));
+    sGame = new KSquaresGame();
+    connect(sGame, &KSquaresGame::takeTurnSig, this, &KSquaresDemoWindow::playerTakeTurn);
+    connect(sGame, &KSquaresGame::gameOver, this, &KSquaresDemoWindow::gameOver);
 
-	m_view->setRenderHints(QPainter::Antialiasing);
-	m_view->setFrameStyle(QFrame::NoFrame);
-	m_view->setDisabled(true);
-	setCentralWidget(m_view);
+    m_view->setRenderHints(QPainter::Antialiasing);
+    m_view->setFrameStyle(QFrame::NoFrame);
+    m_view->setDisabled(true);
+    setCentralWidget(m_view);
 
-	KStandardGameAction::quit(kapp, SLOT(quit()), actionCollection());
-	setupGUI();
+    KStandardGameAction::quit(qApp, SLOT(quit()), actionCollection());
+    setupGUI();
 
-	statusBar()->insertPermanentItem(i18n("Current Player"), 0);
-	statusBar()->show();
+    //QT5 statusBar()->insertPermanentItem(i18n("Current Player"), 0);
+    statusBar()->show();
 }
 
 void KSquaresDemoWindow::gameNew()
 {
 	//create players
 	QVector<KSquaresPlayer> playerList;
-	for(int i=0; i<4; i++)
-	{
+	for(int i=0; i<4; i++) {
 		QColor color;
-		switch(i)
-		{
+		switch(i) {
 			case 0:
 				color = Qt::red;
 				break;
@@ -67,51 +65,55 @@ void KSquaresDemoWindow::gameNew()
 				color = Qt::yellow;
 				break;
 			default:
-				kError() << "KSquaresGame::playerSquareComplete(); currentPlayerId() != 0|1|2|3";
+				qCritical() << "KSquaresGame::playerSquareComplete(); currentPlayerId() != 0|1|2|3";
 		}
 		playerList.append(KSquaresPlayer(i18n("Player %1", i+1), color, false));
-		
+
 		int aiLevel=0;
 		switch(i)
 		{
+            // TODO: migrate new ai Settings
+                /*
 			case 0: aiLevel = Settings::playerOneAi(); break;
 			case 1: aiLevel = Settings::playerTwoAi(); break;
 			case 2: aiLevel = Settings::playerThreeAi(); break;
 			case 3: aiLevel = Settings::playerFourAi(); break;
+                 */
 		}
 		ais.append(aiController::Ptr(new aiController(i, 3, 15, 10, aiLevel)));
+
 	}
 
-	//create physical board
-	GameBoardScene* temp = m_scene;
-	m_scene = new GameBoardScene(15, 10);
+    //create physical board
+    GameBoardScene *temp = m_scene;
+    m_scene = new GameBoardScene(15, 10);
 
-	m_view->setScene(m_scene);
-	delete temp;
+    m_view->setScene(m_scene);
+    delete temp;
 
-	m_view->setBoardSize();	//refresh board zooming
+    m_view->setBoardSize(); //refresh board zooming
 
-	//start game etc.
-	sGame->createGame(playerList, 15, 10);
-	connect(m_scene, SIGNAL(lineDrawn(int)), sGame, SLOT(addLineToIndex(int)));
-	connect(sGame, SIGNAL(drawLine(int,QColor)), m_scene, SLOT(drawLine(int,QColor)));
-	connect(sGame, SIGNAL(highlightMove(int)), m_scene, SLOT(highlightLine(int)));
-	connect(sGame, SIGNAL(drawSquare(int,QColor)), m_scene, SLOT(drawSquare(int,QColor)));
+    //start game etc.
+    sGame->createGame(playerList, 15, 10);
+    connect(m_scene, &GameBoardScene::lineDrawn, sGame, &KSquaresGame::addLineToIndex);
+    connect(sGame, &KSquaresGame::drawLine, m_scene, &GameBoardScene::drawLine);
+    connect(sGame, &KSquaresGame::highlightMove, m_scene, &GameBoardScene::highlightLine);
+    connect(sGame, &KSquaresGame::drawSquare, m_scene, &GameBoardScene::drawSquare);
 
-	sGame->start();
+    sGame->start();
 	playerTakeTurn(sGame->currentPlayer());
 }
 
-void KSquaresDemoWindow::playerTakeTurn(KSquaresPlayer* currentPlayer)
+void KSquaresDemoWindow::playerTakeTurn(KSquaresPlayer *currentPlayer)
 {
-	statusBar()->changeItem(currentPlayer->name(), 0);
-	QTimer::singleShot(200, this, SLOT(aiChooseLine()));
+    //QT5 statusBar()->changeItem(currentPlayer->name(), 0);
+    QTimer::singleShot(200, this, &KSquaresDemoWindow::aiChooseLine);
 }
 
 void KSquaresDemoWindow::aiChooseLine()
 {
 	//sGame->addLineToIndex(ai.chooseLine(sGame->board()->lines(), sGame->board()->squares()));
-	
+
 	// https://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
 	QThread* thread = new QThread;
 	aiControllerWorker *worker = new aiControllerWorker(ais.at(sGame->currentPlayerId()), sGame->board()->lines(), sGame->board()->squares(), sGame->board()->getLineHistory());
@@ -123,17 +125,19 @@ void KSquaresDemoWindow::aiChooseLine()
 	connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
 	connect(worker, SIGNAL(lineChosen(int)), this, SLOT(aiChoseLine(int)));
 	thread->start();
+
+    //aiController ai(sGame->currentPlayerId(), sGame->lines(), sGame->squares(), sGame->boardWidth(), sGame->boardHeight());
+    //sGame->addLineToIndex(ai.chooseLine());
 }
 
 void KSquaresDemoWindow::aiChoseLine(const int &line)
 {
-	sGame->addLineToIndex(line);
+    sGame->addLineToIndex(line);
 }
 
 void KSquaresDemoWindow::gameOver(const QVector<KSquaresPlayer> & /*playerList*/)
 {
-	kDebug() << "Game Over";
-	QTimer::singleShot(1000, this, SLOT(gameNew()));
+    //qDebug() << "Game Over";
+    QTimer::singleShot(1000, this, &KSquaresDemoWindow::gameNew);
 }
 
-#include "ksquaresdemowindow.moc"

@@ -10,7 +10,7 @@
 #include "aiAlphaBeta.h"
 
 #include <limits>
-#include <KDebug>
+#include <QDebug>
 #include <algorithm>
 #include <QElapsedTimer>
 #include <QMap>
@@ -59,7 +59,7 @@ int aiAlphaBeta::chooseLine(const QList<bool> &newLines, const QList<int> &newSq
 	
 	if (newLines.size() != linesSize)
 	{
-		kFatal() << "something went terribly wrong: newLines.size() != linesSize";
+		qCritical() << "something went terribly wrong: newLines.size() != linesSize";
 	}
 	// put lines into local board representation
 	hashLines->clear();
@@ -85,12 +85,12 @@ int aiAlphaBeta::chooseLine(const QList<bool> &newLines, const QList<int> &newSq
 	
 	if (line < 0 || line >= linesSize)
 	{
-		kDebug() << "alphabeta didn't return a correct line: " << line;
-		kDebug() << "coosing random valid move";
+		qDebug() << "alphabeta didn't return a correct line: " << line;
+		qDebug() << "coosing random valid move";
 		QList<int> freeLines = aiFunctions::getFreeLines(lines, linesSize);
 		if (freeLines.size() <= 0)
 		{
-			kDebug() << "no valid lines left!";
+			qDebug() << "no valid lines left!";
 			turnTime = moveTimer.elapsed();
 			return 0;
 		}
@@ -162,8 +162,8 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 		// TODO: remove this check
 		if (prevPlayer == board->playerId && board->squareOwners.contains(-1))
 		{
-			kDebug() << "ERROR: sth went really wrong! player didn't change after move sequence: " << (*(analysis.moveSequences))[i];
-			kDebug() << "ERROR: board: " << aiFunctions::boardToString(board);
+			qDebug() << "ERROR: sth went really wrong! player didn't change after move sequence: " << (*(analysis.moveSequences))[i];
+			qDebug() << "ERROR: board: " << aiFunctions::boardToString(board);
 		}
 		float val = -alphabeta(board, depth - 1, NULL, -beta, -alpha);
 		for (int j = (*(analysis.moveSequences))[i].size() -1; j >= 0; j--)
@@ -187,7 +187,7 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 		if (alpha >= beta)
 		{
 			if (line != NULL)
-				kDebug() << "pruned at " << i;
+				qDebug() << "pruned at " << i;
 			break;
 		}
 		
@@ -206,7 +206,7 @@ float aiAlphaBeta::alphabeta(aiBoard::Ptr board, int depth, int *line, float alp
 	// if search only analyzed very few (10%) children of root node do a shallow heuristic based search!
 	if (line != NULL && alphabetaTimer.hasExpired(alphabetaTimeout) && 1.0 / (double)analysis.moveSequences->size() * (double)analyzedRootChildren < 0.1)
 	{
-		kDebug() << "original alphabeta search didn't analyze enough root children, doing shallow search";
+		qDebug() << "original alphabeta search didn't analyze enough root children, doing shallow search";
 		bestValue = -INFINITY;
 		for (int i = 0; i < analysis.moveSequences->size(); i++)
 		{

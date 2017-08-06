@@ -13,7 +13,8 @@ set(ksquares_SRCS
 	newgamedialog.cpp
 	ksquaresdemowindow.cpp
 	themegraphicsitems.cpp
-	highlightanimation.cpp
+    highlightanimation.cpp
+	scoresdialog.cpp
 	aifunctions.cpp
 	ksquaresio.cpp
 	board.cpp
@@ -34,18 +35,27 @@ set(ksquares_SRCS
 	aiMCTS.cpp
 )
 
-include_directories(${CMAKE_SOURCE_DIR}/libkdegames/highscore ${QJSON_INCLUDE_DIR})
+include_directories(${CMAKE_SOURCE_DIR}/libKF5KDEGames/highscore ${QJSON_INCLUDE_DIR})
 
-kde4_add_ui_files(ksquares_SRCS newgamewidget.ui scoreswidget.ui prefs_ai.ui prefs_display.ui)
+ki18n_wrap_ui(ksquares_SRCS newgamewidget.ui scoreswidget.ui prefs_ai.ui prefs_display.ui)
 
-kde4_add_kcfg_files(ksquares_SRCS GENERATE_MOC settings.kcfgc) #GENERATE_MOC is not needed but it doesn't work without it for some reason :S
+kconfig_add_kcfg_files(ksquares_SRCS GENERATE_MOC settings.kcfgc) #GENERATE_MOC is not needed but it doesn't work without it for some reason :S
 
-kde4_add_app_icon(ksquares_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/hi*-app-ksquares.png")
-kde4_add_executable(ksquares ${ksquares_SRCS})
+file(GLOB ICONS_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/*-apps-ksquares.png")
+ecm_add_app_icon(ksquares_SRCS ICONS ${ICONS_SRCS})
+add_executable(ksquares ${ksquares_SRCS})
 
-target_link_libraries(ksquares ${KDE4_KDEUI_LIBS} ${KDE4_KIO_LIBS} kdegames ${QJSON_LIBRARIES})
+target_link_libraries(ksquares
+    KF5::Completion
+    KF5::Crash
+    KF5::DBusAddons
+    KF5::I18n
+    KF5::XmlGui
+    KF5KDEGames
+	#${QJSON_LIBRARIES}
+)
 
-install(TARGETS ksquares ${INSTALL_TARGETS_DEFAULT_ARGS})
+install(TARGETS ksquares ${KDE_INSTALL_TARGETS_DEFAULT_ARGS})
 
 # setup where to find external AIs
 set(EXTERNALAIPATH "${CMAKE_CURRENT_SOURCE_DIR}/../aux/")
@@ -54,7 +64,18 @@ include_directories( ${CMAKE_CURRENT_BINARY_DIR}/generated/ )
 
 ########### install files ###############
 
-install( PROGRAMS ksquares.desktop  DESTINATION  ${XDG_APPS_INSTALL_DIR} )
-install( FILES ksquares.kcfg  DESTINATION  ${KCFG_INSTALL_DIR} )
-install( FILES ksquaresui.rc  DESTINATION  ${DATA_INSTALL_DIR}/ksquares )
-kde4_install_icons(${ICON_INSTALL_DIR})
+install(PROGRAMS org.kde.ksquares.desktop  DESTINATION  ${KDE_INSTALL_APPDIR})
+install(FILES org.kde.ksquares.appdata.xml DESTINATION  ${KDE_INSTALL_METAINFODIR})
+install(FILES ksquares.kcfg  DESTINATION  ${KDE_INSTALL_KCFGDIR})
+install(FILES ksquaresui.rc  DESTINATION  ${KDE_INSTALL_KXMLGUI5DIR}/ksquares)
+
+ecm_install_icons(ICONS
+    128-apps-ksquares.png
+    16-apps-ksquares.png
+    22-apps-ksquares.png
+    32-apps-ksquares.png
+    48-apps-ksquares.png
+    64-apps-ksquares.png
+    DESTINATION ${KDE_INSTALL_ICONDIR}
+    THEME hicolor
+)

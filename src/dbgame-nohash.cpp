@@ -11,7 +11,7 @@
 #include <cstdio>
 
 #include <QTimer>
-#include <KDebug>
+#include <QDebug>
 
 //#pragma warning(disable:4390)
 
@@ -154,12 +154,12 @@ void DBGame::Connect (Edge &edge, Node &node1, Node &node2)
 
 DBGame::DBGame (int w, int h) : KSquaresAi(w - 1, h - 1)
 {
-	kDebug() << "width, height: " << width << " x " << height;
+	qDebug() << "width, height: " << width << " x " << height;
 	int i, j;
 
 	width = w;
 	height = h;
-	kDebug() << "width, height: " << width << " x " << height;
+	qDebug() << "width, height: " << width << " x " << height;
 
 // 	logfile = fopen("dabble.log", "w");
 	long seed = time(NULL) & 255;
@@ -230,7 +230,7 @@ DBGame::~DBGame ()
 
 Coords DBGame::indexToPoints(const int lineIndex)
 {
-	kDebug() << "width, height: " << width << " x " << height;
+	qDebug() << "width, height: " << width << " x " << height;
 	QPoint p1;
 	QPoint p2;
 	Board::indexToPoints(lineIndex, &p1, &p2, width - 1, height - 1);
@@ -247,7 +247,7 @@ Coords DBGame::indexToPoints(const int lineIndex)
 
 int DBGame::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory)
 {
-	kDebug() << "choosing line...";
+	qDebug() << "choosing line...";
 	int line = -1;
 	
 	if (!dabbleTimer.isValid())
@@ -260,11 +260,11 @@ int DBGame::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareO
 	}
 	QTimer::singleShot(1000, this, SLOT(timeUp()));
 	
-	kDebug() << "lineHistory: " << lineHistory;
+	qDebug() << "lineHistory: " << lineHistory;
 	while (lastHistoryIndex < lineHistory.size())
 	{
 		Coords c = indexToPoints(lineHistory[lastHistoryIndex].line);
-		kDebug() << "adding line to dabble: " << c.x1 << ", " << c.y1 << " -- " << c.x2 << ", " << c.y2;
+		qDebug() << "adding line to dabble: " << c.x1 << ", " << c.y1 << " -- " << c.x2 << ", " << c.y2;
 		rgEdgeRemoved[maxEdgesRemoved] = c;
 		maxEdgesRemoved++;
 		lastHistoryIndex++;
@@ -281,8 +281,8 @@ int DBGame::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareO
 	
 	MyMove();
 	
-	kDebug() << "nummoves: " << nummoves;
-	kDebug() << "rgmoves[nummoves-1] = (" << rgmoves[nummoves-1].move->node[0]->x << ", " << rgmoves[nummoves-1].move->node[0]->y << ") -- (" << rgmoves[nummoves-1].move->node[1]->x << ", " << rgmoves[nummoves-1].move->node[1]->y << ")";
+	qDebug() << "nummoves: " << nummoves;
+	qDebug() << "rgmoves[nummoves-1] = (" << rgmoves[nummoves-1].move->node[0]->x << ", " << rgmoves[nummoves-1].move->node[0]->y << ") -- (" << rgmoves[nummoves-1].move->node[1]->x << ", " << rgmoves[nummoves-1].move->node[1]->y << ")";
 	
 // 	QPoint p1c(rgmoves[nummoves-1].move->node[0]->x, rgmoves[nummoves-1].move->node[0]->y);
 // 	QPoint p2c(rgmoves[nummoves-1].move->node[1]->x, rgmoves[nummoves-1].move->node[1]->y);
@@ -290,9 +290,9 @@ int DBGame::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareO
 	QPoint p1c(c.x1, c.y1);
 	QPoint p2c(c.x2, c.y2);
 	QPair<QPoint, QPoint> p12 = Board::coinsToPoints(p1c, p2c, width - 1, height - 1);
-	kDebug() << "point notation: " << p12.first << " -- " << p12.second;
+	qDebug() << "point notation: " << p12.first << " -- " << p12.second;
 	line = Board::pointsToIndex(p12.first, p12.second, width - 1, height - 1);
-	kDebug() << "line index: " << line;
+	qDebug() << "line index: " << line;
 	
 	if (newLines[line] || line < 0 || line >= newLines.size())
 	{
@@ -303,13 +303,13 @@ int DBGame::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareO
 		}
 	}
 	
-	kDebug() << "returned line: " << line;
+	qDebug() << "returned line: " << line;
 	return line;
 }
 
 void DBGame::timeUp()
 {
-	kDebug() << "time is up!";
+	qDebug() << "time is up!";
 	TRACE("TIME UP SLOT");
 	stop = 1;
 	thinking = 0;

@@ -49,7 +49,7 @@ float LineSorter::distanceToCenter(const int index) const
 	indexToPoints(index, &p1, &p2);
 	p3.first = (p1.first + p2.first) / 2;
 	p3.second = (p1.second + p2.second) / 2;
-	//kDebug() << "p3: " << p3.first << ", " << p3.second;
+	//qDebug() << "p3: " << p3.first << ", " << p3.second;
 	return sqrt((p3.first-cx) * (p3.first-cx) + (p3.second-cy) * (p3.second-cy));
 }
 

@@ -25,7 +25,7 @@ class QDab : public QObject, public KSquaresAi
 		~QDab();
 		
 		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory);
-		QString getName() { return "qdab"; }
+		QString getName() { return QStringLiteral("qdab"); }
 		virtual bool enabled() { return false; }
 		virtual bool tainted() { return isTainted; }
 		virtual long lastMoveTime() { return lastTurnTime; }

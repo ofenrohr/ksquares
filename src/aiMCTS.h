@@ -44,7 +44,7 @@ class aiMCTS : public KSquaresAi
 		~aiMCTS();
 		
 		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory);
-		QString getName() { return "mcts"; }
+		QString getName() { return QStringLiteral("mcts"); }
 		virtual bool enabled() { return true; }
 		virtual bool tainted() { return false; }
 		virtual long lastMoveTime() { return turnTime; }

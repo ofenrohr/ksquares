@@ -34,7 +34,7 @@ class aiAlphaBeta : public KSquaresAi
 		~aiAlphaBeta();
 		
 		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory);
-		QString getName() { return "alphabeta"; }
+		QString getName() { return QStringLiteral("alphabeta"); }
 		virtual bool enabled() { return true; }
 		virtual bool tainted() { return false; }
 		virtual long lastMoveTime() { return turnTime; }

@@ -23,23 +23,23 @@ class QColor;
  * @short The game controller
  *
  * Keeps charge of the game. Everything you'd expect really.
- * 
+ *
  * - Create one instance of this class which will last the whole time the program is running.
- * 
+ *
  * - In order to start a (new) game just call @ref createGame() with the appropriate arguments.
- * 
+ *
  * - Once the game is started, play passes to the first player. @ref takeTurnSig() will be emitted to allow you to chose how the go should be taken (AI controller or 'click' from a View).
- * 
+ *
  * - However the turn is taken, to make the move, the @ref addLineToIndex() function must be called. This will emit the @ref drawLine() signal to allow you to draw the line on the board with the correct colours.
- * 
+ *
  * - If the player completed a square, @ref drawSquare() will then be emitted to allow you to draw the completed square with the correct colour.
- * 
+ *
  * - If the player gets another go, @ref takeTurnSig() will be emitted again. If not, play will pass to the next player and @ref takeTurnSig() will be emitted for them.
- * 
+ *
  * - If a player completes the scoreboard, @ref gameOver() will be emitted with the full list of players to allow you to construct a score board.
- * 
+ *
  * - All variables will remain in the state they were at the end of the game until @ref createGame() is called again.
- * 
+ *
  * @author Matt Williams <matt@milliams.com>
  */
 
@@ -54,7 +54,7 @@ class KSquaresGame : public QObject
 		
 		/**
 		 * Creates a list of players
-		 * 
+		 *
 		 * @param cnt number of players
 		 * @param isHuman list of (non)human players
 		 * @return list of players
@@ -62,7 +62,7 @@ class KSquaresGame : public QObject
 		static QVector<KSquaresPlayer> createPlayers(int cnt, QList<int> isHuman);
 		/**
 		 * Create a new game
-		 * 
+		 *
 		 * @param startPlayers list of the players in the game
 		 * @param startWidth the width of the game board
 		 * @param startHeight the height of the game board
@@ -128,14 +128,14 @@ class KSquaresGame : public QObject
 		 * @param playerIndex the index of the player who completed the square
 		 */
 		void playerSquareComplete(int index, int playerIndex);
-		
+
 		// Static throughout each game
 		Board board_;
-		
+
 		// Updated as the game progresses
 		///List of all the players in the game
 		QVector<KSquaresPlayer> players;
-		
+
 		// Probably changes every go
 		/// is there currently a game in progress
 		bool gameInProgress;

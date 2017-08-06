@@ -26,7 +26,7 @@ class Knox : public QObject, public KSquaresAi
 		~Knox();
 		
 		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory);
-		QString getName() { return "knox"; }
+		QString getName() { return QStringLiteral("knox"); }
 		virtual bool enabled() { return true; }
 		virtual bool tainted() { return isTainted; }
 		virtual long lastMoveTime() { return lastTurnTime; }

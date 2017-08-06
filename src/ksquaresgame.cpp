@@ -9,21 +9,21 @@
 
 #include "ksquaresgame.h"
 
-#include <KDebug>
+#include <QDebug>
 
 //generated
 #include "settings.h"
 
 KSquaresGame::KSquaresGame()
 {
-	kDebug() << "Constructing Game";
-	gameInProgress = false;
+    //qDebug() << "Constructing Game";
+    gameInProgress = false;
 }
 
 KSquaresGame::~KSquaresGame()
 {
-	kDebug() << "Destroying game";
-	gameInProgress = false;
+    //qDebug() << "Destroying game";
+    gameInProgress = false;
 }
 
 
@@ -49,7 +49,7 @@ QVector<KSquaresPlayer> KSquaresGame::createPlayers(int cnt, QList<int> isHuman)
         color = QColor(243,195,0); //or darker: (227,173,0);
         break;
       default:
-        kError() << "KSquaresGame::playerSquareComplete(); currentPlayerId() != 0|1|2|3";
+        qCritical() << "KSquaresGame::playerSquareComplete(); currentPlayerId() != 0|1|2|3";
     }
     playerList.append(KSquaresPlayer(Settings::playerNames().at(i), color, isHuman.at(i)));
   }
@@ -60,7 +60,7 @@ QVector<KSquaresPlayer> KSquaresGame::createPlayers(int cnt, QList<int> isHuman)
 void KSquaresGame::createGame(const QVector<KSquaresPlayer> &startPlayers, int startWidth, int startHeight)
 {
 	resetEverything();	//reset everything
-	kDebug() << "Creating Game with" << startPlayers.size() << "player(s)";
+	qDebug() << "Creating Game with" << startPlayers.size() << "player(s)";
 	
 	//BEGIN Initialisation
 	board_.setSize(startWidth, startHeight);
@@ -71,70 +71,62 @@ void KSquaresGame::createGame(const QVector<KSquaresPlayer> &startPlayers, int s
 	}
 	//END Initialisation
 	
-	kDebug() << "Game Starting";
+	qDebug() << "Game Starting";
 	
 	//emit takeTurnSig(currentPlayer());
 }
 
 void KSquaresGame::resetEverything()
 {
-	kDebug() << "Game Values Resetting";
+	qDebug() << "Game Values Resetting";
 	board_.reset();
 	players.resize(0);
 	gameInProgress = false;
 	lastLine = -1;
 }
 
-bool KSquaresGame::addLineToIndex(int index)
-{
-	kDebug() << "KSquaresGame::addLineToIndex";
-	bool nextPlayer;
-	bool boardFilled;
-	QList<int> completedSquares;
-	int drawingPlayerIndex = currentPlayerId();
-	
-	// try to add the line
-	if (!board_.addLine(index, &nextPlayer, &boardFilled, &completedSquares))
-	{
-		kDebug() << "Warning: tryied to add invalid / already taken line with index " << index;
-		return false;
-	}
-	kDebug() << "added line. index: " << index << ", next player: " << nextPlayer << ", board filled: " << boardFilled << ", completed squares count: " << completedSquares.size();
-	// draw the line
-	emit drawLine(index, Settings::lineColor());
-	// draw the completed squares
-	for (int i = 0; i < completedSquares.size(); i++)
-	{
-		players[drawingPlayerIndex].incScore();
-		emit drawSquare(completedSquares.at(i), players.at(drawingPlayerIndex).colour());
-	}
-	// check if game is over
-	if (boardFilled && gameInProgress)
-	{
-		if (gameInProgress)
-		{
-			emit gameOver(players);
-		}
-		gameInProgress = false;
-	}
-	
-	// check if the player's turn is over
-	if (nextPlayer)
-	{
-		if (!players.at(drawingPlayerIndex).isHuman())
-		{
-			emit highlightMove(index);
-		}
-	}
-	
-	// announce the current player
-	if (gameInProgress)
-	{
-		kDebug() << "emitting takeTurnSig";
-		emit takeTurnSig(currentPlayer());
-	}
-	
-	return true;
+bool KSquaresGame::addLineToIndex(int index) {
+    qDebug() << "KSquaresGame::addLineToIndex";
+    bool nextPlayer;
+    bool boardFilled;
+    QList<int> completedSquares;
+    int drawingPlayerIndex = currentPlayerId();
+
+    // try to add the line
+    if (!board_.addLine(index, &nextPlayer, &boardFilled, &completedSquares)) {
+        qDebug() << "Warning: tryied to add invalid / already taken line with index " << index;
+        return false;
+    }
+    qDebug() << "added line. index: " << index << ", next player: " << nextPlayer << ", board filled: " << boardFilled
+             << ", completed squares count: " << completedSquares.size();
+    // draw the line
+    emit drawLine(index, Settings::lineColor());
+    // draw the completed squares
+    for (int i = 0; i < completedSquares.size(); i++) {
+        players[drawingPlayerIndex].incScore();
+        emit drawSquare(completedSquares.at(i), players.at(drawingPlayerIndex).colour());
+    }
+    // check if game is over
+    if (boardFilled && gameInProgress) {
+        if (gameInProgress) {
+            emit gameOver(players);
+        }
+        gameInProgress = false;
+    }
+
+    // check if the player's turn is over
+    if (nextPlayer) {
+        if (!players.at(drawingPlayerIndex).isHuman()) {
+            emit highlightMove(index);
+        }
+    }
+
+    // announce the current player
+    if (gameInProgress) {
+        qDebug() << "emitting takeTurnSig";
+        emit takeTurnSig(currentPlayer());
+    }
+
+    return true;
 }
 
-#include "ksquaresgame.moc"

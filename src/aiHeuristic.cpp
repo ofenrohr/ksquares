@@ -12,7 +12,7 @@
 #include "aifunctions.h"
 #include "boardAnalysis.h"
 
-#include <KDebug>
+#include <QDebug>
 #include <algorithm>
 
 
@@ -56,7 +56,7 @@ float aiHeuristic::evaluate(aiBoard::Ptr board, int ownPlayerId)
 		div += 1.0;
 		result += evalSquaresCnt(board);
 		if (debug)
-			kDebug() << "result after evalSquaresCnt: " << result;
+			qDebug() << "result after evalSquaresCnt: " << result;
 	}
 	
 	if (enableScores)
@@ -64,7 +64,7 @@ float aiHeuristic::evaluate(aiBoard::Ptr board, int ownPlayerId)
 		div += 1.0;
 		result += evalScores(board);
 		if (debug)
-			kDebug() << "result after evalScores: " << result;
+			qDebug() << "result after evalScores: " << result;
 	}
 	
 	if (enableLongChainRule)
@@ -72,7 +72,7 @@ float aiHeuristic::evaluate(aiBoard::Ptr board, int ownPlayerId)
 		div += 1.0;
 		result += evalLongChainRule(board);
 		if (debug)
-			kDebug() << "result after evalLongChainRule: " << result;
+			qDebug() << "result after evalLongChainRule: " << result;
 	}
 	
 	if (div == 0.0) return 0;
@@ -124,9 +124,9 @@ float aiHeuristic::evalScores(aiBoard::Ptr board)
 	}
 	if (debug)
 	{
-		kDebug() << "scoreMap: " << scores;
-		kDebug() << "ownScore: " << score;
-		kDebug() << "enemyScore: " << enemyScore;
+		qDebug() << "scoreMap: " << scores;
+		qDebug() << "ownScore: " << score;
+		qDebug() << "enemyScore: " << enemyScore;
 	}
 	return ((float)score - (float)enemyScore) / (float)(board->width * board->height);
 }
@@ -154,11 +154,11 @@ float aiHeuristic::evalLongChainRule(aiBoard::Ptr board)
 	
 	if (debug)
 	{
-		kDebug() << "evaluation of board " << aiFunctions::boardToString(board);
-		kDebug() << "  dots = " << dots;
-		kDebug() << "  long chains = " << analysis.openLongChains.size();
-		kDebug() << "  playerId = " << board->playerId;
-		kDebug() << "  lcr = " << lcr;
+		qDebug() << "evaluation of board " << aiFunctions::boardToString(board);
+		qDebug() << "  dots = " << dots;
+		qDebug() << "  long chains = " << analysis.openLongChains.size();
+		qDebug() << "  playerId = " << board->playerId;
+		qDebug() << "  lcr = " << lcr;
 	}
 	
 	return lcr;

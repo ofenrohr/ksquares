@@ -37,11 +37,11 @@ KSquares::BoardAnalysis BoardAnalysisFunctions::analyseBoard(aiBoard::Ptr board)
 					analysis.capturableShortChains.append(i);
 			break;
 			case KSquares::CHAIN_SPECIAL:
-				kDebug() << "ERROR: special own chain!" << analysis.chains[i];
+				qDebug() << "ERROR: special own chain!" << analysis.chains[i];
 			break;
 			case KSquares::CHAIN_UNKNOWN:
 			default:
-				kDebug() << "WARNING: unknown chain! " << analysis.chains[i];
+				qDebug() << "WARNING: unknown chain! " << analysis.chains[i];
 			break;
 		}
 		// capture everything that can be captured
@@ -50,7 +50,7 @@ KSquares::BoardAnalysis BoardAnalysisFunctions::analyseBoard(aiBoard::Ptr board)
 				board->doMove(analysis.chains[i].lines[j]);
 	}
 	
-	//kDebug() << "board after capture " << aiFunctions::boardToString(board);
+	//qDebug() << "board after capture " << aiFunctions::boardToString(board);
 	
 	// look for chains a second time
 	aiFunctions::findChains(board, &(analysis.chainsAfterCapture));
@@ -65,9 +65,9 @@ KSquares::BoardAnalysis BoardAnalysisFunctions::analyseBoard(aiBoard::Ptr board)
 					analysis.openLongChains.append(i);
 				else
 				{
-					kDebug() << "ERROR: capturable chain found when there should be none! chain: " << aiFunctions::linelistToString(analysis.chainsAfterCapture[i].lines, board->linesSize, board->width, board->height) << " on board " << aiFunctions::boardToString(board);
+					qDebug() << "ERROR: capturable chain found when there should be none! chain: " << aiFunctions::linelistToString(analysis.chainsAfterCapture[i].lines, board->linesSize, board->width, board->height) << " on board " << aiFunctions::boardToString(board);
 					for (int j = 0; j < analysis.chains.size(); j++)
-						kDebug() << "capture chain: " << aiFunctions::linelistToString(analysis.chains[j].lines, board->linesSize, board->width, board->height);
+						qDebug() << "capture chain: " << aiFunctions::linelistToString(analysis.chains[j].lines, board->linesSize, board->width, board->height);
 				}
 			break;
 			case KSquares::CHAIN_LOOP:
@@ -75,9 +75,9 @@ KSquares::BoardAnalysis BoardAnalysisFunctions::analyseBoard(aiBoard::Ptr board)
 					analysis.openLoopChains.append(i);
 				else
 				{
-					kDebug() << "ERROR: capturable chain found when there should be none! chain: " << aiFunctions::linelistToString(analysis.chainsAfterCapture[i].lines, board->linesSize, board->width, board->height) << " on board " << aiFunctions::boardToString(board);
+					qDebug() << "ERROR: capturable chain found when there should be none! chain: " << aiFunctions::linelistToString(analysis.chainsAfterCapture[i].lines, board->linesSize, board->width, board->height) << " on board " << aiFunctions::boardToString(board);
 					for (int j = 0; j < analysis.chains.size(); j++)
-						kDebug() << "capture chain: " << aiFunctions::linelistToString(analysis.chains[j].lines, board->linesSize, board->width, board->height);
+						qDebug() << "capture chain: " << aiFunctions::linelistToString(analysis.chains[j].lines, board->linesSize, board->width, board->height);
 				}
 			break;
 			case KSquares::CHAIN_SHORT:
@@ -85,9 +85,9 @@ KSquares::BoardAnalysis BoardAnalysisFunctions::analyseBoard(aiBoard::Ptr board)
 					analysis.openShortChains.append(i);
 				else
 				{
-					kDebug() << "ERROR: capturable chain found when there should be none! chain: " << aiFunctions::linelistToString(analysis.chainsAfterCapture[i].lines, board->linesSize, board->width, board->height) << " on board " << aiFunctions::boardToString(board);
+					qDebug() << "ERROR: capturable chain found when there should be none! chain: " << aiFunctions::linelistToString(analysis.chainsAfterCapture[i].lines, board->linesSize, board->width, board->height) << " on board " << aiFunctions::boardToString(board);
 					for (int j = 0; j < analysis.chains.size(); j++)
-						kDebug() << "capture chain: " << aiFunctions::linelistToString(analysis.chains[j].lines, board->linesSize, board->width, board->height);
+						qDebug() << "capture chain: " << aiFunctions::linelistToString(analysis.chains[j].lines, board->linesSize, board->width, board->height);
 				}
 			break;
 			case KSquares::CHAIN_SPECIAL:
@@ -100,14 +100,14 @@ KSquares::BoardAnalysis BoardAnalysisFunctions::analyseBoard(aiBoard::Ptr board)
 				}
 				else
 				{
-					kDebug() << "ERROR: capturable chain found when there should be none! chain: " << aiFunctions::linelistToString(analysis.chainsAfterCapture[i].lines, board->linesSize, board->width, board->height) << " on board " << aiFunctions::boardToString(board);
+					qDebug() << "ERROR: capturable chain found when there should be none! chain: " << aiFunctions::linelistToString(analysis.chainsAfterCapture[i].lines, board->linesSize, board->width, board->height) << " on board " << aiFunctions::boardToString(board);
 					for (int j = 0; j < analysis.chains.size(); j++)
-						kDebug() << "capture chain: " << aiFunctions::linelistToString(analysis.chains[j].lines, board->linesSize, board->width, board->height);
+						qDebug() << "capture chain: " << aiFunctions::linelistToString(analysis.chains[j].lines, board->linesSize, board->width, board->height);
 				}
 			break;
 			case KSquares::CHAIN_UNKNOWN:
 			default:
-				kDebug() << "WARNING: unknown chain! " << analysis.chainsAfterCapture[i].lines;
+				qDebug() << "WARNING: unknown chain! " << analysis.chainsAfterCapture[i].lines;
 			break;
 		}
 	}
@@ -236,8 +236,8 @@ QSharedPointer<QList<QList<int> > > BoardAnalysisFunctions::getMoveSequences(aiB
 		for (int i = 0; i < capturableShortAndLoopChains.size(); i++)
 		{
 			QList<int> doubleDealingVariant = getDoubleDealingSequence(analysis.chains[capturableShortAndLoopChains[i]]);
-			//kDebug() << "short or loop chain: " << analysis.chains[capturableShortAndLoopChains[i]];
-			//kDebug() << "doubleDealingVariant: " << doubleDealingVariant;
+			//qDebug() << "short or loop chain: " << analysis.chains[capturableShortAndLoopChains[i]];
+			//qDebug() << "doubleDealingVariant: " << doubleDealingVariant;
 			if (doubleDealingVariant.size() > 0)
 			{
 				doubleDealingChainIndex = capturableShortAndLoopChains[i];
@@ -293,7 +293,7 @@ QSharedPointer<QList<QList<int> > > BoardAnalysisFunctions::getMoveSequences(aiB
 	}
 	else
 	{
-		//kDebug() << "no double dealing chain available";
+		//qDebug() << "no double dealing chain available";
 	}
 	
 	// add full capture version

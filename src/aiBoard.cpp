@@ -10,7 +10,8 @@
 #include "aiBoard.h"
 #include "aifunctions.h"
 
-#include <KDebug>
+#include <QDebug>
+#include <sstream>
 
 aiBoard::aiBoard(bool *newLines, int newLinesSize, int newWidth, int newHeight, const QList<int> newSquareOwners, int newPlayerId, int newMaxPlayerId, QList<int> *newHashLines) : lines(newLines), linesSize(newLinesSize), width(newWidth), height(newHeight), squareOwners(newSquareOwners), playerId(newPlayerId), maxPlayerId(newMaxPlayerId), hashLines(newHashLines)
 {
@@ -33,7 +34,7 @@ aiBoard::aiBoard(Board *board)
 
 aiBoard::~aiBoard()
 {
-	kDebug() << "aiBoard destruct";
+	qDebug() << "aiBoard destruct";
 	if (deleteLines)
 		delete[] lines;
 }
@@ -43,10 +44,10 @@ void aiBoard::doMove(int line)
 	// TODO: remove this check
 	if (lines[line] || line < 0 || line >= linesSize)
 	{
-		QString lineDebug = "";
+		std::stringstream lineDebug;
 		for (int i = 0; i < linesSize; i++)
-			lineDebug += lines[i] ? "1" : "0";
-		kDebug() << "WARNING: adding an invalid line! line = " << line << ", lines = " << lineDebug;
+			lineDebug << ( lines[i] ? "1" : "0" );
+		qDebug() << "WARNING: adding an invalid line! line = " << line << ", lines = " << QString::fromStdString(lineDebug.str());
 		//return;
 	}
 	
@@ -86,10 +87,10 @@ void aiBoard::undoMove(int line)
 	// TODO: remove this check
 	if (!lines[line] || line < 0 || line >= linesSize)
 	{
-		QString lineDebug = "";
+		std::stringstream lineDebug;
 		for (int i = 0; i < linesSize; i++)
-			lineDebug += lines[i] ? "1" : "0";
-		kDebug() << "WARNING: removing an invalid line! line = " << line << ", linesSize = " << linesSize << ", lines = " << lineDebug;
+			lineDebug << ( lines[i] ? "1" : "0" );
+		qDebug() << "WARNING: removing an invalid line! line = " << line << ", linesSize = " << linesSize << ", lines = " << QString::fromStdString(lineDebug.str());
 		//return;
 	}
 	

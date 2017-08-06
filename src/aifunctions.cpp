@@ -8,13 +8,14 @@
  ***************************************************************************/
 
 #include "aifunctions.h"
-#include <KDebug>
+#include <QDebug>
 #include <QStack>
 #include <algorithm>
+#include <sstream>
 
 aiFunctions::aiFunctions(int w, int h) : width(w), height(h)
 {
-	//kDebug() << "width, height: " << width << " x " << height;
+	//qDebug() << "width, height: " << width << " x " << height;
 	linesSize = toLinesSize(width, height);
 }
 
@@ -38,7 +39,7 @@ int aiFunctions::countBorderLines(int *sidesOfSquare, int squareIndex, const boo
 		count++;
 	if(linesList[sidesOfSquare[3]] == true)
 		count++;
-	//kDebug() << "AI: Square" << squareIndex << "is bordered by" << count << "lines";
+	//qDebug() << "AI: Square" << squareIndex << "is bordered by" << count << "lines";
 	return count;
 }
 
@@ -64,7 +65,7 @@ int aiFunctions::countBorderLines(int width, int height, int squareIndex, const 
 
 QList<int> aiFunctions::squaresFromLine(int lineIndex) const
 {
-	//kDebug() << "Line:" << lineIndex;
+	//qDebug() << "Line:" << lineIndex;
 	QList<int> squareList;
 	if (lineDirection(lineIndex) == KSquares::HORIZONTAL)
 	{
@@ -85,8 +86,8 @@ QList<int> aiFunctions::squaresFromLine(int lineIndex) const
 		if(lineIndex%((2*width)+1) == 2*width)
 			squareList.removeAt(0);
 	}
-	//kDebug() << "Size:" << squareList.size();
-	//kDebug() << "squares:" << squareList.at(0) << " " << squareList.at(1);
+	//qDebug() << "Size:" << squareList.size();
+	//qDebug() << "squares:" << squareList.at(0) << " " << squareList.at(1);
 	return squareList;
 }
 
@@ -152,7 +153,7 @@ QList<int> aiFunctions::findLinesCompletingBoxes(int linesSize, const bool *line
 					if (!choiceList.contains(i))
 					{
 						choiceList.append(i);
-						//kDebug() << "AI: 1. Adding" << i << "to choices";
+						//qDebug() << "AI: 1. Adding" << i << "to choices";
 					}
 				}
 			}
@@ -187,7 +188,7 @@ QList<int> aiFunctions::safeMoves(int linesSize, const bool *lines) const
 			if(badCount == 0)
 			{
 				safeLines.append(i);
-				//kDebug() << "AI: 2. Adding" << i << "to choices";
+				//qDebug() << "AI: 2. Adding" << i << "to choices";
 			}
 		}
 	}
@@ -236,7 +237,7 @@ bool aiFunctions::squareConnectedToJoint(aiBoard *board, QMap<int, int> &squareV
 		QList<int> lineSquares = aiFunctions::squaresFromLine(board->width, board->height, squareLines[i]);
 		if (getGroundConnections(board, square).size() >= 1)
 		{
-			//kDebug() << "square " << square << " connected to ground joint";
+			//qDebug() << "square " << square << " connected to ground joint";
 			return true;
 		}
 		for (int j = 0; j < lineSquares.size(); j++)
@@ -245,7 +246,7 @@ bool aiFunctions::squareConnectedToJoint(aiBoard *board, QMap<int, int> &squareV
 			{
 				if (checkJointInCycle && jointInCycle(board, lineSquares[j], square, squareValences))
 					continue;
-				//kDebug() << "square " << square << " connected to inner joint";
+				//qDebug() << "square " << square << " connected to inner joint";
 				return true;
 			}
 		}
@@ -268,7 +269,7 @@ QList<QPair<KSquares::LSConnection, bool> > aiFunctions::getConnectionsToJoints(
 		QList<int> groundConnections = getGroundConnections(board, square);
 		for (int j = 0; j < groundConnections.size(); j++)
 		{
-			//kDebug() << "square " << square << " connected to ground joint via line " << groundConnections[j];
+			//qDebug() << "square " << square << " connected to ground joint via line " << groundConnections[j];
 			KSquares::LSConnection connection(groundConnections[j], -1);
 			ret.append(QPair<KSquares::LSConnection, bool>(connection, true));
 		}
@@ -278,7 +279,7 @@ QList<QPair<KSquares::LSConnection, bool> > aiFunctions::getConnectionsToJoints(
 			{
 				if (checkJointInCycle && jointInCycle(board, lineSquares[j], square, squareValences))
 					continue;
-				//kDebug() << "square " << square << " connected to inner joint square " << lineSquares[j] << " via line " << squareLines[i];
+				//qDebug() << "square " << square << " connected to inner joint square " << lineSquares[j] << " via line " << squareLines[i];
 				KSquares::LSConnection connection(squareLines[i], lineSquares[j]);
 				ret.append(QPair<KSquares::LSConnection, bool>(connection, false));
 				//return true;
@@ -303,11 +304,11 @@ QString chainTypeToString(KSquares::ChainType t)
 {
 	switch (t)
 	{
-		case KSquares::CHAIN_SHORT: return "short";
-		case KSquares::CHAIN_LONG: return "long";
-		case KSquares::CHAIN_LOOP: return "loop";
-		case KSquares::CHAIN_UNKNOWN: return "unknown";
-		default: return "unknown (switch)";
+		case KSquares::CHAIN_SHORT: return QStringLiteral("short");
+		case KSquares::CHAIN_LONG: return QStringLiteral("long");
+		case KSquares::CHAIN_LOOP: return QStringLiteral("loop");
+		case KSquares::CHAIN_UNKNOWN: return QStringLiteral("unknown");
+		default: return QStringLiteral("unknown (switch)");
 	}
 }
 
@@ -334,7 +335,7 @@ bool aiFunctions::jointInCycle(aiBoard *board, int joint, int start, QMap<int, i
 	
 	if (joint == start)
 	{
-		kDebug() << "WARNING: jointInCycle called with wrong parameter! joint == start";
+		qDebug() << "WARNING: jointInCycle called with wrong parameter! joint == start";
 		return false;
 	}
 	
@@ -397,7 +398,7 @@ void aiFunctions::findChains(aiBoard *board, QList<KSquares::Chain> *foundChains
 			square = freeSquares.takeLast();
 		else
 			square = unvisitedSquares.takeLast();
-		//kDebug() << "square: " << square;
+		//qDebug() << "square: " << square;
 		
 		if (
 			squareValences[square] == 3 || 
@@ -419,17 +420,17 @@ void aiFunctions::findChains(aiBoard *board, QList<KSquares::Chain> *foundChains
 			{
 				expandingSquare = squareQueue.takeLast();
 				//foundSquare = false;
-				//kDebug() << "expandingSquare: " << expandingSquare;
+				//qDebug() << "expandingSquare: " << expandingSquare;
 				// check for ground connections
 				QList<int> groundConnections = getGroundConnections(board, expandingSquare);
 				for (int i = 0; i < groundConnections.size(); i++)
 				{
-					//kDebug() << "ground connection for square " << expandingSquare << ": " << groundConnections[0];
+					//qDebug() << "ground connection for square " << expandingSquare << ": " << groundConnections[0];
 					chain.append(groundConnections[i]);
 				}
 				// look for next squares in chain
 				QList<KSquares::LSConnection> connectedSquares = getConnectedSquares(board, expandingSquare);
-				//kDebug() << "connectedSquares: " << connectedSquares;
+				//qDebug() << "connectedSquares: " << connectedSquares;
 				// order connected squares by valence: joints must be evaluated first
 				QList<KSquares::LSConnection> connectedSquaresOrdered;
 				for (int i = 0; i < connectedSquares.size(); i++)
@@ -508,7 +509,7 @@ void aiFunctions::findChains(aiBoard *board, QList<KSquares::Chain> *foundChains
 						{
 							squareQueue.prepend(connectedJointSquare);
 							passedJoint = true;
-							//kDebug() << "passing joint " << connectedJointSquare << " coming from " << expandingSquare << ", foundChains: " << foundChains->size();
+							//qDebug() << "passing joint " << connectedJointSquare << " coming from " << expandingSquare << ", foundChains: " << foundChains->size();
 							for (int k = 0; k < otherChainsReachingJoint.size(); k++)
 							{
 								for (int l = foundChains->at(otherChainsReachingJoint[k]).lines.size()-1; l >= 0; l--)
@@ -516,7 +517,7 @@ void aiFunctions::findChains(aiBoard *board, QList<KSquares::Chain> *foundChains
 								for (int l = foundChains->at(otherChainsReachingJoint[k]).squares.size()-1; l >= 0; l--)
 									chainSquares.prepend(foundChains->at(otherChainsReachingJoint[k]).squares[l]);
 								foundChains->removeAt(otherChainsReachingJoint[k]);
-								//kDebug() << "removed foundChain and prepended to new chain";
+								//qDebug() << "removed foundChain and prepended to new chain";
 							}
 							// there can be a chain that when completed creates a loop chain which contains the joint.
 							// to find that chain the connection to that joint that's not part of the loop chain must be added to freeSquares
@@ -524,7 +525,7 @@ void aiFunctions::findChains(aiBoard *board, QList<KSquares::Chain> *foundChains
 								excludeFromRemovalOnce.append(externalJointConnections[0].square);
 							else // cutting the ground connection of the joint will create an open loop chain for the next player
 							{
-								//kDebug() << "no external joint connection, jointGroundConnections: " << jointGroundConnections;
+								//qDebug() << "no external joint connection, jointGroundConnections: " << jointGroundConnections;
 								if (!onlyOwnChains && jointGroundConnections.size() > 0)
 								{
 									KSquares::Chain createLoopChainChain;
@@ -538,13 +539,13 @@ void aiFunctions::findChains(aiBoard *board, QList<KSquares::Chain> *foundChains
 						/*
 						else
 						{
-							kDebug() << "info for connectedJointSquare " << connectedJointSquare;
-							kDebug() << "coming from: " << expandingSquare;
-							kDebug() << "squareValences[connectedJointSquare]: " << squareValences[connectedJointSquare]; 
-							kDebug() << "jointReachedBefore[connectedJointSquare]: " << jointReachedBefore[connectedJointSquare];
-							kDebug() << "localJointReachedBefore: " << localJointReachedBefore;
-							kDebug() << "externalJointConnections.size(): " << externalJointConnections.size();
-							kDebug() << "getGroundConnections(board, connectedJointSquare).size(): " << getGroundConnections(board, connectedJointSquare).size();
+							qDebug() << "info for connectedJointSquare " << connectedJointSquare;
+							qDebug() << "coming from: " << expandingSquare;
+							qDebug() << "squareValences[connectedJointSquare]: " << squareValences[connectedJointSquare]; 
+							qDebug() << "jointReachedBefore[connectedJointSquare]: " << jointReachedBefore[connectedJointSquare];
+							qDebug() << "localJointReachedBefore: " << localJointReachedBefore;
+							qDebug() << "externalJointConnections.size(): " << externalJointConnections.size();
+							qDebug() << "getGroundConnections(board, connectedJointSquare).size(): " << getGroundConnections(board, connectedJointSquare).size();
 						}
 						*/
 						// add the connection to the joint we're coming from
@@ -565,7 +566,7 @@ void aiFunctions::findChains(aiBoard *board, QList<KSquares::Chain> *foundChains
 					canCaptureFromBothEnds = true;
 				if (!canCapture && passedJoint)
 				{
-					//kDebug() << "special case where a loop chain connects to a capturable chain";
+					//qDebug() << "special case where a loop chain connects to a capturable chain";
 				}
 				else
 					canCapture = true;
@@ -589,7 +590,7 @@ void aiFunctions::findChains(aiBoard *board, QList<KSquares::Chain> *foundChains
 			else
 				foundChain.ownChain = false;
 			
-			//kDebug() << "found chain:" << chain << "squares:" << foundChain.squares << "cap:" << canCapture << "type:" << chainTypeToString(foundChain.type) << " chain: " << linelistToString(chain, board->linesSize, board->width, board->height);
+			//qDebug() << "found chain:" << chain << "squares:" << foundChain.squares << "cap:" << canCapture << "type:" << chainTypeToString(foundChain.type) << " chain: " << linelistToString(chain, board->linesSize, board->width, board->height);
 			foundChains->append(foundChain);
 		}
 		else
@@ -631,7 +632,7 @@ int aiFunctions::getLeader(QList<int> &squareOwners)
 {
 	QMap<int, int> scores; // index = player id, value = number of squares
 	scores = getScoreMap(squareOwners);
-	//kDebug() << "score map: " << scores;
+	//qDebug() << "score map: " << scores;
 	if (scores.contains(-1) && scores.keys().size() == 1) // no squares are drawn
 		return -1;
 	int bestId = -3;
@@ -651,7 +652,7 @@ int aiFunctions::getLeader(QList<int> &squareOwners)
 		}
 	}
 	if (bestId == -3)
-		kDebug() << "sth went wrong when calculating the board leader!";
+		qDebug() << "sth went wrong when calculating the board leader!";
 	if (draw)
 		return -2;
 	return bestId;
@@ -659,7 +660,8 @@ int aiFunctions::getLeader(QList<int> &squareOwners)
 
 QString aiFunctions::boardToString(bool *lines, int linesSize, int width, int height)
 {
-	QString ret = "\n+";
+	std::stringstream ret;
+	ret << "\n+";
 	
 	for (int i = 0; i < linesSize; i++)
 	{
@@ -671,20 +673,20 @@ QString aiFunctions::boardToString(bool *lines, int linesSize, int width, int he
 		}
 		if (iDirection == KSquares::HORIZONTAL)
 		{
-			ret.append(lines[i] ? "--+" : "  +");
+			ret << (lines[i] ? "--+" : "  +");
 		}
 		else
 		{
-			ret.append(lines[i] ? "|  " : "   ");
+			ret << (lines[i] ? "|  " : "   ");
 		}
 		if (iDirection != nextDirection)
 		{
-			ret.append(nextDirection == KSquares::HORIZONTAL ? "\n+" : "\n");
+			ret << (nextDirection == KSquares::HORIZONTAL ? "\n+" : "\n");
 		}
 	}
-	
-	ret.replace("  \n", "\n");
-	return ret;
+
+    QString ret2 = QString::fromStdString(ret.str());
+	return ret2.replace(QStringLiteral("  \n"), QStringLiteral("\n"));
 }
 
 QString aiFunctions::boardToString(bool *lines) const
@@ -716,24 +718,26 @@ QString aiFunctions::linelistToString(const QList<int> list) const
 
 void printVisitedSquares(bool *squares, int width, int height)
 {
-  QString board = "";
-  for (int i = 0; i < width * height; i++)
-  {
-    board.append(i % width == 0?"\n":"");
-    board.append(squares[i]?"x":"o");
-  }
-  kDebug() << "Visited squares: " << board;
+    std::stringstream board;
+    board << "";
+    for (int i = 0; i < width * height; i++)
+    {
+        board << (i % width == 0?"\n":"");
+        board << squares[i]?"x":"o";
+    }
+    qDebug() << "Visited squares: " << QString::fromStdString(board.str());
 }
 
 void printSquares(QList<int> squares, int width, int height)
 {
-  QString board ="";
-  for (int i = 0; i < width * height; i++)
-  {
-    board.append(i % width == 0?"\n":"");
-    board.append(squares.contains(i) ? "x":"o");
-  }
-  kDebug() << "Squares: " << board;
+    std::stringstream board;
+	board << "";
+    for (int i = 0; i < width * height; i++)
+    {
+        board << (i % width == 0?"\n":"");
+        board << squares.contains(i) ? "x":"o";
+    }
+    qDebug() << "Squares: " << QString::fromStdString(board.str());
 }
 
 // @param chain: chain lines
@@ -753,7 +757,7 @@ KSquares::ChainType aiFunctions::classifyChain(int width, int height, const QLis
 {
   if (chain.size() <= 0)
   {
-    kDebug() << "ERROR: classifyChain called with no chain lines";
+    qDebug() << "ERROR: classifyChain called with no chain lines";
     return KSquares::CHAIN_UNKNOWN;
   }
   
@@ -764,7 +768,7 @@ KSquares::ChainType aiFunctions::classifyChain(int width, int height, const QLis
   {
     if (lines[chain[i]])
     {
-      kDebug() << "ERROR: classifyChain called with incorrect chain parameter (line " << chain[i] << " is drawn!)";
+      qDebug() << "ERROR: classifyChain called with incorrect chain parameter (line " << chain[i] << " is drawn!)";
       return KSquares::CHAIN_UNKNOWN;
     }
     QList<int> curSquares = squaresFromLine(width, height, chain[i]);
@@ -799,12 +803,12 @@ KSquares::ChainType aiFunctions::classifyChain(int width, int height, const QLis
   {
     int curSquare = squareQueue.pop();
     
-		//kDebug() << "expanding: " << curSquare;
+		//qDebug() << "expanding: " << curSquare;
 		
     // has square already been visited?
     if (squareVisited.contains(curSquare))
     {
-      //kDebug() << "visiting an square that has already been visited! (" << curSquare << ", queue = " << squareVisited << ")";
+      //qDebug() << "visiting an square that has already been visited! (" << curSquare << ", queue = " << squareVisited << ")";
       return KSquares::CHAIN_LOOP;
     }
     //if (countBorderLines(width, height, curSquare, lines) >= 2)
@@ -842,7 +846,7 @@ KSquares::ChainType aiFunctions::classifyChain(int width, int height, const QLis
 					else
 					{
 						lastSquareLoopJoint = curLineSquares[j];
-						//kDebug() << "loop joint square: " << curLineSquares[j];
+						//qDebug() << "loop joint square: " << curLineSquares[j];
 					}
 				}
         squareQueue.push(curLineSquares[j]);
@@ -856,7 +860,7 @@ KSquares::ChainType aiFunctions::classifyChain(int width, int height, const QLis
   // did we visit all squares?
   if (squares->size() != squareVisited.size())
   {
-    //kDebug() << "ERROR: didn't visit all squares (squares cnt = " << squares->size() << ", squares visited cnt = " << squareVisited.size() << "), board: " << boardToString(lines, toLinesSize(width, height), width, height) << "chain: " << chain << " as board: " << linelistToString(chain, toLinesSize(width, height), width, height);
+    //qDebug() << "ERROR: didn't visit all squares (squares cnt = " << squares->size() << ", squares visited cnt = " << squareVisited.size() << "), board: " << boardToString(lines, toLinesSize(width, height), width, height) << "chain: " << chain << " as board: " << linelistToString(chain, toLinesSize(width, height), width, height);
 		//printSquares(squareVisited, width, height);
     return KSquares::CHAIN_UNKNOWN;
   }

@@ -18,7 +18,6 @@
 
 // kde
 #include <kdebug.h>
-#include <KLocale>
 #include <kmessagebox.h>
 
 bool KSquaresIO::loadGame(QString filename, KSquaresGame *sGame, QList<int> *lines)
@@ -27,7 +26,7 @@ bool KSquaresIO::loadGame(QString filename, KSquaresGame *sGame, QList<int> *lin
 	QFile file(filename);
 	if (!file.open(QIODevice::ReadOnly))
 	{
-		kDebug() << "KSquaresIO::loadGame error: Can't open file";
+		qDebug() << "KSquaresIO::loadGame error: Can't open file";
 		return false;
 	}
 	
@@ -43,7 +42,7 @@ bool KSquaresIO::loadGame(QString filename, KSquaresGame *sGame, QList<int> *lin
 	bool success = true;
 	
 	// check extension of file
-	if (filename.endsWith(".dbl"))
+	if (filename.endsWith(QStringLiteral(".dbl")))
 	{
 		// loading a dabble game
 		QList<int> isHuman;
@@ -53,12 +52,12 @@ bool KSquaresIO::loadGame(QString filename, KSquaresGame *sGame, QList<int> *lin
 		isHuman.append(0); // TODO: use result of question
 		players = KSquaresGame::createPlayers(2,isHuman);
 		KSquaresPlayer p1 = players.at(0);
-		p1.setName(i18n("Player 1"));
+		p1.setName(QStringLiteral("Player 1"));
 		KSquaresPlayer p2 = players.at(1);
-		p2.setName(i18n("Player 2"));
+		p2.setName(QStringLiteral("Player 2"));
 		playerCnt = 2;
 	}
-	else if (filename.endsWith(".ksq"))
+	else if (filename.endsWith(QStringLiteral(".ksq")))
 	{
 		// loading a ksquares game
 		if (!inStream.atEnd())
@@ -83,12 +82,12 @@ bool KSquaresIO::loadGame(QString filename, KSquaresGame *sGame, QList<int> *lin
 		{
 			// get player info (type and name)
 			QString line = inStream.readLine();
-			if (!line.contains(","))
+			if (!line.contains(QStringLiteral(",")))
 			{
 				success = false;
 				break;
 			}
-			QStringList playerInfo = line.split(",");
+			QStringList playerInfo = line.split(QStringLiteral(","));
 			
 			// read player type
 			bool ok;
@@ -126,7 +125,7 @@ bool KSquaresIO::loadGame(QString filename, KSquaresGame *sGame, QList<int> *lin
 	}
 	else
 	{
-		kDebug() << "KSquaresIO::loadGame error: invalid file extension";
+		qDebug() << "KSquaresIO::loadGame error: invalid file extension";
 		success = false;
 	}
 	
@@ -134,9 +133,9 @@ bool KSquaresIO::loadGame(QString filename, KSquaresGame *sGame, QList<int> *lin
 	while (!inStream.atEnd() && success)
 	{
 		QString line = inStream.readLine();
-		line = line.replace(" ", "");
+		line = line.replace(QStringLiteral(" "), QStringLiteral(""));
 
-		if (line.startsWith("#"))
+		if (line.startsWith(QStringLiteral("#")))
 			continue;
 		
 		if (!sizeDefined)
@@ -144,29 +143,29 @@ bool KSquaresIO::loadGame(QString filename, KSquaresGame *sGame, QList<int> *lin
 			// read board size
 			if (!firstIteration)
 			{
-				kDebug() << "KSquaresIO::loadGame error: board size not defined in first line";
+				qDebug() << "KSquaresIO::loadGame error: board size not defined in first line";
 				success = false;
 				break;
 			}
-			if (!line.contains(","))
+			if (!line.contains(QStringLiteral(",")))
 			{
-				kDebug() << "KSquaresIO::loadGame error: invalid board size";
+				qDebug() << "KSquaresIO::loadGame error: invalid board size";
 				success = false;
 				break;
 			}
-			QStringList wh = line.split(","); // wh = width/height
+			QStringList wh = line.split(QStringLiteral(",")); // wh = width/height
 			bool ok;
 			width = wh[0].toInt(&ok);
 			if (!ok)
 			{
-				kDebug() << "KSquaresIO::loadGame error: board width invalid";
+				qDebug() << "KSquaresIO::loadGame error: board width invalid";
 				success = false;
 				break;
 			}
 			height = wh[1].toInt(&ok);
 			if (!ok)
 			{
-				kDebug() << "KSquaresIO::loadGame error: board height invalid";
+				qDebug() << "KSquaresIO::loadGame error: board height invalid";
 				success = false;
 				break;
 			}
@@ -175,48 +174,48 @@ bool KSquaresIO::loadGame(QString filename, KSquaresGame *sGame, QList<int> *lin
 		else
 		{
 			// read a line
-			if (!line.contains("-"))
+			if (!line.contains(QStringLiteral("-")))
 			{
-				kDebug() << "KSquaresIO::loadGame error: invalid line definition";
+				qDebug() << "KSquaresIO::loadGame error: invalid line definition";
 				success = false;
 				break;
 			}
-			QStringList p12 = line.replace(")","").replace("(","").split("-");
+			QStringList p12 = line.replace(QStringLiteral(")"),QStringLiteral("")).replace(QStringLiteral("("),QStringLiteral("")).split(QStringLiteral("-"));
 			QPoint p1, p2;
-			if (!p12[0].contains(",") || !p12[1].contains(","))
+			if (!p12[0].contains(QStringLiteral(",")) || !p12[1].contains(QStringLiteral(",")))
 			{
-				kDebug() << "KSquaresIO::loadGame error: invalid line point definition";
+				qDebug() << "KSquaresIO::loadGame error: invalid line point definition";
 				success = false;
 				break;
 			}
-			QStringList p1s = p12[0].split(",");
-			QStringList p2s = p12[1].split(",");
+			QStringList p1s = p12[0].split(QStringLiteral(","));
+			QStringList p2s = p12[1].split(QStringLiteral(","));
 			bool ok;
 			p1.setX(p1s[0].toInt(&ok));
 			if (!ok)
 			{
-				kDebug() << "KSquaresIO::loadGame error: line point p1x invalid";
+				qDebug() << "KSquaresIO::loadGame error: line point p1x invalid";
 				success = false;
 				break;
 			}
 			p1.setY(p1s[1].toInt(&ok));
 			if (!ok)
 			{
-				kDebug() << "KSquaresIO::loadGame error: line point p1y invalid";
+				qDebug() << "KSquaresIO::loadGame error: line point p1y invalid";
 				success = false;
 				break;
 			}
 			p2.setX(p2s[0].toInt(&ok));
 			if (!ok)
 			{
-				kDebug() << "KSquaresIO::loadGame error: line point p2x invalid";
+				qDebug() << "KSquaresIO::loadGame error: line point p2x invalid";
 				success = false;
 				break;
 			}
 			p2.setY(p2s[1].toInt(&ok));
 			if (!ok)
 			{
-				kDebug() << "KSquaresIO::loadGame error: line point p2y invalid";
+				qDebug() << "KSquaresIO::loadGame error: line point p2y invalid";
 				success = false;
 				break;
 			}
@@ -224,7 +223,7 @@ bool KSquaresIO::loadGame(QString filename, KSquaresGame *sGame, QList<int> *lin
 			int idx = Board::pointsToIndex(p1, p2, width, height);
 			if (idx < 0)
 			{
-				kDebug() << "KSquaresIO::loadGame error: line index invalid";
+				qDebug() << "KSquaresIO::loadGame error: line index invalid";
 				success = false;
 				break;
 			}
@@ -256,13 +255,13 @@ bool KSquaresIO::saveGame(QString filename, KSquaresGame *sGame)
 	QFile file(filename);
 	if (!file.open(QIODevice::ReadWrite | QIODevice::Truncate))
 	{
-		kDebug() << "KSquaresIO::saveGame error: Can't open file";
+		qDebug() << "KSquaresIO::saveGame error: Can't open file";
 		return false;
 	}
 	
 	QTextStream outStream(&file);
 
-	if (filename.endsWith(".dabble.dbl"))
+	if (filename.endsWith(QStringLiteral(".dabble.dbl")))
 	{
 		// save in dabble format
 		outStream << (sGame->board()->width()+1) << "," << (sGame->board()->height()+1) << "\n";
@@ -274,17 +273,17 @@ bool KSquaresIO::saveGame(QString filename, KSquaresGame *sGame)
 			QPoint p2;
 			if (!Board::indexToPoints(history[i].line, &p1, &p2, sGame->board()->width(), sGame->board()->height(), false))
 			{
-				kDebug() << "KSquaresIO::saveGame error: invalid line in history";
+				qDebug() << "KSquaresIO::saveGame error: invalid line in history";
 				file.close();
 				return false;
 			}
-			//kDebug() << "conversion step one: dots and boxes coordinates: " << p1 << ", " << p2;
+			//qDebug() << "conversion step one: dots and boxes coordinates: " << p1 << ", " << p2;
 			QPair<QPoint, QPoint> dblPoints = Board::pointsToCoins(p1, p2, sGame->board()->width(), sGame->board()->height());
-			//kDebug() << "conversion step two: strings and coins coordinated: " << dblPoints.first << ", " << dblPoints.second;
+			//qDebug() << "conversion step two: strings and coins coordinated: " << dblPoints.first << ", " << dblPoints.second;
 			outStream << "(" << dblPoints.first.x() << ", " << dblPoints.first.y() << ") - (" << dblPoints.second.x() << ", " << dblPoints.second.y() << ")\n";
 		} 
 	}
-	else if (filename.endsWith(".dbl"))
+	else if (filename.endsWith(QStringLiteral(".dbl")))
 	{
 		// save in wrong dabble format
 		outStream << sGame->board()->width() << "," <<  sGame->board()->height() << "\n";
@@ -296,19 +295,19 @@ bool KSquaresIO::saveGame(QString filename, KSquaresGame *sGame)
 			QPoint p2;
 			if (!sGame->board()->indexToPoints(history[i].line, &p1, &p2))
 			{
-				kDebug() << "KSquaresIO::saveGame error: invalid line in history";
+				qDebug() << "KSquaresIO::saveGame error: invalid line in history";
 				file.close();
 				return false;
 			}
 			outStream << "(" << p1.x() << ", " << (sGame->board()->height() - p1.y()) << ") - (" << p2.x() << ", " << (sGame->board()->height() - p2.y()) << ")\n";
 		} 
 	}
-	else if (filename.endsWith(".ksq"))
+	else if (filename.endsWith(QStringLiteral(".ksq")))
 	{
 		// save in ksquares format
 		// TODO: implement saving as ksq
 	}
-	else if (filename.endsWith(".sc.tex"))
+	else if (filename.endsWith(QStringLiteral(".sc.tex")))
 	{
 		// save in tex format
 		outStream << "\\begin{tikzpicture}\n";
@@ -344,7 +343,7 @@ bool KSquaresIO::saveGame(QString filename, KSquaresGame *sGame)
 			QPoint p2;
 			if (!sGame->board()->indexToPoints(i, &p1, &p2))
 			{
-				kDebug() << "KSquaresIO::saveGame error: invalid line in history";
+				qDebug() << "KSquaresIO::saveGame error: invalid line in history";
 				// TODO: remove unfinished file?
 				file.close();
 				return false;
@@ -388,7 +387,7 @@ bool KSquaresIO::saveGame(QString filename, KSquaresGame *sGame)
 				if (p1y > height || p2y > height)
 				{
 					p1y = height;
-					p2y = height - 0.3;
+					p2y = height - 0.3f;
 				}
 				else if ( p1y < 0 || p2y < 0)
 				{
@@ -418,7 +417,7 @@ bool KSquaresIO::saveGame(QString filename, KSquaresGame *sGame)
 		}
 		outStream << "\\end{tikzpicture}\n";
 	}
-	else if (filename.endsWith(".tex"))
+	else if (filename.endsWith(QStringLiteral(".tex")))
 	{
 		// save in tex format
 		outStream << "\\begin{tikzpicture}\n";
@@ -437,7 +436,7 @@ bool KSquaresIO::saveGame(QString filename, KSquaresGame *sGame)
 			QPoint p2;
 			if (!sGame->board()->indexToPoints(sGame->board()->getLineHistory()[i].line, &p1, &p2))
 			{
-				kDebug() << "KSquaresIO::saveGame error: invalid line in history";
+				qDebug() << "KSquaresIO::saveGame error: invalid line in history";
 				file.close();
 				return false;
 			}

@@ -11,21 +11,20 @@
 #define HIGHLIGHTANIMATION_H
 
 #include <QGraphicsLineItem>
-#include <QTimeLine>
 
 /**
  * @short Highlight animation when new lines appear.
  *
  * Created when a new line is added to the board.
- * 
+ *
  * @author Paolo Capriotti <p.capriotti@gmail.com>
  */
 class HighlightAnimation : public QObject, public QGraphicsLineItem
 {
-	Q_OBJECT
-	Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity)
-	public:
-		HighlightAnimation(const QLineF &line);
+    Q_OBJECT
+    Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity)
+public:
+    explicit HighlightAnimation(const QLineF &line);
 };
 
 #endif // HIGHLIGHTANIMATION_H

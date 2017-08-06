@@ -11,7 +11,7 @@
 
 #include <cmath>
 #include <limits>
-#include <KDebug>
+#include <QDebug>
 #include <algorithm>
 #include <QElapsedTimer>
 #include <QMap>
@@ -74,12 +74,12 @@ int aiMCTS::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareO
 	
 	if (line < 0 || line >= linesSize)
 	{
-		kDebug() << "mcts didn't return a correct line: " << line;
-		kDebug() << "coosing random valid move";
+		qDebug() << "mcts didn't return a correct line: " << line;
+		qDebug() << "coosing random valid move";
 		QList<int> freeLines = aiFunctions::getFreeLines(lines, linesSize);
 		if (freeLines.size() <= 0)
 		{
-			kDebug() << "no valid lines left!";
+			qDebug() << "no valid lines left!";
 			turnTime = moveTimer.elapsed();
 			return 0;
 		}
@@ -178,7 +178,7 @@ MCTSNode::Ptr aiMCTS::selection(MCTSNode::Ptr node)
 	
 	if (selectedNode.isNull())
 	{
-		kDebug() << "selected node is null, no child has been selected?!";
+		qDebug() << "selected node is null, no child has been selected?!";
 		return selectedNode;
 	}
 	
