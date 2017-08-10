@@ -18,6 +18,7 @@
 #include "qdab.h"
 #include "knox.h"
 #include "aiMCTS.h"
+#include "aiDabbleNative.h"
 
 #include <ctime>
 #include <QDebug>
@@ -136,6 +137,10 @@ KSquaresAi::Ptr aiController::getAi()
 		case KSquares::AI_MCTS_C:
 			if (ai.isNull())
 				ai = KSquaresAi::Ptr(new aiMCTS(playerId, maxPlayerId, width, height, KSquares::AI_HARD, aiThinkTime));
+		break;
+        case KSquares::AI_DABBLENATIVE:
+			if (ai.isNull())
+				ai = KSquaresAi::Ptr(new aiDabbleNative(playerId, maxPlayerId, width, height, level, aiThinkTime));
 		break;
 	}
 	return ai;

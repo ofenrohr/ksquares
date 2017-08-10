@@ -25,8 +25,8 @@
 #include <kstandardgameaction.h>
 
 //qjson
-#include <qjson/parser.h>
-#include <qjson/serializer.h>
+//#include <qjson/parser.h>
+//#include <qjson/serializer.h>
 #include <klocalizedstring.h>
 #include <sstream>
 

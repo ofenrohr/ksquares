@@ -1,7 +1,7 @@
 
 #add_definitions(-DKSQUARES_ALPHABETA_ITERATIVE_DEEPENING)
 
-find_package(QJSON REQUIRED)
+#find_package(QJSON REQUIRED)
 
 set(ksquares_SRCS
 	main.cpp
@@ -33,6 +33,7 @@ set(ksquares_SRCS
 	qdab.cpp
 	knox.cpp
 	aiMCTS.cpp
+    aiDabbleNative.cpp
 )
 
 include_directories(${CMAKE_SOURCE_DIR}/libKF5KDEGames/highscore)

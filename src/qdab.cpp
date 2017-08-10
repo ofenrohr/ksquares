@@ -15,7 +15,7 @@
 #include <QDateTime>
 #include <QCoreApplication>
 
-#include <qjson/parser.h>
+//#include <qjson/parser.h>
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonParseError>
 

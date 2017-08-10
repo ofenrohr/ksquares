@@ -1549,4 +1549,4 @@ void DBGame::Pause (char *message, ...)
 }
 */
 
-#include "dbgame-nohash.moc"
+//#include "dbgame-nohash.moc"
