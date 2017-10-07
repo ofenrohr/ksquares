@@ -19,7 +19,7 @@ aiDabbleNative::~aiDabbleNative()
 {
 	delete[] lines;
 }
-int aiDabbleNative::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &/*lineHistory*/) {
+int aiDabbleNative::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory) {
     QElapsedTimer moveTimer;
     moveTimer.start();
 
@@ -33,23 +33,38 @@ int aiDabbleNative::chooseLine(const QList<bool> &newLines, const QList<int> &ne
     int line = -1;
 
     // do ai stuff
-    m_game = new dabble_nohash::DBGame(w, h);
+    m_game = new dabble_nohash::DBGame(width + 1, height + 1);
+	int m_defaultTimeLimit = 5;
+    int m_defaultGameLimit = -5;
+    int m_defaultDepth = 20;
     m_game->searchDepth = m_defaultDepth;
     m_game->timeLimit = m_defaultTimeLimit;
     m_game->gameLimit = m_defaultGameLimit;
-    m_game->hWnd = m_hWnd;
+    //m_game->hWnd = m_hWnd;
 
-    int x1, x2, y1, y2;
     dabble_nohash::Coords c;
-    while (fscanf(f, "(%d, %d) - (%d, %d)", &x1, &y1, &x2, &y2) && !feof(f))
+
+    //while (fscanf(f, "(%d, %d) - (%d, %d)", &x1, &y1, &x2, &y2) && !feof(f))
+    for (int i = 0; i < lineHistory.size(); i++)
     {
-        c.x1 = x1;
-        c.x2 = x2;
-        c.y1 = y1;
-        c.y2 = y2;
+        QPoint p1;
+        QPoint p2;
+        if (!Board::indexToPoints(lineHistory[i].line, &p1, &p2, width, height, false))
+        {
+            qDebug() << "DabbleNative error: invalid line in history";
+            return -1;
+        }
+        //qDebug() << "conversion step one: dots and boxes coordinates: " << p1 << ", " << p2;
+        QPair<QPoint, QPoint> dblPoints = Board::pointsToCoins(p1, p2, width, height);
+        //qDebug() << "conversion step two: strings and coins coordinated: " << dblPoints.first << ", " << dblPoints.second;
+        //outStream << "(" << dblPoints.first.x() << ", " << dblPoints.first.y() << ") - (" << dblPoints.second.x() << ", " << dblPoints.second.y() << ")\n";
+
+        c.x1 = dblPoints.first.x();
+        c.x2 = dblPoints.first.y();
+        c.y1 = dblPoints.second.x();
+        c.y2 = dblPoints.second.y();
         m_game->rgEdgeRemoved[m_game->maxEdgesRemoved] = c;
         m_game->maxEdgesRemoved++;
-        fscanf(f, "\n");
     }
     // done with ai stuff
 

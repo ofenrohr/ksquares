@@ -44,6 +44,8 @@ protected:
     bool *lines;
     /// time logging
     long turnTime;
+    /// initial board
+    aiBoard::Ptr board;
 
     long moveTimeout;
 

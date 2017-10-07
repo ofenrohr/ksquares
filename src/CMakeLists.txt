@@ -3,6 +3,8 @@
 
 #find_package(QJSON REQUIRED)
 
+set(CMAKE_AUTOUIC ON)
+
 set(ksquares_SRCS
 	main.cpp
 	ksquareswindow.cpp
