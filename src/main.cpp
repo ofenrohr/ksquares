@@ -21,6 +21,7 @@
 #include "ksquaresdemowindow.h"
 #include "ksquarestestwindow.h"
 #include "settings.h"
+#include "MLDataGenerator.h"
 
 static const char description[] =
     I18N_NOOP("Take it in turns to draw lines.\nIf you complete a squares, you get another go.");
@@ -49,6 +50,8 @@ int main(int argc, char **argv)
     parser.addVersionOption();
     parser.addHelpOption();
     parser.addOption(QCommandLineOption(QStringList() <<  QStringLiteral("demo"), i18n("Run game in demo (autoplay) mode")));
+    parser.addOption(QCommandLineOption(QStringList() <<  QStringLiteral("test"), i18n("Run AI tests")));
+    parser.addOption(QCommandLineOption(QStringList() <<  QStringLiteral("generate"), i18n("Generate training data")));
 
     about.setupCommandLine(&parser);
     parser.process(app);
@@ -77,6 +80,9 @@ int main(int argc, char **argv)
         KSquaresTestWindow *testWindow = new KSquaresTestWindow;
         testWindow->show();
         testWindow->gameNew();
+    } else if (parser.isSet(QStringLiteral("generate"))) {
+        MLDataGenerator *dataGenerator = new MLDataGenerator();
+        dataGenerator->show();
     } else {
         KSquaresWindow *mainWindow = new KSquaresWindow;
         mainWindow->show();

@@ -22,7 +22,18 @@ class aiBoard
 {
 public:
 	typedef QSharedPointer<aiBoard> Ptr;
-	
+
+	/**
+	 *
+	 * @param newLines
+	 * @param newLinesSize
+	 * @param newWidth
+	 * @param newHeight
+	 * @param newSquareOwners
+	 * @param playerId
+	 * @param maxPlayerId
+	 * @param newHashLines
+	 */
 	aiBoard(bool *newLines, int newLinesSize, int newWidth, int newHeight, const QList<int> newSquareOwners, int playerId, int maxPlayerId, QList<int> *newHashLines = NULL);
 	aiBoard(Board *board);
 	~aiBoard();
