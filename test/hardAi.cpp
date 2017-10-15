@@ -6,7 +6,7 @@
 #include "ksquaresio.h"
 
 //Qt
-#include <KDebug>
+#include <QDebug>
 
 // generated
 #include "testboardpath.h"

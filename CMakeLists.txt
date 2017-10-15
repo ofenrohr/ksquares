@@ -47,5 +47,5 @@ add_definitions(
 
 add_subdirectory(src)
 add_subdirectory(doc)
-#add_subdirectory(test)
+add_subdirectory(test)
 feature_summary(WHAT ALL INCLUDE_QUIET_PACKAGES FATAL_ON_MISSING_REQUIRED_PACKAGES)

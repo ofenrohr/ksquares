@@ -453,6 +453,10 @@ bool KSquaresIO::saveGame(QString filename, KSquaresGame *sGame)
 		}
 		outStream << "\\end{tikzpicture}\n";
 	}
+	else if (filename.endsWith(QStringLiteral(".png")))
+	{
+		QPixmap img(10,19);
+	}
 	else
 	{
 		// TODO: error message: unknown filetype
