@@ -54,5 +54,17 @@ QImage MLDataGenerator::generateImage() {
         }
     }
 
+    for (int i = 0; i < board->linesSize; i++) {
+        QPoint p1,p2;
+
+        if (board->lines[i]) {
+            if (!Board::indexToPoints(i, &p1, &p2, width, height, false)) {
+                qDebug() << "fail!";
+            }
+            qDebug() << p1 << p2;
+            img.setPixel(p2.x()*2+(p2.y()-p1.y()), p2.y()*2+(p2.x()-p1.x()), qRgb(200,200,200));
+        }
+    }
+
     return img;
 }
