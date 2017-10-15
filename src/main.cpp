@@ -72,6 +72,8 @@ int main(int argc, char **argv)
         cg.writeEntry("initializeNames", false);
     }
 
+    srand(time(NULL));
+
     if (parser.isSet(QStringLiteral("demo"))) {
         KSquaresDemoWindow *demoWindow = new KSquaresDemoWindow;
         demoWindow->show();

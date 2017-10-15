@@ -5,6 +5,7 @@
 #include <QtCore/QTimer>
 #include "MLDataGenerator.h"
 #include "aicontroller.h"
+#include "aiEasyMediumHard.h"
 
 MLDataGenerator::MLDataGenerator() : KXmlGuiWindow(), m_view (new QLabel(QStringLiteral("Hello World!"))){
     setCentralWidget(m_view);
@@ -36,7 +37,18 @@ QImage MLDataGenerator::generateImage() {
     foreach (int line, autoFillLines) {
         board->doMove(line);
     }
+
+    // make some more moves
+    aiEasyMediumHard *ai = new aiEasyMediumHard(0, width, height, 2);
+
+    while (aiFunctions::getFreeLines(board->lines, board->linesSize).count() > 20) {
+        int nextLine = ai->chooseLine(board->lines);
+        board->doMove(nextLine);
+    }
+
+    // print board
     qDebug().noquote().nospace() << aiFunctions::boardToString(board);
+    qDebug().noquote().nospace() << board->squareOwners;
 
     // generate the image
     int imgWidth = width*2+3; // 1px border
@@ -61,8 +73,18 @@ QImage MLDataGenerator::generateImage() {
             if (!Board::indexToPoints(i, &p1, &p2, width, height, false)) {
                 qDebug() << "fail!";
             }
-            qDebug() << p1 << p2;
-            img.setPixel(p2.x()*2+(p2.y()-p1.y()), p2.y()*2+(p2.x()-p1.x()), qRgb(200,200,200));
+            img.setPixel(p2.x()*2+(p2.y()-p1.y()), p2.y()*2+(p2.x()-p1.x()), qRgb(215,215,215));
+        }
+    }
+
+    for (int i = 0; i < board->squareOwners.count(); i++) {
+        int squareOwner = board->squareOwners[i];
+        if (squareOwner >= 0) {
+            int x,y,c;
+            x = (i % board->width) * 2 + 2;
+            y = (i / board->width) * 2 + 2;
+            c = squareOwner == 0 ? 65 : 150;
+            img.setPixel(x,y, qRgb(c,c,c));
         }
     }
 
