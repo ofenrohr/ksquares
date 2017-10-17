@@ -8,19 +8,28 @@
 
 #include <QtCore/QArgument>
 #include <KXmlGuiWindow>
+#include "ui_mldataview.h"
 #include <QtWidgets/QLabel>
 #include "aiBoard.h"
+#include "aicontroller.h"
+#include "gameboardscene.h"
+#include "gameboardview.h"
 
-class MLDataGenerator : public KXmlGuiWindow
+class MLDataGenerator : public KXmlGuiWindow, public Ui::MLDataView
 {
     Q_OBJECT
 
 public:
-    ///Constructor
     MLDataGenerator();
     ~MLDataGenerator();
 
     void initObject();
+
+    static const int MLImageBackground = 0;
+    static const int MLImageBoxA = 65;
+    static const int MLImageBoxB = 150;
+    static const int MLImageDot = 215;
+    static const int MLImageLine = 255;
 
     /**
      * Generates board with random (usrful) state with some safe moves left
@@ -30,10 +39,26 @@ public:
      * @return board with requested features
      */
     static aiBoard::Ptr generateRandomBoard(int width, int height, int safeMoves);
-    static QImage generateImage();
+    static QImage generateInputImage(aiBoard::Ptr board);
+    static QImage generateOutputImage(aiBoard::Ptr board, KSquaresAi::Ptr ai);
+
+public slots:
+    void nextBtnClicked();
 
 private:
-    QLabel *m_view;
+    //QLabel *m_view;
+    QWidget *m_view;
+    GameBoardScene *gbs;
+
+    QImage inputImage;
+    QImage outputImage;
+
+    static int makeAiMove(aiBoard::Ptr board, KSquaresAi::Ptr ai);
+    static QList<int> makeAiMoves(aiBoard::Ptr board, KSquaresAi::Ptr ai, int freeLinesLeft);
+
+    static void drawBackgroundAndDots(QImage &img, bool drawDots = true);
+    static void drawLines(QImage &img, aiBoard::Ptr board);
+    static void drawBoxes(QImage &img, aiBoard::Ptr board);
 };
 
 

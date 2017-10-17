@@ -125,3 +125,19 @@ void aiBoard::undoMove(int line)
 	}
 }
 
+QList<bool> aiBoard::linesAsList() {
+	QList<bool> linesList;
+	for (int i = 0; i < linesSize; i++) {
+		linesList.append(lines[i]);
+	}
+	return linesList;
+}
+
+void aiBoard::clearAllMoves() {
+	for (int i = 0; i < linesSize; i++) {
+		lines[i] = 0;
+	}
+	for (int i = 0; i < width*height; i++) {
+        squareOwners[i] = -1;
+	}
+}

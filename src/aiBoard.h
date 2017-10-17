@@ -24,7 +24,7 @@ public:
 	typedef QSharedPointer<aiBoard> Ptr;
 
 	/**
-	 *
+	 * Constructor of aiBoard.
 	 * @param newLines
 	 * @param newLinesSize
 	 * @param newWidth
@@ -51,6 +51,10 @@ public:
 	int maxPlayerId;
 	
 	QList<int> *hashLines;
+
+	// convenience stuff
+	QList<bool> linesAsList();
+	void clearAllMoves();
 };
 
 // the == operator and qHash are required to use an aiBoard as a key for QHash to reuse previous analysis of the board
