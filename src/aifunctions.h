@@ -153,11 +153,12 @@ class aiFunctions
 		
 		
 		/* Debugging */
-		static QString boardToString(aiBoard::Ptr board) { return boardToString(board->lines, board->linesSize, board->width, board->height); }
+		static QString boardToString(aiBoard::Ptr board) { return boardToString(board->lines, board->linesSize, board->width, board->height, board->squareOwners); }
 		static QString boardToString(bool *lines, int linesSize, int width, int height);
-    QString boardToString(bool *lines) const;
-    static QString linelistToString(const QList<int> list, int linesSize, int width, int height);
-    QString linelistToString(const QList<int> list) const;
+        static QString boardToString(bool *lines, int linesSize, int width, int height, QList<int> squareOwners);
+        QString boardToString(bool *lines) const;
+        static QString linelistToString(const QList<int> list, int linesSize, int width, int height);
+        QString linelistToString(const QList<int> list) const;
 		
 	protected:
 		/// Width of the game board

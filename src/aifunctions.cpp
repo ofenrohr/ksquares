@@ -662,7 +662,7 @@ QString aiFunctions::boardToString(bool *lines, int linesSize, int width, int he
 {
 	std::stringstream ret;
 	ret << "\n+";
-	
+
 	for (int i = 0; i < linesSize; i++)
 	{
 		KSquares::Direction iDirection = lineDirection(width, height, i);
@@ -678,6 +678,55 @@ QString aiFunctions::boardToString(bool *lines, int linesSize, int width, int he
 		else
 		{
 			ret << (lines[i] ? "|  " : "   ");
+		}
+		if (iDirection != nextDirection)
+		{
+			ret << (nextDirection == KSquares::HORIZONTAL ? "\n+" : "\n");
+		}
+	}
+
+    QString ret2 = QString::fromStdString(ret.str());
+	return ret2.replace(QStringLiteral("  \n"), QStringLiteral("\n"));
+}
+
+QString aiFunctions::boardToString(bool *lines, int linesSize, int width, int height, QList<int> squareOwners)
+{
+	std::stringstream ret;
+	ret << "\n+";
+
+	int square = 0;
+    int vlineCnt = 0;
+	for (int i = 0; i < linesSize; i++)
+	{
+		KSquares::Direction iDirection = lineDirection(width, height, i);
+		KSquares::Direction nextDirection = lineDirection(width, height, i+1);
+		if (iDirection != nextDirection && nextDirection == KSquares::VERTICAL)
+		{
+			//ret.append("\n");
+		}
+		if (iDirection == KSquares::HORIZONTAL)
+		{
+			ret << (lines[i] ? "--+" : "  +");
+		}
+		else
+		{
+			QString owner = QStringLiteral(" ");
+			if (vlineCnt % (width+1) != width) {
+                if (squareOwners[square] >= 0) {
+                    owner = 'A'+squareOwners[square];
+				}
+				square++;
+			}
+			vlineCnt++;
+            if (lines[i]) {
+				ret << "|";
+				ret << owner.toStdString();
+				ret << " ";
+            } else {
+				ret << " ";
+                ret << owner.toStdString();
+                ret << " ";
+			}
 		}
 		if (iDirection != nextDirection)
 		{

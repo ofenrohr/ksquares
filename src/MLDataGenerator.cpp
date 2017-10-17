@@ -18,11 +18,8 @@ void MLDataGenerator::initObject() {
     m_view->setPixmap(QPixmap::fromImage(generateImage()).scaled(m_view->width(), m_view->height(), Qt::KeepAspectRatio));
 }
 
-QImage MLDataGenerator::generateImage() {
-
+aiBoard::Ptr MLDataGenerator::generateRandomBoard(int width, int height, int safeMoves) {
     // generate the board with auto fill
-    int width = 5; // size in boxes
-    int height = 4;
     int linesSize = aiFunctions::toLinesSize(width, height);
     bool *lines = new bool[linesSize];
     for (int i = 0; i < linesSize; i++) {
@@ -33,10 +30,18 @@ QImage MLDataGenerator::generateImage() {
         squareOwners.append(-1);
     }
     aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(lines, linesSize, width, height, squareOwners, 0, 1));
-    QList<int> autoFillLines = aiController::autoFill(5, width, height);
+    QList<int> autoFillLines = aiController::autoFill(safeMoves, width, height);
     foreach (int line, autoFillLines) {
         board->doMove(line);
     }
+    return board;
+}
+
+QImage MLDataGenerator::generateImage() {
+    int width = 5;
+    int height = 4;
+
+    aiBoard::Ptr board = generateRandomBoard(width, height, 5);
 
     // make some more moves
     aiEasyMediumHard *ai = new aiEasyMediumHard(0, width, height, 2);
