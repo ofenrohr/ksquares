@@ -3,6 +3,7 @@
 //
 
 #include <QtCore/QTimer>
+#include <QtCore/QUuid>
 #include "MLDataGenerator.h"
 #include "aicontroller.h"
 #include "aiEasyMediumHard.h"
@@ -64,6 +65,11 @@ void MLDataGenerator::initObject() {
 
     inputLbl->setPixmap(QPixmap::fromImage(inputImage).scaled(inputLbl->width(), inputLbl->height(), Qt::KeepAspectRatio));
     outputLbl->setPixmap(QPixmap::fromImage(outputImage).scaled(outputLbl->width(), outputLbl->height(), Qt::KeepAspectRatio));
+
+    // save boards
+    QUuid id = QUuid::createUuid();
+    saveImage(QStringLiteral("firstTry_5x4"), id.toString() + QStringLiteral("input"), QStringLiteral("/home/ofenrohr/arbeit/master/data"), inputImage);
+    saveImage(QStringLiteral("firstTry_5x4"), id.toString() + QStringLiteral("output_hardai"), QStringLiteral("/home/ofenrohr/arbeit/master/data"), outputImage);
 }
 
 void MLDataGenerator::nextBtnClicked() {
@@ -171,4 +177,9 @@ QImage MLDataGenerator::generateOutputImage(aiBoard::Ptr board, KSquaresAi::Ptr 
     drawLines(img, outputBoard);
 
     return img;
+}
+
+void MLDataGenerator::saveImage(QString dataSetName, QString instanceName, QString dest, QImage &img) {
+    QString filename = dest + QStringLiteral("/") + dataSetName + instanceName + QStringLiteral(".png");
+    img.save(filename);
 }

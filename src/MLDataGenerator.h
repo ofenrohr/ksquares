@@ -10,6 +10,7 @@
 #include <KXmlGuiWindow>
 #include "ui_mldataview.h"
 #include <QtWidgets/QLabel>
+#include <QtCore/QDir>
 #include "aiBoard.h"
 #include "aicontroller.h"
 #include "gameboardscene.h"
@@ -41,6 +42,7 @@ public:
     static aiBoard::Ptr generateRandomBoard(int width, int height, int safeMoves);
     static QImage generateInputImage(aiBoard::Ptr board);
     static QImage generateOutputImage(aiBoard::Ptr board, KSquaresAi::Ptr ai);
+    static void saveImage(QString dataSetName, QString instanceName, QString dest, QImage &img);
 
 public slots:
     void nextBtnClicked();
