@@ -37,7 +37,7 @@ set(ksquares_SRCS
 	aiMCTS.cpp
     aiDabbleNative.cpp
 	MLDataGenerator.cpp
-)
+        MLDataGeneratorWorkerThread.cpp MLDataGeneratorWorkerThread.h)
 
 include_directories(${CMAKE_SOURCE_DIR}/libKF5KDEGames/highscore)
 

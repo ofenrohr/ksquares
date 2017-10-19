@@ -16,12 +16,18 @@
 #include "gameboardscene.h"
 #include "gameboardview.h"
 
+
 class MLDataGenerator : public KXmlGuiWindow, public Ui::MLDataView
 {
     Q_OBJECT
 
 public:
     MLDataGenerator();
+    /**
+     * Generate examplesCnt training samples.
+     * @param samples number of training examples
+     */
+    MLDataGenerator(long samples);
     ~MLDataGenerator();
 
     void initObject();
@@ -40,6 +46,8 @@ public:
      * @return board with requested features
      */
     static aiBoard::Ptr generateRandomBoard(int width, int height, int safeMoves);
+    static int makeAiMove(aiBoard::Ptr board, KSquaresAi::Ptr ai);
+    static QList<int> makeAiMoves(aiBoard::Ptr board, KSquaresAi::Ptr ai, int freeLinesLeft);
     static QImage generateInputImage(aiBoard::Ptr board);
     static QImage generateOutputImage(aiBoard::Ptr board, KSquaresAi::Ptr ai);
     static void saveImage(QString dataSetName, QString instanceName, QString dest, QImage &img);
@@ -52,15 +60,17 @@ private:
     QWidget *m_view;
     GameBoardScene *gbs;
 
+    long examplesCnt;
+
     QImage inputImage;
     QImage outputImage;
 
-    static int makeAiMove(aiBoard::Ptr board, KSquaresAi::Ptr ai);
-    static QList<int> makeAiMoves(aiBoard::Ptr board, KSquaresAi::Ptr ai, int freeLinesLeft);
 
     static void drawBackgroundAndDots(QImage &img, bool drawDots = true);
     static void drawLines(QImage &img, aiBoard::Ptr board);
     static void drawBoxes(QImage &img, aiBoard::Ptr board);
+
+    void initConstructor();
 };
 
 

@@ -1,84 +1,92 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>prefs_display</class>
- <widget class="QWidget" name="prefs_display" >
-  <property name="geometry" >
+ <widget class="QWidget" name="prefs_display">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>245</width>
-    <height>214</height>
+    <width>244</width>
+    <height>275</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>Display Settings</string>
   </property>
-  <layout class="QVBoxLayout" >
+  <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QGroupBox" name="groupBox_2" >
-     <property name="whatsThis" >
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="whatsThis">
       <string>Settings for colors</string>
      </property>
-     <property name="title" >
+     <property name="title">
       <string>Colors</string>
      </property>
-     <layout class="QGridLayout" >
-      <item row="0" column="0" >
-       <widget class="QLabel" name="label" >
-        <property name="whatsThis" >
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label">
+        <property name="whatsThis">
          <string>Color of the drawn lines</string>
         </property>
-        <property name="text" >
-         <string>Standard line color:</string>
+        <property name="text">
+         <string>Standard &amp;line color:</string>
         </property>
-        <property name="buddy" >
+        <property name="buddy">
          <cstring>kcfg_LineColor</cstring>
         </property>
        </widget>
       </item>
-      <item row="0" column="1" >
-       <widget class="KColorButton" name="kcfg_LineColor" />
+      <item row="0" column="1">
+       <widget class="KColorButton" name="kcfg_LineColor"/>
       </item>
-      <item row="1" column="0" >
-       <widget class="QLabel" name="label_2" >
-        <property name="whatsThis" >
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_2">
+        <property name="whatsThis">
          <string>Color of the indicator lines</string>
         </property>
-        <property name="text" >
-         <string>Indicator line color:</string>
+        <property name="text">
+         <string>Indica&amp;tor line color:</string>
         </property>
-        <property name="buddy" >
+        <property name="buddy">
          <cstring>kcfg_IndicatorLineColor</cstring>
         </property>
        </widget>
       </item>
-      <item row="1" column="1" >
-       <widget class="KColorButton" name="kcfg_IndicatorLineColor" />
+      <item row="1" column="1">
+       <widget class="KColorButton" name="kcfg_IndicatorLineColor"/>
       </item>
-      <item row="2" column="0" >
-       <widget class="QLabel" name="label_3" >
-        <property name="whatsThis" >
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="whatsThis">
          <string>Color of the indicator lines</string>
         </property>
-        <property name="text" >
-         <string>Highlight color:</string>
+        <property name="text">
+         <string>Hi&amp;ghlight color:</string>
         </property>
-        <property name="buddy" >
+        <property name="buddy">
          <cstring>kcfg_IndicatorLineColor</cstring>
         </property>
        </widget>
       </item>
-      <item row="2" column="1" >
-       <widget class="KColorButton" name="kcfg_HighlightColor" />
+      <item row="2" column="1">
+       <widget class="KColorButton" name="kcfg_HighlightColor"/>
+      </item>
+      <item row="3" column="0" colspan="2">
+       <widget class="QCheckBox" name="checkBox">
+        <property name="text">
+         <string>Debug line numbers</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
    </item>
    <item>
     <spacer>
-     <property name="orientation" >
+     <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>
-     <property name="sizeHint" >
+     <property name="sizeHint" stdset="0">
       <size>
        <width>232</width>
        <height>71</height>

@@ -2,15 +2,27 @@
 // Created by ofenrohr on 10/15/17.
 //
 
+#include "MLDataGenerator.h"
+
 #include <QtCore/QTimer>
 #include <QtCore/QUuid>
-#include "MLDataGenerator.h"
-#include "aicontroller.h"
 #include "aiEasyMediumHard.h"
-#include "gameboardscene.h"
-#include "gameboardview.h"
+#include "MLDataGeneratorWorkerThread.h"
 
 MLDataGenerator::MLDataGenerator() : KXmlGuiWindow(), m_view(new QWidget()) {
+    examplesCnt = -1;
+    initConstructor();
+}
+
+MLDataGenerator::MLDataGenerator(long samples) : KXmlGuiWindow(), m_view(new QWidget()) {
+    qDebug() << "auto generate mode";
+    examplesCnt = samples;
+    initConstructor();
+}
+
+MLDataGenerator::~MLDataGenerator() {}
+
+void MLDataGenerator::initConstructor() {
     gbs = NULL;
 
     setupUi(m_view);
@@ -22,8 +34,6 @@ MLDataGenerator::MLDataGenerator() : KXmlGuiWindow(), m_view(new QWidget()) {
 
     QTimer::singleShot(0, this, &MLDataGenerator::initObject);
 }
-
-MLDataGenerator::~MLDataGenerator() {}
 
 void MLDataGenerator::initObject() {
 
@@ -37,6 +47,7 @@ void MLDataGenerator::initObject() {
     }
     gbs = new GameBoardScene(5, 4, this);
     gameStateView->setScene(gbs);
+    progressBar->setValue(0);
 
     // generate data
     aiBoard::Ptr board = generateRandomBoard(width, height, 5);
@@ -70,6 +81,23 @@ void MLDataGenerator::initObject() {
     QUuid id = QUuid::createUuid();
     saveImage(QStringLiteral("firstTry_5x4"), id.toString() + QStringLiteral("input"), QStringLiteral("/home/ofenrohr/arbeit/master/data"), inputImage);
     saveImage(QStringLiteral("firstTry_5x4"), id.toString() + QStringLiteral("output_hardai"), QStringLiteral("/home/ofenrohr/arbeit/master/data"), outputImage);
+
+    qDebug() << examplesCnt;
+    if (examplesCnt > 0) {
+        nextBtn->setEnabled(false);
+
+        // https://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
+        QThread* thread = new QThread;
+        MLDataGeneratorWorkerThread *worker = new MLDataGeneratorWorkerThread(examplesCnt);
+        worker->moveToThread(thread);
+        //connect(worker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
+        connect(thread, SIGNAL(started()), worker, SLOT(process()));
+        connect(worker, SIGNAL(finished()), thread, SLOT(quit()));
+        connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater()));
+        connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
+        connect(worker, SIGNAL(progress(int)), progressBar, SLOT(setValue(int)));
+        thread->start();
+    }
 }
 
 void MLDataGenerator::nextBtnClicked() {
