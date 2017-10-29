@@ -37,9 +37,12 @@ set(ksquares_SRCS
 	aiMCTS.cpp
     aiDabbleNative.cpp
 	MLDataGenerator.cpp
-        MLDataGeneratorWorkerThread.cpp MLDataGeneratorWorkerThread.h)
+        MLDataGeneratorWorkerThread.cpp
+		aiConvNet.cpp
+		alphaDots/DotsAndBoxesImage.pb.cc
+		alphaDots/PBConnector.cpp)
 
-include_directories(${CMAKE_SOURCE_DIR}/libKF5KDEGames/highscore)
+include_directories(${CMAKE_SOURCE_DIR}/libKF5KDEGames/highscore ${ZeroMQ_INCLUDE_DIR})
 
 ki18n_wrap_ui(ksquares_SRCS newgamewidget.ui scoreswidget.ui prefs_ai.ui prefs_display.ui mldataview.ui)
 
@@ -59,6 +62,8 @@ target_link_libraries(ksquares
     KF5::XmlGui
     KF5KDEGames
 	#${QJSON_LIBRARIES}
+    ${ZeroMQ_LIBRARY}
+	${PROTOBUF_LIBRARY}
 )
 
 install(TARGETS ksquares ${KDE_INSTALL_TARGETS_DEFAULT_ARGS})

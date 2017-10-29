@@ -1,0 +1,9 @@
+syntax = "proto2";
+
+package alphaDots;
+
+message DotsAndBoxesImage {
+    required int32 width = 1;
+    required int32 height = 2;
+    repeated int32 pixels = 3;
+}

@@ -52,6 +52,7 @@ int main(int argc, char **argv)
     parser.addOption(QCommandLineOption(QStringList() <<  QStringLiteral("demo"), i18n("Run game in demo (autoplay) mode")));
     parser.addOption(QCommandLineOption(QStringList() <<  QStringLiteral("test"), i18n("Run AI tests")));
     parser.addOption(QCommandLineOption(QStringList() <<  QStringLiteral("generate"), i18n("Generate training data"), QStringLiteral("generate")));
+    parser.addOption(QCommandLineOption(QStringList() <<  QStringLiteral("show-generate"), i18n("Generate training data")));
 
     about.setupCommandLine(&parser);
     parser.process(app);
@@ -92,6 +93,9 @@ int main(int argc, char **argv)
         } else {
             dataGenerator = new MLDataGenerator();
         }
+        dataGenerator->show();
+    } else if (parser.isSet(QStringLiteral("show-generate"))) {
+        MLDataGenerator *dataGenerator = new MLDataGenerator();
         dataGenerator->show();
     } else {
         KSquaresWindow *mainWindow = new KSquaresWindow;

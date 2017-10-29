@@ -186,6 +186,11 @@ p, li { white-space: pre-wrap; }
           <string>Dabble Native</string>
          </property>
         </item>
+        <item>
+         <property name="text">
+          <string>ConvNet</string>
+         </property>
+        </item>
        </widget>
       </item>
       <item row="2" column="0">
@@ -289,6 +294,11 @@ p, li { white-space: pre-wrap; }
         <item>
          <property name="text">
           <string>Dabble Native</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>ConvNet</string>
          </property>
         </item>
        </widget>
@@ -396,6 +406,11 @@ p, li { white-space: pre-wrap; }
           <string>Dabble Native</string>
          </property>
         </item>
+        <item>
+         <property name="text">
+          <string>ConvNet</string>
+         </property>
+        </item>
        </widget>
       </item>
       <item row="4" column="0">
@@ -499,6 +514,11 @@ p, li { white-space: pre-wrap; }
         <item>
          <property name="text">
           <string>Dabble Native</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>ConvNet</string>
          </property>
         </item>
        </widget>
