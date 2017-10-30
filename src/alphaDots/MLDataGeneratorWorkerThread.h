@@ -7,12 +7,13 @@
 
 
 #include <QtCore/QObject>
+#include <alphaDots/datasets/DatasetGenerator.h>
 
 class MLDataGeneratorWorkerThread : public QObject
 {
 	Q_OBJECT
 public:
-	MLDataGeneratorWorkerThread(long examples);
+	MLDataGeneratorWorkerThread(long examples, DatasetGenerator::Ptr generator);
 	~MLDataGeneratorWorkerThread();
 
 public slots:
@@ -24,6 +25,7 @@ signals:
 
 private:
 	long sampleCnt;
+    DatasetGenerator::Ptr dataGenerator;
 };
 
 

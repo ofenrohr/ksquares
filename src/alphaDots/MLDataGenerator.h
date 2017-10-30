@@ -11,10 +11,12 @@
 #include "ui_mldataview.h"
 #include <QtWidgets/QLabel>
 #include <QtCore/QDir>
+#include <alphaDots/datasets/DatasetGenerator.h>
 #include "aiBoard.h"
 #include "aicontroller.h"
 #include "gameboardscene.h"
 #include "gameboardview.h"
+#include "DatasetConverter.h"
 
 
 class MLDataGenerator : public KXmlGuiWindow, public Ui::MLDataView
@@ -54,6 +56,7 @@ public:
 
 public slots:
     void nextBtnClicked();
+    void dataGeneratorFinished();
 
 private:
     //QLabel *m_view;
@@ -65,12 +68,20 @@ private:
     QImage inputImage;
     QImage outputImage;
 
+    DatasetConverter *converter;
+
 
     static void drawBackgroundAndDots(QImage &img, bool drawDots = true);
     static void drawLines(QImage &img, aiBoard::Ptr board);
     static void drawBoxes(QImage &img, aiBoard::Ptr board);
 
     void initConstructor();
+
+    void setupThread(DatasetGenerator::Ptr generator);
+    void generateFirstTryDataset();
+    void generateStageOneDataset();
+
+    void generateGUIexample();
 };
 
 

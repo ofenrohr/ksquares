@@ -21,7 +21,7 @@
 #include "ksquaresdemowindow.h"
 #include "ksquarestestwindow.h"
 #include "settings.h"
-#include "MLDataGenerator.h"
+#include "alphaDots/MLDataGenerator.h"
 
 static const char description[] =
     I18N_NOOP("Take it in turns to draw lines.\nIf you complete a squares, you get another go.");

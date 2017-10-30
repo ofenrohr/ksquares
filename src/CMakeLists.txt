@@ -36,15 +36,15 @@ set(ksquares_SRCS
 	knox.cpp
 	aiMCTS.cpp
     aiDabbleNative.cpp
-	MLDataGenerator.cpp
-        MLDataGeneratorWorkerThread.cpp
+        alphaDots/MLDataGenerator.cpp
+        alphaDots/MLDataGeneratorWorkerThread.cpp
 		aiConvNet.cpp
 		alphaDots/DotsAndBoxesImage.pb.cc
-		alphaDots/PBConnector.cpp)
+		alphaDots/PBConnector.cpp alphaDots/datasets/FirstTryDataset.cpp alphaDots/datasets/FirstTryDataset.h alphaDots/datasets/DatasetGenerator.cpp alphaDots/datasets/DatasetGenerator.h alphaDots/datasets/StageOneDataset.cpp alphaDots/datasets/StageOneDataset.h alphaDots/DatasetConverter.cpp alphaDots/DatasetConverter.h)
 
 include_directories(${CMAKE_SOURCE_DIR}/libKF5KDEGames/highscore ${ZeroMQ_INCLUDE_DIR})
 
-ki18n_wrap_ui(ksquares_SRCS newgamewidget.ui scoreswidget.ui prefs_ai.ui prefs_display.ui mldataview.ui)
+ki18n_wrap_ui(ksquares_SRCS newgamewidget.ui scoreswidget.ui prefs_ai.ui prefs_display.ui alphaDots/mldataview.ui)
 
 kconfig_add_kcfg_files(ksquares_SRCS GENERATE_MOC settings.kcfgc) #GENERATE_MOC is not needed but it doesn't work without it for some reason :S
 

@@ -34,7 +34,7 @@ aiBoard::aiBoard(Board *board)
 
 aiBoard::~aiBoard()
 {
-	qDebug() << "aiBoard destruct";
+	//qDebug() << "aiBoard destruct";
 	if (deleteLines)
 		delete[] lines;
 }

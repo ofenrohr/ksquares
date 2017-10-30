@@ -32,3 +32,48 @@ QImage PBConnector::fromProtobuf(std::string msg) {
     }
     return ret;
 }
+
+int PBConnector::pointToLineIndex(QPoint linePoint, int width) {
+	int ret;
+	if (linePoint.x() % 2 == 0) { // horizontal line
+		ret = (linePoint.x() / 2 - 1) + (linePoint.y() / 2) * width + ((linePoint.y() - 1) / 2) * (width + 1);
+	} else { // vertical line
+		ret = (linePoint.x() / 2) + (linePoint.y() / 2) * width + (linePoint.y()/2 -1) * (width+1);
+	}
+    return ret;
+}
+
+bool PBConnector::sendString(zmq::socket_t &socket, std::string msg) {
+	ulong message_size = msg.size();
+	zmq::message_t request(message_size);
+	memcpy(request.data(), msg.c_str(), message_size);
+    try {
+        socket.send(request);
+    } catch (zmq::error_t &ex) {
+        qDebug() << "zmq send error: " << ex.num();
+        qDebug() << "msg: " << ex.what();
+        return false;
+    }
+    return true;
+}
+
+std::string PBConnector::recvString(zmq::socket_t &socket) {
+	zmq::message_t reply;
+    bool done = false;
+    int tries = 0;
+    while (!done && tries < 3) {
+        try {
+            socket.recv(&reply);
+            done = true;
+        } catch (zmq::error_t &ex) {
+            qDebug() << "zmq recv error: " << ex.num();
+            qDebug() << "msg: " << ex.what();
+        }
+        tries++;
+    }
+    if (!done) {
+        return "";
+    }
+    std::string rpl = std::string(static_cast<char*>(reply.data()), reply.size());
+    return rpl;
+}

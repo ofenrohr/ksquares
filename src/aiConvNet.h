@@ -35,9 +35,6 @@ class aiConvNet : public KSquaresAi {
 		int level;
 		/// time logging
 		long turnTime;
-
-        /// send a string with zmq
-        void sendString(zmq::socket_t &socket, std::string msg);
 };
 
 

@@ -6,8 +6,12 @@
 
 #include <QtCore/QTimer>
 #include <QtCore/QUuid>
+#include <alphaDots/datasets/DatasetGenerator.h>
+#include <alphaDots/datasets/FirstTryDataset.h>
+#include <alphaDots/datasets/StageOneDataset.h>
 #include "aiEasyMediumHard.h"
 #include "MLDataGeneratorWorkerThread.h"
+#include "DatasetConverter.h"
 
 MLDataGenerator::MLDataGenerator() : KXmlGuiWindow(), m_view(new QWidget()) {
     examplesCnt = -1;
@@ -24,6 +28,7 @@ MLDataGenerator::~MLDataGenerator() {}
 
 void MLDataGenerator::initConstructor() {
     gbs = NULL;
+    converter = NULL;
 
     setupUi(m_view);
     setCentralWidget(m_view);
@@ -36,8 +41,61 @@ void MLDataGenerator::initConstructor() {
 }
 
 void MLDataGenerator::initObject() {
+    generateGUIexample();
 
-    // setup
+    //generateFirstTryDataset();
+    generateStageOneDataset();
+}
+
+void MLDataGenerator::generateFirstTryDataset() {
+    int width = 5;
+    int height = 4;
+    FirstTryDataset::Ptr generator = FirstTryDataset::Ptr(new FirstTryDataset(width, height, QStringLiteral("/home/ofenrohr/arbeit/master/data")));
+    setupThread(generator);
+}
+
+void MLDataGenerator::generateStageOneDataset() {
+    int width = 5;
+    int height = 4;
+
+    converter = new DatasetConverter(
+        QStringLiteral("/usr/bin/python2.7"),
+        QStringLiteral("/home/ofenrohr/arbeit/master/code/alphaDots/datasetConverter/convert.py"),
+        10000,
+        QStringLiteral("/run/media/ofenrohr/Data/AlphaDots/data/stageOne.npz"));
+    converter->startDatasetConverter();
+
+    FirstTryDataset::Ptr generator = FirstTryDataset::Ptr(new StageOneDataset(width, height));
+    setupThread(generator);
+
+}
+
+void MLDataGenerator::setupThread(DatasetGenerator::Ptr generator) {
+    qDebug() << examplesCnt;
+    if (examplesCnt > 0) {
+        nextBtn->setEnabled(false);
+
+        // https://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
+        QThread* thread = new QThread;
+        MLDataGeneratorWorkerThread *worker = new MLDataGeneratorWorkerThread(examplesCnt, generator);
+        worker->moveToThread(thread);
+        //connect(worker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
+        connect(thread, SIGNAL(started()), worker, SLOT(process()));
+        connect(worker, SIGNAL(finished()), thread, SLOT(quit()));
+        connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater()));
+        connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
+        connect(worker, SIGNAL(progress(int)), progressBar, SLOT(setValue(int)));
+        connect(thread, SIGNAL(finished()), this, SLOT(dataGeneratorFinished()));
+        thread->start();
+    }
+
+}
+
+void MLDataGenerator::dataGeneratorFinished() {
+    nextBtn->setEnabled(true);
+}
+
+void MLDataGenerator::generateGUIexample() {// setup
     int width = 5;
     int height = 4;
 
@@ -45,7 +103,7 @@ void MLDataGenerator::initObject() {
     if (gbs != NULL) {
         delete gbs;
     }
-    gbs = new GameBoardScene(5, 4, this);
+    gbs = new GameBoardScene(width, height, this);
     gameStateView->setScene(gbs);
     progressBar->setValue(0);
 
@@ -75,33 +133,21 @@ void MLDataGenerator::initObject() {
     outputImage = generateOutputImage(board, ai);
 
     inputLbl->setPixmap(QPixmap::fromImage(inputImage).scaled(inputLbl->width(), inputLbl->height(), Qt::KeepAspectRatio));
-    outputLbl->setPixmap(QPixmap::fromImage(outputImage).scaled(outputLbl->width(), outputLbl->height(), Qt::KeepAspectRatio));
+    outputLbl->setPixmap(
+            QPixmap::fromImage(outputImage).scaled(outputLbl->width(), outputLbl->height(), Qt::KeepAspectRatio));
 
     // save boards
+    /*
     QUuid id = QUuid::createUuid();
-    saveImage(QStringLiteral("firstTry_5x4"), id.toString() + QStringLiteral("input"), QStringLiteral("/home/ofenrohr/arbeit/master/data"), inputImage);
-    saveImage(QStringLiteral("firstTry_5x4"), id.toString() + QStringLiteral("output_hardai"), QStringLiteral("/home/ofenrohr/arbeit/master/data"), outputImage);
-
-    qDebug() << examplesCnt;
-    if (examplesCnt > 0) {
-        nextBtn->setEnabled(false);
-
-        // https://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
-        QThread* thread = new QThread;
-        MLDataGeneratorWorkerThread *worker = new MLDataGeneratorWorkerThread(examplesCnt);
-        worker->moveToThread(thread);
-        //connect(worker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
-        connect(thread, SIGNAL(started()), worker, SLOT(process()));
-        connect(worker, SIGNAL(finished()), thread, SLOT(quit()));
-        connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater()));
-        connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
-        connect(worker, SIGNAL(progress(int)), progressBar, SLOT(setValue(int)));
-        thread->start();
-    }
+    saveImage(QStringLiteral("firstTry_5x4"), id.toString() + QStringLiteral("input"), QStringLiteral("/home/ofenrohr/arbeit/master/data"),
+              inputImage);
+    saveImage(QStringLiteral("firstTry_5x4"), id.toString() + QStringLiteral("output_hardai"), QStringLiteral("/home/ofenrohr/arbeit/master/data"),
+              outputImage);
+    */
 }
 
 void MLDataGenerator::nextBtnClicked() {
-    initObject();
+    generateGUIexample();
 }
 
 aiBoard::Ptr MLDataGenerator::generateRandomBoard(int width, int height, int safeMoves) {

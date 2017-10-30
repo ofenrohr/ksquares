@@ -5,7 +5,7 @@
 #include <sstream>
 #include "aiConvNet.h"
 #include "alphaDots/PBConnector.h"
-#include "MLDataGenerator.h"
+#include "alphaDots/MLDataGenerator.h"
 
 
 aiConvNet::aiConvNet(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel, int thinkTime)
@@ -38,7 +38,7 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 
 	aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(lines, linesSize, width, height, newSquareOwners, playerId, maxPlayerId));
     alphaDots::DotsAndBoxesImage img = PBConnector::toProtobuf(MLDataGenerator::generateInputImage(board));
-	sendString(socket, img.SerializeAsString());
+	PBConnector::sendString(socket, img.SerializeAsString());
 
 	zmq::message_t reply;
 	socket.recv(&reply);
@@ -80,20 +80,8 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 
 	qDebug() << "Highest value:" << bestVal << "at" << linePoint;
 
-	int ret;
-	if (linePoint.x() % 2 == 0) { // horizontal line
-		ret = (linePoint.x() / 2 - 1) + (linePoint.y() / 2) * width + ((linePoint.y() - 1) / 2) * (width + 1);
-	} else { // vertical line
-		ret = (linePoint.x() / 2) + (linePoint.y() / 2) * width + (linePoint.y()/2 -1) * (width+1);
-	}
+	int ret = PBConnector::pointToLineIndex(linePoint, width);
 
 	delete lines;
     return ret;
-}
-
-void aiConvNet::sendString(zmq::socket_t &socket, std::string msg) {
-	ulong message_size = msg.size();
-	zmq::message_t request(message_size);
-	memcpy(request.data(), msg.c_str(), message_size);
-	socket.send(request);
 }
