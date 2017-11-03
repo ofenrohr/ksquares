@@ -17,7 +17,7 @@
 #include <google/protobuf/wire_format.h>
 // @@protoc_insertion_point(includes)
 
-namespace alphaDots {
+namespace AlphaDots {
 class DotsAndBoxesImageDefaultTypeInternal {
 public:
  ::google::protobuf::internal::ExplicitlyConstructed<DotsAndBoxesImage>
@@ -106,7 +106,7 @@ namespace {
 void AddDescriptorsImpl() {
   InitDefaults();
   static const char descriptor[] GOOGLE_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-      "\n\027DotsAndBoxesImage.proto\022\talphaDots\"B\n\021"
+      "\n\027DotsAndBoxesImage.proto\022\tAlphaDots\"B\n\021"
       "DotsAndBoxesImage\022\r\n\005width\030\001 \002(\005\022\016\n\006heig"
       "ht\030\002 \002(\005\022\016\n\006pixels\030\003 \003(\005"
   };
@@ -145,7 +145,7 @@ DotsAndBoxesImage::DotsAndBoxesImage()
     protobuf_DotsAndBoxesImage_2eproto::InitDefaults();
   }
   SharedCtor();
-  // @@protoc_insertion_point(constructor:alphaDots.DotsAndBoxesImage)
+  // @@protoc_insertion_point(constructor:AlphaDots.DotsAndBoxesImage)
 }
 DotsAndBoxesImage::DotsAndBoxesImage(const DotsAndBoxesImage& from)
   : ::google::protobuf::Message(),
@@ -157,7 +157,7 @@ DotsAndBoxesImage::DotsAndBoxesImage(const DotsAndBoxesImage& from)
   ::memcpy(&width_, &from.width_,
     static_cast<size_t>(reinterpret_cast<char*>(&height_) -
     reinterpret_cast<char*>(&width_)) + sizeof(height_));
-  // @@protoc_insertion_point(copy_constructor:alphaDots.DotsAndBoxesImage)
+  // @@protoc_insertion_point(copy_constructor:AlphaDots.DotsAndBoxesImage)
 }
 
 void DotsAndBoxesImage::SharedCtor() {
@@ -168,7 +168,7 @@ void DotsAndBoxesImage::SharedCtor() {
 }
 
 DotsAndBoxesImage::~DotsAndBoxesImage() {
-  // @@protoc_insertion_point(destructor:alphaDots.DotsAndBoxesImage)
+  // @@protoc_insertion_point(destructor:AlphaDots.DotsAndBoxesImage)
   SharedDtor();
 }
 
@@ -199,7 +199,7 @@ DotsAndBoxesImage* DotsAndBoxesImage::New(::google::protobuf::Arena* arena) cons
 }
 
 void DotsAndBoxesImage::Clear() {
-// @@protoc_insertion_point(message_clear_start:alphaDots.DotsAndBoxesImage)
+// @@protoc_insertion_point(message_clear_start:AlphaDots.DotsAndBoxesImage)
   ::google::protobuf::uint32 cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -219,7 +219,7 @@ bool DotsAndBoxesImage::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:alphaDots.DotsAndBoxesImage)
+  // @@protoc_insertion_point(parse_start:AlphaDots.DotsAndBoxesImage)
   for (;;) {
     ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
     tag = p.first;
@@ -284,17 +284,17 @@ bool DotsAndBoxesImage::MergePartialFromCodedStream(
     }
   }
 success:
-  // @@protoc_insertion_point(parse_success:alphaDots.DotsAndBoxesImage)
+  // @@protoc_insertion_point(parse_success:AlphaDots.DotsAndBoxesImage)
   return true;
 failure:
-  // @@protoc_insertion_point(parse_failure:alphaDots.DotsAndBoxesImage)
+  // @@protoc_insertion_point(parse_failure:AlphaDots.DotsAndBoxesImage)
   return false;
 #undef DO_
 }
 
 void DotsAndBoxesImage::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:alphaDots.DotsAndBoxesImage)
+  // @@protoc_insertion_point(serialize_start:AlphaDots.DotsAndBoxesImage)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -319,13 +319,13 @@ void DotsAndBoxesImage::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         _internal_metadata_.unknown_fields(), output);
   }
-  // @@protoc_insertion_point(serialize_end:alphaDots.DotsAndBoxesImage)
+  // @@protoc_insertion_point(serialize_end:AlphaDots.DotsAndBoxesImage)
 }
 
 ::google::protobuf::uint8* DotsAndBoxesImage::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
   (void)deterministic; // Unused
-  // @@protoc_insertion_point(serialize_to_array_start:alphaDots.DotsAndBoxesImage)
+  // @@protoc_insertion_point(serialize_to_array_start:AlphaDots.DotsAndBoxesImage)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -348,12 +348,12 @@ void DotsAndBoxesImage::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target);
   }
-  // @@protoc_insertion_point(serialize_to_array_end:alphaDots.DotsAndBoxesImage)
+  // @@protoc_insertion_point(serialize_to_array_end:AlphaDots.DotsAndBoxesImage)
   return target;
 }
 
 size_t DotsAndBoxesImage::RequiredFieldsByteSizeFallback() const {
-// @@protoc_insertion_point(required_fields_byte_size_fallback_start:alphaDots.DotsAndBoxesImage)
+// @@protoc_insertion_point(required_fields_byte_size_fallback_start:AlphaDots.DotsAndBoxesImage)
   size_t total_size = 0;
 
   if (has_width()) {
@@ -373,7 +373,7 @@ size_t DotsAndBoxesImage::RequiredFieldsByteSizeFallback() const {
   return total_size;
 }
 size_t DotsAndBoxesImage::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:alphaDots.DotsAndBoxesImage)
+// @@protoc_insertion_point(message_byte_size_start:AlphaDots.DotsAndBoxesImage)
   size_t total_size = 0;
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -412,22 +412,22 @@ size_t DotsAndBoxesImage::ByteSizeLong() const {
 }
 
 void DotsAndBoxesImage::MergeFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:alphaDots.DotsAndBoxesImage)
+// @@protoc_insertion_point(generalized_merge_from_start:AlphaDots.DotsAndBoxesImage)
   GOOGLE_DCHECK_NE(&from, this);
   const DotsAndBoxesImage* source =
       ::google::protobuf::internal::DynamicCastToGenerated<const DotsAndBoxesImage>(
           &from);
   if (source == NULL) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:alphaDots.DotsAndBoxesImage)
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:AlphaDots.DotsAndBoxesImage)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:alphaDots.DotsAndBoxesImage)
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:AlphaDots.DotsAndBoxesImage)
     MergeFrom(*source);
   }
 }
 
 void DotsAndBoxesImage::MergeFrom(const DotsAndBoxesImage& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:alphaDots.DotsAndBoxesImage)
+// @@protoc_insertion_point(class_specific_merge_from_start:AlphaDots.DotsAndBoxesImage)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::google::protobuf::uint32 cached_has_bits = 0;
@@ -447,14 +447,14 @@ void DotsAndBoxesImage::MergeFrom(const DotsAndBoxesImage& from) {
 }
 
 void DotsAndBoxesImage::CopyFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:alphaDots.DotsAndBoxesImage)
+// @@protoc_insertion_point(generalized_copy_from_start:AlphaDots.DotsAndBoxesImage)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void DotsAndBoxesImage::CopyFrom(const DotsAndBoxesImage& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:alphaDots.DotsAndBoxesImage)
+// @@protoc_insertion_point(class_specific_copy_from_start:AlphaDots.DotsAndBoxesImage)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -502,13 +502,13 @@ void DotsAndBoxesImage::clear_width() {
   clear_has_width();
 }
 ::google::protobuf::int32 DotsAndBoxesImage::width() const {
-  // @@protoc_insertion_point(field_get:alphaDots.DotsAndBoxesImage.width)
+  // @@protoc_insertion_point(field_get:AlphaDots.DotsAndBoxesImage.width)
   return width_;
 }
 void DotsAndBoxesImage::set_width(::google::protobuf::int32 value) {
   set_has_width();
   width_ = value;
-  // @@protoc_insertion_point(field_set:alphaDots.DotsAndBoxesImage.width)
+  // @@protoc_insertion_point(field_set:AlphaDots.DotsAndBoxesImage.width)
 }
 
 // required int32 height = 2;
@@ -526,13 +526,13 @@ void DotsAndBoxesImage::clear_height() {
   clear_has_height();
 }
 ::google::protobuf::int32 DotsAndBoxesImage::height() const {
-  // @@protoc_insertion_point(field_get:alphaDots.DotsAndBoxesImage.height)
+  // @@protoc_insertion_point(field_get:AlphaDots.DotsAndBoxesImage.height)
   return height_;
 }
 void DotsAndBoxesImage::set_height(::google::protobuf::int32 value) {
   set_has_height();
   height_ = value;
-  // @@protoc_insertion_point(field_set:alphaDots.DotsAndBoxesImage.height)
+  // @@protoc_insertion_point(field_set:AlphaDots.DotsAndBoxesImage.height)
 }
 
 // repeated int32 pixels = 3;
@@ -543,25 +543,25 @@ void DotsAndBoxesImage::clear_pixels() {
   pixels_.Clear();
 }
 ::google::protobuf::int32 DotsAndBoxesImage::pixels(int index) const {
-  // @@protoc_insertion_point(field_get:alphaDots.DotsAndBoxesImage.pixels)
+  // @@protoc_insertion_point(field_get:AlphaDots.DotsAndBoxesImage.pixels)
   return pixels_.Get(index);
 }
 void DotsAndBoxesImage::set_pixels(int index, ::google::protobuf::int32 value) {
   pixels_.Set(index, value);
-  // @@protoc_insertion_point(field_set:alphaDots.DotsAndBoxesImage.pixels)
+  // @@protoc_insertion_point(field_set:AlphaDots.DotsAndBoxesImage.pixels)
 }
 void DotsAndBoxesImage::add_pixels(::google::protobuf::int32 value) {
   pixels_.Add(value);
-  // @@protoc_insertion_point(field_add:alphaDots.DotsAndBoxesImage.pixels)
+  // @@protoc_insertion_point(field_add:AlphaDots.DotsAndBoxesImage.pixels)
 }
 const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
 DotsAndBoxesImage::pixels() const {
-  // @@protoc_insertion_point(field_list:alphaDots.DotsAndBoxesImage.pixels)
+  // @@protoc_insertion_point(field_list:AlphaDots.DotsAndBoxesImage.pixels)
   return pixels_;
 }
 ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
 DotsAndBoxesImage::mutable_pixels() {
-  // @@protoc_insertion_point(field_mutable_list:alphaDots.DotsAndBoxesImage.pixels)
+  // @@protoc_insertion_point(field_mutable_list:AlphaDots.DotsAndBoxesImage.pixels)
   return &pixels_;
 }
 
@@ -569,6 +569,6 @@ DotsAndBoxesImage::mutable_pixels() {
 
 // @@protoc_insertion_point(namespace_scope)
 
-}  // namespace alphaDots
+}  // namespace AlphaDots
 
 // @@protoc_insertion_point(global_scope)

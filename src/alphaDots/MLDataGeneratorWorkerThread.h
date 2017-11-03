@@ -9,24 +9,29 @@
 #include <QtCore/QObject>
 #include <alphaDots/datasets/DatasetGenerator.h>
 
-class MLDataGeneratorWorkerThread : public QObject
-{
-	Q_OBJECT
-public:
-	MLDataGeneratorWorkerThread(long examples, DatasetGenerator::Ptr generator);
-	~MLDataGeneratorWorkerThread();
+namespace AlphaDots {
+    class MLDataGeneratorWorkerThread : public QObject {
+    Q_OBJECT
+    public:
+        MLDataGeneratorWorkerThread(long examples, DatasetGenerator::Ptr generator);
 
-public slots:
-	void process();
+        ~MLDataGeneratorWorkerThread();
 
-signals:
-	void progress(const int &p);
-	void finished();
+    public slots:
 
-private:
-	long sampleCnt;
-    DatasetGenerator::Ptr dataGenerator;
-};
+        void process();
 
+    signals:
+
+        void progress(const int &p);
+
+        void finished();
+
+    private:
+        long sampleCnt;
+        DatasetGenerator::Ptr dataGenerator;
+    };
+
+}
 
 #endif //KSQUARES_MLDATAGENERATORWORKERTHREAD_H

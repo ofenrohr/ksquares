@@ -69,7 +69,8 @@ QList<int> aiController::autoFill(int safeMovesLeft, int width, int height)
 		int index = rand() % fillLines.size();
 		fillLines.removeAt(index);
 	}
-	
+
+	delete lines;
 	return fillLines;
 }
 

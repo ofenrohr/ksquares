@@ -8,13 +8,15 @@
 #include <aiEasyMediumHard.h>
 #include "FirstTryDataset.h"
 
+using namespace AlphaDots;
+
 FirstTryDataset::FirstTryDataset(int w, int h, QString outputDir) {
     width = w;
     height = h;
     output_dir = outputDir;
 }
 
-void FirstTryDataset::generateDataset() {
+Dataset FirstTryDataset::generateDataset() {
     // generate data
     aiBoard::Ptr board = MLDataGenerator::generateRandomBoard(width, height, 5);
 
@@ -34,4 +36,6 @@ void FirstTryDataset::generateDataset() {
     MLDataGenerator::saveImage(QStringLiteral("firstTry_") + boardSize, id.toString() + QStringLiteral("output_hardai"),
                                output_dir, outputImage);
 
+    Dataset ret(inputImage, outputImage, board);
+    return ret;
 }

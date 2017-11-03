@@ -7,6 +7,7 @@
 #include "alphaDots/PBConnector.h"
 #include "alphaDots/MLDataGenerator.h"
 
+using namespace AlphaDots;
 
 aiConvNet::aiConvNet(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel, int thinkTime)
 		: KSquaresAi(newWidth, newHeight),
@@ -37,7 +38,7 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 	}
 
 	aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(lines, linesSize, width, height, newSquareOwners, playerId, maxPlayerId));
-    alphaDots::DotsAndBoxesImage img = PBConnector::toProtobuf(MLDataGenerator::generateInputImage(board));
+    DotsAndBoxesImage img = PBConnector::toProtobuf(MLDataGenerator::generateInputImage(board));
 	PBConnector::sendString(socket, img.SerializeAsString());
 
 	zmq::message_t reply;

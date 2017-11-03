@@ -11,7 +11,9 @@
 #include <alphaDots/datasets/StageOneDataset.h>
 #include "aiEasyMediumHard.h"
 #include "MLDataGeneratorWorkerThread.h"
-#include "DatasetConverter.h"
+#include "ExternalProcess.h"
+
+using namespace AlphaDots;
 
 MLDataGenerator::MLDataGenerator() : KXmlGuiWindow(), m_view(new QWidget()) {
     examplesCnt = -1;
@@ -28,7 +30,7 @@ MLDataGenerator::~MLDataGenerator() {}
 
 void MLDataGenerator::initConstructor() {
     gbs = NULL;
-    converter = NULL;
+    guiGenerator = DatasetGenerator::Ptr(new StageOneDataset(true));
 
     setupUi(m_view);
     setCentralWidget(m_view);
@@ -55,25 +57,16 @@ void MLDataGenerator::generateFirstTryDataset() {
 }
 
 void MLDataGenerator::generateStageOneDataset() {
-    int width = 5;
-    int height = 4;
-
-    converter = new DatasetConverter(
-        QStringLiteral("/usr/bin/python2.7"),
-        QStringLiteral("/home/ofenrohr/arbeit/master/code/alphaDots/datasetConverter/convert.py"),
-        10000,
-        QStringLiteral("/run/media/ofenrohr/Data/AlphaDots/data/stageOne.npz"));
-    converter->startDatasetConverter();
-
-    FirstTryDataset::Ptr generator = FirstTryDataset::Ptr(new StageOneDataset(width, height));
-    setupThread(generator);
-
+    StageOneDataset::Ptr gen = StageOneDataset::Ptr(new StageOneDataset(false));
+    gen->startConverter(5,4, examplesCnt);
+    setupThread(gen);
 }
 
 void MLDataGenerator::setupThread(DatasetGenerator::Ptr generator) {
     qDebug() << examplesCnt;
     if (examplesCnt > 0) {
         nextBtn->setEnabled(false);
+        progressBar->setValue(0);
 
         // https://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
         QThread* thread = new QThread;
@@ -86,33 +79,28 @@ void MLDataGenerator::setupThread(DatasetGenerator::Ptr generator) {
         connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
         connect(worker, SIGNAL(progress(int)), progressBar, SLOT(setValue(int)));
         connect(thread, SIGNAL(finished()), this, SLOT(dataGeneratorFinished()));
+        //connect(generator.data(), SIGNAL(sendGUIsample(aiBoard::Ptr, QImage, QImage)), this, SLOT(setGUIgame(aiBoard::Ptr, QImage, QImage)));
         thread->start();
+    } else {
+        progressBar->setVisible(false);
     }
 
 }
 
 void MLDataGenerator::dataGeneratorFinished() {
     nextBtn->setEnabled(true);
+    progressBar->setVisible(false);
+    qDebug() << "done generating data";
 }
 
-void MLDataGenerator::generateGUIexample() {// setup
-    int width = 5;
-    int height = 4;
-
+void MLDataGenerator::setGUIgame(aiBoard::Ptr board, QImage inp, QImage outp) {
+    qDebug() << "setGUIgame called";
     // draw stuff
     if (gbs != NULL) {
         delete gbs;
     }
-    gbs = new GameBoardScene(width, height, this);
+    gbs = new GameBoardScene(board->width, board->height, this);
     gameStateView->setScene(gbs);
-    progressBar->setValue(0);
-
-    // generate data
-    aiBoard::Ptr board = generateRandomBoard(width, height, 5);
-
-    // make some more moves
-    KSquaresAi::Ptr ai = KSquaresAi::Ptr(new aiEasyMediumHard(0, width, height, 2));
-    makeAiMoves(board, ai, 20);
 
     // send board to game board view
     for (int i = 0; i < board->linesSize; i++) {
@@ -126,12 +114,68 @@ void MLDataGenerator::generateGUIexample() {// setup
         }
     }
 
+    inputImage = inp;
+    outputImage = outp;
+
+    inputLbl->setPixmap(QPixmap::fromImage(inputImage).scaled(inputLbl->width(), inputLbl->height(), Qt::KeepAspectRatio));
+    outputLbl->setPixmap(
+            QPixmap::fromImage(outputImage).scaled(outputLbl->width(), outputLbl->height(), Qt::KeepAspectRatio));
+
+    //QApplication::processEvents();
+
+    qDebug() << "setGUIgame done";
+}
+
+void MLDataGenerator::generateGUIexample() {// setup
+    int width = 5;
+    int height = 4;
+
+    // draw stuff
+    if (gbs != NULL) {
+        delete gbs;
+    }
+    gbs = new GameBoardScene(width, height, this);
+
+    Dataset guiDataset = guiGenerator->generateDataset();
+    aiBoard::Ptr board;
+    if (guiDataset.isValid()) {
+        qDebug() << "generator dataset";
+        board = guiDataset.getBoard();
+        inputImage = guiDataset.getInputImg();
+        outputImage = guiDataset.getOutputImg();
+    } else {
+        qDebug() << "NOT generator dataset";
+        // generate data
+        board = generateRandomBoard(width, height, 5);
+
+        // make some more moves
+        KSquaresAi::Ptr ai = KSquaresAi::Ptr(new aiEasyMediumHard(0, width, height, 2));
+        makeAiMoves(board, ai, 20);
+
+
+        inputImage = generateInputImage(board);
+        outputImage = generateOutputImage(board, ai);
+    }
+
+
     // print board
     qDebug().noquote().nospace() << aiFunctions::boardToString(board);
 
-    inputImage = generateInputImage(board);
-    outputImage = generateOutputImage(board, ai);
+    // send board to game board view
+    for (int i = 0; i < board->linesSize; i++) {
+        if (board->lines[i]) {
+            gbs->drawLine(i, QColor::fromRgb(0, 0, 0));
+        }
+    }
+    for (int i = 0; i < board->width * board->height; i++) {
+        if (board->squareOwners[i] >= 0) {
+            gbs->drawSquare(i,
+                            board->squareOwners[i] == 0 ? QColor::fromRgb(255, 0, 0) : QColor::fromRgb(0, 0, 255));
+        }
+    }
+    gameStateView->setScene(gbs);
 
+    // display board images
     inputLbl->setPixmap(QPixmap::fromImage(inputImage).scaled(inputLbl->width(), inputLbl->height(), Qt::KeepAspectRatio));
     outputLbl->setPixmap(
             QPixmap::fromImage(outputImage).scaled(outputLbl->width(), outputLbl->height(), Qt::KeepAspectRatio));
@@ -197,15 +241,18 @@ void MLDataGenerator::drawBackgroundAndDots(QImage &img, bool drawDots) {
     }
 }
 
+void MLDataGenerator::drawLineAt(QImage &img, int lineIdx, int w, int h) {
+    QPoint p1,p2;
+    if (!Board::indexToPoints(lineIdx, &p1, &p2, w, h, false)) {
+        qDebug() << "fail!";
+    }
+    img.setPixel(p2.x()*2+(p2.y()-p1.y()), p2.y()*2+(p2.x()-p1.x()), qRgb(MLImageLine,MLImageLine,MLImageLine));
+}
+
 void MLDataGenerator::drawLines(QImage &img, aiBoard::Ptr board) {
     for (int i = 0; i < board->linesSize; i++) {
-        QPoint p1,p2;
-
         if (board->lines[i]) {
-            if (!Board::indexToPoints(i, &p1, &p2, board->width, board->height, false)) {
-                qDebug() << "fail!";
-            }
-            img.setPixel(p2.x()*2+(p2.y()-p1.y()), p2.y()*2+(p2.x()-p1.x()), qRgb(MLImageLine,MLImageLine,MLImageLine));
+            drawLineAt(img, i, board->width, board->height);
         }
     }
 }
@@ -223,9 +270,13 @@ void MLDataGenerator::drawBoxes(QImage &img, aiBoard::Ptr board) {
     }
 }
 
+int MLDataGenerator::boxesToImgSize(int boxes) {
+    return boxes * 2 + 3;
+}
+
 QImage MLDataGenerator::generateInputImage(aiBoard::Ptr board) {
-    int imgWidth = board->width*2+3; // 1px border
-    int imgHeight = board->height*2+3;
+    int imgWidth = boxesToImgSize(board->width); // 1px border
+    int imgHeight = boxesToImgSize(board->height);
 
     QImage img(imgWidth, imgHeight, QImage::Format_ARGB32);
 
@@ -243,12 +294,16 @@ QImage MLDataGenerator::generateOutputImage(aiBoard::Ptr board, KSquaresAi::Ptr 
     QImage img(imgWidth, imgHeight, QImage::Format_ARGB32);
 
     int nextLine = ai->chooseLine(board->linesAsList(), board->squareOwners, QList<Board::Move>());
-    aiBoard::Ptr outputBoard = aiBoard::Ptr(new aiBoard(board->lines, board->linesSize, board->width, board->height, board->squareOwners, board->playerId, board->maxPlayerId, board->hashLines));
-    outputBoard->clearAllMoves();
-    outputBoard->doMove(nextLine);
+    //bool *outputLines = new bool[board->linesSize];
+    //for (int i = 0; i < board->linesSize; i++) {
+    //    outputLines[i] = false;
+    //}
+    //aiBoard::Ptr outputBoard = aiBoard::Ptr(new aiBoard(outputLines, board->linesSize, board->width, board->height, board->squareOwners, board->playerId, board->maxPlayerId, board->hashLines));
+    //outputBoard->doMove(nextLine);
 
     drawBackgroundAndDots(img, false);
-    drawLines(img, outputBoard);
+    //drawLines(img, outputBoard);
+    drawLineAt(img, nextLine, board->width, board->height);
 
     return img;
 }

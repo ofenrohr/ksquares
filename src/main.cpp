@@ -31,6 +31,7 @@ static const char version[] = "0.6";
 int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
+    qRegisterMetaType< aiBoard::Ptr >("aiBoard::Ptr");
 
     Kdelibs4ConfigMigrator migrate(QStringLiteral("ksquares"));
     migrate.setConfigFiles(QStringList() << QStringLiteral("ksquaresrc"));
@@ -87,15 +88,15 @@ int main(int argc, char **argv)
         bool ok = false;
         long exampleCnt = parser.value(QStringLiteral("generate")).toLong(&ok);
         qDebug() << parser.value(QStringLiteral("generate"));
-        MLDataGenerator *dataGenerator=nullptr;
+        AlphaDots::MLDataGenerator *dataGenerator=nullptr;
         if (ok) {
-            dataGenerator = new MLDataGenerator(exampleCnt);
+            dataGenerator = new AlphaDots::MLDataGenerator(exampleCnt);
         } else {
-            dataGenerator = new MLDataGenerator();
+            dataGenerator = new AlphaDots::MLDataGenerator();
         }
         dataGenerator->show();
     } else if (parser.isSet(QStringLiteral("show-generate"))) {
-        MLDataGenerator *dataGenerator = new MLDataGenerator();
+        AlphaDots::MLDataGenerator *dataGenerator = new AlphaDots::MLDataGenerator();
         dataGenerator->show();
     } else {
         KSquaresWindow *mainWindow = new KSquaresWindow;

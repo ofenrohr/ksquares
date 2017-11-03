@@ -8,17 +8,20 @@
 #include "DatasetGenerator.h"
 
 
-class FirstTryDataset : public DatasetGenerator {
+namespace AlphaDots {
+    class FirstTryDataset : public DatasetGenerator {
 
-public:
-    FirstTryDataset(int w, int h, QString outputDir);
-    void generateDataset() override;
+    public:
+        FirstTryDataset(int w, int h, QString outputDir);
 
-private:
-    int width;
-    int height;
-    QString output_dir;
-};
+        Dataset generateDataset() override;
+
+    private:
+        int width;
+        int height;
+        QString output_dir;
+    };
+}
 
 
 #endif //KSQUARES_FIRSTTRYDATASET_H

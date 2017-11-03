@@ -9,15 +9,31 @@
 #include "DatasetGenerator.h"
 #include <zmq.hpp>
 
-class StageOneDataset : public DatasetGenerator {
-public:
-    StageOneDataset(int w, int h);
-    ~StageOneDataset();
-    void generateDataset() override;
-protected:
-    int width;
-    int height;
-};
+namespace AlphaDots {
+    class StageOneDataset : public DatasetGenerator {
+    public:
+        typedef QSharedPointer<StageOneDataset> Ptr;
+
+        StageOneDataset(bool gui);
+
+        ~StageOneDataset();
+
+        Dataset generateDataset() override;
+
+        void startConverter(int width, int height, int samples);
+
+        void cleanup() override;
+
+    protected:
+        int width;
+        int height;
+
+        bool isGUI;
+        int sampleIdx;
+
+        ExternalProcess *converter;
+    };
+}
 
 
 #endif //KSQUARES_STAGEONEDATASET_H

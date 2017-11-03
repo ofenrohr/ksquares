@@ -30,13 +30,13 @@
 #include <google/protobuf/extension_set.h>  // IWYU pragma: export
 #include <google/protobuf/unknown_field_set.h>
 // @@protoc_insertion_point(includes)
-namespace alphaDots {
+namespace AlphaDots {
 class DotsAndBoxesImage;
 class DotsAndBoxesImageDefaultTypeInternal;
 extern DotsAndBoxesImageDefaultTypeInternal _DotsAndBoxesImage_default_instance_;
-}  // namespace alphaDots
+}  // namespace AlphaDots
 
-namespace alphaDots {
+namespace AlphaDots {
 
 namespace protobuf_DotsAndBoxesImage_2eproto {
 // Internal implementation detail -- do not call these.
@@ -55,7 +55,7 @@ void InitDefaults();
 
 // ===================================================================
 
-class DotsAndBoxesImage : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:alphaDots.DotsAndBoxesImage) */ {
+class DotsAndBoxesImage : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:AlphaDots.DotsAndBoxesImage) */ {
  public:
   DotsAndBoxesImage();
   virtual ~DotsAndBoxesImage();
@@ -169,7 +169,7 @@ class DotsAndBoxesImage : public ::google::protobuf::Message /* @@protoc_inserti
   ::google::protobuf::int32 height() const;
   void set_height(::google::protobuf::int32 value);
 
-  // @@protoc_insertion_point(class_scope:alphaDots.DotsAndBoxesImage)
+  // @@protoc_insertion_point(class_scope:AlphaDots.DotsAndBoxesImage)
  private:
   void set_has_width();
   void clear_has_width();
@@ -214,13 +214,13 @@ inline void DotsAndBoxesImage::clear_width() {
   clear_has_width();
 }
 inline ::google::protobuf::int32 DotsAndBoxesImage::width() const {
-  // @@protoc_insertion_point(field_get:alphaDots.DotsAndBoxesImage.width)
+  // @@protoc_insertion_point(field_get:AlphaDots.DotsAndBoxesImage.width)
   return width_;
 }
 inline void DotsAndBoxesImage::set_width(::google::protobuf::int32 value) {
   set_has_width();
   width_ = value;
-  // @@protoc_insertion_point(field_set:alphaDots.DotsAndBoxesImage.width)
+  // @@protoc_insertion_point(field_set:AlphaDots.DotsAndBoxesImage.width)
 }
 
 // required int32 height = 2;
@@ -238,13 +238,13 @@ inline void DotsAndBoxesImage::clear_height() {
   clear_has_height();
 }
 inline ::google::protobuf::int32 DotsAndBoxesImage::height() const {
-  // @@protoc_insertion_point(field_get:alphaDots.DotsAndBoxesImage.height)
+  // @@protoc_insertion_point(field_get:AlphaDots.DotsAndBoxesImage.height)
   return height_;
 }
 inline void DotsAndBoxesImage::set_height(::google::protobuf::int32 value) {
   set_has_height();
   height_ = value;
-  // @@protoc_insertion_point(field_set:alphaDots.DotsAndBoxesImage.height)
+  // @@protoc_insertion_point(field_set:AlphaDots.DotsAndBoxesImage.height)
 }
 
 // repeated int32 pixels = 3;
@@ -255,25 +255,25 @@ inline void DotsAndBoxesImage::clear_pixels() {
   pixels_.Clear();
 }
 inline ::google::protobuf::int32 DotsAndBoxesImage::pixels(int index) const {
-  // @@protoc_insertion_point(field_get:alphaDots.DotsAndBoxesImage.pixels)
+  // @@protoc_insertion_point(field_get:AlphaDots.DotsAndBoxesImage.pixels)
   return pixels_.Get(index);
 }
 inline void DotsAndBoxesImage::set_pixels(int index, ::google::protobuf::int32 value) {
   pixels_.Set(index, value);
-  // @@protoc_insertion_point(field_set:alphaDots.DotsAndBoxesImage.pixels)
+  // @@protoc_insertion_point(field_set:AlphaDots.DotsAndBoxesImage.pixels)
 }
 inline void DotsAndBoxesImage::add_pixels(::google::protobuf::int32 value) {
   pixels_.Add(value);
-  // @@protoc_insertion_point(field_add:alphaDots.DotsAndBoxesImage.pixels)
+  // @@protoc_insertion_point(field_add:AlphaDots.DotsAndBoxesImage.pixels)
 }
 inline const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
 DotsAndBoxesImage::pixels() const {
-  // @@protoc_insertion_point(field_list:alphaDots.DotsAndBoxesImage.pixels)
+  // @@protoc_insertion_point(field_list:AlphaDots.DotsAndBoxesImage.pixels)
   return pixels_;
 }
 inline ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
 DotsAndBoxesImage::mutable_pixels() {
-  // @@protoc_insertion_point(field_mutable_list:alphaDots.DotsAndBoxesImage.pixels)
+  // @@protoc_insertion_point(field_mutable_list:AlphaDots.DotsAndBoxesImage.pixels)
   return &pixels_;
 }
 
@@ -285,7 +285,7 @@ DotsAndBoxesImage::mutable_pixels() {
 // @@protoc_insertion_point(namespace_scope)
 
 
-}  // namespace alphaDots
+}  // namespace AlphaDots
 
 // @@protoc_insertion_point(global_scope)
 

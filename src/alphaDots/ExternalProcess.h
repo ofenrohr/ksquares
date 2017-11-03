@@ -11,19 +11,19 @@
 /**
  * This class is a wrapper to start the dataset converter service from the alphaDots repository.
  */
-class DatasetConverter : public QObject {
+class ExternalProcess : public QObject {
 Q_OBJECT
 public:
-    DatasetConverter(QString pythonPath, QString converterPath, int sampleCnt, QString outputFile);
-    ~DatasetConverter();
+    ExternalProcess(QString processPath, QStringList arguments);
+    ~ExternalProcess();
     /**
      * Launch the dataset converter.
      * @return true on success, false otherwise
      */
-    bool startDatasetConverter();
-    bool stopDatasetConverter();
+    bool startExternalProcess();
+    bool stopExternalProcess();
 
-    bool isRunning() { return converterRunning; }
+    bool isRunning() { return processRunning; }
 
 public slots:
     void processError(const QProcess::ProcessError error);
@@ -33,13 +33,10 @@ public slots:
     void processReadyReadStandardOutput();
 
 protected:
-    QString pythonExecutable;
-    QString converterExecutable;
-    int samples;
-    QString datasetPath;
-    QProcess *converter;
-
-    bool converterRunning;
+    QString processExecutablePath;
+    QStringList processArguments;
+    QProcess *process;
+    bool processRunning;
 };
 
 

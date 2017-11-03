@@ -16,73 +16,92 @@
 #include "aicontroller.h"
 #include "gameboardscene.h"
 #include "gameboardview.h"
-#include "DatasetConverter.h"
+#include "ExternalProcess.h"
 
 
-class MLDataGenerator : public KXmlGuiWindow, public Ui::MLDataView
-{
+namespace AlphaDots {
+    class MLDataGenerator : public KXmlGuiWindow, public Ui::MLDataView {
     Q_OBJECT
 
-public:
-    MLDataGenerator();
-    /**
-     * Generate examplesCnt training samples.
-     * @param samples number of training examples
-     */
-    MLDataGenerator(long samples);
-    ~MLDataGenerator();
+    public:
+        MLDataGenerator();
 
-    void initObject();
+        /**
+         * Generate examplesCnt training samples.
+         * @param samples number of training examples
+         */
+        MLDataGenerator(long samples);
 
-    static const int MLImageBackground = 0;
-    static const int MLImageBoxA = 65;
-    static const int MLImageBoxB = 150;
-    static const int MLImageDot = 215;
-    static const int MLImageLine = 255;
+        ~MLDataGenerator();
 
-    /**
-     * Generates board with random (usrful) state with some safe moves left
-     * @param width in boxes
-     * @param height in boxes
-     * @param safeMoves number of safe lines left
-     * @return board with requested features
-     */
-    static aiBoard::Ptr generateRandomBoard(int width, int height, int safeMoves);
-    static int makeAiMove(aiBoard::Ptr board, KSquaresAi::Ptr ai);
-    static QList<int> makeAiMoves(aiBoard::Ptr board, KSquaresAi::Ptr ai, int freeLinesLeft);
-    static QImage generateInputImage(aiBoard::Ptr board);
-    static QImage generateOutputImage(aiBoard::Ptr board, KSquaresAi::Ptr ai);
-    static void saveImage(QString dataSetName, QString instanceName, QString dest, QImage &img);
+        void initObject();
 
-public slots:
-    void nextBtnClicked();
-    void dataGeneratorFinished();
+        static const int MLImageBackground = 0;
+        static const int MLImageBoxA = 65;
+        static const int MLImageBoxB = 150;
+        static const int MLImageDot = 215;
+        static const int MLImageLine = 255;
 
-private:
-    //QLabel *m_view;
-    QWidget *m_view;
-    GameBoardScene *gbs;
+        /**
+         * Generates board with random (usrful) state with some safe moves left
+         * @param width in boxes
+         * @param height in boxes
+         * @param safeMoves number of safe lines left
+         * @return board with requested features
+         */
+        static aiBoard::Ptr generateRandomBoard(int width, int height, int safeMoves);
 
-    long examplesCnt;
+        static int makeAiMove(aiBoard::Ptr board, KSquaresAi::Ptr ai);
 
-    QImage inputImage;
-    QImage outputImage;
+        static QList<int> makeAiMoves(aiBoard::Ptr board, KSquaresAi::Ptr ai, int freeLinesLeft);
 
-    DatasetConverter *converter;
+        static QImage generateInputImage(aiBoard::Ptr board);
 
+        static QImage generateOutputImage(aiBoard::Ptr board, KSquaresAi::Ptr ai);
 
-    static void drawBackgroundAndDots(QImage &img, bool drawDots = true);
-    static void drawLines(QImage &img, aiBoard::Ptr board);
-    static void drawBoxes(QImage &img, aiBoard::Ptr board);
+        static void saveImage(QString dataSetName, QString instanceName, QString dest, QImage &img);
 
-    void initConstructor();
+        static int boxesToImgSize(int boxes);
 
-    void setupThread(DatasetGenerator::Ptr generator);
-    void generateFirstTryDataset();
-    void generateStageOneDataset();
+    public slots:
 
-    void generateGUIexample();
-};
+        void nextBtnClicked();
 
+        void dataGeneratorFinished();
+
+        void setGUIgame(aiBoard::Ptr board, QImage inp, QImage outp);
+
+    private:
+        //QLabel *m_view;
+        QWidget *m_view;
+        GameBoardScene *gbs;
+
+        long examplesCnt;
+
+        QImage inputImage;
+        QImage outputImage;
+
+        DatasetGenerator::Ptr guiGenerator;
+
+        static void drawBackgroundAndDots(QImage &img, bool drawDots = true);
+
+        static void drawLineAt(QImage &img, int lineIdx, int w, int h);
+
+        static void drawLines(QImage &img, aiBoard::Ptr board);
+
+        static void drawBoxes(QImage &img, aiBoard::Ptr board);
+
+        void initConstructor();
+
+        void setupThread(DatasetGenerator::Ptr generator);
+
+        void generateFirstTryDataset();
+
+        void generateStageOneDataset();
+
+        void generateGUIexample();
+    };
+
+}
 
 #endif //KSQUARES_MLDATAGENERATOR_H
