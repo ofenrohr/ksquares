@@ -59,6 +59,8 @@ namespace AlphaDots {
 
         static QImage generateOutputImage(aiBoard::Ptr board, KSquaresAi::Ptr ai);
 
+        static QImage generateOutputImage(aiBoard::Ptr board, QList<int> lines);
+
         static void saveImage(QString dataSetName, QString instanceName, QString dest, QImage &img);
 
         static int boxesToImgSize(int boxes);
@@ -69,7 +71,7 @@ namespace AlphaDots {
 
         void dataGeneratorFinished();
 
-        void setGUIgame(aiBoard::Ptr board, QImage inp, QImage outp);
+        void recvProgress(int progress, int thread);
 
     private:
         //QLabel *m_view;
@@ -77,6 +79,8 @@ namespace AlphaDots {
         GameBoardScene *gbs;
 
         long examplesCnt;
+        int threadCnt;
+        QList<int> threadProgr;
 
         QImage inputImage;
         QImage outputImage;
@@ -98,6 +102,8 @@ namespace AlphaDots {
         void generateFirstTryDataset();
 
         void generateStageOneDataset();
+
+        void generateBasicStrategyDataset();
 
         void generateGUIexample();
     };

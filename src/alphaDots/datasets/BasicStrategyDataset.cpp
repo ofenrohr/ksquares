@@ -1,34 +1,26 @@
 //
-// Created by ofenrohr on 30.10.17.
+// Created by ofenrohr on 05.11.17.
 //
 
-#include <alphaDots/ExternalProcess.h>
 #include <alphaDots/MLDataGenerator.h>
+#include <zmq.hpp>
 #include <aiEasyMediumHard.h>
 #include <alphaDots/PBConnector.h>
-#include "StageOneDataset.h"
+#include "BasicStrategyDataset.h"
 
 using namespace AlphaDots;
 
-StageOneDataset::StageOneDataset(bool gui) {
+BasicStrategyDataset::BasicStrategyDataset(bool gui, int width, int height) {
     isGUI = gui;
-    width = 5;
-    height = 4;
-
-    sampleIdx = 0;
+    this->width = width;
+    this->height = height;
 }
 
-StageOneDataset::~StageOneDataset() {
-    cleanup();
+BasicStrategyDataset::~BasicStrategyDataset() {
+
 }
 
-void StageOneDataset::cleanup() {
-    if (!isGUI) {
-        //converter->stopExternalProcess();
-    }
-}
-
-void StageOneDataset::startConverter(int width, int height, int samples) {
+void BasicStrategyDataset::startConverter(int samples) {
     int widthImg = MLDataGenerator::boxesToImgSize(width);
     int heightImg = MLDataGenerator::boxesToImgSize(height);
 
@@ -37,7 +29,7 @@ void StageOneDataset::startConverter(int width, int height, int samples) {
          << QStringLiteral("--zmq")
          << QString::number(samples)
          << QStringLiteral("--output-file")
-         << QStringLiteral("/run/media/ofenrohr/Data/AlphaDots/data/stageOne") + QString::number(width) + QStringLiteral("x") + QString::number(height) + QStringLiteral(".npz")
+         << QStringLiteral("/run/media/ofenrohr/Data/AlphaDots/data/basicStrategy") + QString::number(width) + QStringLiteral("x") + QString::number(height) + QStringLiteral(".npz")
          << QStringLiteral("--x-size")
          << QString::number(widthImg)
          << QStringLiteral("--y-size")
@@ -48,30 +40,45 @@ void StageOneDataset::startConverter(int width, int height, int samples) {
     }
 }
 
-Dataset StageOneDataset::generateDataset() {
+void BasicStrategyDataset::cleanup() {
+    DatasetGenerator::cleanup();
+}
+
+Dataset BasicStrategyDataset::generateDataset() {
 
     zmq::context_t context(1);
 	zmq::socket_t socket(context, ZMQ_REQ);
 	socket.connect("tcp://127.0.0.1:12355");
 
-    // generate data
-    aiBoard::Ptr board = MLDataGenerator::generateRandomBoard(width, height, 15);
-
-    // make some more moves
+    aiBoard::Ptr board = MLDataGenerator::generateRandomBoard(width, height, rand() % (width*height));//aiBoard::Ptr(new aiBoard(width, height));
     KSquaresAi::Ptr ai = KSquaresAi::Ptr(new aiEasyMediumHard(0, width, height, 2));
+
+    bool capture = false; // if true, capturing boxes is possible
     QList<int> freeLines = ai->getFreeLines(board->lines, board->linesSize);
-    if (rand() % 10 < 2) {
+    if (rand() % 2 == 0) {
         // add hard ai moves (smart moves)
         int movesLeft = rand() % freeLines.count() + 1;
         MLDataGenerator::makeAiMoves(board, ai, movesLeft);
     } else {
         // do sth random (stupid moves)
         board->doMove(freeLines[rand() % freeLines.count()]);
+        KSquares::BoardAnalysis analysis = ai->analyseBoard(board);
+        capture =
+            analysis.capturableLongChains.count() > 0 ||
+            analysis.capturableLoopChains.count() > 0 ||
+            analysis.capturableShortChains.count() > 0;
     }
 
     // generate images
     QImage inputImage = MLDataGenerator::generateInputImage(board);
-    QImage outputImage = MLDataGenerator::generateOutputImage(board, ai);
+
+    QList<int> safeLines = ai->safeMoves(board->linesSize, board->lines);
+    QImage outputImage;
+    if (safeLines.count() > 0 && !capture) {
+        outputImage = MLDataGenerator::generateOutputImage(board, safeLines);
+    } else {
+        outputImage = MLDataGenerator::generateOutputImage(board, ai);
+    }
 
     if (isGUI) {
         return Dataset(inputImage, outputImage, board);
@@ -94,3 +101,4 @@ Dataset StageOneDataset::generateDataset() {
 
     return Dataset(inputImage, outputImage, board);
 }
+

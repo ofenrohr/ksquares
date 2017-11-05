@@ -8,7 +8,7 @@
 #include <string>
 #include "aicontroller.h"
 #include <zmq.hpp>
-#include "alphaDots/DotsAndBoxesImage.pb.h"
+#include "alphaDots/protobuf/DotsAndBoxesImage.pb.h"
 
 
 class aiConvNet : public KSquaresAi {

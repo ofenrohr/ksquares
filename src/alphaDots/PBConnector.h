@@ -7,7 +7,8 @@
 
 #include <QtGui/QImage>
 #include <zmq.hpp>
-#include "alphaDots/DotsAndBoxesImage.pb.h"
+#include <alphaDots/protobuf/TrainingExample.pb.h>
+#include "alphaDots/protobuf/DotsAndBoxesImage.pb.h"
 
 namespace AlphaDots {
     class PBConnector {
@@ -18,6 +19,7 @@ namespace AlphaDots {
          * @return protobuf data
          */
         static DotsAndBoxesImage toProtobuf(QImage img);
+        static TrainingExample toProtobuf(QImage inp, QImage outp);
 
         /**
          * Put the protobuf image data back in a QImage

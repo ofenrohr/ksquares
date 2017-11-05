@@ -36,11 +36,18 @@ set(ksquares_SRCS
 	knox.cpp
 	aiMCTS.cpp
     aiDabbleNative.cpp
-        alphaDots/MLDataGenerator.cpp
-        alphaDots/MLDataGeneratorWorkerThread.cpp
-		aiConvNet.cpp
-		alphaDots/DotsAndBoxesImage.pb.cc
-		alphaDots/PBConnector.cpp alphaDots/datasets/FirstTryDataset.cpp alphaDots/datasets/FirstTryDataset.h alphaDots/datasets/DatasetGenerator.cpp alphaDots/datasets/DatasetGenerator.h alphaDots/datasets/StageOneDataset.cpp alphaDots/datasets/StageOneDataset.h alphaDots/ExternalProcess.cpp alphaDots/ExternalProcess.h alphaDots/datasets/Dataset.cpp alphaDots/datasets/Dataset.h)
+    alphaDots/MLDataGenerator.cpp
+    alphaDots/MLDataGeneratorWorkerThread.cpp
+    aiConvNet.cpp
+    alphaDots/protobuf/DotsAndBoxesImage.pb.cc
+    alphaDots/protobuf/TrainingExample.pb.cc
+    alphaDots/PBConnector.cpp
+    alphaDots/datasets/FirstTryDataset.cpp
+    alphaDots/datasets/DatasetGenerator.cpp
+    alphaDots/datasets/StageOneDataset.cpp
+    alphaDots/ExternalProcess.cpp
+    alphaDots/datasets/Dataset.cpp
+		alphaDots/datasets/BasicStrategyDataset.cpp alphaDots/datasets/BasicStrategyDataset.h)
 
 include_directories(${CMAKE_SOURCE_DIR}/libKF5KDEGames/highscore ${ZeroMQ_INCLUDE_DIR})
 

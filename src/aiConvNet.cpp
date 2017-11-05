@@ -48,6 +48,7 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 	//qDebug() << "Received: " << (char*)reply.data();
 	QImage prediction = PBConnector::fromProtobuf(rpl);
 
+	QList<QPoint> bestPoints;
     int bestVal = -1;
 	QPoint linePoint;
 	std::stringstream pred;
@@ -69,17 +70,31 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 			if (x == 0 || y == 0 || x == prediction.width()-1 || y == prediction.height()-1) {
 				invalidPoint = true;
 			}
+            if (lines[PBConnector::pointToLineIndex(QPoint(x,y), width)]) {
+				invalidPoint = true;
+			}
 			if (c > bestVal && !invalidPoint) {
+				bestPoints.clear();
                 bestVal = c;
-				linePoint.setX(x);
-				linePoint.setY(y);
+				//linePoint.setX(x);
+				//linePoint.setY(y);
+				linePoint = QPoint(x,y);
+			}
+            if (c == bestVal && !invalidPoint) {
+				bestPoints.append(linePoint);
 			}
 		}
         pred << "\n";
 	}
 	qDebug().noquote() << pred.str().c_str();
 
-	qDebug() << "Highest value:" << bestVal << "at" << linePoint;
+	qDebug() << "Highest value:" << bestVal << "at" << bestPoints;
+
+	if (bestPoints.count() > 1) {
+		linePoint = bestPoints[rand() % bestPoints.count()];
+	}
+	qDebug() << "selected point: " << linePoint;
+
 
 	int ret = PBConnector::pointToLineIndex(linePoint, width);
 

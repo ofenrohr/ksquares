@@ -13,7 +13,8 @@ namespace AlphaDots {
     class MLDataGeneratorWorkerThread : public QObject {
     Q_OBJECT
     public:
-        MLDataGeneratorWorkerThread(long examples, DatasetGenerator::Ptr generator);
+        MLDataGeneratorWorkerThread(long examples, DatasetGenerator::Ptr generator,
+                                            int threadID);
 
         ~MLDataGeneratorWorkerThread();
 
@@ -23,12 +24,13 @@ namespace AlphaDots {
 
     signals:
 
-        void progress(const int &p);
+        void progress(const int &progress, const int &threadid);
 
         void finished();
 
     private:
         long sampleCnt;
+        int threadId;
         DatasetGenerator::Ptr dataGenerator;
     };
 

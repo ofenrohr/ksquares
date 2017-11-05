@@ -22,6 +22,22 @@ DotsAndBoxesImage PBConnector::toProtobuf(QImage img) {
     return ret;
 }
 
+TrainingExample PBConnector::toProtobuf(QImage inp, QImage outp) {
+    TrainingExample ret;
+
+    ret.set_width(inp.width());
+    ret.set_height(inp.height());
+
+    for (int y = 0; y < inp.height(); y++) {
+        for (int x = 0; x < inp.width(); x++) {
+            ret.add_input(inp.pixelColor(x,y).red());
+            ret.add_output(outp.pixelColor(x,y).red());
+        }
+    }
+
+    return ret;
+}
+
 QImage PBConnector::fromProtobuf(std::string msg) {
     DotsAndBoxesImage img;
     img.ParseFromString(msg);

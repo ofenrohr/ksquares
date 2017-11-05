@@ -13,13 +13,15 @@
 
 using namespace AlphaDots;
 
-MLDataGeneratorWorkerThread::MLDataGeneratorWorkerThread(long examples, DatasetGenerator::Ptr generator) {
+MLDataGeneratorWorkerThread::MLDataGeneratorWorkerThread(long examples, DatasetGenerator::Ptr generator,
+                                                         int threadID) {
     sampleCnt = examples;
     dataGenerator = generator;
+    threadId = threadID;
 }
 
 MLDataGeneratorWorkerThread::~MLDataGeneratorWorkerThread() {
-    dataGenerator->cleanup();
+    //dataGenerator->cleanup();
 }
 
 void MLDataGeneratorWorkerThread::process() {
@@ -34,12 +36,12 @@ void MLDataGeneratorWorkerThread::process() {
         int progr = (int) ((100.0 / sampleCnt) * (i+1.0));
         if (progr != oldProgress) {
             //qDebug() << "Progress: " << QString::number(progr);
-            emit progress(progr);
+            emit progress(progr, threadId);
             oldProgress = progr;
         }
     }
 
-    dataGenerator->cleanup();
+    //dataGenerator->cleanup();
 
     emit finished();
 }

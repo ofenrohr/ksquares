@@ -9,6 +9,7 @@
 #include <alphaDots/datasets/DatasetGenerator.h>
 #include <alphaDots/datasets/FirstTryDataset.h>
 #include <alphaDots/datasets/StageOneDataset.h>
+#include <alphaDots/datasets/BasicStrategyDataset.h>
 #include "aiEasyMediumHard.h"
 #include "MLDataGeneratorWorkerThread.h"
 #include "ExternalProcess.h"
@@ -30,7 +31,15 @@ MLDataGenerator::~MLDataGenerator() {}
 
 void MLDataGenerator::initConstructor() {
     gbs = NULL;
-    guiGenerator = DatasetGenerator::Ptr(new StageOneDataset(true));
+    //guiGenerator = DatasetGenerator::Ptr(new FirstTryDataset());
+    //guiGenerator = DatasetGenerator::Ptr(new StageOneDataset(true));
+    guiGenerator = DatasetGenerator::Ptr(new BasicStrategyDataset(true, 5, 4));
+    threadProgr.clear();
+    threadCnt = 4;
+
+    for (int i = 0; i < threadCnt; i++) {
+        threadProgr.append(0);
+    }
 
     setupUi(m_view);
     setCentralWidget(m_view);
@@ -46,7 +55,8 @@ void MLDataGenerator::initObject() {
     generateGUIexample();
 
     //generateFirstTryDataset();
-    generateStageOneDataset();
+    //generateStageOneDataset();
+    generateBasicStrategyDataset();
 }
 
 void MLDataGenerator::generateFirstTryDataset() {
@@ -62,68 +72,53 @@ void MLDataGenerator::generateStageOneDataset() {
     setupThread(gen);
 }
 
+void MLDataGenerator::generateBasicStrategyDataset() {
+    BasicStrategyDataset::Ptr gen = BasicStrategyDataset::Ptr(new BasicStrategyDataset(false, 5,4));
+    gen->startConverter(examplesCnt);
+    setupThread(gen);
+}
+
 void MLDataGenerator::setupThread(DatasetGenerator::Ptr generator) {
     qDebug() << examplesCnt;
     if (examplesCnt > 0) {
         nextBtn->setEnabled(false);
         progressBar->setValue(0);
 
-        // https://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
-        QThread* thread = new QThread;
-        MLDataGeneratorWorkerThread *worker = new MLDataGeneratorWorkerThread(examplesCnt, generator);
-        worker->moveToThread(thread);
-        //connect(worker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
-        connect(thread, SIGNAL(started()), worker, SLOT(process()));
-        connect(worker, SIGNAL(finished()), thread, SLOT(quit()));
-        connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater()));
-        connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
-        connect(worker, SIGNAL(progress(int)), progressBar, SLOT(setValue(int)));
-        connect(thread, SIGNAL(finished()), this, SLOT(dataGeneratorFinished()));
-        //connect(generator.data(), SIGNAL(sendGUIsample(aiBoard::Ptr, QImage, QImage)), this, SLOT(setGUIgame(aiBoard::Ptr, QImage, QImage)));
-        thread->start();
+        for (int i = 0; i < threadCnt; i++) {
+            // https://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
+            QThread *thread = new QThread;
+            MLDataGeneratorWorkerThread *worker = new MLDataGeneratorWorkerThread(examplesCnt / threadCnt, generator, i);
+            worker->moveToThread(thread);
+            //connect(worker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
+            connect(thread, SIGNAL(started()), worker, SLOT(process()));
+            connect(worker, SIGNAL(finished()), thread, SLOT(quit()));
+            connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater()));
+            connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
+            connect(worker, SIGNAL(progress(int, int)), this, SLOT(recvProgress(int, int)));
+            connect(thread, SIGNAL(finished()), this, SLOT(dataGeneratorFinished()));
+            //connect(generator.data(), SIGNAL(sendGUIsample(aiBoard::Ptr, QImage, QImage)), this, SLOT(setGUIgame(aiBoard::Ptr, QImage, QImage)));
+            thread->start();
+        }
     } else {
         progressBar->setVisible(false);
     }
 
 }
 
+void MLDataGenerator::recvProgress(int progress, int thread) {
+    threadProgr[thread] = progress;
+    int sum = 0;
+    for (int i = 0; i < threadProgr.count(); i++) {
+        sum += threadProgr[i];
+    }
+    qDebug() << threadProgr;
+    progressBar->setValue(sum / threadCnt);
+}
+
 void MLDataGenerator::dataGeneratorFinished() {
     nextBtn->setEnabled(true);
     progressBar->setVisible(false);
     qDebug() << "done generating data";
-}
-
-void MLDataGenerator::setGUIgame(aiBoard::Ptr board, QImage inp, QImage outp) {
-    qDebug() << "setGUIgame called";
-    // draw stuff
-    if (gbs != NULL) {
-        delete gbs;
-    }
-    gbs = new GameBoardScene(board->width, board->height, this);
-    gameStateView->setScene(gbs);
-
-    // send board to game board view
-    for (int i = 0; i < board->linesSize; i++) {
-        if (board->lines[i]) {
-            gbs->drawLine(i, QColor::fromRgb(0, 0, 0));
-        }
-    }
-    for (int i = 0; i < board->width * board->height; i++) {
-        if (board->squareOwners[i] >= 0) {
-            gbs->drawSquare(i, board->squareOwners[i] == 0 ? QColor::fromRgb(255, 0, 0) : QColor::fromRgb(0, 0, 255));
-        }
-    }
-
-    inputImage = inp;
-    outputImage = outp;
-
-    inputLbl->setPixmap(QPixmap::fromImage(inputImage).scaled(inputLbl->width(), inputLbl->height(), Qt::KeepAspectRatio));
-    outputLbl->setPixmap(
-            QPixmap::fromImage(outputImage).scaled(outputLbl->width(), outputLbl->height(), Qt::KeepAspectRatio));
-
-    //QApplication::processEvents();
-
-    qDebug() << "setGUIgame done";
 }
 
 void MLDataGenerator::generateGUIexample() {// setup
@@ -294,16 +289,23 @@ QImage MLDataGenerator::generateOutputImage(aiBoard::Ptr board, KSquaresAi::Ptr 
     QImage img(imgWidth, imgHeight, QImage::Format_ARGB32);
 
     int nextLine = ai->chooseLine(board->linesAsList(), board->squareOwners, QList<Board::Move>());
-    //bool *outputLines = new bool[board->linesSize];
-    //for (int i = 0; i < board->linesSize; i++) {
-    //    outputLines[i] = false;
-    //}
-    //aiBoard::Ptr outputBoard = aiBoard::Ptr(new aiBoard(outputLines, board->linesSize, board->width, board->height, board->squareOwners, board->playerId, board->maxPlayerId, board->hashLines));
-    //outputBoard->doMove(nextLine);
 
     drawBackgroundAndDots(img, false);
-    //drawLines(img, outputBoard);
     drawLineAt(img, nextLine, board->width, board->height);
+
+    return img;
+}
+
+QImage MLDataGenerator::generateOutputImage(aiBoard::Ptr board, QList<int> lines) {
+    int imgWidth = board->width*2+3; // 1px border
+    int imgHeight = board->height*2+3;
+
+    QImage img(imgWidth, imgHeight, QImage::Format_ARGB32);
+
+    drawBackgroundAndDots(img, false);
+    foreach (int line, lines) {
+        drawLineAt(img, line, board->width, board->height);
+    }
 
     return img;
 }

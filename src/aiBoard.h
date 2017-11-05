@@ -36,6 +36,7 @@ public:
 	 */
 	aiBoard(bool *newLines, int newLinesSize, int newWidth, int newHeight, const QList<int> newSquareOwners, int playerId, int maxPlayerId, QList<int> *newHashLines = NULL);
 	aiBoard(Board *board);
+	aiBoard(int newWidth, int newHeight);
 	~aiBoard();
 	
 	void doMove(int line);

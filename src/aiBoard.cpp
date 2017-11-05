@@ -32,6 +32,23 @@ aiBoard::aiBoard(Board *board)
 	maxPlayerId = board->getNumOfPlayers() - 1;
 }
 
+aiBoard::aiBoard(int newWidth, int newHeight) {
+    // generate data
+	width = newWidth;
+	height = newHeight;
+    linesSize = aiFunctions::toLinesSize(newWidth, newHeight);
+    lines = new bool[linesSize];
+    for (int i = 0; i < linesSize; i++) {
+        lines[i] = false;
+    }
+	squareOwners = QList<int>();
+    for (int i = 9; i < width*height; i++) {
+        squareOwners.append(-1);
+    }
+	playerId = 0;
+	maxPlayerId = 1;
+}
+
 aiBoard::~aiBoard()
 {
 	//qDebug() << "aiBoard destruct";
