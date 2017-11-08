@@ -19,6 +19,7 @@
 
 #include "boardAnalysis.h"
 #include "aiEasyMediumHard.h"
+#include "aiConvNet.h"
 
 aiMCTS::aiMCTS(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel, int thinkTime) : KSquaresAi(newWidth, newHeight), playerId(newPlayerId), maxPlayerId(newMaxPlayerId), level(newLevel), mctsTimeout(thinkTime)
 {
@@ -36,6 +37,7 @@ aiMCTS::aiMCTS(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight,
 		case KSquares::AI_EASY:
 		case KSquares::AI_MEDIUM:
 		case KSquares::AI_HARD:
+		case KSquares::AI_CONVNET:
 		break;
 	}
 }
@@ -110,7 +112,7 @@ int aiMCTS::mcts()
 	
 	// select most promising move
 	int line = -1;
-	int mostVisited = -1;
+	long mostVisited = -1;
 	for (int i = 0; i < mctsRootNode->children.size(); i++)
 	{
 		if (mctsRootNode->children[i]->visitedCnt > mostVisited)
@@ -198,18 +200,30 @@ void aiMCTS::expansion(MCTSNode::Ptr node)
 void aiMCTS::simulation(MCTSNode::Ptr node)
 {
 	// prepare simulation
-	aiEasyMediumHard simAi(0, board->width, board->height, level); // TODO: try what happens with AI_MEDIUM and AI_EASY
+	KSquaresAi::Ptr simAi;
+	if (level == KSquares::AI_CONVNET) {
+		simAi = KSquaresAi::Ptr(new aiConvNet(0, 1, board->width, board->height, 0));
+	} else {
+		simAi = KSquaresAi::Ptr(new aiEasyMediumHard(0, board->width, board->height, level));
+	}
 	QVector<int> simulationHistory;
 	int missingLines = 0;
-	for (int i = 0; i < board->linesSize; i++)
-		if (!board->lines[i])
+	QList<bool> linesList;
+	for (int i = 0; i < board->linesSize; i++) {
+		if (!board->lines[i]) {
 			missingLines++;
+			linesList.append(false);
+		} else {
+			linesList.append(true);
+		}
+	}
 	simulationHistory.reserve(missingLines);
 	// do simulation
 	while (missingLines > 0)
 	{
-		int line = simAi.chooseLine(board->lines);
+		int line = simAi->chooseLine(linesList, QList<int>(), QList<Board::Move_t>());
 		board->doMove(line);
+		linesList[line] = true;
 		simulationHistory.append(line);
 		missingLines--;
 	}

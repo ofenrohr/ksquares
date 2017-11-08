@@ -29,7 +29,7 @@ void BasicStrategyDataset::startConverter(int samples) {
          << QStringLiteral("--zmq")
          << QString::number(samples)
          << QStringLiteral("--output-file")
-         << QStringLiteral("/run/media/ofenrohr/Data/AlphaDots/data/basicStrategy") + QString::number(width) + QStringLiteral("x") + QString::number(height) + QStringLiteral(".npz")
+         << QStringLiteral("/run/media/ofenrohr/Data/AlphaDots/data/basicStrategy") + QString::number(width) + QStringLiteral("x") + QString::number(height) + QStringLiteral("-2.npz")
          << QStringLiteral("--x-size")
          << QString::number(widthImg)
          << QStringLiteral("--y-size")

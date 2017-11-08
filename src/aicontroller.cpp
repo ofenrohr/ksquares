@@ -148,6 +148,10 @@ KSquaresAi::Ptr aiController::getAi()
 			if (ai.isNull())
 				ai = KSquaresAi::Ptr(new aiConvNet(playerId, maxPlayerId, width, height, level, aiThinkTime));
 		break;
+		case KSquares::AI_MCTS_CONVNET:
+			if (ai.isNull())
+				ai = KSquaresAi::Ptr(new aiMCTS(playerId, maxPlayerId, width, height, KSquares::AI_CONVNET, aiThinkTime));
+		break;
 	}
 	return ai;
 }

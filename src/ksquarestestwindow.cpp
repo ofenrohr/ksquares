@@ -250,7 +250,30 @@ void KSquaresTestWindow::initTest()
 	if (loadStatus())
 		return;
 	
-	
+
+    for (int i = 0; i < 5; i++)
+	{
+		AITestSetup setup;
+		setup.levelP1 = KSquares::AI_EASY;
+		setup.levelP2 = KSquares::AI_CONVNET;
+		setup.timeout = 30000;
+		setup.boardSize = QPoint(5,5);
+		testSetups.append(setup);
+	}
+
+    for (int i = 0; i < 5; i++)
+	{
+		AITestSetup setup;
+		setup.levelP1 = KSquares::AI_CONVNET;
+		setup.levelP2 = KSquares::AI_EASY;
+		setup.timeout = 30000;
+		setup.boardSize = QPoint(5,5);
+		testSetups.append(setup);
+	}
+
+	return;
+
+
 	for (int i = 0; i < 5; i++)
 	{
 		AITestSetup setup;
@@ -761,9 +784,9 @@ QString prettyAiLevel(int level)
 {
 	switch (level)
 	{
-		case KSquares::AI_EASY: return QStringLiteral("KSquares (Leicht)");
-		case KSquares::AI_MEDIUM: return QStringLiteral("KSquares (Mittel)");
-		case KSquares::AI_HARD: return QStringLiteral("KSquares (Schwer)");
+		case KSquares::AI_EASY: return QStringLiteral("KSquares (Easy)");
+		case KSquares::AI_MEDIUM: return QStringLiteral("KSquares (Medium)");
+		case KSquares::AI_HARD: return QStringLiteral("KSquares (Hard)");
 		case KSquares::AI_VERYHARD: return QStringLiteral("KSquares ($\\alpha\\beta$)");
 		case KSquares::AI_DABBLE: return QStringLiteral("Dabble");
 		case KSquares::AI_DABBLENOHASH: return QStringLiteral("Dabble (NoHash)");
@@ -772,6 +795,8 @@ QString prettyAiLevel(int level)
 		case KSquares::AI_MCTS_A: return QStringLiteral("KSquares (MCTS-1)");
 		case KSquares::AI_MCTS_B: return QStringLiteral("KSquares (MCTS-2)");
 		case KSquares::AI_MCTS_C: return QStringLiteral("KSquares (MCTS-3)");
+		case KSquares::AI_CONVNET: return QStringLiteral("Conv Net");
+		case KSquares::AI_DABBLENATIVE: return QStringLiteral("Dabble (Native)");
 		default: return QStringLiteral("Unbekannt");
 	}
 }
@@ -895,7 +920,7 @@ void KSquaresTestWindow::generateLatexResults()
 	{
 		tex += latexResultGroup(resultGroups[i]) + QStringLiteral("\n");
 	}
-	qDebug() << tex;
+	qDebug().noquote().nospace() << tex;
 }
 
 void KSquaresTestWindow::gameNew()

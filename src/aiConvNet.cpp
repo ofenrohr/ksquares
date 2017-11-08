@@ -81,7 +81,7 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 				linePoint = QPoint(x,y);
 			}
             if (c == bestVal && !invalidPoint) {
-				bestPoints.append(linePoint);
+				bestPoints.append(QPoint(x,y));
 			}
 		}
         pred << "\n";
@@ -92,8 +92,8 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 
 	if (bestPoints.count() > 1) {
 		linePoint = bestPoints[rand() % bestPoints.count()];
+        qDebug() << "selected point: " << linePoint;
 	}
-	qDebug() << "selected point: " << linePoint;
 
 
 	int ret = PBConnector::pointToLineIndex(linePoint, width);
