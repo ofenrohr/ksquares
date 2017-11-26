@@ -63,7 +63,7 @@ class KSquaresTestWindow : public KXmlGuiWindow
 
 	public:
 		///Constructor
-		KSquaresTestWindow();
+		KSquaresTestWindow(bool doFullTest = false);
 		~KSquaresTestWindow();
 
 	public slots:
@@ -91,6 +91,8 @@ class KSquaresTestWindow : public KXmlGuiWindow
 		QString resultStr;
 		
 		QThread* thread;
+
+		bool fullTest;
 		
 		int outstandingChooseLineCalls;
 		bool firstSetup;
@@ -105,6 +107,8 @@ class KSquaresTestWindow : public KXmlGuiWindow
 		
 		void updateResultStr();
 		void generateLatexResults();
+
+        QString latexResultGroup(QList<AITestResult> group);
 };
 
 #endif // KSQUARESDEMOWINDOW_H

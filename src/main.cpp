@@ -52,6 +52,7 @@ int main(int argc, char **argv)
     parser.addHelpOption();
     parser.addOption(QCommandLineOption(QStringList() <<  QStringLiteral("demo"), i18n("Run game in demo (autoplay) mode")));
     parser.addOption(QCommandLineOption(QStringList() <<  QStringLiteral("test"), i18n("Run AI tests")));
+    parser.addOption(QCommandLineOption(QStringList() <<  QStringLiteral("full-test"), i18n("Start over all AI tests")));
     parser.addOption(QCommandLineOption(QStringList() <<  QStringLiteral("generate"), i18n("Generate training data"), QStringLiteral("generate")));
     parser.addOption(QCommandLineOption(QStringList() <<  QStringLiteral("show-generate"), i18n("Generate training data")));
 
@@ -84,7 +85,11 @@ int main(int argc, char **argv)
         KSquaresTestWindow *testWindow = new KSquaresTestWindow;
         testWindow->show();
         testWindow->gameNew();
-    } else if (parser.isSet(QStringLiteral("generate"))) {
+    } else if (parser.isSet(QStringLiteral("full-test"))) {
+        KSquaresTestWindow *testWindow = new KSquaresTestWindow(true);
+        testWindow->show();
+        testWindow->gameNew();
+    }  else if (parser.isSet(QStringLiteral("generate"))) {
         bool ok = false;
         long exampleCnt = parser.value(QStringLiteral("generate")).toLong(&ok);
         qDebug() << parser.value(QStringLiteral("generate"));

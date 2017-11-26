@@ -16,11 +16,11 @@ class aiConvNet : public KSquaresAi {
         aiConvNet(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel, int thinkTime = 5000);
 		~aiConvNet();
 
-		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory);
-		QString getName() { return QStringLiteral("convnet"); }
-		virtual bool enabled() { return true; }
-		virtual bool tainted() { return false; }
-		virtual long lastMoveTime() { return turnTime; }
+		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory) override;
+		QString getName() override { return QStringLiteral("convnet"); }
+		bool enabled() override { return true; }
+		bool tainted() override { return false; }
+        long lastMoveTime() override { return turnTime; }
 
     protected:
 		/// The ID of the player this AI belongs to

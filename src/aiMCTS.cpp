@@ -52,7 +52,7 @@ MCTSNode::MCTSNode()
 	visitedCnt = 0;
 	value = 0.0;
 	moveSequence = QList<int>();
-	parent = MCTSNode::Ptr(NULL);
+	parent = MCTSNode::Ptr(nullptr);
 	children = QList<MCTSNode::Ptr>();
 	gameLeaf = false;
 	inTree = false;
@@ -79,7 +79,7 @@ int aiMCTS::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareO
 		qDebug() << "mcts didn't return a correct line: " << line;
 		qDebug() << "coosing random valid move";
 		QList<int> freeLines = aiFunctions::getFreeLines(lines, linesSize);
-		if (freeLines.size() <= 0)
+		if (freeLines.empty())
 		{
 			qDebug() << "no valid lines left!";
 			turnTime = moveTimer.elapsed();

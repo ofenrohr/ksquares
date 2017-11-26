@@ -3,6 +3,7 @@
 //
 
 #include <sstream>
+#include <QtCore/QElapsedTimer>
 #include "aiConvNet.h"
 #include "alphaDots/PBConnector.h"
 #include "alphaDots/MLDataGenerator.h"
@@ -18,7 +19,7 @@ aiConvNet::aiConvNet(int newPlayerId, int newMaxPlayerId, int newWidth, int newH
 	width = newWidth;
 	height = newHeight;
 	linesSize = toLinesSize(width, height);
-
+	turnTime = -5;
 }
 
 aiConvNet::~aiConvNet() {
@@ -27,6 +28,9 @@ aiConvNet::~aiConvNet() {
 
 int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners,
                           const QList<Board::Move> &lineHistory) {
+	QElapsedTimer moveTimer;
+	moveTimer.start();
+
 	zmq::context_t context(1);
 	zmq::socket_t socket(context, ZMQ_REQ);
 	socket.connect("tcp://127.0.0.1:12354");
@@ -97,6 +101,10 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 
 
 	int ret = PBConnector::pointToLineIndex(linePoint, width);
+
+	turnTime = moveTimer.elapsed();
+
+    qDebug() << "turn time = " << turnTime;
 
 	delete lines;
     return ret;

@@ -37,10 +37,12 @@
 #include "gameboardview.h"
 #include "ksquaresio.h"
 
-KSquaresTestWindow::KSquaresTestWindow() : KXmlGuiWindow(), m_view(new GameBoardView(this)), m_scene(0)
+KSquaresTestWindow::KSquaresTestWindow(bool doFullTest) : KXmlGuiWindow(), m_view(new GameBoardView(this)), m_scene(0)
 {
 	testSetups = QList<AITestSetup>();
 	testResults = QList<AITestResult>();
+
+	fullTest = doFullTest;
 	
 	initTest();
 	
@@ -246,10 +248,10 @@ void KSquaresTestWindow::initTest()
 {
 	testSetups.clear();
 	testResults.clear();
-	
-	if (loadStatus())
-		return;
-	
+
+	if (!fullTest && loadStatus())
+        return;
+
 
     for (int i = 0; i < 5; i++)
 	{
@@ -801,7 +803,7 @@ QString prettyAiLevel(int level)
 	}
 }
 
-QString latexResultGroup(QList<AITestResult> group)
+QString KSquaresTestWindow::latexResultGroup(QList<AITestResult> group)
 {
 	if (group.size() <= 0)
 		return QString();
@@ -812,7 +814,7 @@ QString latexResultGroup(QList<AITestResult> group)
 	QPair<int, int> losesP1(0,0);
 	QPair<int, int> losesP2(0,0);
 	QPair<int, int> tainted(0,0);
-	QPair<int, int> avgTime(0,0);
+	QPair<unsigned long long, unsigned long long> avgTime(0,0);
 	QPair<unsigned long long, unsigned long long> allTime(0,0);
 	QPair<unsigned long, unsigned long> timeDiv(0,0);
 	
@@ -900,7 +902,7 @@ QString latexResultGroup(QList<AITestResult> group)
 	ret << "  \\end{tabular}\n";
 	ret << "  \\caption{Ergebnisse von " << prettyAiLevel(lvls.first) << " gegen " << prettyAiLevel(lvls.second) << " auf $" << QString::number(group[0].setup.boardSize.x()) << " \\times " << QString::number(group[0].setup.boardSize.y()) << "$ Spielfeld bei maximal $" << QString::number(group[0].setup.timeout/1000) << "$ Sekunden Bedenkzeit}\n";
 	ret << "\\end{table}\n";
-	
+
 	return strret;
 }
 
@@ -1103,4 +1105,4 @@ void KSquaresTestWindow::updateResultStr()
 	resultStr = QStringLiteral("Remaining games: ") + QString::number(testSetups.size());
 }
 
-#include "ksquarestestwindow.moc"
+//#include "ksquarestestwindow.moc"
