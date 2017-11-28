@@ -152,18 +152,18 @@ QList<int> aiEasyMediumHard::chooseLeastDamaging(const QList<int> &choiceList) c
 		ownSquaresCnt = findOwnChains(lines, linesSize, width, height, &ownChains);
 		//qDebug() << "ownChains:" << ownChains;
     
-    memcpy(myLines.data(), lines, linesSize);
+        memcpy(myLines.data(), lines, linesSize);
 
 		// complete the shortest chain first if there is more than one chain. this is needed to stop alternating between two chains because that works against the hard ai move which takes the next chain by sacrificing 2/4 squares. when alternating between two chains it's possible that there are 3 remaining open lines in both chains combined which triggers the evil move too late because the chains were completed in the wrong order
 		int minChain=-1;
 		int tmp=width*height*10;
 		for(int i = 0; i < ownChains.size(); i++)
 		{
-      for (int j = 0; j < ownChains.at(i).size(); j++)
-      {
-        ownLinesCnt++;
-        myLines[ownChains.at(i).at(j)] = true;
-      }
+            for (int j = 0; j < ownChains.at(i).size(); j++)
+            {
+                ownLinesCnt++;
+                myLines[ownChains.at(i).at(j)] = true;
+            }
 			if(tmp > ownChains.at(i).size())
 			{
 				tmp = ownChains.at(i).size();

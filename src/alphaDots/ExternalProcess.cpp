@@ -9,7 +9,7 @@
 ExternalProcess::ExternalProcess(QString processPath, QStringList arguments) {
 	processExecutablePath = processPath;
 	processArguments = arguments;
-	process = NULL;
+	process = nullptr;
 }
 
 ExternalProcess::~ExternalProcess() {
@@ -53,7 +53,7 @@ bool ExternalProcess::startExternalProcess() {
 
 bool ExternalProcess::stopExternalProcess() {
 	qDebug() << "stopExternalProcess()";
-	if (process!=NULL)
+	if (process!=nullptr)
 	{
 		disconnect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(processError(QProcess::ProcessError)));
 		disconnect(process, SIGNAL(stateChanged(QProcess::ProcessState)), this, SLOT(processStateChanged(QProcess::ProcessState)));
@@ -74,10 +74,19 @@ bool ExternalProcess::stopExternalProcess() {
 			}
 		}
 		delete process;
-		process = NULL;
+		process = nullptr;
 	}
 	processRunning = true;
     return true;
+}
+
+void ExternalProcess::addEnvironmentVariable(QString name, QString value) {
+	if (process == nullptr) {
+		return;
+	}
+	QProcessEnvironment env = process->processEnvironment();
+	env.insert(name, value);
+	process->setProcessEnvironment(env);
 }
 
 void ExternalProcess::processError(const QProcess::ProcessError error) {

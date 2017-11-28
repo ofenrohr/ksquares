@@ -4,6 +4,7 @@
 
 #include <sstream>
 #include <QtCore/QElapsedTimer>
+#include <settings.h>
 #include "aiConvNet.h"
 #include "alphaDots/PBConnector.h"
 #include "alphaDots/MLDataGenerator.h"
@@ -20,10 +21,19 @@ aiConvNet::aiConvNet(int newPlayerId, int newMaxPlayerId, int newWidth, int newH
 	height = newHeight;
 	linesSize = toLinesSize(width, height);
 	turnTime = -5;
+
+	QStringList args;
+	args << Settings::alphaDotsDir() + QStringLiteral("/modelServer/modelServer.py");
+	modelServer = new ExternalProcess(QStringLiteral("/usr/bin/python2.7"), args);
+	modelServer->addEnvironmentVariable(QStringLiteral("CUDA_VISIBLE_DEVICES"), QStringLiteral(" "));
+	if (!modelServer->startExternalProcess()) {
+		qDebug() << "ERROR: can't start model server!";
+	}
 }
 
 aiConvNet::~aiConvNet() {
-
+	modelServer->stopExternalProcess();
+	delete modelServer;
 }
 
 int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners,

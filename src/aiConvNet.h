@@ -8,6 +8,7 @@
 #include <string>
 #include "aicontroller.h"
 #include <zmq.hpp>
+#include <alphaDots/ExternalProcess.h>
 #include "alphaDots/protobuf/DotsAndBoxesImage.pb.h"
 
 
@@ -35,6 +36,8 @@ class aiConvNet : public KSquaresAi {
 		int level;
 		/// time logging
 		long turnTime;
+        /// model sever
+        ExternalProcess *modelServer;
 };
 
 

@@ -56,6 +56,11 @@ http://www.kde.org/standards/kcfg/1.0/kcfg.xsd" >
 			<whatsthis>Maximum time in seconds for AI to come up with a move</whatsthis>
 			<default>5</default>
 		</entry>
+		<entry name="AlphaDotsDir" type="String">
+			<label>Directory containing AlphaDots</label>
+			<whatsthis>Directory containing AlphaDots</whatsthis>
+			<default>/usr/share/alphaDots</default>
+		</entry>
 	</group>
 	<group name="Display">
 		<entry name="LineColor" type="Color">

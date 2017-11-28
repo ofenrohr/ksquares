@@ -25,6 +25,8 @@ public:
 
     bool isRunning() { return processRunning; }
 
+    void addEnvironmentVariable(QString name, QString value);
+
 public slots:
     void processError(const QProcess::ProcessError error);
     void processStateChanged(const QProcess::ProcessState newState);
