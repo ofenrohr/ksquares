@@ -25,7 +25,7 @@ aiConvNet::aiConvNet(int newPlayerId, int newMaxPlayerId, int newWidth, int newH
 	QStringList args;
 	args << Settings::alphaDotsDir() + QStringLiteral("/modelServer/modelServer.py");
 	modelServer = new ExternalProcess(QStringLiteral("/usr/bin/python2.7"), args);
-	modelServer->addEnvironmentVariable(QStringLiteral("CUDA_VISIBLE_DEVICES"), QStringLiteral(" "));
+	modelServer->addEnvironmentVariable(QStringLiteral("CUDA_VISIBLE_DEVICES"), QStringLiteral("-1"));
 	if (!modelServer->startExternalProcess()) {
 		qDebug() << "ERROR: can't start model server!";
 	}

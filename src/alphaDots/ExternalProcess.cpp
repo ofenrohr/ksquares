@@ -26,12 +26,17 @@ bool ExternalProcess::startExternalProcess() {
 		stopExternalProcess();
 		if (process)
 		{
-			qDebug() << "ERROR: dabble still running, teardown didn't work! not starting dabble";
+			qDebug() << "ERROR: process still running, teardown didn't work! not starting another process";
 			return false;
 		}
 	}
 	//converterArguments << converterExecutable << QStringLiteral("--zmq") << QString::number(samples) << QStringLiteral("--output-file") << datasetPath;
 	process = new QProcess();
+	QProcessEnvironment env = process->processEnvironment();
+    for (int i = 0; i < envVars.count(); i++) {
+        env.insert(envVars[i].first, envVars[i].second);
+    }
+	process->setProcessEnvironment(env);
 	qRegisterMetaType<QProcess::ProcessError>("QProcess::ProcessError");
 	qRegisterMetaType<QProcess::ProcessState>("QProcess::ProcessState");
 	qRegisterMetaType<QProcess::ExitStatus>("QProcess::ExitStatus");
@@ -81,12 +86,7 @@ bool ExternalProcess::stopExternalProcess() {
 }
 
 void ExternalProcess::addEnvironmentVariable(QString name, QString value) {
-	if (process == nullptr) {
-		return;
-	}
-	QProcessEnvironment env = process->processEnvironment();
-	env.insert(name, value);
-	process->setProcessEnvironment(env);
+	envVars.append(QPair<QString,QString>(name, value));
 }
 
 void ExternalProcess::processError(const QProcess::ProcessError error) {

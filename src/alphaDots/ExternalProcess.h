@@ -39,6 +39,7 @@ protected:
     QStringList processArguments;
     QProcess *process;
     bool processRunning;
+    QList<QPair<QString, QString>> envVars;
 };
 
 
