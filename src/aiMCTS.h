@@ -77,7 +77,9 @@ class aiMCTS : public KSquaresAi
 		MCTSNode::Ptr mctsRootNode;
 		/// initial board
 		aiBoard::Ptr board;
-		
+
+		KSquaresAi::Ptr simAi;
+
 		/// time logging
 		long turnTime;
 		

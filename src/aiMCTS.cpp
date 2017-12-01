@@ -37,7 +37,10 @@ aiMCTS::aiMCTS(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight,
 		case KSquares::AI_EASY:
 		case KSquares::AI_MEDIUM:
 		case KSquares::AI_HARD:
+			simAi = KSquaresAi::Ptr(new aiConvNet(0, 1, width, height, 0));
+            break;
 		case KSquares::AI_CONVNET:
+			simAi = KSquaresAi::Ptr(new aiEasyMediumHard(0, width, height, level));
 		break;
 	}
 }
@@ -98,7 +101,8 @@ int aiMCTS::mcts()
 	// init mcts
 	mctsTimer.start();
 	mctsRootNode = MCTSNode::Ptr(new MCTSNode());
-	
+
+	int mctsIterations = 0;
 	// fill mcts tree
 	while (!mctsTimer.hasExpired(mctsTimeout))
 	{
@@ -108,7 +112,11 @@ int aiMCTS::mcts()
 		expansion(node);
 		simulation(node);
 		backpropagation(node);
+
+		mctsIterations++;
 	}
+
+	qDebug() << "MCTS iterations: " << mctsIterations;
 	
 	// select most promising move
 	int line = -1;
@@ -199,13 +207,7 @@ void aiMCTS::expansion(MCTSNode::Ptr node)
 
 void aiMCTS::simulation(MCTSNode::Ptr node)
 {
-	// prepare simulation
-	KSquaresAi::Ptr simAi;
-	if (level == KSquares::AI_CONVNET) {
-		simAi = KSquaresAi::Ptr(new aiConvNet(0, 1, board->width, board->height, 0));
-	} else {
-		simAi = KSquaresAi::Ptr(new aiEasyMediumHard(0, board->width, board->height, level));
-	}
+
 	QVector<int> simulationHistory;
 	int missingLines = 0;
 	QList<bool> linesList;
