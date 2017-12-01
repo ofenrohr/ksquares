@@ -10,6 +10,7 @@
 #include <alphaDots/datasets/FirstTryDataset.h>
 #include <alphaDots/datasets/StageOneDataset.h>
 #include <alphaDots/datasets/BasicStrategyDataset.h>
+#include <alphaDots/datasets/SequenceDataset.h>
 #include "aiEasyMediumHard.h"
 #include "MLDataGeneratorWorkerThread.h"
 #include "ExternalProcess.h"
@@ -31,9 +32,7 @@ MLDataGenerator::~MLDataGenerator() {}
 
 void MLDataGenerator::initConstructor() {
     gbs = NULL;
-    //guiGenerator = DatasetGenerator::Ptr(new FirstTryDataset());
-    //guiGenerator = DatasetGenerator::Ptr(new StageOneDataset(true));
-    guiGenerator = DatasetGenerator::Ptr(new BasicStrategyDataset(true, 5, 4));
+    selectGenerator(2);
     threadProgr.clear();
     threadCnt = 4;
 
@@ -47,8 +46,33 @@ void MLDataGenerator::initConstructor() {
 
     // next button
     connect(nextBtn, SIGNAL(clicked()), this, SLOT(nextBtnClicked()));
+    connect(generatorSelector, SIGNAL(currentIndexChanged(int)), this, SLOT(selectGenerator(int)));
 
     QTimer::singleShot(0, this, &MLDataGenerator::initObject);
+}
+
+void MLDataGenerator::selectGenerator(int gen) {
+    qDebug() << "selectGenerator(" << gen << ")";
+    switch (gen) {
+        case 0:
+            guiGenerator = DatasetGenerator::Ptr(new FirstTryDataset(5,4, QStringLiteral("")));
+            qDebug() << "selected first try generator";
+            break;
+        case 1:
+            guiGenerator = DatasetGenerator::Ptr(new StageOneDataset(true));
+            qDebug() << "selected stage one generator";
+            break;
+        case 2:
+            guiGenerator = DatasetGenerator::Ptr(new BasicStrategyDataset(true, 5, 4));
+            qDebug() << "selected basic strategy generator";
+            break;
+        case 3:
+            guiGenerator = DatasetGenerator::Ptr(new SequenceDataset(true, 5, 4));
+            qDebug() << "selected sequence generator";
+            break;
+        default:
+            break;
+    }
 }
 
 void MLDataGenerator::initObject() {

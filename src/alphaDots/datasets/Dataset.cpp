@@ -8,9 +8,21 @@ AlphaDots::Dataset::Dataset() {
     valid = false;
 }
 
-AlphaDots::Dataset::Dataset(const QImage &inputImg, const QImage &outputImg, const aiBoard::Ptr &board) : inputImg(
-        inputImg), outputImg(outputImg), board(board) {
+AlphaDots::Dataset::Dataset(const QImage &inputImg, const QImage &outputImg, const aiBoard::Ptr &board) :
+    inputImg(inputImg),
+    outputImg(outputImg),
+    board(board)
+{
     valid = true;
+    isSeq = false;
+}
+
+AlphaDots::Dataset::Dataset(const QList<QImage> &seq, const aiBoard::Ptr &board) :
+    sequence(seq),
+    board(board)
+{
+    valid = true;
+    isSeq = true;
 }
 
 const QImage &AlphaDots::Dataset::getInputImg() const {
@@ -39,4 +51,8 @@ void AlphaDots::Dataset::setBoard(const aiBoard::Ptr &board) {
 
 const bool AlphaDots::Dataset::isValid() const {
     return valid;
+}
+
+const bool AlphaDots::Dataset::isSequence() const {
+    return isSeq;
 }

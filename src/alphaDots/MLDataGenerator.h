@@ -73,6 +73,8 @@ namespace AlphaDots {
 
         void recvProgress(int progress, int thread);
 
+        void selectGenerator(int generator);
+
     private:
         //QLabel *m_view;
         QWidget *m_view;

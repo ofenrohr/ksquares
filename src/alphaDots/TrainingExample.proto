@@ -1,0 +1,16 @@
+syntax = "proto2";
+
+package AlphaDots;
+
+message TrainingExample {
+    required int32 width = 1;
+    required int32 height = 2;
+    repeated int32 input = 3;
+    repeated int32 output = 4;
+}
+
+message GameSequence {
+    required int32 width = 1;
+    required int32 height = 2;
+    repeated TrainingExample game = 4;
+}

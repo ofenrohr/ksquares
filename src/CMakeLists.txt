@@ -47,7 +47,7 @@ set(ksquares_SRCS
     alphaDots/datasets/StageOneDataset.cpp
     alphaDots/ExternalProcess.cpp
     alphaDots/datasets/Dataset.cpp
-		alphaDots/datasets/BasicStrategyDataset.cpp alphaDots/datasets/BasicStrategyDataset.h)
+		alphaDots/datasets/BasicStrategyDataset.cpp alphaDots/datasets/BasicStrategyDataset.h alphaDots/datasets/SequenceDataset.cpp alphaDots/datasets/SequenceDataset.h)
 
 include_directories(${CMAKE_SOURCE_DIR}/libKF5KDEGames/highscore ${ZeroMQ_INCLUDE_DIR})
 
