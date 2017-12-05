@@ -10,10 +10,10 @@
 
 using namespace AlphaDots;
 
-StageOneDataset::StageOneDataset(bool gui) {
+StageOneDataset::StageOneDataset(bool gui, int w, int h) {
     isGUI = gui;
-    width = 5;
-    height = 4;
+    width = w;
+    height = h;
 
     sampleIdx = 0;
 }
@@ -28,7 +28,7 @@ void StageOneDataset::cleanup() {
     }
 }
 
-void StageOneDataset::startConverter(int width, int height, int samples) {
+void StageOneDataset::startConverter(int samples) {
     int widthImg = MLDataGenerator::boxesToImgSize(width);
     int heightImg = MLDataGenerator::boxesToImgSize(height);
 

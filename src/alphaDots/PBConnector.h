@@ -7,6 +7,7 @@
 
 #include <QtGui/QImage>
 #include <zmq.hpp>
+#include <alphaDots/protobuf/GameSequence.pb.h>
 #include <alphaDots/protobuf/TrainingExample.pb.h>
 #include "alphaDots/protobuf/DotsAndBoxesImage.pb.h"
 
@@ -20,6 +21,7 @@ namespace AlphaDots {
          */
         static DotsAndBoxesImage toProtobuf(QImage img);
         static TrainingExample toProtobuf(QImage inp, QImage outp);
+        static GameSequence toProtobuf(QList<QImage> seq);
 
         /**
          * Put the protobuf image data back in a QImage

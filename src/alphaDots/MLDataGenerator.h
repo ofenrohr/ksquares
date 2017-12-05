@@ -42,6 +42,8 @@ namespace AlphaDots {
         static const int MLImageDot = 215;
         static const int MLImageLine = 255;
 
+        static aiBoard::Ptr createEmptyBoard(int width, int height);
+
         /**
          * Generates board with random (usrful) state with some safe moves left
          * @param width in boxes
@@ -69,7 +71,7 @@ namespace AlphaDots {
 
         void nextBtnClicked();
 
-        void dataGeneratorFinished();
+        void dataGeneratorFinished(int threadIdx);
 
         void recvProgress(int progress, int thread);
 
@@ -82,30 +84,28 @@ namespace AlphaDots {
 
         long examplesCnt;
         int threadCnt;
+        int runningThreadCnt;
         QList<int> threadProgr;
 
         QImage inputImage;
         QImage outputImage;
 
         DatasetGenerator::Ptr guiGenerator;
+        QList<DatasetGenerator::Ptr> threadGenerators;
 
         static void drawBackgroundAndDots(QImage &img, bool drawDots = true);
-
         static void drawLineAt(QImage &img, int lineIdx, int w, int h);
-
         static void drawLines(QImage &img, aiBoard::Ptr board);
-
         static void drawBoxes(QImage &img, aiBoard::Ptr board);
 
         void initConstructor();
 
-        void setupThread(DatasetGenerator::Ptr generator);
+        void setupGeneratorThreads();
 
-        void generateFirstTryDataset();
-
-        void generateStageOneDataset();
-
-        void generateBasicStrategyDataset();
+        DatasetGenerator::Ptr getFirstTryDatasetGenerator();
+        DatasetGenerator::Ptr getStageOneDatasetGenerator();
+        DatasetGenerator::Ptr getBasicStrategyDatasetGenerator();
+        DatasetGenerator::Ptr getSequenceDatasetGenerator();
 
         void generateGUIexample();
     };

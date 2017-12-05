@@ -16,6 +16,8 @@ namespace AlphaDots {
 
         Dataset generateDataset() override;
 
+        void startConverter(int examplesCnt) override {};
+
     private:
         int width;
         int height;

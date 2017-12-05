@@ -14,13 +14,13 @@ namespace AlphaDots {
     public:
         typedef QSharedPointer<StageOneDataset> Ptr;
 
-        StageOneDataset(bool gui);
+        StageOneDataset(bool gui, int w, int h);
 
         ~StageOneDataset();
 
         Dataset generateDataset() override;
 
-        void startConverter(int width, int height, int samples);
+        void startConverter(int samples);
 
         void cleanup() override;
 

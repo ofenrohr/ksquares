@@ -41,13 +41,16 @@ set(ksquares_SRCS
     aiConvNet.cpp
     alphaDots/protobuf/DotsAndBoxesImage.pb.cc
     alphaDots/protobuf/TrainingExample.pb.cc
+    alphaDots/protobuf/GameSequence.pb.cc
     alphaDots/PBConnector.cpp
     alphaDots/datasets/FirstTryDataset.cpp
     alphaDots/datasets/DatasetGenerator.cpp
     alphaDots/datasets/StageOneDataset.cpp
     alphaDots/ExternalProcess.cpp
     alphaDots/datasets/Dataset.cpp
-		alphaDots/datasets/BasicStrategyDataset.cpp alphaDots/datasets/BasicStrategyDataset.h alphaDots/datasets/SequenceDataset.cpp alphaDots/datasets/SequenceDataset.h)
+    alphaDots/datasets/BasicStrategyDataset.cpp
+    alphaDots/datasets/SequenceDataset.cpp
+)
 
 include_directories(${CMAKE_SOURCE_DIR}/libKF5KDEGames/highscore ${ZeroMQ_INCLUDE_DIR})
 

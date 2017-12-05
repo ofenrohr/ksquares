@@ -26,7 +26,7 @@ namespace AlphaDots {
 
         void progress(const int &progress, const int &threadid);
 
-        void finished();
+        void finished(int threadID);
 
     private:
         long sampleCnt;

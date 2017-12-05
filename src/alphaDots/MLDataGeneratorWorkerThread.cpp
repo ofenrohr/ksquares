@@ -43,5 +43,5 @@ void MLDataGeneratorWorkerThread::process() {
 
     //dataGenerator->cleanup();
 
-    emit finished();
+    emit finished(threadId);
 }

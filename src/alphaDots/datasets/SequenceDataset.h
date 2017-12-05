@@ -7,6 +7,7 @@
 
 
 #include <alphaDots/ExternalProcess.h>
+#include <zmq.hpp>
 #include "DatasetGenerator.h"
 
 using namespace AlphaDots;
@@ -33,6 +34,11 @@ protected:
     int sampleIdx;
 
     ExternalProcess *converter;
+
+    bool connectionReady;
+    zmq::context_t* context;
+    zmq::socket_t* socket;
+    zmq::socket_t* getSocket();
 };
 
 

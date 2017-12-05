@@ -38,6 +38,32 @@ TrainingExample PBConnector::toProtobuf(QImage inp, QImage outp) {
     return ret;
 }
 
+GameSequence PBConnector::toProtobuf(QList<QImage> seq) {
+    GameSequence ret;
+
+    if (seq.count() <= 0) {
+        return ret;
+    }
+
+    int w = seq[0].width();
+    int h = seq[0].height();
+
+    ret.set_width(w);
+    ret.set_height(h);
+
+    for (int i = 0; i < seq.count(); i++) {
+        TrainingExample *frame = ret.add_game();
+        frame->set_width(w);
+        frame->set_height(h);
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                frame->add_input(seq[i].pixelColor(x, y).red());
+            }
+        }
+    }
+    return ret;
+}
+
 QImage PBConnector::fromProtobuf(std::string msg) {
     DotsAndBoxesImage img;
     img.ParseFromString(msg);

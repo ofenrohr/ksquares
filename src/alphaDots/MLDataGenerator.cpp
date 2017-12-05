@@ -59,7 +59,7 @@ void MLDataGenerator::selectGenerator(int gen) {
             qDebug() << "selected first try generator";
             break;
         case 1:
-            guiGenerator = DatasetGenerator::Ptr(new StageOneDataset(true));
+            guiGenerator = DatasetGenerator::Ptr(new StageOneDataset(true, 5,4));
             qDebug() << "selected stage one generator";
             break;
         case 2:
@@ -80,49 +80,64 @@ void MLDataGenerator::initObject() {
 
     //generateFirstTryDataset();
     //generateStageOneDataset();
-    generateBasicStrategyDataset();
+    //generateBasicStrategyDataset();
+    //generateSequenceDataset();
+    setupGeneratorThreads();
 }
 
-void MLDataGenerator::generateFirstTryDataset() {
+DatasetGenerator::Ptr MLDataGenerator::getFirstTryDatasetGenerator() {
     int width = 5;
     int height = 4;
     FirstTryDataset::Ptr generator = FirstTryDataset::Ptr(new FirstTryDataset(width, height, QStringLiteral("/home/ofenrohr/arbeit/master/data")));
-    setupThread(generator);
+    return generator;
 }
 
-void MLDataGenerator::generateStageOneDataset() {
-    StageOneDataset::Ptr gen = StageOneDataset::Ptr(new StageOneDataset(false));
-    gen->startConverter(5,4, examplesCnt);
-    setupThread(gen);
+DatasetGenerator::Ptr MLDataGenerator::getStageOneDatasetGenerator() {
+    StageOneDataset::Ptr gen = StageOneDataset::Ptr(new StageOneDataset(false, 5,4));
+    return gen;
 }
 
-void MLDataGenerator::generateBasicStrategyDataset() {
+DatasetGenerator::Ptr MLDataGenerator::getBasicStrategyDatasetGenerator() {
     BasicStrategyDataset::Ptr gen = BasicStrategyDataset::Ptr(new BasicStrategyDataset(false, 5,4));
-    gen->startConverter(examplesCnt);
-    setupThread(gen);
+    return gen;
 }
 
-void MLDataGenerator::setupThread(DatasetGenerator::Ptr generator) {
+DatasetGenerator::Ptr MLDataGenerator::getSequenceDatasetGenerator() {
+    SequenceDataset::Ptr gen = SequenceDataset::Ptr(new SequenceDataset(false, 5,4));
+    return gen;
+}
+
+void MLDataGenerator::setupGeneratorThreads() {
     qDebug() << examplesCnt;
+    if (threadGenerators.count() > 0) {
+        qDebug() << "ERROR: thread list is not empty!";
+        return;
+    }
     if (examplesCnt > 0) {
         nextBtn->setEnabled(false);
         progressBar->setValue(0);
 
         for (int i = 0; i < threadCnt; i++) {
+            DatasetGenerator::Ptr gen = getSequenceDatasetGenerator();
+            threadGenerators.append(gen);
+            if (i == 0) {
+                gen->startConverter(examplesCnt);
+            }
             // https://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
             QThread *thread = new QThread;
-            MLDataGeneratorWorkerThread *worker = new MLDataGeneratorWorkerThread(examplesCnt / threadCnt, generator, i);
+            MLDataGeneratorWorkerThread *worker = new MLDataGeneratorWorkerThread(examplesCnt / threadCnt, gen, i);
             worker->moveToThread(thread);
             //connect(worker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
             connect(thread, SIGNAL(started()), worker, SLOT(process()));
-            connect(worker, SIGNAL(finished()), thread, SLOT(quit()));
-            connect(worker, SIGNAL(finished()), worker, SLOT(deleteLater()));
+            connect(worker, SIGNAL(finished(int)), thread, SLOT(quit()));
+            connect(worker, SIGNAL(finished(int)), worker, SLOT(deleteLater()));
             connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
             connect(worker, SIGNAL(progress(int, int)), this, SLOT(recvProgress(int, int)));
-            connect(thread, SIGNAL(finished()), this, SLOT(dataGeneratorFinished()));
+            connect(worker, SIGNAL(finished(int)), this, SLOT(dataGeneratorFinished(int)));
             //connect(generator.data(), SIGNAL(sendGUIsample(aiBoard::Ptr, QImage, QImage)), this, SLOT(setGUIgame(aiBoard::Ptr, QImage, QImage)));
             thread->start();
         }
+        runningThreadCnt = threadCnt;
     } else {
         progressBar->setVisible(false);
     }
@@ -139,10 +154,14 @@ void MLDataGenerator::recvProgress(int progress, int thread) {
     progressBar->setValue(sum / threadCnt);
 }
 
-void MLDataGenerator::dataGeneratorFinished() {
-    nextBtn->setEnabled(true);
-    progressBar->setVisible(false);
-    qDebug() << "done generating data";
+void MLDataGenerator::dataGeneratorFinished(int threadIdx) {
+    threadGenerators[threadIdx]->cleanup();
+    runningThreadCnt--;
+    if (runningThreadCnt <= 0) {
+        nextBtn->setEnabled(true);
+        progressBar->setVisible(false);
+        qDebug() << "done generating data";
+    }
 }
 
 void MLDataGenerator::generateGUIexample() {// setup
@@ -213,8 +232,7 @@ void MLDataGenerator::nextBtnClicked() {
     generateGUIexample();
 }
 
-aiBoard::Ptr MLDataGenerator::generateRandomBoard(int width, int height, int safeMoves) {
-    // generate the board with auto fill
+aiBoard::Ptr MLDataGenerator::createEmptyBoard(int width, int height) {
     int linesSize = aiFunctions::toLinesSize(width, height);
     bool *lines = new bool[linesSize];
     for (int i = 0; i < linesSize; i++) {
@@ -225,6 +243,12 @@ aiBoard::Ptr MLDataGenerator::generateRandomBoard(int width, int height, int saf
         squareOwners.append(-1);
     }
     aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(lines, linesSize, width, height, squareOwners, 0, 1));
+    return board;
+}
+
+aiBoard::Ptr MLDataGenerator::generateRandomBoard(int width, int height, int safeMoves) {
+    aiBoard::Ptr board = createEmptyBoard(width, height);
+    // generate the board with auto fill
     QList<int> autoFillLines = aiController::autoFill(safeMoves, width, height);
     foreach (int line, autoFillLines) {
         board->doMove(line);

@@ -19,6 +19,8 @@ namespace AlphaDots {
 
         virtual Dataset generateDataset() = 0;
 
+        virtual void startConverter(int examplesCnt) = 0;
+
         virtual void cleanup() {}
 
     signals:
