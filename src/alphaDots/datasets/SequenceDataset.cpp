@@ -19,9 +19,7 @@ SequenceDataset::~SequenceDataset() {
 }
 
 Dataset SequenceDataset::generateDataset() {
-    qDebug() << "generateDataset";
     getSocket();
-    qDebug() << "socket";
     QList<QImage> seqData;
     KSquaresAi::Ptr ai = KSquaresAi::Ptr(new aiEasyMediumHard(0, width, height, 2));
     Board board(2, width, height);
@@ -34,11 +32,10 @@ Dataset SequenceDataset::generateDataset() {
         bool nextPlayer;
         QList<int> completedSquares;
         board.addLine(line, &nextPlayer, &boardFilled, &completedSquares);
-        seqData.append(MLDataGenerator::generateOutputImage(aiboard, linesList));
+        seqData.append(MLDataGenerator::generateOutputImage(aiboard, linesList, true));
     }
 
     if (!isGUI) {
-        qDebug() << "sending...";
         // send it to the python dataset converter
         GameSequence gameSequence = PBConnector::toProtobuf(seqData);
         if (!PBConnector::sendString(*socket, gameSequence.SerializeAsString())) {
@@ -50,7 +47,6 @@ Dataset SequenceDataset::generateDataset() {
             qDebug() << "process sent invalid reply: " << rpl.c_str();
             return Dataset();
         }
-        qDebug() << "done";
 
         //qDebug() << ".";
         sampleIdx++;
@@ -66,7 +62,7 @@ void SequenceDataset::startConverter(int samples) {
 
     QStringList args;
     args << QStringLiteral("/home/ofenrohr/arbeit/master/code/alphaDots/datasetConverter/convert.py")
-         << QStringLiteral("--debug")
+         //<< QStringLiteral("--debug")
          << QStringLiteral("--zmq")
          << QString::number(samples)
          << QStringLiteral("--seq")

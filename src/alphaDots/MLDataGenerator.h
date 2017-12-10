@@ -61,7 +61,7 @@ namespace AlphaDots {
 
         static QImage generateOutputImage(aiBoard::Ptr board, KSquaresAi::Ptr ai);
 
-        static QImage generateOutputImage(aiBoard::Ptr board, QList<int> lines);
+        static QImage generateOutputImage(aiBoard::Ptr board, QList<int> lines, bool drawDots = false);
 
         static void saveImage(QString dataSetName, QString instanceName, QString dest, QImage &img);
 

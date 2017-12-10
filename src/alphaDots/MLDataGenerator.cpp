@@ -344,13 +344,13 @@ QImage MLDataGenerator::generateOutputImage(aiBoard::Ptr board, KSquaresAi::Ptr 
     return img;
 }
 
-QImage MLDataGenerator::generateOutputImage(aiBoard::Ptr board, QList<int> lines) {
+QImage MLDataGenerator::generateOutputImage(aiBoard::Ptr board, QList<int> lines, bool drawDots) {
     int imgWidth = board->width*2+3; // 1px border
     int imgHeight = board->height*2+3;
 
     QImage img(imgWidth, imgHeight, QImage::Format_ARGB32);
 
-    drawBackgroundAndDots(img, false);
+    drawBackgroundAndDots(img, drawDots);
     foreach (int line, lines) {
         drawLineAt(img, line, board->width, board->height);
     }
