@@ -32,7 +32,8 @@ Dataset SequenceDataset::generateDataset() {
         bool nextPlayer;
         QList<int> completedSquares;
         board.addLine(line, &nextPlayer, &boardFilled, &completedSquares);
-        seqData.append(MLDataGenerator::generateOutputImage(aiboard, linesList, true));
+        aiboard->doMove(line);
+        seqData.append(MLDataGenerator::generateInputImage(aiboard));
     }
 
     if (!isGUI) {
