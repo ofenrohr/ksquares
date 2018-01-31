@@ -39,9 +39,9 @@ set(ksquares_SRCS
     alphaDots/MLDataGenerator.cpp
     alphaDots/MLDataGeneratorWorkerThread.cpp
     aiConvNet.cpp
-    alphaDots/protobuf/DotsAndBoxesImage.pb.cc
-    alphaDots/protobuf/TrainingExample.pb.cc
-    alphaDots/protobuf/GameSequence.pb.cc
+    #alphaDots/protobuf/DotsAndBoxesImage.pb.cc
+    #alphaDots/protobuf/TrainingExample.pb.cc
+    #alphaDots/protobuf/GameSequence.pb.cc
     alphaDots/PBConnector.cpp
     alphaDots/datasets/FirstTryDataset.cpp
     alphaDots/datasets/DatasetGenerator.cpp
@@ -52,7 +52,14 @@ set(ksquares_SRCS
     alphaDots/datasets/SequenceDataset.cpp
 )
 
+file(GLOB protoMessages alphaDots/protobuf/*.proto)
+PROTOBUF_GENERATE_CPP(ProtoSrcs ProtoHeaders ${protoMessages})
+
+message(ProtoSrcs: ${ProtoSrcs})
+message(ProtoHeaders: ${ProtoHeaders})
+
 include_directories(${CMAKE_SOURCE_DIR}/libKF5KDEGames/highscore ${ZeroMQ_INCLUDE_DIR})
+
 
 ki18n_wrap_ui(ksquares_SRCS newgamewidget.ui scoreswidget.ui prefs_ai.ui prefs_display.ui alphaDots/mldataview.ui)
 
@@ -62,7 +69,7 @@ set(CMAKE_AUTOMOC ON)
 
 file(GLOB ICONS_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/*-apps-ksquares.png")
 ecm_add_app_icon(ksquares_SRCS ICONS ${ICONS_SRCS})
-add_executable(ksquares ${ksquares_SRCS})
+add_executable(ksquares ${ksquares_SRCS} ${ProtoSrcs})
 
 target_link_libraries(ksquares
     KF5::Completion

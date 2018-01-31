@@ -7,9 +7,9 @@
 
 #include <QtGui/QImage>
 #include <zmq.hpp>
-#include <alphaDots/protobuf/GameSequence.pb.h>
-#include <alphaDots/protobuf/TrainingExample.pb.h>
-#include "alphaDots/protobuf/DotsAndBoxesImage.pb.h"
+#include "GameSequence.pb.h"
+#include "TrainingExample.pb.h"
+#include "DotsAndBoxesImage.pb.h"
 
 namespace AlphaDots {
     class PBConnector {
