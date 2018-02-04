@@ -19,22 +19,35 @@ using namespace AlphaDots;
 
 MLDataGenerator::MLDataGenerator() : KXmlGuiWindow(), m_view(new QWidget()) {
     examplesCnt = -1;
+    generateDatasetType = FirstTry;
+    datasetWidth = 5;
+    datasetHeight = 4;
+    datasetDestDir = QStringLiteral("./");
     initConstructor();
 }
 
-MLDataGenerator::MLDataGenerator(long samples) : KXmlGuiWindow(), m_view(new QWidget()) {
+MLDataGenerator::MLDataGenerator(long samples, DatasetType datasetType, int width, int height, QString destDir) : KXmlGuiWindow(), m_view(new QWidget()) {
     qDebug() << "auto generate mode";
     examplesCnt = samples;
+    generateDatasetType = datasetType;
+    datasetWidth = width;
+    datasetHeight = height;
+    datasetDestDir = destDir;
     initConstructor();
 }
 
 MLDataGenerator::~MLDataGenerator() {}
 
 void MLDataGenerator::initConstructor() {
-    gbs = NULL;
-    selectGenerator(2);
+    qDebug() << "setting up dataset generator";
+    qDebug() << " |-> samples = " << examplesCnt;
+    qDebug() << " |-> dataset type = " << generateDatasetType;
+    qDebug() << " |-> width = " << datasetWidth;
+    qDebug() << " |-> height = " << datasetHeight;
+    qDebug() << " |-> destination directory = " << datasetDestDir;
+    gbs = nullptr;
+    selectGenerator(0);
     threadProgr.clear();
-    threadCnt = 4;
 
     for (int i = 0; i < threadCnt; i++) {
         threadProgr.append(0);
@@ -55,19 +68,19 @@ void MLDataGenerator::selectGenerator(int gen) {
     qDebug() << "selectGenerator(" << gen << ")";
     switch (gen) {
         case 0:
-            guiGenerator = DatasetGenerator::Ptr(new FirstTryDataset(5,4, QStringLiteral("")));
+            guiGenerator = DatasetGenerator::Ptr(new FirstTryDataset(datasetWidth, datasetHeight, QStringLiteral("")));
             qDebug() << "selected first try generator";
             break;
         case 1:
-            guiGenerator = DatasetGenerator::Ptr(new StageOneDataset(true, 5,4));
+            guiGenerator = DatasetGenerator::Ptr(new StageOneDataset(true, datasetWidth, datasetHeight));
             qDebug() << "selected stage one generator";
             break;
         case 2:
-            guiGenerator = DatasetGenerator::Ptr(new BasicStrategyDataset(true, 5, 4));
+            guiGenerator = DatasetGenerator::Ptr(new BasicStrategyDataset(true, datasetWidth, datasetHeight));
             qDebug() << "selected basic strategy generator";
             break;
         case 3:
-            guiGenerator = DatasetGenerator::Ptr(new SequenceDataset(true, 5, 4));
+            guiGenerator = DatasetGenerator::Ptr(new SequenceDataset(true, datasetWidth, datasetHeight));
             qDebug() << "selected sequence generator";
             break;
         default:
@@ -78,32 +91,40 @@ void MLDataGenerator::selectGenerator(int gen) {
 void MLDataGenerator::initObject() {
     generateGUIexample();
 
-    //generateFirstTryDataset();
-    //generateStageOneDataset();
-    //generateBasicStrategyDataset();
-    //generateSequenceDataset();
     setupGeneratorThreads();
 }
 
+DatasetGenerator::Ptr MLDataGenerator::getDatasetGenerator() {
+    switch (generateDatasetType) {
+        case FirstTry:
+            return getFirstTryDatasetGenerator();
+        case StageOne:
+            return getStageOneDatasetGenerator();
+        case BasicStrategy:
+            return getBasicStrategyDatasetGenerator();
+        case LSTM:
+            return getSequenceDatasetGenerator();
+    }
+    return DatasetGenerator::Ptr(nullptr);
+}
+
 DatasetGenerator::Ptr MLDataGenerator::getFirstTryDatasetGenerator() {
-    int width = 5;
-    int height = 4;
-    FirstTryDataset::Ptr generator = FirstTryDataset::Ptr(new FirstTryDataset(width, height, QStringLiteral("/home/ofenrohr/arbeit/master/data")));
+    FirstTryDataset::Ptr generator = FirstTryDataset::Ptr(new FirstTryDataset(datasetWidth, datasetHeight, datasetDestDir));
     return generator;
 }
 
 DatasetGenerator::Ptr MLDataGenerator::getStageOneDatasetGenerator() {
-    StageOneDataset::Ptr gen = StageOneDataset::Ptr(new StageOneDataset(false, 5,4));
+    StageOneDataset::Ptr gen = StageOneDataset::Ptr(new StageOneDataset(false, datasetWidth, datasetHeight));
     return gen;
 }
 
 DatasetGenerator::Ptr MLDataGenerator::getBasicStrategyDatasetGenerator() {
-    BasicStrategyDataset::Ptr gen = BasicStrategyDataset::Ptr(new BasicStrategyDataset(false, 5,4));
+    BasicStrategyDataset::Ptr gen = BasicStrategyDataset::Ptr(new BasicStrategyDataset(false, datasetWidth, datasetHeight));
     return gen;
 }
 
 DatasetGenerator::Ptr MLDataGenerator::getSequenceDatasetGenerator() {
-    SequenceDataset::Ptr gen = SequenceDataset::Ptr(new SequenceDataset(false, 5,4));
+    SequenceDataset::Ptr gen = SequenceDataset::Ptr(new SequenceDataset(false, datasetWidth, datasetHeight));
     return gen;
 }
 
@@ -118,10 +139,10 @@ void MLDataGenerator::setupGeneratorThreads() {
         progressBar->setValue(0);
 
         for (int i = 0; i < threadCnt; i++) {
-            DatasetGenerator::Ptr gen = getSequenceDatasetGenerator();
+            DatasetGenerator::Ptr gen = getDatasetGenerator();
             threadGenerators.append(gen);
             if (i == 0) {
-                gen->startConverter(examplesCnt);
+                gen->startConverter(examplesCnt, datasetDestDir);
             }
             // https://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
             QThread *thread = new QThread;

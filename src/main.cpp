@@ -55,6 +55,11 @@ int main(int argc, char **argv)
     parser.addOption(QCommandLineOption(QStringList() <<  QStringLiteral("full-test"), i18n("Start over all AI tests")));
     parser.addOption(QCommandLineOption(QStringList() <<  QStringLiteral("generate"), i18n("Generate training data"), QStringLiteral("generate")));
     parser.addOption(QCommandLineOption(QStringList() <<  QStringLiteral("show-generate"), i18n("Generate training data")));
+    parser.addOption(QCommandLineOption(QStringList() <<  QStringLiteral("dataset-generator"),
+        i18n("Select dataset type to generate. valid values: firstTry, stageOne, basicStrategy, LSTM (only works for numpy dataset generation, not gui)"), QStringLiteral("dataset-generator")));
+    parser.addOption(QCommandLineOption(QStringList() <<  QStringLiteral("dataset-width"), i18n("Dataset width in boxes"), QStringLiteral("dataset-width")));
+    parser.addOption(QCommandLineOption(QStringList() <<  QStringLiteral("dataset-hight"), i18n("Dataset height in boxes"), QStringLiteral("dataset-height")));
+    parser.addOption(QCommandLineOption(QStringList() <<  QStringLiteral("dataset-dest"), i18n("Dataset destination directory"), QStringLiteral("dataset-dest")));
 
     about.setupCommandLine(&parser);
     parser.process(app);
@@ -93,9 +98,53 @@ int main(int argc, char **argv)
         bool ok = false;
         long exampleCnt = parser.value(QStringLiteral("generate")).toLong(&ok);
         qDebug() << parser.value(QStringLiteral("generate"));
+
+        // specific dataset generator requested?
+        AlphaDots::DatasetType datasetType = AlphaDots::FirstTry;
+        if (parser.isSet(QStringLiteral("dataset-generator"))) {
+            QString datasetGeneratorParam = parser.value(QStringLiteral("dataset-generator")).toLower();
+            if (datasetGeneratorParam == QStringLiteral("firsttry")) {
+                datasetType = AlphaDots::FirstTry;
+            } else if (datasetGeneratorParam == QStringLiteral("stageone")) {
+                datasetType = AlphaDots::StageOne;
+            } else if (datasetGeneratorParam == QStringLiteral("basicstrategy")) {
+                datasetType = AlphaDots::BasicStrategy;
+            } else if (datasetGeneratorParam == QStringLiteral("lstm")) {
+                datasetType = AlphaDots::LSTM;
+            } else {
+                ok = false;
+            }
+        }
+
+        int boardWidth = 5;
+        int boardHeight = 4;
+        if (
+                parser.isSet(QStringLiteral("dataset-width")) &&
+                parser.isSet(QStringLiteral("dataset-height"))
+        ) {
+            bool ok2 = false;
+            int tmp = parser.value(QStringLiteral("dataset-width")).toInt(&ok2);
+            if (ok2) {
+                boardWidth = tmp;
+                tmp = parser.value(QStringLiteral("dataset-height")).toInt(&ok2);
+                if (ok2) {
+                    boardHeight = tmp;
+                } else {
+                    qDebug() << "invalid dataset-height value";
+                }
+            } else {
+                qDebug() << "invalid dataset-width value";
+            }
+        }
+
+        QString datasetDest = QStringLiteral("/run/media/ofenrohr/Data/AlphaDots/data");
+        if (parser.isSet(QStringLiteral("dataset-dest"))) {
+            datasetDest = parser.value(QStringLiteral("dataset-dest"));
+        }
+
         AlphaDots::MLDataGenerator *dataGenerator=nullptr;
         if (ok) {
-            dataGenerator = new AlphaDots::MLDataGenerator(exampleCnt);
+            dataGenerator = new AlphaDots::MLDataGenerator(exampleCnt, datasetType, boardWidth, boardHeight, datasetDest);
         } else {
             dataGenerator = new AlphaDots::MLDataGenerator();
         }

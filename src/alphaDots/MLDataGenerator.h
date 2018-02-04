@@ -20,6 +20,13 @@
 
 
 namespace AlphaDots {
+    enum DatasetType {
+        FirstTry,
+        StageOne,
+        BasicStrategy,
+        LSTM
+    };
+
     class MLDataGenerator : public KXmlGuiWindow, public Ui::MLDataView {
     Q_OBJECT
 
@@ -30,17 +37,22 @@ namespace AlphaDots {
          * Generate examplesCnt training samples.
          * @param samples number of training examples
          */
-        MLDataGenerator(long samples);
+        MLDataGenerator(long samples, DatasetType datasetType, int width, int height, QString destinationDirectory);
 
         ~MLDataGenerator();
 
         void initObject();
 
+        /**
+         * Define colors to use in images
+         */
         static const int MLImageBackground = 0;
         static const int MLImageBoxA = 65;
         static const int MLImageBoxB = 150;
         static const int MLImageDot = 215;
         static const int MLImageLine = 255;
+        /// number of threads
+        static const int threadCnt = 4;
 
         static aiBoard::Ptr createEmptyBoard(int width, int height);
 
@@ -65,16 +77,37 @@ namespace AlphaDots {
 
         static void saveImage(QString dataSetName, QString instanceName, QString dest, QImage &img);
 
+        /**
+         * Converts boxes (width or height) to pixels
+         * @param boxes
+         * @return
+         */
         static int boxesToImgSize(int boxes);
 
     public slots:
 
+        /**
+         * next button clicked in GUI
+         */
         void nextBtnClicked();
 
+        /**
+         * Get info that a thread finished generating data
+         * @param threadIdx
+         */
         void dataGeneratorFinished(int threadIdx);
 
+        /**
+         * Get progress updates from threads while they generate data
+         * @param progress
+         * @param thread
+         */
         void recvProgress(int progress, int thread);
 
+        /**
+         * Select GUI generator
+         * @param generator 0: firstTry, 1: stageOne, 2: basicStrategy, 3: sequence
+         */
         void selectGenerator(int generator);
 
     private:
@@ -82,16 +115,29 @@ namespace AlphaDots {
         QWidget *m_view;
         GameBoardScene *gbs;
 
+        // vars for generating datasets
+        /// dataset destination directory
+        QString datasetDestDir;
+        /// number of samples in dataset
         long examplesCnt;
-        int threadCnt;
+        /// width of sample in boxes
+        int datasetWidth;
+        /// height of sample in boxes
+        int datasetHeight;
+        /// number of running threads
         int runningThreadCnt;
+        /// progress for each thread
         QList<int> threadProgr;
+        /// Dataset type to generate en masse
+        DatasetType generateDatasetType;
+        /// One Dataset generator for each thread
+        QList<DatasetGenerator::Ptr> threadGenerators;
 
         QImage inputImage;
         QImage outputImage;
 
+        /// Dataset generator to use in GUI
         DatasetGenerator::Ptr guiGenerator;
-        QList<DatasetGenerator::Ptr> threadGenerators;
 
         static void drawBackgroundAndDots(QImage &img, bool drawDots = true);
         static void drawLineAt(QImage &img, int lineIdx, int w, int h);
@@ -102,6 +148,7 @@ namespace AlphaDots {
 
         void setupGeneratorThreads();
 
+        DatasetGenerator::Ptr getDatasetGenerator();
         DatasetGenerator::Ptr getFirstTryDatasetGenerator();
         DatasetGenerator::Ptr getStageOneDatasetGenerator();
         DatasetGenerator::Ptr getBasicStrategyDatasetGenerator();

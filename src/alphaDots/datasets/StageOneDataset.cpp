@@ -6,6 +6,7 @@
 #include <alphaDots/MLDataGenerator.h>
 #include <aiEasyMediumHard.h>
 #include <alphaDots/PBConnector.h>
+#include <settings.h>
 #include "StageOneDataset.h"
 
 using namespace AlphaDots;
@@ -28,16 +29,16 @@ void StageOneDataset::cleanup() {
     }
 }
 
-void StageOneDataset::startConverter(int samples) {
+void StageOneDataset::startConverter(int samples, QString destinationDirectory) {
     int widthImg = MLDataGenerator::boxesToImgSize(width);
     int heightImg = MLDataGenerator::boxesToImgSize(height);
 
     QStringList args;
-    args << QStringLiteral("/home/ofenrohr/arbeit/master/code/alphaDots/datasetConverter/convert.py")
+    args << Settings::alphaDotsDir() + QStringLiteral("/datasetConverter/convert.py")
          << QStringLiteral("--zmq")
          << QString::number(samples)
          << QStringLiteral("--output-file")
-         << QStringLiteral("/run/media/ofenrohr/Data/AlphaDots/data/stageOne") + QString::number(width) + QStringLiteral("x") + QString::number(height) + QStringLiteral(".npz")
+         << destinationDirectory + QStringLiteral("/StageOne-") + QString::number(width) + QStringLiteral("x") + QString::number(height) + QStringLiteral(".npz")
          << QStringLiteral("--x-size")
          << QString::number(widthImg)
          << QStringLiteral("--y-size")

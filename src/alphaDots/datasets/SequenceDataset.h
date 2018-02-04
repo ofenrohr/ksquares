@@ -21,7 +21,7 @@ public:
 
     Dataset generateDataset() override;
 
-    void startConverter(int samples);
+    void startConverter(int samples, QString destinationDirectory) override;
 
     void cleanup() override;
 

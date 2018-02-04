@@ -16,7 +16,7 @@ namespace AlphaDots {
 
         Dataset generateDataset() override;
 
-        void startConverter(int examplesCnt) override {};
+        void startConverter(int examplesCnt, QString destinationDirectory) override {};
 
     private:
         int width;
