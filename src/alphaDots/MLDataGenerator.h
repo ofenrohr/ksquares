@@ -24,7 +24,8 @@ namespace AlphaDots {
         FirstTry,
         StageOne,
         BasicStrategy,
-        LSTM
+        LSTM,
+        LSTM2
     };
 
     class MLDataGenerator : public KXmlGuiWindow, public Ui::MLDataView {
@@ -153,6 +154,7 @@ namespace AlphaDots {
         DatasetGenerator::Ptr getStageOneDatasetGenerator();
         DatasetGenerator::Ptr getBasicStrategyDatasetGenerator();
         DatasetGenerator::Ptr getSequenceDatasetGenerator();
+        DatasetGenerator::Ptr getTrainingSequenceDatasetGenerator();
 
         void generateGUIexample();
     };

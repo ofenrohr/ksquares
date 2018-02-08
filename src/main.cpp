@@ -58,7 +58,7 @@ int main(int argc, char **argv)
     parser.addOption(QCommandLineOption(QStringList() <<  QStringLiteral("dataset-generator"),
         i18n("Select dataset type to generate. valid values: firstTry, stageOne, basicStrategy, LSTM (only works for numpy dataset generation, not gui)"), QStringLiteral("dataset-generator")));
     parser.addOption(QCommandLineOption(QStringList() <<  QStringLiteral("dataset-width"), i18n("Dataset width in boxes"), QStringLiteral("dataset-width")));
-    parser.addOption(QCommandLineOption(QStringList() <<  QStringLiteral("dataset-hight"), i18n("Dataset height in boxes"), QStringLiteral("dataset-height")));
+    parser.addOption(QCommandLineOption(QStringList() <<  QStringLiteral("dataset-height"), i18n("Dataset height in boxes"), QStringLiteral("dataset-height")));
     parser.addOption(QCommandLineOption(QStringList() <<  QStringLiteral("dataset-dest"), i18n("Dataset destination directory"), QStringLiteral("dataset-dest")));
 
     about.setupCommandLine(&parser);
@@ -111,6 +111,8 @@ int main(int argc, char **argv)
                 datasetType = AlphaDots::BasicStrategy;
             } else if (datasetGeneratorParam == QStringLiteral("lstm")) {
                 datasetType = AlphaDots::LSTM;
+            } else if (datasetGeneratorParam == QStringLiteral("lstm2")) {
+                datasetType = AlphaDots::LSTM2;
             } else {
                 ok = false;
             }
@@ -137,7 +139,7 @@ int main(int argc, char **argv)
             }
         }
 
-        QString datasetDest = QStringLiteral("/run/media/ofenrohr/Data/AlphaDots/data");
+        QString datasetDest = QStringLiteral("./");
         if (parser.isSet(QStringLiteral("dataset-dest"))) {
             datasetDest = parser.value(QStringLiteral("dataset-dest"));
         }

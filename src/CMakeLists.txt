@@ -42,7 +42,7 @@ set(ksquares_SRCS
     #alphaDots/protobuf/DotsAndBoxesImage.pb.cc
     #alphaDots/protobuf/TrainingExample.pb.cc
     #alphaDots/protobuf/GameSequence.pb.cc
-    alphaDots/PBConnector.cpp
+        alphaDots/ProtobufConnector.cpp
     alphaDots/datasets/FirstTryDataset.cpp
     alphaDots/datasets/DatasetGenerator.cpp
     alphaDots/datasets/StageOneDataset.cpp
@@ -50,6 +50,7 @@ set(ksquares_SRCS
     alphaDots/datasets/Dataset.cpp
     alphaDots/datasets/BasicStrategyDataset.cpp
     alphaDots/datasets/SequenceDataset.cpp
+    alphaDots/datasets/TrainingSequenceDataset.cpp
 )
 
 file(GLOB protoMessages alphaDots/protobuf/*.proto)

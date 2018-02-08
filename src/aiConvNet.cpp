@@ -6,7 +6,7 @@
 #include <QtCore/QElapsedTimer>
 #include <settings.h>
 #include "aiConvNet.h"
-#include "alphaDots/PBConnector.h"
+#include "alphaDots/ProtobufConnector.h"
 #include "alphaDots/MLDataGenerator.h"
 
 using namespace AlphaDots;
@@ -52,15 +52,15 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 	}
 
 	aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(lines, linesSize, width, height, newSquareOwners, playerId, maxPlayerId));
-    DotsAndBoxesImage img = PBConnector::toProtobuf(MLDataGenerator::generateInputImage(board));
-	PBConnector::sendString(socket, img.SerializeAsString());
+    DotsAndBoxesImage img = ProtobufConnector::dotsAndBoxesImageToProtobuf(MLDataGenerator::generateInputImage(board));
+	ProtobufConnector::sendString(socket, img.SerializeAsString());
 
 	zmq::message_t reply;
 	socket.recv(&reply);
     std::string rpl = std::string(static_cast<char*>(reply.data()), reply.size());
 
 	//qDebug() << "Received: " << (char*)reply.data();
-	QImage prediction = PBConnector::fromProtobuf(rpl);
+	QImage prediction = ProtobufConnector::fromProtobuf(rpl);
 
 	QList<QPoint> bestPoints;
     int bestVal = -1;
@@ -84,7 +84,7 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 			if (x == 0 || y == 0 || x == prediction.width()-1 || y == prediction.height()-1) {
 				invalidPoint = true;
 			}
-            if (lines[PBConnector::pointToLineIndex(QPoint(x,y), width)]) {
+            if (lines[ProtobufConnector::pointToLineIndex(QPoint(x,y), width)]) {
 				invalidPoint = true;
 			}
 			if (c > bestVal && !invalidPoint) {
@@ -110,7 +110,7 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 	}
 
 
-	int ret = PBConnector::pointToLineIndex(linePoint, width);
+	int ret = ProtobufConnector::pointToLineIndex(linePoint, width);
 
 	turnTime = moveTimer.elapsed();
 

@@ -2,13 +2,13 @@
 // Created by ofenrohr on 28.10.17.
 //
 
-#include "PBConnector.h"
+#include "ProtobufConnector.h"
 
 #include <QDebug>
 
 using namespace AlphaDots;
 
-DotsAndBoxesImage PBConnector::toProtobuf(QImage img) {
+DotsAndBoxesImage ProtobufConnector::dotsAndBoxesImageToProtobuf(QImage img) {
     DotsAndBoxesImage ret;
 
     ret.set_width(img.width());
@@ -22,7 +22,7 @@ DotsAndBoxesImage PBConnector::toProtobuf(QImage img) {
     return ret;
 }
 
-TrainingExample PBConnector::toProtobuf(QImage inp, QImage outp) {
+TrainingExample ProtobufConnector::trainingExampleToProtobuf(QImage inp, QImage outp) {
     TrainingExample ret;
 
     ret.set_width(inp.width());
@@ -38,7 +38,7 @@ TrainingExample PBConnector::toProtobuf(QImage inp, QImage outp) {
     return ret;
 }
 
-GameSequence PBConnector::toProtobuf(QList<QImage> seq) {
+GameSequence ProtobufConnector::gameSequenceToProtobuf(QList<QImage> seq) {
     GameSequence ret;
 
     if (seq.count() <= 0) {
@@ -64,7 +64,41 @@ GameSequence PBConnector::toProtobuf(QList<QImage> seq) {
     return ret;
 }
 
-QImage PBConnector::fromProtobuf(std::string msg) {
+GameSequence ProtobufConnector::gameSequenceToProtobuf(QList<QImage> inputSeq, QList<QImage> targetSeq) {
+    GameSequence ret;
+
+    if (inputSeq.count() != targetSeq.count() ||
+        inputSeq.count() <= 0 ||
+        targetSeq.count() <= 0 ||
+        inputSeq[0].width() != targetSeq[0].width() ||
+        inputSeq[0].height() != targetSeq[0].height()
+    ) {
+        qDebug() << "WARNING: invalid data!";
+        return ret;
+    }
+
+    int w = inputSeq[0].width();
+    int h = inputSeq[0].height();
+
+    ret.set_width(w);
+    ret.set_height(h);
+
+    for (int i = 0; i < inputSeq.count(); i++) {
+        TrainingExample *frame = ret.add_game();
+        frame->set_width(w);
+        frame->set_height(h);
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                frame->add_input(inputSeq[i].pixelColor(x, y).red());
+                frame->add_output(targetSeq[i].pixelColor(x, y).red());
+            }
+        }
+    }
+
+    return ret;
+}
+
+QImage ProtobufConnector::fromProtobuf(std::string msg) {
     DotsAndBoxesImage img;
     img.ParseFromString(msg);
     QImage ret(img.width(), img.height(), QImage::Format_ARGB32);
@@ -77,7 +111,7 @@ QImage PBConnector::fromProtobuf(std::string msg) {
     return ret;
 }
 
-int PBConnector::pointToLineIndex(QPoint linePoint, int width) {
+int ProtobufConnector::pointToLineIndex(QPoint linePoint, int width) {
 	int ret;
 	if (linePoint.x() % 2 == 0) { // horizontal line
 		ret = (linePoint.x() / 2 - 1) + (linePoint.y() / 2) * width + ((linePoint.y() - 1) / 2) * (width + 1);
@@ -87,7 +121,7 @@ int PBConnector::pointToLineIndex(QPoint linePoint, int width) {
     return ret;
 }
 
-bool PBConnector::sendString(zmq::socket_t &socket, std::string msg) {
+bool ProtobufConnector::sendString(zmq::socket_t &socket, std::string msg) {
 	ulong message_size = msg.size();
 	zmq::message_t request(message_size);
 	memcpy(request.data(), msg.c_str(), message_size);
@@ -101,7 +135,7 @@ bool PBConnector::sendString(zmq::socket_t &socket, std::string msg) {
     return true;
 }
 
-std::string PBConnector::recvString(zmq::socket_t &socket) {
+std::string ProtobufConnector::recvString(zmq::socket_t &socket) {
 	zmq::message_t reply;
     bool done = false;
     int tries = 0;

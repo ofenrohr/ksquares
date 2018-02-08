@@ -15,14 +15,27 @@ AlphaDots::Dataset::Dataset(const QImage &inputImg, const QImage &outputImg, con
 {
     valid = true;
     isSeq = false;
+    isSeq2 = false;
 }
 
-AlphaDots::Dataset::Dataset(const QList<QImage> &seq, const aiBoard::Ptr &board) :
+AlphaDots::Dataset::Dataset(const QList<QImage> &seq, const aiBoard::Ptr &brd) :
     sequence(seq),
-    board(board)
+    board(brd)
 {
     valid = true;
     isSeq = true;
+    isSeq2 = false;
+}
+
+AlphaDots::Dataset::Dataset(const QList<QImage> &inputSequence, const QList<QImage> &targetSequence,
+                            const aiBoard::Ptr &board) :
+    inputSequence(inputSequence),
+    targetSequence(targetSequence),
+    board(board)
+{
+    valid = true;
+    isSeq = false;
+    isSeq2 = true;
 }
 
 const QImage &AlphaDots::Dataset::getInputImg() const {
@@ -55,4 +68,8 @@ const bool AlphaDots::Dataset::isValid() const {
 
 const bool AlphaDots::Dataset::isSequence() const {
     return isSeq;
+}
+
+const bool AlphaDots::Dataset::isTrainingSequence() const {
+    return isSeq2;
 }

@@ -5,7 +5,7 @@
 #include <alphaDots/ExternalProcess.h>
 #include <alphaDots/MLDataGenerator.h>
 #include <aiEasyMediumHard.h>
-#include <alphaDots/PBConnector.h>
+#include <alphaDots/ProtobufConnector.h>
 #include <settings.h>
 #include "StageOneDataset.h"
 
@@ -79,12 +79,12 @@ Dataset StageOneDataset::generateDataset() {
     }
 
     // send it to the python dataset converter
-    TrainingExample trainingExample = PBConnector::toProtobuf(inputImage, outputImage);
-    if (!PBConnector::sendString(socket, trainingExample.SerializeAsString())) {
+    TrainingExample trainingExample = ProtobufConnector::trainingExampleToProtobuf(inputImage, outputImage);
+    if (!ProtobufConnector::sendString(socket, trainingExample.SerializeAsString())) {
         qDebug() << "sending data failed!";
         return Dataset();
     }
-    std::string rpl = PBConnector::recvString(socket);
+    std::string rpl = ProtobufConnector::recvString(socket);
     if (rpl != "ok") {
         qDebug() << "process sent invalid reply: " << rpl.c_str();
         return Dataset();

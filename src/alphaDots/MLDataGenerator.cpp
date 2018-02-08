@@ -11,6 +11,7 @@
 #include <alphaDots/datasets/StageOneDataset.h>
 #include <alphaDots/datasets/BasicStrategyDataset.h>
 #include <alphaDots/datasets/SequenceDataset.h>
+#include <alphaDots/datasets/TrainingSequenceDataset.h>
 #include "aiEasyMediumHard.h"
 #include "MLDataGeneratorWorkerThread.h"
 #include "ExternalProcess.h"
@@ -83,6 +84,10 @@ void MLDataGenerator::selectGenerator(int gen) {
             guiGenerator = DatasetGenerator::Ptr(new SequenceDataset(true, datasetWidth, datasetHeight));
             qDebug() << "selected sequence generator";
             break;
+        case 4:
+            guiGenerator = DatasetGenerator::Ptr(new TrainingSequenceDataset(true, datasetWidth, datasetHeight));
+            qDebug() << "selected sequence generator";
+            break;
         default:
             break;
     }
@@ -104,6 +109,8 @@ DatasetGenerator::Ptr MLDataGenerator::getDatasetGenerator() {
             return getBasicStrategyDatasetGenerator();
         case LSTM:
             return getSequenceDatasetGenerator();
+        case LSTM2:
+            return getTrainingSequenceDatasetGenerator();
     }
     return DatasetGenerator::Ptr(nullptr);
 }
@@ -125,6 +132,11 @@ DatasetGenerator::Ptr MLDataGenerator::getBasicStrategyDatasetGenerator() {
 
 DatasetGenerator::Ptr MLDataGenerator::getSequenceDatasetGenerator() {
     SequenceDataset::Ptr gen = SequenceDataset::Ptr(new SequenceDataset(false, datasetWidth, datasetHeight));
+    return gen;
+}
+
+DatasetGenerator::Ptr MLDataGenerator::getTrainingSequenceDatasetGenerator() {
+    TrainingSequenceDataset::Ptr gen = TrainingSequenceDataset::Ptr(new TrainingSequenceDataset(false, datasetWidth, datasetHeight));
     return gen;
 }
 

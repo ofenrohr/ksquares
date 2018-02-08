@@ -2,8 +2,8 @@
 // Created by ofenrohr on 01.12.17.
 //
 
-#ifndef KSQUARES_SEQUENCEDATASET_H
-#define KSQUARES_SEQUENCEDATASET_H
+#ifndef KSQUARES_TRAININGSEQUENCEDATASET_H
+#define KSQUARES_TRAININGSEQUENCEDATASET_H
 
 
 #include <alphaDots/ExternalProcess.h>
@@ -11,13 +11,13 @@
 #include "DatasetGenerator.h"
 
 namespace AlphaDots {
-    class SequenceDataset : public DatasetGenerator {
+    class TrainingSequenceDataset : public DatasetGenerator {
     public:
-        typedef QSharedPointer<SequenceDataset> Ptr;
+        typedef QSharedPointer<TrainingSequenceDataset> Ptr;
 
-        SequenceDataset(bool gui, int width, int height);
+        TrainingSequenceDataset(bool gui, int width, int height);
 
-        ~SequenceDataset();
+        ~TrainingSequenceDataset();
 
         Dataset generateDataset() override;
 
@@ -44,4 +44,4 @@ namespace AlphaDots {
 }
 
 
-#endif //KSQUARES_SEQUENCEDATASET_H
+#endif //KSQUARES_TRAININGSEQUENCEDATASET_H

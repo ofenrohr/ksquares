@@ -6,43 +6,48 @@
 #include <aiEasyMediumHard.h>
 #include <alphaDots/ProtobufConnector.h>
 #include <settings.h>
-#include "SequenceDataset.h"
+#include "TrainingSequenceDataset.h"
 
 using namespace AlphaDots;
 
-
-SequenceDataset::SequenceDataset(bool gui, int width, int height) {
+TrainingSequenceDataset::TrainingSequenceDataset(bool gui, int width, int height) {
     isGUI = gui;
     this->width = width;
     this->height = height;
     connectionReady = false;
 }
 
-SequenceDataset::~SequenceDataset() {
+TrainingSequenceDataset::~TrainingSequenceDataset() {
 
 }
 
-Dataset SequenceDataset::generateDataset() {
+Dataset TrainingSequenceDataset::generateDataset() {
     getSocket();
-    QList<QImage> seqData;
+    // create data
+    QList<QImage> inputSeqData;
+    QList<QImage> targetSeqData;
     KSquaresAi::Ptr ai = KSquaresAi::Ptr(new aiEasyMediumHard(0, width, height, 2));
     Board board(2, width, height);
     aiBoard::Ptr aiboard(new aiBoard(&board));
     QList<int> linesList;
     bool boardFilled = false;
     while (!boardFilled) {
+        inputSeqData.append(MLDataGenerator::generateInputImage(aiboard));
         int line = ai->chooseLine(board.lines(), board.squares(), board.getLineHistory());
         linesList.append(line);
         bool nextPlayer;
         QList<int> completedSquares;
         board.addLine(line, &nextPlayer, &boardFilled, &completedSquares);
         aiboard->doMove(line);
-        seqData.append(MLDataGenerator::generateInputImage(aiboard));
+        QList<int> targetLines;
+        targetLines.clear();
+        targetLines.append(line);
+        targetSeqData.append(MLDataGenerator::generateOutputImage(aiboard, targetLines, false));
     }
 
     if (!isGUI) {
         // send it to the python dataset converter
-        GameSequence gameSequence = ProtobufConnector::gameSequenceToProtobuf(seqData);
+       GameSequence gameSequence = ProtobufConnector::gameSequenceToProtobuf(inputSeqData, targetSeqData);
         if (!ProtobufConnector::sendString(*socket, gameSequence.SerializeAsString())) {
             qDebug() << "sending data failed!";
             return Dataset();
@@ -57,23 +62,23 @@ Dataset SequenceDataset::generateDataset() {
         sampleIdx++;
     }
 
-    return Dataset(seqData, aiboard);
+    return Dataset(inputSeqData, targetSeqData, aiboard);
     //return ret;
 }
 
-void SequenceDataset::startConverter(int samples, QString destinationDirectory) {
+void TrainingSequenceDataset::startConverter(int samples, QString destinationDirectory) {
     int widthImg = MLDataGenerator::boxesToImgSize(width);
     int heightImg = MLDataGenerator::boxesToImgSize(height);
 
 
     QStringList args;
     args << Settings::alphaDotsDir() + QStringLiteral("/datasetConverter/convert.py")
-         //<< QStringLiteral("--debug")
+         << QStringLiteral("--debug")
          << QStringLiteral("--zmq")
          << QString::number(samples)
-         << QStringLiteral("--seq")
+         << QStringLiteral("--seq2")
          << QStringLiteral("--output-file")
-         << destinationDirectory + QStringLiteral("/LSTM-") + QString::number(width) + QStringLiteral("x") + QString::number(height) + QStringLiteral(".npz")
+         << destinationDirectory + QStringLiteral("/TrainingSequence-") + QString::number(width) + QStringLiteral("x") + QString::number(height) + QStringLiteral(".npz")
          << QStringLiteral("--x-size")
          << QString::number(widthImg)
          << QStringLiteral("--y-size")
@@ -84,14 +89,14 @@ void SequenceDataset::startConverter(int samples, QString destinationDirectory) 
     }
 }
 
-void SequenceDataset::cleanup() {
+void TrainingSequenceDataset::cleanup() {
     DatasetGenerator::cleanup();
     delete socket;
     delete context;
     connectionReady = false;
 }
 
-zmq::socket_t* SequenceDataset::getSocket() {
+zmq::socket_t* TrainingSequenceDataset::getSocket() {
     if (!connectionReady) {
         qDebug() << "setting up zmq connection";
         context = new zmq::context_t(1);

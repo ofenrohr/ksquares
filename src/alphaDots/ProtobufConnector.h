@@ -7,21 +7,22 @@
 
 #include <QtGui/QImage>
 #include <zmq.hpp>
-#include "GameSequence.pb.h"
-#include "TrainingExample.pb.h"
-#include "DotsAndBoxesImage.pb.h"
+#include <GameSequence.pb.h>
+#include <TrainingExample.pb.h>
+#include <DotsAndBoxesImage.pb.h>
 
 namespace AlphaDots {
-    class PBConnector {
+    class ProtobufConnector {
     public:
         /**
          * Put the image data in the protobuf data class
          * @param img input image
          * @return protobuf data
          */
-        static DotsAndBoxesImage toProtobuf(QImage img);
-        static TrainingExample toProtobuf(QImage inp, QImage outp);
-        static GameSequence toProtobuf(QList<QImage> seq);
+        static DotsAndBoxesImage dotsAndBoxesImageToProtobuf(QImage img);
+        static TrainingExample trainingExampleToProtobuf(QImage inp, QImage outp);
+        static GameSequence gameSequenceToProtobuf(QList<QImage> seq);
+        static GameSequence gameSequenceToProtobuf(QList<QImage> inputSeq, QList<QImage> targetSeq);
 
         /**
          * Put the protobuf image data back in a QImage
