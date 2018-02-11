@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>437</width>
-    <height>616</height>
+    <width>381</width>
+    <height>530</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,7 +21,7 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="2">
+   <item row="0" column="1">
     <widget class="QComboBox" name="generatorSelector">
      <item>
       <property name="text">
@@ -43,9 +43,14 @@
        <string>Sequence</string>
       </property>
      </item>
+     <item>
+      <property name="text">
+       <string>TrainingSequence</string>
+      </property>
+     </item>
     </widget>
    </item>
-   <item row="1" column="0" colspan="4">
+   <item row="1" column="0" colspan="3">
     <widget class="Line" name="line_4">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -59,7 +64,7 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="2" colspan="2">
+   <item row="2" column="1" colspan="2">
     <widget class="QGraphicsView" name="gameStateView">
      <property name="baseSize">
       <size>
@@ -69,7 +74,7 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="0" colspan="4">
+   <item row="3" column="0" colspan="3">
     <widget class="Line" name="line_2">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -96,7 +101,7 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="0" colspan="4">
+   <item row="5" column="0" colspan="3">
     <widget class="Line" name="line">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -110,7 +115,7 @@
      </property>
     </widget>
    </item>
-   <item row="6" column="2">
+   <item row="6" column="1" colspan="2">
     <widget class="QLabel" name="outputLbl">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -123,24 +128,78 @@
      </property>
     </widget>
    </item>
-   <item row="7" column="0" rowspan="2" colspan="4">
+   <item row="7" column="0" colspan="3">
     <widget class="Line" name="line_3">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
     </widget>
    </item>
-   <item row="8" column="3" rowspan="2">
-    <widget class="QPushButton" name="nextBtn">
+   <item row="8" column="0" rowspan="2">
+    <widget class="QLabel" name="label_5">
      <property name="text">
-      <string>Next</string>
+      <string>Turn </string>
      </property>
     </widget>
    </item>
-   <item row="9" column="0">
+   <item row="9" column="1" colspan="2">
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QSlider" name="turnSlider">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="tickPosition">
+        <enum>QSlider::NoTicks</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="turnLbl">
+       <property name="text">
+        <string>0</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="10" column="0" colspan="3">
     <widget class="QProgressBar" name="progressBar">
      <property name="value">
       <number>24</number>
+     </property>
+    </widget>
+   </item>
+   <item row="11" column="0" colspan="3">
+    <widget class="Line" name="line_5">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="12" column="0" colspan="2">
+    <spacer name="horizontalSpacer">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>40</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="12" column="2">
+    <widget class="QPushButton" name="nextBtn">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Next</string>
      </property>
     </widget>
    </item>

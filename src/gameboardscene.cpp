@@ -18,7 +18,12 @@
 
 #include <QDebug>
 
-GameBoardScene::GameBoardScene(int newWidth, int newHeight, QObject *parent) : QGraphicsScene(parent), width(newWidth), height(newHeight), acceptEvents(true)
+GameBoardScene::GameBoardScene(int newWidth, int newHeight, bool displayLineNums, QObject *parent) :
+        QGraphicsScene(parent),
+        width(newWidth),
+        height(newHeight),
+        displayLineNumbers(displayLineNums),
+        acceptEvents(true)
 {
 	//qDebug() << "GameBoardScene::GameBoardScene()";
 
@@ -66,8 +71,10 @@ GameBoardScene::GameBoardScene(int newWidth, int newHeight, QObject *parent) : Q
 		}
 		txt->setPos(txtPos);
 		txt->setZValue(1);
-		addItem(txt);
-		update(txt->boundingRect());
+        if (displayLineNumbers) {
+            addItem(txt);
+            update(txt->boundingRect());
+        }
 	}
 
 	setBackgroundBrush(QBrush(Qt::white));

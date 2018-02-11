@@ -86,7 +86,7 @@ void KSquaresDemoWindow::gameNew()
 
     //create physical board
     GameBoardScene *temp = m_scene;
-    m_scene = new GameBoardScene(15, 10);
+    m_scene = new GameBoardScene(15, 10, false);
 
     m_view->setScene(m_scene);
     delete temp;

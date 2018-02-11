@@ -62,6 +62,9 @@ void MLDataGenerator::initConstructor() {
     connect(nextBtn, SIGNAL(clicked()), this, SLOT(nextBtnClicked()));
     connect(generatorSelector, SIGNAL(currentIndexChanged(int)), this, SLOT(selectGenerator(int)));
 
+    // turn slider
+    connect(turnSlider, SIGNAL(valueChanged(int)), this, SLOT(turnSliderChanged(int)));
+
     QTimer::singleShot(0, this, &MLDataGenerator::initObject);
 }
 
@@ -192,7 +195,7 @@ void MLDataGenerator::dataGeneratorFinished(int threadIdx) {
     runningThreadCnt--;
     if (runningThreadCnt <= 0) {
         nextBtn->setEnabled(true);
-        progressBar->setVisible(false);
+        //progressBar->setVisible(false);
         qDebug() << "done generating data";
     }
 }
@@ -200,29 +203,51 @@ void MLDataGenerator::dataGeneratorFinished(int threadIdx) {
 void MLDataGenerator::generateGUIexample() {// setup
     int width = 5;
     int height = 4;
+    frameCnt = aiFunctions::toLinesSize(width, height);
+    displayFrame = -1;
 
     // draw stuff
     if (gbs != NULL) {
         delete gbs;
     }
-    gbs = new GameBoardScene(width, height, this);
+    gbs = new GameBoardScene(width, height, false, this);
 
-    Dataset guiDataset = guiGenerator->generateDataset();
+    guiDataset = guiGenerator->generateDataset();
     aiBoard::Ptr board;
     if (guiDataset.isValid()) {
         qDebug() << "generator dataset";
         board = guiDataset.getBoard();
-        inputImage = guiDataset.getInputImg();
-        outputImage = guiDataset.getOutputImg();
+        if (guiDataset.isSequence()) {
+            const QList<QImage> &seq = guiDataset.getSequence();
+            int frameIdx = rand() % seq.count();
+            inputImage = seq.at(frameIdx);
+            outputImage = seq.at(frameIdx);
+            displayFrame = frameIdx;
+            turnSlider->setEnabled(true);
+        } else if (guiDataset.isTrainingSequence()) {
+            const QList<QImage> &inputSeq = guiDataset.getInputSequence();
+            const QList<QImage> &targetSeq = guiDataset.getTargetSequence();
+            int frameIdx = rand() % inputSeq.count();
+            inputImage = inputSeq.at(frameIdx);
+            outputImage = targetSeq.at(frameIdx);
+            displayFrame = frameIdx;
+            turnSlider->setEnabled(true);
+        } else {
+            inputImage = guiDataset.getInputImg();
+            outputImage = guiDataset.getOutputImg();
+            displayFrame = frameCnt - aiFunctions::getFreeLines(guiDataset.getBoard()->lines, frameCnt).count();
+            turnSlider->setEnabled(false);
+        }
     } else {
         qDebug() << "NOT generator dataset";
         // generate data
         board = generateRandomBoard(width, height, 5);
 
+        displayFrame = 20;
+
         // make some more moves
         KSquaresAi::Ptr ai = KSquaresAi::Ptr(new aiEasyMediumHard(0, width, height, 2));
-        makeAiMoves(board, ai, 20);
-
+        makeAiMoves(board, ai, displayFrame);
 
         inputImage = generateInputImage(board);
         outputImage = generateOutputImage(board, ai);
@@ -251,6 +276,10 @@ void MLDataGenerator::generateGUIexample() {// setup
     outputLbl->setPixmap(
             QPixmap::fromImage(outputImage).scaled(outputLbl->width(), outputLbl->height(), Qt::KeepAspectRatio));
 
+    // display frame progress
+    turnSlider->setMaximum(frameCnt-1);
+    turnSlider->setValue(displayFrame);
+
     // save boards
     /*
     QUuid id = QUuid::createUuid();
@@ -263,6 +292,31 @@ void MLDataGenerator::generateGUIexample() {// setup
 
 void MLDataGenerator::nextBtnClicked() {
     generateGUIexample();
+}
+
+void MLDataGenerator::turnSliderChanged(int turnIdx) {
+    qDebug() << "turnSliderChanged: " << turnIdx;
+    displayFrame = turnIdx;
+    turnLbl->setText(QString::number(displayFrame) + QStringLiteral(" / ") + QString::number(frameCnt));
+
+    if (guiDataset.isTrainingSequence()) {
+        const QList<QImage> &inputSeq = guiDataset.getInputSequence();
+        const QList<QImage> &targetSeq = guiDataset.getTargetSequence();
+        inputImage = inputSeq.at(displayFrame);
+        outputImage = targetSeq.at(displayFrame);
+        inputLbl->setPixmap(QPixmap::fromImage(inputImage).scaled(inputLbl->width(), inputLbl->height(), Qt::KeepAspectRatio));
+        outputLbl->setPixmap(
+                QPixmap::fromImage(outputImage).scaled(outputLbl->width(), outputLbl->height(), Qt::KeepAspectRatio));
+    }
+
+    if (guiDataset.isSequence()) {
+        const QList<QImage> &seq = guiDataset.getSequence();
+        inputImage = seq.at(displayFrame-1);
+        outputImage = seq.at(displayFrame);
+        inputLbl->setPixmap(QPixmap::fromImage(inputImage).scaled(inputLbl->width(), inputLbl->height(), Qt::KeepAspectRatio));
+        outputLbl->setPixmap(
+                QPixmap::fromImage(outputImage).scaled(outputLbl->width(), outputLbl->height(), Qt::KeepAspectRatio));
+    }
 }
 
 aiBoard::Ptr MLDataGenerator::createEmptyBoard(int width, int height) {

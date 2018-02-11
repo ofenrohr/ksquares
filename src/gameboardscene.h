@@ -35,7 +35,7 @@ public:
      * @param newHeight the number of squares tall the board is
      * @param parent passed to QGraphicsScene's constructor
      */
-    GameBoardScene(int newWidth, int newHeight, QObject *parent = 0);
+    GameBoardScene(int newWidth, int newHeight, bool displayLineNums, QObject *parent = 0);
     ///Destructor
     ~GameBoardScene();
     /**
@@ -125,6 +125,8 @@ protected:
     int spacing;
     ///This property holds whether mouse events are enabled for this widget.
     bool acceptEvents;
+    ///display line numbers for debugging purposes
+    bool displayLineNumbers;
 
     //event handlers
     //void mousePressEvent (QGraphicsSceneMouseEvent* mouseEvent);

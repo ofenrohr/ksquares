@@ -42,24 +42,24 @@ const QImage &AlphaDots::Dataset::getInputImg() const {
     return inputImg;
 }
 
-void AlphaDots::Dataset::setInputImg(const QImage &inputImg) {
-    Dataset::inputImg = inputImg;
-}
-
 const QImage &AlphaDots::Dataset::getOutputImg() const {
     return outputImg;
-}
-
-void AlphaDots::Dataset::setOutputImg(const QImage &outputImg) {
-    Dataset::outputImg = outputImg;
 }
 
 const aiBoard::Ptr &AlphaDots::Dataset::getBoard() const {
     return board;
 }
 
-void AlphaDots::Dataset::setBoard(const aiBoard::Ptr &board) {
-    Dataset::board = board;
+const QList<QImage> &AlphaDots::Dataset::getSequence() const {
+    return sequence;
+}
+
+const QList<QImage> &AlphaDots::Dataset::getInputSequence() const {
+    return inputSequence;
+}
+
+const QList<QImage> &AlphaDots::Dataset::getTargetSequence() const {
+    return targetSequence;
 }
 
 const bool AlphaDots::Dataset::isValid() const {

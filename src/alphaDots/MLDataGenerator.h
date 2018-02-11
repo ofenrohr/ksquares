@@ -111,10 +111,18 @@ namespace AlphaDots {
          */
         void selectGenerator(int generator);
 
+        void turnSliderChanged(int turnIdx);
+
     private:
         //QLabel *m_view;
         QWidget *m_view;
         GameBoardScene *gbs;
+
+
+        // vars for displaying datasets
+        Dataset guiDataset;
+        int frameCnt;
+        int displayFrame;
 
         // vars for generating datasets
         /// dataset destination directory

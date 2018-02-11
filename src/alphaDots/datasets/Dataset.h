@@ -19,11 +19,12 @@ namespace AlphaDots {
         Dataset(const QList<QImage> &inputSequence, const QList<QImage> &targetSequence, const aiBoard::Ptr &board);
 
         const QImage &getInputImg() const;
-        void setInputImg(const QImage &inputImg);
         const QImage &getOutputImg() const;
-        void setOutputImg(const QImage &outputImg);
         const aiBoard::Ptr &getBoard() const;
-        void setBoard(const aiBoard::Ptr &board);
+        const QList<QImage> &getSequence() const;
+        const QList<QImage> &getInputSequence() const;
+        const QList<QImage> &getTargetSequence() const;
+
         const bool isValid() const;
         const bool isSequence() const;
         const bool isTrainingSequence() const;

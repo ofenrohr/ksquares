@@ -978,7 +978,7 @@ void KSquaresTestWindow::gameNew()
 	
 	//create physical board
 	GameBoardScene* temp = m_scene;
-	m_scene = new GameBoardScene(width, height);
+	m_scene = new GameBoardScene(width, height, true);
 
 	m_view->setScene(m_scene);
 	delete temp;
