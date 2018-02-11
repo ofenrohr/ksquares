@@ -13,6 +13,8 @@
 #include <QDialogButtonBox>
 #include <QPushButton>
 #include <QVBoxLayout>
+#include <alphaDots/ProtobufConnector.h>
+#include <alphaDots/ModelInfo.h>
 
 NewGameDialog::NewGameDialog(QWidget *parent) : QDialog(parent)
 {
@@ -33,6 +35,8 @@ NewGameDialog::NewGameDialog(QWidget *parent) : QDialog(parent)
     connect(spinNumOfPlayers, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &NewGameDialog::adjustEnabledUsers);
 
     adjustEnabledUsers(spinNumOfPlayers->value());
+
+    updateModelList();
 }
 
 void NewGameDialog::adjustEnabledUsers(int numOfPlayers)
@@ -65,6 +69,16 @@ void NewGameDialog::adjustEnabledUsers(int numOfPlayers)
     case 2:
     default:
         break;
+    }
+}
+
+void NewGameDialog::updateModelList() {
+    QList<AlphaDots::ModelInfo> models = AlphaDots::ProtobufConnector::getModelList();
+
+    aiModel->clear();
+    for (auto model : models) {
+        qDebug() << "model " << model.name();
+        aiModel->addItem(model.name());
     }
 }
 

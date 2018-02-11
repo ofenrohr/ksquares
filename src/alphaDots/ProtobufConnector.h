@@ -10,6 +10,9 @@
 #include <GameSequence.pb.h>
 #include <TrainingExample.pb.h>
 #include <DotsAndBoxesImage.pb.h>
+#include <AlphaDotsModel.pb.h>
+#include <ModelList.pb.h>
+#include "ModelInfo.h"
 
 namespace AlphaDots {
     class ProtobufConnector {
@@ -30,6 +33,12 @@ namespace AlphaDots {
          * @return image data
          */
         static QImage fromProtobuf(std::string msg);
+
+        /**
+         * Get model list.
+         * @return
+         */
+        static QList<ModelInfo> getModelList();
 
         /**
          * Converts a pixel line position to the line index format used by ksquares

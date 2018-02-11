@@ -1,0 +1,9 @@
+syntax = "proto2";
+
+package AlphaDots;
+
+message ProtoModel {
+    required string name = 1;
+    required string desc = 2;
+    required string path = 3;
+}

@@ -295,7 +295,7 @@ void MLDataGenerator::nextBtnClicked() {
 }
 
 void MLDataGenerator::turnSliderChanged(int turnIdx) {
-    qDebug() << "turnSliderChanged: " << turnIdx;
+    //qDebug() << "turnSliderChanged: " << turnIdx;
     displayFrame = turnIdx;
     turnLbl->setText(QString::number(displayFrame) + QStringLiteral(" / ") + QString::number(frameCnt));
 

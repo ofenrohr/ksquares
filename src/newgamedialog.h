@@ -22,6 +22,7 @@ public:
 
 public slots:
     void adjustEnabledUsers(int);
+    void updateModelList();
 };
 
 #endif // NEWGAMEDIALOG_H

@@ -3,8 +3,10 @@
 //
 
 #include "ProtobufConnector.h"
+#include "ExternalProcess.h"
 
 #include <QDebug>
+#include <settings.h>
 
 using namespace AlphaDots;
 
@@ -111,6 +113,43 @@ QImage ProtobufConnector::fromProtobuf(std::string msg) {
     return ret;
 }
 
+QList<ModelInfo> ProtobufConnector::getModelList() {
+    QList<ModelInfo> ret = QList<ModelInfo>();
+
+    QString process = QStringLiteral("/usr/bin/python2.7");
+    QStringList processArgs;
+    processArgs << Settings::alphaDotsDir() + QStringLiteral("/modelServer/modelList.py");
+    ExternalProcess modelListProc(process, processArgs);
+    if (!modelListProc.startExternalProcess()) {
+        qDebug() << "ERROR: failed to start " << process << processArgs;
+        return ret;
+    }
+
+    try {
+        zmq::context_t context(1);
+        zmq::socket_t socket(context, ZMQ_REQ);
+        socket.connect("tcp://127.0.0.1:13452");
+
+        sendString(socket, "get");
+
+        std::string response = recvString(socket);
+        ModelList modelList;
+        modelList.ParseFromString(response);
+
+        for (int i = 0; i < modelList.models().size(); i++) {
+            ProtoModel model = modelList.models().Get(i);
+            ret.append(ModelInfo(QString::fromStdString(model.name()), QString::fromStdString(model.desc()), QString::fromStdString(model.path())));
+        }
+
+    } catch (zmq::error_t &err) {
+        qDebug() << "ERROR receiving list: " << err.num() << err.what();
+    }
+
+    modelListProc.stopExternalProcess();
+
+    return ret;
+}
+
 int ProtobufConnector::pointToLineIndex(QPoint linePoint, int width) {
 	int ret;
 	if (linePoint.x() % 2 == 0) { // horizontal line
@@ -146,6 +185,11 @@ std::string ProtobufConnector::recvString(zmq::socket_t &socket) {
         } catch (zmq::error_t &ex) {
             qDebug() << "zmq recv error: " << ex.num();
             qDebug() << "msg: " << ex.what();
+            if (ex.num() == 4) {
+                qDebug() << "ignoring error...";
+                qDebug() << reply.data();
+                done = true;
+            }
         }
         tries++;
     }

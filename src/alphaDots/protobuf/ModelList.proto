@@ -1,0 +1,9 @@
+syntax = "proto2";
+
+package AlphaDots;
+
+import "AlphaDotsModel.proto";
+
+message ModelList {
+    repeated ProtoModel models = 1;
+}

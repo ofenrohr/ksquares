@@ -51,7 +51,7 @@ set(ksquares_SRCS
     alphaDots/datasets/BasicStrategyDataset.cpp
     alphaDots/datasets/SequenceDataset.cpp
     alphaDots/datasets/TrainingSequenceDataset.cpp
-)
+        alphaDots/ModelInfo.cpp alphaDots/ModelInfo.h)
 
 file(GLOB protoMessages alphaDots/protobuf/*.proto)
 PROTOBUF_GENERATE_CPP(ProtoSrcs ProtoHeaders ${protoMessages})

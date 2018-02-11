@@ -38,12 +38,21 @@ aiConvNet::~aiConvNet() {
 
 int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners,
                           const QList<Board::Move> &lineHistory) {
+	qDebug() << "aiConvNet chooseLine";
 	QElapsedTimer moveTimer;
 	moveTimer.start();
 
 	zmq::context_t context(1);
 	zmq::socket_t socket(context, ZMQ_REQ);
-	socket.connect("tcp://127.0.0.1:12354");
+	try {
+		socket.connect("tcp://127.0.0.1:12354");
+		//socket.connect("icp:///tmp/alphaDots/model");
+	} catch (zmq::error_t err) {
+		qDebug() << "Connection failed! " << err.num() << ": " << err.what();
+		return -1;
+	}
+
+	qDebug() << "connection status: " << socket.connected();
 
     bool *lines = new bool[linesSize];
     for (int i = 0; i < linesSize; ++i)
@@ -55,11 +64,13 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
     DotsAndBoxesImage img = ProtobufConnector::dotsAndBoxesImageToProtobuf(MLDataGenerator::generateInputImage(board));
 	ProtobufConnector::sendString(socket, img.SerializeAsString());
 
+	qDebug() << "sending protobuf string done";
+
 	zmq::message_t reply;
 	socket.recv(&reply);
     std::string rpl = std::string(static_cast<char*>(reply.data()), reply.size());
 
-	//qDebug() << "Received: " << (char*)reply.data();
+	qDebug() << "Received: " << (char*)reply.data();
 	QImage prediction = ProtobufConnector::fromProtobuf(rpl);
 
 	QList<QPoint> bestPoints;
