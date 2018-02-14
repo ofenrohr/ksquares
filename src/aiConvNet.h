@@ -14,7 +14,7 @@
 
 class aiConvNet : public KSquaresAi {
     public:
-        aiConvNet(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel, int thinkTime = 5000);
+        aiConvNet(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel, int thinkTime = 5000, AlphaDots::ModelInfo model = AlphaDots::ModelInfo());
 		~aiConvNet();
 
 		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory) override;
@@ -38,6 +38,8 @@ class aiConvNet : public KSquaresAi {
 		long turnTime;
         /// model sever
         ExternalProcess *modelServer;
+		/// model info
+		AlphaDots::ModelInfo modelInfo;
 };
 
 

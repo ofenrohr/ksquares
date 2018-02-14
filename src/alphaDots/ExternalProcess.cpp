@@ -102,7 +102,7 @@ void ExternalProcess::processError(const QProcess::ProcessError error) {
 		case QProcess::UnknownError: info = QStringLiteral("An unknown error occurred. This is the default return value of error()."); break;
 	}
 	qDebug() << "****************************************************************";
-	qDebug() << "***                    CONVERTER ERROR                       ***";
+	qDebug() << "***                    PROCESS   ERROR                       ***";
 	qDebug() << "****************************************************************";
 	qDebug() << "process error: " << info;
 }
@@ -110,7 +110,7 @@ void ExternalProcess::processError(const QProcess::ProcessError error) {
 void ExternalProcess::processStateChanged(const QProcess::ProcessState newState) {
     qDebug() << "processStateChanged!";
 	qDebug() << "****************************************************************";
-	qDebug() << "***                CONVERTER STATE CHANGED                   ***";
+	qDebug() << "***                PROCESS STATE CHANGED                     ***";
 	qDebug() << "****************************************************************";
 	QString state;
 	switch (newState)
@@ -135,7 +135,7 @@ void ExternalProcess::processFinished(const int &exitCode, const QProcess::ExitS
 void ExternalProcess::processReadyReadStandardError() {
 	process->setReadChannel(QProcess::StandardError);
 	QByteArray dabbleStdOutTmp = process->readAll();
-	qDebug() << "stdout: " << dabbleStdOutTmp.toStdString().c_str();
+	qDebug() << "stderr: " << dabbleStdOutTmp.toStdString().c_str();
 }
 
 void ExternalProcess::processReadyReadStandardOutput() {

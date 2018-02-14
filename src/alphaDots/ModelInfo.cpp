@@ -6,10 +6,15 @@
 
 using namespace AlphaDots;
 
-ModelInfo::ModelInfo(QString name, QString desc, QString path) {
+ModelInfo::ModelInfo() {
+    _name = _desc = _path = _type = QStringLiteral("");
+}
+
+ModelInfo::ModelInfo(QString name, QString desc, QString path, QString type) {
     _name = name;
     _desc = desc;
     _path = path;
+    _type = type;
 }
 
 QString ModelInfo::name() {
@@ -22,4 +27,8 @@ QString ModelInfo::desc() {
 
 QString ModelInfo::path() {
     return _path;
+}
+
+QString ModelInfo::type() {
+    return _type;
 }

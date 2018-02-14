@@ -138,7 +138,8 @@ QList<ModelInfo> ProtobufConnector::getModelList() {
 
         for (int i = 0; i < modelList.models().size(); i++) {
             ProtoModel model = modelList.models().Get(i);
-            ret.append(ModelInfo(QString::fromStdString(model.name()), QString::fromStdString(model.desc()), QString::fromStdString(model.path())));
+            ret.append(ModelInfo(QString::fromStdString(model.name()), QString::fromStdString(model.desc()),
+                                 QString::fromStdString(model.path()), QString::fromStdString(model.type())));
         }
 
     } catch (zmq::error_t &err) {
@@ -148,6 +149,17 @@ QList<ModelInfo> ProtobufConnector::getModelList() {
     modelListProc.stopExternalProcess();
 
     return ret;
+}
+
+ModelInfo ProtobufConnector::getModelByName(QString name) {
+    QList<ModelInfo> modelList = getModelList();
+    for (auto model : modelList) {
+        if (model.name() == name) {
+            return model;
+        }
+    }
+    qDebug() << "ERROR: failed to find model with name " << name;
+    return modelList[0];
 }
 
 int ProtobufConnector::pointToLineIndex(QPoint linePoint, int width) {

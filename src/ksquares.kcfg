@@ -29,6 +29,11 @@ http://www.kde.org/standards/kcfg/1.0/kcfg.xsd" >
 			<label>Quick start the game</label>
 			<default>0</default>
 		</entry>
+		<entry name="DisplayLineNumbers" type="Int">
+			<label>Show internal line numbers for debugging</label>
+			<whatsthis>Show internal line numbers for debugging</whatsthis>
+			<default>0</default>
+		</entry>
 	</group>
 	<group name="AI">
 		<entry name="PlayerOneAi" type="Int">
@@ -60,6 +65,21 @@ http://www.kde.org/standards/kcfg/1.0/kcfg.xsd" >
 			<label>Directory containing AlphaDots</label>
 			<whatsthis>Directory containing AlphaDots</whatsthis>
 			<default>/usr/share/alphaDots</default>
+		</entry>
+		<entry name="WineExecutable" type="String">
+			<label>Path to the wine executable</label>
+			<whatsthis>Path to the wine executable</whatsthis>
+			<default>/usr/bin/wine</default>
+		</entry>
+		<entry name="PythonExecutable" type="String">
+			<label>Path to the python executable</label>
+			<whatsthis>Path to the python executable</whatsthis>
+			<default>/usr/bin/python2.7</default>
+		</entry>
+		<entry name="AlphaDotsModel" type="String">
+			<label>Model to use in AlphaDots</label>
+			<whatsthis>Model to use in AlphaDots</whatsthis>
+			<default>BasicStrategy</default>
 		</entry>
 	</group>
 	<group name="Display">

@@ -25,8 +25,16 @@
 #include <QDebug>
 
 #include <QSet>
+#include <alphaDots/ProtobufConnector.h>
 
-aiController::aiController(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel, int thinkTime) : playerId(newPlayerId), maxPlayerId(newMaxPlayerId), width(newWidth), height(newHeight), level(newLevel), aiThinkTime(thinkTime)
+aiController::aiController(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel, int thinkTime, QString model) :
+		playerId(newPlayerId),
+		maxPlayerId(newMaxPlayerId),
+		width(newWidth),
+		height(newHeight),
+		level(newLevel),
+		aiThinkTime(thinkTime),
+		alphaDotsModel(AlphaDots::ProtobufConnector::getModelByName(model))
 {
 	//qDebug() << "aiController init: nw = " << newWidth << ", nh = " << newHeight << ", w = " << width << ", h = " << height;
 	//linesSize = aiFunctions::toLinesSize(width, height);
@@ -146,7 +154,7 @@ KSquaresAi::Ptr aiController::getAi()
 		break;
         case KSquares::AI_CONVNET:
 			if (ai.isNull())
-				ai = KSquaresAi::Ptr(new aiConvNet(playerId, maxPlayerId, width, height, level, aiThinkTime));
+				ai = KSquaresAi::Ptr(new aiConvNet(playerId, maxPlayerId, width, height, level, aiThinkTime, alphaDotsModel));
 		break;
 		case KSquares::AI_MCTS_CONVNET:
 			if (ai.isNull())

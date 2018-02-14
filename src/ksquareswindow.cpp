@@ -24,6 +24,7 @@
 #include <KLocalizedString>
 #include <KScoreDialog>
 #include <KStandardGameAction>
+#include <settings.h>
 // TODO: update file dialog includes
 //#include <KStatusBar>
 //#include <KAction>
@@ -127,6 +128,7 @@ void KSquaresWindow::gameNew()
         dialog.quickStartCheck->setCheckState(Qt::Unchecked);
     }
     dialog.aiThinkTime->setValue(Settings::aiThinkTime());
+    dialog.aiModel->setCurrentText(Settings::alphaDotsModel());
 
     //run dialog
     dialog.exec();
@@ -158,6 +160,7 @@ void KSquaresWindow::gameNew()
     Settings::setBoardWidth(dialog.spinWidth->value());
     Settings::setQuickStart(dialog.quickStartCheck->checkState());
     Settings::setAiThinkTime(dialog.aiThinkTime->value());
+    Settings::setAlphaDotsModel(dialog.aiModel->currentText());
     Settings::self()->save();
 
     gameReset();
@@ -179,7 +182,7 @@ void KSquaresWindow::gameReset()
 	{
 		int aiLevel = getAiLevel(i);
 		// TODO: don't create ai for human players
-		ais.append(aiController::Ptr(new aiController(i, playerList.size()-1, Settings::boardWidth(), Settings::boardHeight(), aiLevel, Settings::aiThinkTime()*1000)));
+		ais.append(aiController::Ptr(new aiController(i, playerList.size()-1, Settings::boardWidth(), Settings::boardHeight(), aiLevel, Settings::aiThinkTime()*1000, Settings::alphaDotsModel())));
 	}
 
     //start game etc.
@@ -314,7 +317,7 @@ void KSquaresWindow::loadGame()
     for (int i = 0; i < 2; i++)
     {
         int aiLevel = getAiLevel(i);
-        ais.append(aiController::Ptr(new aiController(i, 1, Settings::boardWidth(), Settings::boardHeight(), aiLevel, Settings::aiThinkTime()*1000)));
+        ais.append(aiController::Ptr(new aiController(i, 1, Settings::boardWidth(), Settings::boardHeight(), aiLevel, Settings::aiThinkTime()*1000, Settings::alphaDotsModel())));
     }
 
     QList<int> lines;

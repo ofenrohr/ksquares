@@ -39,6 +39,7 @@ namespace AlphaDots {
          * @return
          */
         static QList<ModelInfo> getModelList();
+        static ModelInfo getModelByName(QString name);
 
         /**
          * Converts a pixel line position to the line index format used by ksquares

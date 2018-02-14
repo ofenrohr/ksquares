@@ -6,4 +6,5 @@ message ProtoModel {
     required string name = 1;
     required string desc = 2;
     required string path = 3;
+    required string type = 4;
 }

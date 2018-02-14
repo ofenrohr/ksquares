@@ -15,6 +15,7 @@
 #include <QSharedPointer>
 #include <QObject>
 #include <QThread>
+#include <alphaDots/ModelInfo.h>
 #include "aifunctions.h"
 #include "boardAnalysis.h"
 #include "board.h"
@@ -86,7 +87,8 @@ class aiController : public QObject
 		 * @param newHeight width of the current gameboard
 		 * @param newLevel level of the ai
 		 */
-		aiController(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel, int thinkTime = 5000);
+		aiController(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel, int thinkTime = 5000,
+					 QString model = QStringLiteral("BasicStrategy"));
 		
 		~aiController();
 		
@@ -131,6 +133,8 @@ class aiController : public QObject
 		int aiThinkTime;
 		/// time logging
 		long lastTurnTime;
+		/// name of alphaDots model
+		AlphaDots::ModelInfo alphaDotsModel;
 };
 
 // see http://qt-project.org/doc/qt-4.8/qthread.html#details

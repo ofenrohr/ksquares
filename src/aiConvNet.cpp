@@ -11,11 +11,12 @@
 
 using namespace AlphaDots;
 
-aiConvNet::aiConvNet(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel, int thinkTime)
+aiConvNet::aiConvNet(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel, int thinkTime, ModelInfo model)
 		: KSquaresAi(newWidth, newHeight),
 		  playerId(newPlayerId),
 		  maxPlayerId(newMaxPlayerId),
-		  level(newLevel)
+		  level(newLevel),
+		  modelInfo(model)
 {
 	width = newWidth;
 	height = newHeight;
@@ -23,7 +24,9 @@ aiConvNet::aiConvNet(int newPlayerId, int newMaxPlayerId, int newWidth, int newH
 	turnTime = -5;
 
 	QStringList args;
-	args << Settings::alphaDotsDir() + QStringLiteral("/modelServer/modelServer.py");
+	args << Settings::alphaDotsDir() + QStringLiteral("/modelServer/modelServer.py")
+		 << QStringLiteral("--model")
+		 << model.name();
 	modelServer = new ExternalProcess(QStringLiteral("/usr/bin/python2.7"), args);
 	modelServer->addEnvironmentVariable(QStringLiteral("CUDA_VISIBLE_DEVICES"), QStringLiteral("-1"));
 	if (!modelServer->startExternalProcess()) {
@@ -60,9 +63,28 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 		lines[i] = newLines[i];
 	}
 
-	aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(lines, linesSize, width, height, newSquareOwners, playerId, maxPlayerId));
-    DotsAndBoxesImage img = ProtobufConnector::dotsAndBoxesImageToProtobuf(MLDataGenerator::generateInputImage(board));
-	ProtobufConnector::sendString(socket, img.SerializeAsString());
+	if (modelInfo.type() == QStringLiteral("direct inference")) {
+		aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(lines, linesSize, width, height, newSquareOwners, playerId, maxPlayerId));
+		DotsAndBoxesImage img = ProtobufConnector::dotsAndBoxesImageToProtobuf(MLDataGenerator::generateInputImage(board));
+		ProtobufConnector::sendString(socket, img.SerializeAsString());
+	} else
+    if (modelInfo.type() == QStringLiteral("sequence")) {
+		qDebug() << "sequence model";
+		// TODO: linehistory to game sequence
+		aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(width, height));
+		QList<QImage> imageSeq;
+		for (Board::Move move : lineHistory) {
+			board->doMove(move.line);
+			imageSeq.append(MLDataGenerator::generateInputImage(board));
+		}
+		GameSequence seq = ProtobufConnector::gameSequenceToProtobuf(imageSeq);
+		ProtobufConnector::sendString(socket, seq.SerializeAsString());
+	} else {
+		qDebug() << "ERROR: unknown model type!";
+        qDebug() << modelInfo.type();
+		exit(-1);
+	}
+
 
 	qDebug() << "sending protobuf string done";
 
