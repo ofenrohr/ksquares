@@ -134,12 +134,15 @@ void ExternalProcess::processFinished(const int &exitCode, const QProcess::ExitS
 
 void ExternalProcess::processReadyReadStandardError() {
 	process->setReadChannel(QProcess::StandardError);
-	QByteArray dabbleStdOutTmp = process->readAll();
-	qDebug() << "stderr: " << dabbleStdOutTmp.toStdString().c_str();
+	QByteArray outputData = process->readAll();
+	qDebug() << "stderr: " << outputData.toStdString().c_str();
+    printf("%s\n", outputData.toStdString());
+
 }
 
 void ExternalProcess::processReadyReadStandardOutput() {
 	process->setReadChannel(QProcess::StandardOutput);
-	QByteArray dabbleStdOutTmp = process->readAll();
-	qDebug() << "stdout: " << dabbleStdOutTmp.toStdString().c_str();
+	QByteArray outputData = process->readAll();
+	qDebug() << "stdout: " << outputData.toStdString().c_str();
+	printf("%s\n", outputData.toStdString());
 }

@@ -23,6 +23,7 @@ aiConvNet::aiConvNet(int newPlayerId, int newMaxPlayerId, int newWidth, int newH
 	linesSize = toLinesSize(width, height);
 	turnTime = -5;
 
+    qDebug() << "Starting: modelServer.py --model" << model.name();
 	QStringList args;
 	args << Settings::alphaDotsDir() + QStringLiteral("/modelServer/modelServer.py")
 		 << QStringLiteral("--model")
@@ -89,10 +90,15 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 	qDebug() << "sending protobuf string done";
 
 	zmq::message_t reply;
-	socket.recv(&reply);
+    try {
+		socket.recv(&reply);
+	} catch (zmq::error_t &err) {
+		qDebug() << "failed to receive reply: " << err.num() << " - " << err.what();
+		return -1;
+	}
     std::string rpl = std::string(static_cast<char*>(reply.data()), reply.size());
 
-	qDebug() << "Received: " << (char*)reply.data();
+	//qDebug() << "Received: " << (char*)reply.data();
 	QImage prediction = ProtobufConnector::fromProtobuf(rpl);
 
 	QList<QPoint> bestPoints;
