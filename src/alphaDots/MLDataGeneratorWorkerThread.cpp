@@ -25,7 +25,7 @@ MLDataGeneratorWorkerThread::~MLDataGeneratorWorkerThread() {
 }
 
 void MLDataGeneratorWorkerThread::process() {
-    qDebug() << "thread";
+    //qDebug() << "thread";
 
     int oldProgress = 0;
 

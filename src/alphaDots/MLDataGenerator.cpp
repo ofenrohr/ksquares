@@ -89,7 +89,7 @@ void MLDataGenerator::selectGenerator(int gen) {
             break;
         case 4:
             guiGenerator = DatasetGenerator::Ptr(new TrainingSequenceDataset(true, datasetWidth, datasetHeight));
-            qDebug() << "selected sequence generator";
+            qDebug() << "selected training sequence generator";
             break;
         default:
             break;
@@ -186,7 +186,7 @@ void MLDataGenerator::recvProgress(int progress, int thread) {
     for (int i = 0; i < threadProgr.count(); i++) {
         sum += threadProgr[i];
     }
-    qDebug() << threadProgr;
+    //qDebug() << threadProgr;
     progressBar->setValue(sum / threadCnt);
 }
 

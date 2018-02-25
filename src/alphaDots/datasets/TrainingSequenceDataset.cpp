@@ -22,6 +22,7 @@ TrainingSequenceDataset::~TrainingSequenceDataset() {
 }
 
 Dataset TrainingSequenceDataset::generateDataset() {
+    //qDebug() << "Training Sequence Dataset";
     getSocket();
     // create data
     QList<QImage> inputSeqData;
@@ -42,12 +43,13 @@ Dataset TrainingSequenceDataset::generateDataset() {
         QList<int> targetLines;
         targetLines.clear();
         targetLines.append(line);
-        targetSeqData.append(MLDataGenerator::generateOutputImage(aiboard, targetLines, false));
+        QImage targetImg = MLDataGenerator::generateOutputImage(aiboard, targetLines, false);
+        targetSeqData.append(targetImg);
     }
 
     if (!isGUI) {
         // send it to the python dataset converter
-       GameSequence gameSequence = ProtobufConnector::gameSequenceToProtobuf(inputSeqData, targetSeqData);
+        GameSequence gameSequence = ProtobufConnector::gameSequenceToProtobuf(inputSeqData, targetSeqData);
         if (!ProtobufConnector::sendString(*socket, gameSequence.SerializeAsString())) {
             qDebug() << "sending data failed!";
             return Dataset();
@@ -73,7 +75,7 @@ void TrainingSequenceDataset::startConverter(int samples, QString destinationDir
 
     QStringList args;
     args << Settings::alphaDotsDir() + QStringLiteral("/datasetConverter/convert.py")
-         << QStringLiteral("--debug")
+         //<< QStringLiteral("--debug")
          << QStringLiteral("--zmq")
          << QString::number(samples)
          << QStringLiteral("--seq2")
