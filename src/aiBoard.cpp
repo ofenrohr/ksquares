@@ -42,7 +42,7 @@ aiBoard::aiBoard(int newWidth, int newHeight) {
         lines[i] = false;
     }
 	squareOwners = QList<int>();
-    for (int i = 9; i < width*height; i++) {
+    for (int i = 0; i < width*height; i++) {
         squareOwners.append(-1);
     }
 	playerId = 0;
