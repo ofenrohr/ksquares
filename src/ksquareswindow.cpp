@@ -25,6 +25,7 @@
 #include <KScoreDialog>
 #include <KStandardGameAction>
 #include <settings.h>
+#include <QtWidgets/QFileDialog>
 // TODO: update file dialog includes
 //#include <KStatusBar>
 //#include <KAction>
@@ -352,6 +353,13 @@ void KSquaresWindow::saveGameAs()
 {
     qDebug() << "saveGameAs";
 	// savegamePath = KFileDialog::getSaveFileName(QUrl("kfiledialog:///ksquares"), "*.dbl|Dabble savegames\n*.ksq|KSquares savegames\n*.tex|LaTeX Picture\n*.sc.tex|LaTeX Strings and Coins Picture");
+    QFileDialog dialog(this);
+    dialog.setFileMode(QFileDialog::AnyFile);
+    dialog.setNameFilter(tr("Dabble savegames (*.dbl);;KSquares savegames (*.ksq);;LaTeX Picture (*.tex);;LaTeX Strings and Coins Picture (*.sc.tex)"));
+    if (!dialog.exec()) {
+        return;
+    }
+    savegamePath = dialog.selectedFiles().at(0);
 	if (!savegamePath.isEmpty())
 	{
 		saveGame();
