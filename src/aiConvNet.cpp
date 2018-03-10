@@ -27,7 +27,13 @@ aiConvNet::aiConvNet(int newPlayerId, int newMaxPlayerId, int newWidth, int newH
 	QStringList args;
 	args << Settings::alphaDotsDir() + QStringLiteral("/modelServer/modelServer.py")
 		 << QStringLiteral("--model")
-		 << model.name();
+		 << model.name()
+    	 << QStringLiteral("--width")
+		 << QString::number(width*2 + 3)
+         << QStringLiteral("--height")
+         << QString::number(height*2 + 3)
+		 //<< QStringLiteral("--debug")
+         ;
 	modelServer = new ExternalProcess(QStringLiteral("/usr/bin/python2.7"), args);
 	modelServer->addEnvironmentVariable(QStringLiteral("CUDA_VISIBLE_DEVICES"), QStringLiteral("-1"));
 	if (!modelServer->startExternalProcess()) {
@@ -64,12 +70,13 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 		lines[i] = newLines[i];
 	}
 
-	if (modelInfo.type() == QStringLiteral("direct inference")) {
+	if (modelInfo.type() == QStringLiteral("DirectInference") ||
+        modelInfo.type() == QStringLiteral("DirectInferenceCategorical")) {
 		aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(lines, linesSize, width, height, newSquareOwners, playerId, maxPlayerId));
 		DotsAndBoxesImage img = ProtobufConnector::dotsAndBoxesImageToProtobuf(MLDataGenerator::generateInputImage(board));
 		ProtobufConnector::sendString(socket, img.SerializeAsString());
-	} else
-    if (modelInfo.type() == QStringLiteral("sequence")) {
+	}
+    else if (modelInfo.type() == QStringLiteral("Sequence")) {
 		qDebug() << "sequence model";
 		// TODO: linehistory to game sequence
 		aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(width, height));

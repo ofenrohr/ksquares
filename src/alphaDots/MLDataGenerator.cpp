@@ -200,17 +200,15 @@ void MLDataGenerator::dataGeneratorFinished(int threadIdx) {
     }
 }
 
-void MLDataGenerator::generateGUIexample() {// setup
-    int width = 5;
-    int height = 4;
-    frameCnt = aiFunctions::toLinesSize(width, height);
+void MLDataGenerator::generateGUIexample() {
+    frameCnt = aiFunctions::toLinesSize(datasetWidth, datasetHeight);
     displayFrame = -1;
 
     // draw stuff
     if (gbs != NULL) {
         delete gbs;
     }
-    gbs = new GameBoardScene(width, height, false, this);
+    gbs = new GameBoardScene(datasetWidth, datasetWidth, false, this);
 
     guiDataset = guiGenerator->generateDataset();
     aiBoard::Ptr board;
@@ -241,12 +239,12 @@ void MLDataGenerator::generateGUIexample() {// setup
     } else {
         qDebug() << "NOT generator dataset";
         // generate data
-        board = generateRandomBoard(width, height, 5);
+        board = generateRandomBoard(datasetWidth, datasetHeight, 5);
 
         displayFrame = 20;
 
         // make some more moves
-        KSquaresAi::Ptr ai = KSquaresAi::Ptr(new aiEasyMediumHard(0, width, height, 2));
+        KSquaresAi::Ptr ai = KSquaresAi::Ptr(new aiEasyMediumHard(0, datasetWidth, datasetHeight, 2));
         makeAiMoves(board, ai, displayFrame);
 
         inputImage = generateInputImage(board);

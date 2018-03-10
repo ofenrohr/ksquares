@@ -50,7 +50,7 @@ instead sent directly to the python script. Communication is facilitated with
 zeroMQ, sending images with the protobuf library.
 
 ```
-ksquares --generate 1000 --dataset-type stageOne --dataset-dest /mnt/DATA/stageOneDataset
+ksquares --generate 1000 --dataset-generator stageOne --dataset-dest /mnt/DATA/stageOneDataset
 ```
 
 ### Basic Strategy
@@ -62,7 +62,7 @@ to the shown target image. This dataset aims to remedy this by putting all
 viable lines in one target image.
 
 ```
-ksquares --generate 1000 --dataset-type basicStrategy --dataset-width 7 --dataset-height 5
+ksquares --generate 1000 --dataset-generator basicStrategy --dataset-width 7 --dataset-height 5
 ```
 
 ### Sequence 
@@ -81,5 +81,5 @@ the last state of the game is not enough, it also needs all states leading up to
 This dataset is made of full Dots and Boxes games, played by two Hard AIs.
 
 ```
-ksquares --generate 1000 --dataset-type LSTM
+ksquares --generate 1000 --dataset-generator LSTM
 ```
