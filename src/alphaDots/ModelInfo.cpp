@@ -17,7 +17,7 @@ ModelInfo::ModelInfo(QString name, QString desc, QString path, QString type) {
     _type = type;
 }
 
-QString ModelInfo::name() {
+QString ModelInfo::name() const {
     return _name;
 }
 

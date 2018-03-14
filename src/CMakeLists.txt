@@ -39,10 +39,7 @@ set(ksquares_SRCS
     alphaDots/MLDataGenerator.cpp
     alphaDots/MLDataGeneratorWorkerThread.cpp
     aiConvNet.cpp
-    #alphaDots/protobuf/DotsAndBoxesImage.pb.cc
-    #alphaDots/protobuf/TrainingExample.pb.cc
-    #alphaDots/protobuf/GameSequence.pb.cc
-        alphaDots/ProtobufConnector.cpp
+    alphaDots/ProtobufConnector.cpp
     alphaDots/datasets/FirstTryDataset.cpp
     alphaDots/datasets/DatasetGenerator.cpp
     alphaDots/datasets/StageOneDataset.cpp
@@ -51,7 +48,11 @@ set(ksquares_SRCS
     alphaDots/datasets/BasicStrategyDataset.cpp
     alphaDots/datasets/SequenceDataset.cpp
     alphaDots/datasets/TrainingSequenceDataset.cpp
-        alphaDots/ModelInfo.cpp alphaDots/ModelInfo.h)
+    alphaDots/ModelInfo.cpp
+    alphaDots/modelEvaluation/AITestSetup.cpp
+    alphaDots/modelEvaluation/AITestResult.cpp
+    alphaDots/modelEvaluation/ModelEvaluation.cpp
+    alphaDots/modelEvaluation/TestResultModel.cpp)
 
 file(GLOB protoMessages alphaDots/protobuf/*.proto)
 PROTOBUF_GENERATE_CPP(ProtoSrcs ProtoHeaders ${protoMessages})
@@ -62,7 +63,7 @@ message(ProtoHeaders: ${ProtoHeaders})
 include_directories(${CMAKE_SOURCE_DIR}/libKF5KDEGames/highscore ${ZeroMQ_INCLUDE_DIR})
 
 
-ki18n_wrap_ui(ksquares_SRCS newgamewidget.ui scoreswidget.ui prefs_ai.ui prefs_display.ui alphaDots/mldataview.ui)
+ki18n_wrap_ui(ksquares_SRCS newgamewidget.ui scoreswidget.ui prefs_ai.ui prefs_display.ui alphaDots/mldataview.ui alphaDots/modelEvaluation/ModelEvaluation.ui)
 
 kconfig_add_kcfg_files(ksquares_SRCS GENERATE_MOC settings.kcfgc) #GENERATE_MOC is not needed but it doesn't work without it for some reason :S
 

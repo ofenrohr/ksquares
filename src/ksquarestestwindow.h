@@ -19,6 +19,8 @@
 
 #include "ksquaresgame.h"
 #include "aicontroller.h"
+#include "alphaDots/modelEvaluation/AITestSetup.h"
+#include "alphaDots/modelEvaluation/AITestResult.h"
 
 class GameBoardView;
 class GameBoardScene;
@@ -28,34 +30,6 @@ class GameBoardScene;
  *
  * @author Tom Vincent Peters <kde@vincent-peters.de>
  */
-
-class AITestSetup {
-public:
-	int levelP1;
-	int levelP2;
-	int timeout;
-	QPoint boardSize;
-	
-	QVariant toQVariant();
-	void fromQVariant(QVariant map);
-};
-
-class AITestResult {
-public:
-	AITestSetup setup;
-	QList<int> moves;
-	QList<int> timeP1;
-	QList<int> timeP2;
-	bool taintedP1;
-	bool taintedP2;
-	int crashesP1;
-	int crashesP2;
-	int scoreP1;
-	int scoreP2;
-	
-	QVariant toQVariant();
-	void fromQVariant(QVariant map);
-};
 
 class KSquaresTestWindow : public KXmlGuiWindow
 {

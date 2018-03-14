@@ -22,6 +22,7 @@
 #include "ksquarestestwindow.h"
 #include "settings.h"
 #include "alphaDots/MLDataGenerator.h"
+#include "alphaDots/modelEvaluation/ModelEvaluation.h"
 
 static const char description[] =
     I18N_NOOP("Take it in turns to draw lines.\nIf you complete a squares, you get another go.");
@@ -50,16 +51,17 @@ int main(int argc, char **argv)
     KCrash::initialize();
     parser.addVersionOption();
     parser.addHelpOption();
-    parser.addOption(QCommandLineOption(QStringList() <<  QStringLiteral("demo"), i18n("Run game in demo (autoplay) mode")));
-    parser.addOption(QCommandLineOption(QStringList() <<  QStringLiteral("test"), i18n("Run AI tests")));
-    parser.addOption(QCommandLineOption(QStringList() <<  QStringLiteral("full-test"), i18n("Start over all AI tests")));
-    parser.addOption(QCommandLineOption(QStringList() <<  QStringLiteral("generate"), i18n("Generate training data"), QStringLiteral("generate")));
-    parser.addOption(QCommandLineOption(QStringList() <<  QStringLiteral("show-generate"), i18n("Generate training data")));
-    parser.addOption(QCommandLineOption(QStringList() <<  QStringLiteral("dataset-generator"),
-        i18n("Select dataset type to generate. valid values: firstTry, stageOne, basicStrategy, LSTM (only works for numpy dataset generation, not gui)"), QStringLiteral("dataset-generator")));
-    parser.addOption(QCommandLineOption(QStringList() <<  QStringLiteral("dataset-width"), i18n("Dataset width in boxes"), QStringLiteral("dataset-width")));
-    parser.addOption(QCommandLineOption(QStringList() <<  QStringLiteral("dataset-height"), i18n("Dataset height in boxes"), QStringLiteral("dataset-height")));
-    parser.addOption(QCommandLineOption(QStringList() <<  QStringLiteral("dataset-dest"), i18n("Dataset destination directory"), QStringLiteral("dataset-dest")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("demo"), i18n("Run game in demo (autoplay) mode")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("test"), i18n("Run AI tests")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("full-test"), i18n("Start over all AI tests")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("generate"), i18n("Generate training data"), i18n("generate")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("show-generate"), i18n("Generate training data")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("dataset-generator"),
+        i18n("Select dataset type to generate. valid values: firstTry, stageOne, basicStrategy, LSTM (only works for numpy dataset generation, not gui)"), i18n("dataset-generator")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("dataset-width"), i18n("Dataset width in boxes"), i18n("dataset-width")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("dataset-height"), i18n("Dataset height in boxes"), i18n("dataset-height")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("dataset-dest"), i18n("Dataset destination directory"), i18n("dataset-dest")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("model-evaluation"), i18n("Evaluate all models")));
 
     about.setupCommandLine(&parser);
     parser.process(app);
@@ -154,6 +156,9 @@ int main(int argc, char **argv)
     } else if (parser.isSet(QStringLiteral("show-generate"))) {
         AlphaDots::MLDataGenerator *dataGenerator = new AlphaDots::MLDataGenerator();
         dataGenerator->show();
+    } else if (parser.isSet(QStringLiteral("model-evaluation"))) {
+        AlphaDots::ModelEvaluation *modelEvaluation = new AlphaDots::ModelEvaluation();
+        modelEvaluation->show();
     } else {
         KSquaresWindow *mainWindow = new KSquaresWindow;
         mainWindow->show();

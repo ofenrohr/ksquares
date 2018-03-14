@@ -14,7 +14,7 @@ namespace AlphaDots {
         ModelInfo();
         ModelInfo(QString name, QString desc, QString path, QString type);
 
-        QString name();
+        QString name() const;
         QString desc();
         QString path();
         QString type();
