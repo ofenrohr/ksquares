@@ -36,9 +36,11 @@ aiConvNet::aiConvNet(int newPlayerId, int newMaxPlayerId, int newWidth, int newH
          ;
 	modelServer = new ExternalProcess(QStringLiteral("/usr/bin/python2.7"), args);
 	modelServer->addEnvironmentVariable(QStringLiteral("CUDA_VISIBLE_DEVICES"), QStringLiteral("-1"));
+    /*
 	if (!modelServer->startExternalProcess()) {
 		qDebug() << "ERROR: can't start model server!";
 	}
+     */
 }
 
 aiConvNet::~aiConvNet() {
@@ -76,9 +78,9 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 		DotsAndBoxesImage img = ProtobufConnector::dotsAndBoxesImageToProtobuf(MLDataGenerator::generateInputImage(board));
 		ProtobufConnector::sendString(socket, img.SerializeAsString());
 	}
-    else if (modelInfo.type() == QStringLiteral("Sequence")) {
+    else if (modelInfo.type() == QStringLiteral("Sequence") ||
+             modelInfo.type() == QStringLiteral("SequenceCategorical")) {
 		qDebug() << "sequence model";
-		// TODO: linehistory to game sequence
 		aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(width, height));
 		QList<QImage> imageSeq;
 		for (Board::Move move : lineHistory) {

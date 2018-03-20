@@ -52,6 +52,11 @@ namespace AlphaDots {
          * @param result
          */
         void addResult(AITestResult result);
+
+        /**
+         * Save data
+         */
+        void saveData();
     private:
         QList<ModelInfo> modelList;
 

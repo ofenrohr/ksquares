@@ -45,8 +45,11 @@ namespace AlphaDots {
 		QList<aiController::Ptr> aiList;
 		QThread* thread;
 
+        QList<int> lineLog;
+
 		void createTestSetups();
         void loadTestSetup(const AITestSetup &setup);
+		QString aiName(int level);
     };
 }
 

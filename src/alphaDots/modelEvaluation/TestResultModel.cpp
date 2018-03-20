@@ -2,6 +2,9 @@
 // Created by ofenrohr on 11.03.18.
 //
 
+#include <QtCore/QFile>
+#include <QtCore/QTextStream>
+#include <qdebug.h>
 #include "TestResultModel.h"
 
 using namespace AlphaDots;
@@ -26,7 +29,7 @@ int TestResultModel::rowCount(const QModelIndex &parent) const {
 }
 
 int TestResultModel::columnCount(const QModelIndex &parent) const {
-    return 6;
+    return 7;
 }
 
 QVariant TestResultModel::headerData(int section, Qt::Orientation orientation, int role) const {
@@ -37,8 +40,9 @@ QVariant TestResultModel::headerData(int section, Qt::Orientation orientation, i
                 case 1: return QStringLiteral("Wins vs. Easy");
                 case 2: return QStringLiteral("Wins vs. Medium");
                 case 3: return QStringLiteral("Wins vs. Hard");
-                case 4: return QStringLiteral("Ends with Double Dealing");
-                case 5: return QStringLiteral("Preemtive Sacrifices");
+                case 4: return QStringLiteral("Errors");
+                case 5: return QStringLiteral("Ends with Double Dealing");
+                case 6: return QStringLiteral("Preemtive Sacrifices");
             }
         }
         if (orientation == Qt::Vertical) {
@@ -75,7 +79,42 @@ void TestResultModel::addResult(AITestResult result) {
     }
     rows[modelAi-3][0]++; // inc games counter
     if (ruleBasedAiScore < modelAiScore) {
-        rows[modelAi-3][ruleBasedAi+1]++; // inc win counter
+        rows[modelAi - 3][ruleBasedAi + 1]++; // inc win counter
+    }
+    if (result.taintedP1 || result.taintedP2) {
+        rows[modelAi - 3][4]++; // inc error counter
     }
     emit(dataChanged(createIndex(0,0),createIndex(rowCount(), columnCount())));
+}
+
+void TestResultModel::saveData() {
+    QString output;
+    for (int y = 0; y < rowCount()+1; y++) {
+        for (int x = 0; x < columnCount() + 1; x++) {
+            QString cell;
+            if (y == 0) {
+                if (x != 0) {
+                    cell = headerData(x-1, Qt::Horizontal, Qt::DisplayRole).toString();
+                    output.append(QStringLiteral(","));
+                }
+            } else {
+                if (x == 0) {
+                    cell = headerData(y-1, Qt::Vertical, Qt::DisplayRole).toString();
+                } else {
+                    cell = data(createIndex(y - 1, x - 1), Qt::DisplayRole).toString();
+                    output.append(QStringLiteral(","));
+                }
+            }
+            output.append(cell);
+        }
+        output.append(QStringLiteral("\n"));
+    }
+    QFile outputFile(QStringLiteral("ModelEvaluation.csv"));
+    if (!outputFile.open(QIODevice::ReadWrite)) {
+        qDebug() << "failed to open output file!";
+        return;
+    }
+    QTextStream outputStream(&outputFile);
+    outputStream << output;
+
 }

@@ -72,11 +72,12 @@ void ModelEvaluation::createTestSetups() {
 
 void ModelEvaluation::loadTestSetup(const AITestSetup &setup) {
     currentSetup = setup;
+    lineLog.clear();
 
 	int width = setup.boardSize.x();
 	int height = setup.boardSize.y();
 
-    QString modelName = modelList[(setup.levelP1>setup.levelP2?setup.levelP1:setup.levelP2)-2].name();
+    QString modelName = modelList[(setup.levelP1>setup.levelP2?setup.levelP1:setup.levelP2)-3].name();
 	// create AI players
 	aiList.clear();
 	aiController::Ptr aic0(new aiController(0, 1, width, height, setup.levelP1 > 2 ? KSquares::AI_CONVNET : setup.levelP1, setup.timeout, modelName));
@@ -91,7 +92,7 @@ void ModelEvaluation::loadTestSetup(const AITestSetup &setup) {
 
 	// create physical board
 	GameBoardScene* temp = m_scene;
-	m_scene = new GameBoardScene(width, height, true);
+	m_scene = new GameBoardScene(width, height, false);
 	gameView->setScene(m_scene);
 	delete temp;
 	gameView->setBoardSize();
@@ -100,6 +101,11 @@ void ModelEvaluation::loadTestSetup(const AITestSetup &setup) {
 	sGame->createGame(playerList, width, height);
 	connect(sGame, SIGNAL(drawLine(int,QColor)), m_scene, SLOT(drawLine(int,QColor)));
 	connect(sGame, SIGNAL(drawSquare(int,QColor)), m_scene, SLOT(drawSquare(int,QColor)));
+
+    // update info label
+    infoLbl->setText(QStringLiteral("<b>Current game</b><br/>\n") +
+                     aiName(setup.levelP1) + QStringLiteral(" vs. ") + aiName(setup.levelP2) +
+                     QStringLiteral("<br/><br/>\n\n<b>Games left</b><br/>\n") + QString::number(testSetups.size()));
 
     // start game
 	sGame->start();
@@ -141,6 +147,8 @@ void ModelEvaluation::aiChooseLine() {
 void ModelEvaluation::aiChoseLine(const int &line) {
     qDebug() << "aiChoseLine";
 
+    lineLog.append(line);
+
     if (aiList[sGame->currentPlayerId()]->getAi()->tainted())
     {
         qDebug() << "ERROR: game is tainted! aborting";
@@ -169,8 +177,10 @@ void ModelEvaluation::gameOver(const QVector<KSquaresPlayer> &playerList) {
     currentResult.crashesP2 = aiList[1]->getAi()->crashCount();
     currentResult.scoreP1 = playerList[0].score();
     currentResult.scoreP2 = playerList[1].score();
+    currentResult.moves = lineLog;
 
     resultModel->addResult(currentResult);
+    resultModel->saveData();
 
     QTimer::singleShot(1000, this, SLOT(nextGame()));
 }
@@ -180,5 +190,18 @@ void ModelEvaluation::nextGame() {
         loadTestSetup(testSetups.takeFirst());
     } else {
         qDebug() << "done";
+    }
+}
+
+QString ModelEvaluation::aiName(int level) {
+    switch (level) {
+        case 0:
+            return QStringLiteral("Easy");
+        case 1:
+            return QStringLiteral("Medium");
+        case 2:
+            return QStringLiteral("Hard");
+        default:
+            return modelList[level - 3].name();
     }
 }
