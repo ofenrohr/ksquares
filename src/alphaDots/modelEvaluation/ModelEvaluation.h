@@ -18,10 +18,13 @@ namespace AlphaDots {
     class ModelEvaluation : public KXmlGuiWindow, public Ui::ModelEvaluationForm {
     Q_OBJECT
     public:
-        ModelEvaluation();
+        ModelEvaluation(QString models = QStringLiteral(""));
         ~ModelEvaluation();
 
+		QList<ModelInfo> getModelList(QString models);
         void initObject();
+
+		static void printModelList();
 
 	public slots:
 		void aiChoseLine(const int &line);
@@ -33,6 +36,7 @@ namespace AlphaDots {
 		void gameOver(const QVector<KSquaresPlayer> & /*playerList*/);
 
     private:
+		QString modelsStr;
         QList<AITestSetup> testSetups;
         AITestSetup currentSetup;
 

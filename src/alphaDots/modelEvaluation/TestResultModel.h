@@ -8,6 +8,7 @@
 
 #include <QtCore/QAbstractTableModel>
 #include <alphaDots/ModelInfo.h>
+#include <QtCore/QMutex>
 #include "AITestResult.h"
 
 namespace AlphaDots {
@@ -62,6 +63,8 @@ namespace AlphaDots {
 
         QList<AITestResult> results;
         QList<QList<int>> rows;
+
+        mutable QMutex rowsMutex;
     };
 }
 

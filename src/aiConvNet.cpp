@@ -36,11 +36,9 @@ aiConvNet::aiConvNet(int newPlayerId, int newMaxPlayerId, int newWidth, int newH
          ;
 	modelServer = new ExternalProcess(QStringLiteral("/usr/bin/python2.7"), args);
 	modelServer->addEnvironmentVariable(QStringLiteral("CUDA_VISIBLE_DEVICES"), QStringLiteral("-1"));
-    /*
 	if (!modelServer->startExternalProcess()) {
 		qDebug() << "ERROR: can't start model server!";
 	}
-     */
 }
 
 aiConvNet::~aiConvNet() {
@@ -83,11 +81,20 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 		qDebug() << "sequence model";
 		aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(width, height));
 		QList<QImage> imageSeq;
+		imageSeq.append(MLDataGenerator::generateInputImage(board));
 		for (Board::Move move : lineHistory) {
 			board->doMove(move.line);
 			imageSeq.append(MLDataGenerator::generateInputImage(board));
 		}
 		GameSequence seq = ProtobufConnector::gameSequenceToProtobuf(imageSeq);
+        std::vector<std::string> errors;
+        seq.FindInitializationErrors(&errors);
+        foreach (std::string err, errors) {
+            qDebug() << "GameSequence protobuf error: " << QString::fromStdString(err);
+        }
+		if (errors.size() > 0) {
+			qDebug() << "imageSeq: " << imageSeq;
+		}
 		ProtobufConnector::sendString(socket, seq.SerializeAsString());
 	} else {
 		qDebug() << "ERROR: unknown model type!";

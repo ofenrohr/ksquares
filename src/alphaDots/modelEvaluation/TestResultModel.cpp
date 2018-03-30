@@ -33,6 +33,7 @@ int TestResultModel::columnCount(const QModelIndex &parent) const {
 }
 
 QVariant TestResultModel::headerData(int section, Qt::Orientation orientation, int role) const {
+    QMutexLocker locker(&rowsMutex); // make it thread safe
     if (role == Qt::DisplayRole) {
         if (orientation == Qt::Horizontal) {
             switch(section) {
@@ -53,6 +54,7 @@ QVariant TestResultModel::headerData(int section, Qt::Orientation orientation, i
 }
 
 QVariant TestResultModel::data(const QModelIndex &index, int role) const {
+    QMutexLocker locker(&rowsMutex); // make it thread safe
     if (role == Qt::DisplayRole) {
         //return QStringLiteral("(%1,%2)").arg(index.column()).arg(index.row());
         return rows[index.row()][index.column()];
@@ -61,6 +63,7 @@ QVariant TestResultModel::data(const QModelIndex &index, int role) const {
 }
 
 void TestResultModel::addResult(AITestResult result) {
+    QMutexLocker locker(&rowsMutex); // make it thread safe
     results.append(result);
     int ruleBasedAi = -1;
     int modelAi = -1;

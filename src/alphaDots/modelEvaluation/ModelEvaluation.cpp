@@ -10,8 +10,9 @@
 
 using namespace AlphaDots;
 
-ModelEvaluation::ModelEvaluation() : KXmlGuiWindow(), m_view(new QWidget()) {
-    modelList = ProtobufConnector::getModelList();
+ModelEvaluation::ModelEvaluation(QString models) : KXmlGuiWindow(), m_view(new QWidget()) {
+    modelsStr = models;
+    modelList = getModelList(models);
     resultModel = new TestResultModel(this, modelList);
     sGame = new KSquaresGame();
     thread = nullptr;
@@ -38,6 +39,44 @@ void ModelEvaluation::initObject() {
     gameView->setScene(m_scene);
 
     nextGame();
+}
+
+QList<ModelInfo> ModelEvaluation::getModelList(QString models) {
+    QList<ModelInfo> allModels = ProtobufConnector::getModelList();
+    QList<ModelInfo> ret;
+
+    models = models.trimmed();
+    if (models.isEmpty()) {
+        return allModels;
+    }
+
+    QList<QString> selectedModels = models.split(QStringLiteral(","));
+    foreach (QString modelStr, selectedModels) {
+        bool foundModel = false;
+        foreach (ModelInfo modelInfo, allModels) {
+            if (modelStr.trimmed() == modelInfo.name()) {
+                ret.append(modelInfo);
+                foundModel = true;
+                break;
+            }
+        }
+        if (!foundModel) {
+            qDebug() << "unknown model: " << modelStr;
+        }
+    }
+
+    return ret;
+}
+
+void ModelEvaluation::printModelList() {
+    QList<ModelInfo> models = ProtobufConnector::getModelList();
+    qDebug() << "================================================================================";
+    qDebug() << "Available models:";
+    qDebug() << "================================================================================";
+    foreach (ModelInfo model, models) {
+        qDebug().noquote() << model.name();
+    }
+    qDebug() << "================================================================================";
 }
 
 void ModelEvaluation::createTestSetups() {
@@ -103,7 +142,7 @@ void ModelEvaluation::loadTestSetup(const AITestSetup &setup) {
 	connect(sGame, SIGNAL(drawSquare(int,QColor)), m_scene, SLOT(drawSquare(int,QColor)));
 
     // update info label
-    infoLbl->setText(QStringLiteral("<b>Current game</b><br/>\n") +
+    infoLbl->setText(QStringLiteral("<br/><br/><b>Current game</b><br/>\n") +
                      aiName(setup.levelP1) + QStringLiteral(" vs. ") + aiName(setup.levelP2) +
                      QStringLiteral("<br/><br/>\n\n<b>Games left</b><br/>\n") + QString::number(testSetups.size()));
 

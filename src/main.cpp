@@ -62,6 +62,8 @@ int main(int argc, char **argv)
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("dataset-height"), i18n("Dataset height in boxes"), i18n("dataset-height")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("dataset-dest"), i18n("Dataset destination directory"), i18n("dataset-dest")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("model-evaluation"), i18n("Evaluate all models")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("model-list"), i18n("List all available models")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("models"), i18n("List models to evaluate"), i18n("models")));
 
     about.setupCommandLine(&parser);
     parser.process(app);
@@ -123,8 +125,8 @@ int main(int argc, char **argv)
         int boardWidth = 5;
         int boardHeight = 4;
         if (
-                parser.isSet(QStringLiteral("dataset-width")) &&
-                parser.isSet(QStringLiteral("dataset-height"))
+            parser.isSet(QStringLiteral("dataset-width")) &&
+            parser.isSet(QStringLiteral("dataset-height"))
         ) {
             bool ok2 = false;
             int tmp = parser.value(QStringLiteral("dataset-width")).toInt(&ok2);
@@ -157,8 +159,12 @@ int main(int argc, char **argv)
         AlphaDots::MLDataGenerator *dataGenerator = new AlphaDots::MLDataGenerator();
         dataGenerator->show();
     } else if (parser.isSet(QStringLiteral("model-evaluation"))) {
-        AlphaDots::ModelEvaluation *modelEvaluation = new AlphaDots::ModelEvaluation();
+        AlphaDots::ModelEvaluation *modelEvaluation;
+        modelEvaluation = new AlphaDots::ModelEvaluation(parser.value(QStringLiteral("models")));
         modelEvaluation->show();
+    } else if (parser.isSet(QStringLiteral("model-list"))) {
+        AlphaDots::ModelEvaluation::printModelList();
+        return 0;
     } else {
         KSquaresWindow *mainWindow = new KSquaresWindow;
         mainWindow->show();

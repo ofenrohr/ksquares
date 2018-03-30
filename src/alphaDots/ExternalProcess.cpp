@@ -47,6 +47,7 @@ bool ExternalProcess::startExternalProcess() {
 	connect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(processReadyReadStandardOutput()));
 	qDebug().noquote() << "starting process: " << processExecutablePath << processArguments;
 	process->start(processExecutablePath, processArguments);
+	process->setProcessChannelMode(QProcess::ForwardedChannels);
 	process->setReadChannel(QProcess::StandardOutput);
 	if (!process->waitForStarted())
 	{
