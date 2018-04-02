@@ -34,7 +34,7 @@ class Board : public QObject
 			QList<int> squares;
 			
 			friend QDebug operator<<(QDebug dbg, const Board::Move_t &m) { dbg.nospace() << "Move(line: " << m.line << ", player: " << m.player << ", squares: " << m.squares << ")"; return dbg.maybeSpace(); }
-    } Move;	
+        } Move;
 
 		/**
 		 * resets the board
@@ -174,14 +174,16 @@ class Board : public QObject
 		 * @return the id of the current player
 		 */
 		int currentPlayer() const {return currentPlayerId_;}
-    /**
-     * @return the history of drawn lines
-     */
-    QList<Move> getLineHistory() const {return lineHistory_;}
-    /**
+        /**
+         * @return the history of drawn lines
+         */
+        QList<Move> getLineHistory() const {return lineHistory_;}
+        /**
 		 * @return number of players
 		 */
 		int getNumOfPlayers() const {return numOfPlayers_;}
+
+		QString toString() const;
 
 		//setters
 		void setNumOfPlayers(int numOfPlayers) {numOfPlayers_ = numOfPlayers;}

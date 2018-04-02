@@ -64,6 +64,7 @@ int main(int argc, char **argv)
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("model-evaluation"), i18n("Evaluate all models")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("model-list"), i18n("List all available models")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("models"), i18n("List models to evaluate"), i18n("models")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("fast-model-evaluation"), i18n("Run multi-threaded fast evaluation")));
 
     about.setupCommandLine(&parser);
     parser.process(app);
@@ -159,8 +160,10 @@ int main(int argc, char **argv)
         AlphaDots::MLDataGenerator *dataGenerator = new AlphaDots::MLDataGenerator();
         dataGenerator->show();
     } else if (parser.isSet(QStringLiteral("model-evaluation"))) {
-        AlphaDots::ModelEvaluation *modelEvaluation;
-        modelEvaluation = new AlphaDots::ModelEvaluation(parser.value(QStringLiteral("models")));
+        AlphaDots::ModelEvaluation *modelEvaluation = new AlphaDots::ModelEvaluation(parser.value(QStringLiteral("models")));
+        modelEvaluation->show();
+    } else if (parser.isSet(QStringLiteral("fast-model-evaluation"))) {
+        AlphaDots::ModelEvaluation *modelEvaluation = new AlphaDots::ModelEvaluation(parser.value(QStringLiteral("models")), true);
         modelEvaluation->show();
     } else if (parser.isSet(QStringLiteral("model-list"))) {
         AlphaDots::ModelEvaluation::printModelList();

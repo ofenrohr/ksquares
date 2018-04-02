@@ -20,7 +20,7 @@ class aiConvNet : public KSquaresAi {
 		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory) override;
 		QString getName() override { return QStringLiteral("convnet"); }
 		bool enabled() override { return true; }
-		bool tainted() override { return false; }
+		bool tainted() override { return isTainted; }
         long lastMoveTime() override { return turnTime; }
 
     protected:
@@ -36,10 +36,17 @@ class aiConvNet : public KSquaresAi {
 		int level;
 		/// time logging
 		long turnTime;
+		/// remember if sth went wrong
+		bool isTainted;
+        /// port the model server listens on
+    	int port;
         /// model sever
-        ExternalProcess *modelServer;
+        //ExternalProcess *modelServer;
 		/// model info
 		AlphaDots::ModelInfo modelInfo;
+
+        zmq::context_t context;//(1);
+        zmq::socket_t socket;//(context, ZMQ_REQ);
 };
 
 

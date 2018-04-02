@@ -5,6 +5,7 @@
 #include <sstream>
 #include <QtCore/QElapsedTimer>
 #include <settings.h>
+#include <alphaDots/ModelManager.h>
 #include "aiConvNet.h"
 #include "alphaDots/ProtobufConnector.h"
 #include "alphaDots/MLDataGenerator.h"
@@ -16,13 +17,38 @@ aiConvNet::aiConvNet(int newPlayerId, int newMaxPlayerId, int newWidth, int newH
 		  playerId(newPlayerId),
 		  maxPlayerId(newMaxPlayerId),
 		  level(newLevel),
-		  modelInfo(model)
+		  modelInfo(model),
+		  context(zmq::context_t(1)),
+		  socket(zmq::socket_t(context, ZMQ_REQ))
 {
 	width = newWidth;
 	height = newHeight;
 	linesSize = toLinesSize(width, height);
 	turnTime = -5;
+	isTainted = false;
 
+	qDebug() << "aiConvNet";
+
+	port = ModelManager::getInstance().ensureProcessRunning(model.name(), width, height);
+	if (port < 0) {
+		qDebug() << "ensureProcessRunning failed!";
+		isTainted = true;
+	}
+
+	qDebug() << "zmq connect...";
+	//context = zmq::context_t(1);
+	//socket = zmq::socket_t(context, ZMQ_REQ);
+	try {
+		qDebug().noquote().nospace() << "tcp://127.0.0.1:" << QString::number(port);
+		socket.connect("tcp://127.0.0.1:" + std::to_string(port));
+		qDebug() << "zmq connect done";
+		//socket.connect("icp:///tmp/alphaDots/model");
+	} catch (zmq::error_t err) {
+		qDebug() << "Connection failed! " << err.num() << ": " << err.what();
+		//return -1;
+	}
+
+	/*
     qDebug() << "Starting: modelServer.py --model" << model.name();
 	QStringList args;
 	args << Settings::alphaDotsDir() + QStringLiteral("/modelServer/modelServer.py")
@@ -39,11 +65,12 @@ aiConvNet::aiConvNet(int newPlayerId, int newMaxPlayerId, int newWidth, int newH
 	if (!modelServer->startExternalProcess()) {
 		qDebug() << "ERROR: can't start model server!";
 	}
+	 */
 }
 
 aiConvNet::~aiConvNet() {
-	modelServer->stopExternalProcess();
-	delete modelServer;
+	//modelServer->stopExternalProcess();
+	//delete modelServer;
 }
 
 int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners,
@@ -52,13 +79,8 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 	QElapsedTimer moveTimer;
 	moveTimer.start();
 
-	zmq::context_t context(1);
-	zmq::socket_t socket(context, ZMQ_REQ);
-	try {
-		socket.connect("tcp://127.0.0.1:12354");
-		//socket.connect("icp:///tmp/alphaDots/model");
-	} catch (zmq::error_t err) {
-		qDebug() << "Connection failed! " << err.num() << ": " << err.what();
+	if (port < 0) {
+        isTainted = true;
 		return -1;
 	}
 

@@ -90,7 +90,7 @@ void TestResultModel::addResult(AITestResult result) {
     emit(dataChanged(createIndex(0,0),createIndex(rowCount(), columnCount())));
 }
 
-void TestResultModel::saveData() {
+void TestResultModel::saveData(QString dest) {
     QString output;
     for (int y = 0; y < rowCount()+1; y++) {
         for (int x = 0; x < columnCount() + 1; x++) {
@@ -112,7 +112,7 @@ void TestResultModel::saveData() {
         }
         output.append(QStringLiteral("\n"));
     }
-    QFile outputFile(QStringLiteral("ModelEvaluation.csv"));
+    QFile outputFile(dest);
     if (!outputFile.open(QIODevice::ReadWrite)) {
         qDebug() << "failed to open output file!";
         return;

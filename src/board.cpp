@@ -8,6 +8,7 @@
  ***************************************************************************/
 
 #include "board.h"
+#include "aifunctions.h"
 
 //kde
 #include <QDebug>
@@ -48,18 +49,18 @@ bool Board::addLine(int lineIndex, bool *nextPlayer, bool *boardFilled, QList<in
 	}
 	*nextPlayer = !lineCompletesSquare(lineIndex, completedSquares); // check for completed squares first!
 	lineList_[lineIndex] = true; // draw line
-  // remember move
-  Board::Move move;
-  move.line = lineIndex;
-  move.player = currentPlayerId_;
-  move.squares = *completedSquares;
-  lineHistory_.append(move);
-  // update square owner table
+    // remember move
+    Board::Move move;
+    move.line = lineIndex;
+    move.player = currentPlayerId_;
+    move.squares = *completedSquares;
+    lineHistory_.append(move);
+    // update square owner table
 	for (int i = 0; i < completedSquares->size(); i++)
 	{
 		squareOwnerTable_[completedSquares->at(i)] = currentPlayerId_;
 	}
-  // switch player?
+	// switch player?
 	if (*nextPlayer) 
 	{
 		if (currentPlayerId_ >= numOfPlayers_-1)
@@ -296,4 +297,12 @@ KSquares::Direction Board::lineDirection(int lineIndex, const int width)
 		dir = KSquares::VERTICAL;
 	
 	return dir;
+}
+
+QString Board::toString() const {
+	bool *bLines = new bool[lineList_.size()];
+    for (int i = 0; i < lineList_.size(); i++) {
+        bLines[i] = lineList_[i];
+    }
+	return aiFunctions::boardToString(bLines, lineList_.size(), width_, height_);
 }

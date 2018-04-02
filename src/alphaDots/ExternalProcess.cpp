@@ -19,7 +19,7 @@ ExternalProcess::~ExternalProcess() {
 }
 
 bool ExternalProcess::startExternalProcess() {
-    qDebug() << "startExternalProcess()";
+    //qDebug() << "startExternalProcess()";
 	if (process)
 	{
 		qDebug() << "WARNING: process already running!!! tearing it down...";
@@ -58,7 +58,7 @@ bool ExternalProcess::startExternalProcess() {
 }
 
 bool ExternalProcess::stopExternalProcess() {
-	qDebug() << "stopExternalProcess()";
+	//qDebug() << "stopExternalProcess()";
 	if (process!=nullptr)
 	{
 		disconnect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(processError(QProcess::ProcessError)));
@@ -69,7 +69,7 @@ bool ExternalProcess::stopExternalProcess() {
 
 		if (process->state() != QProcess::NotRunning)
 		{
-			qDebug() << "trying to kill process";
+			//qDebug() << "trying to kill process";
 			process->kill();
 			process->terminate();
 			if (process->waitForFinished()) {
@@ -91,7 +91,7 @@ void ExternalProcess::addEnvironmentVariable(QString name, QString value) {
 }
 
 void ExternalProcess::processError(const QProcess::ProcessError error) {
-    qDebug() << "Got error signal from process!";
+    //qDebug() << "Got error signal from process!";
 	QString info;
 	switch (error)
 	{
@@ -109,10 +109,10 @@ void ExternalProcess::processError(const QProcess::ProcessError error) {
 }
 
 void ExternalProcess::processStateChanged(const QProcess::ProcessState newState) {
-    qDebug() << "processStateChanged!";
-	qDebug() << "****************************************************************";
-	qDebug() << "***                PROCESS STATE CHANGED                     ***";
-	qDebug() << "****************************************************************";
+    //qDebug() << "processStateChanged!";
+	//qDebug() << "****************************************************************";
+	//qDebug() << "***                PROCESS STATE CHANGED                     ***";
+	//qDebug() << "****************************************************************";
 	QString state;
 	switch (newState)
 	{
@@ -136,6 +136,7 @@ void ExternalProcess::processFinished(const int &exitCode, const QProcess::ExitS
 void ExternalProcess::processReadyReadStandardError() {
 	process->setReadChannel(QProcess::StandardError);
 	QByteArray outputData = process->readAll();
+    qDebug() << "stderr";
 	qDebug() << "stderr: " << outputData.toStdString().c_str();
     printf("%s\n", outputData.toStdString());
 
@@ -144,6 +145,7 @@ void ExternalProcess::processReadyReadStandardError() {
 void ExternalProcess::processReadyReadStandardOutput() {
 	process->setReadChannel(QProcess::StandardOutput);
 	QByteArray outputData = process->readAll();
+	qDebug() << "stdout";
 	qDebug() << "stdout: " << outputData.toStdString().c_str();
 	printf("%s\n", outputData.toStdString());
 }

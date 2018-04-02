@@ -3,16 +3,19 @@
 //
 
 #include "ModelEvaluation.h"
+#include "FastModelEvaluation.h"
 
 #include <qdebug.h>
 #include <QtCore/QTimer>
 #include <alphaDots/ProtobufConnector.h>
+#include <QtWidgets/QFileDialog>
 
 using namespace AlphaDots;
 
-ModelEvaluation::ModelEvaluation(QString models) : KXmlGuiWindow(), m_view(new QWidget()) {
-    modelsStr = models;
+ModelEvaluation::ModelEvaluation(QString models, bool fast) : KXmlGuiWindow(), m_view(new QWidget()) {
+    qDebug() << "ModelEvaluation" << models << fast;
     modelList = getModelList(models);
+    fastEvaluation = fast;
     resultModel = new TestResultModel(this, modelList);
     sGame = new KSquaresGame();
     thread = nullptr;
@@ -28,6 +31,7 @@ ModelEvaluation::~ModelEvaluation() {
 }
 
 void ModelEvaluation::initObject() {
+    qDebug() << "initObject";
     setupUi(m_view);
     setCentralWidget(m_view);
     setupGUI();
@@ -35,10 +39,20 @@ void ModelEvaluation::initObject() {
     resultsTable->setModel(resultModel);
     resultsTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
-    m_scene = new GameBoardScene(5,5, true);
+    connect(saveResultsAsBtn, SIGNAL(released()), this, SLOT(saveResultsAs()));
+
+    m_scene = new GameBoardScene(5, 5, true);
     gameView->setScene(m_scene);
 
-    nextGame();
+    if (!fastEvaluation) {
+        nextGame();
+    } else {
+        qDebug() << "[ModelEvaluation] Starting fast model evaluation...";
+        currentGameContainer->setVisible(false);
+
+        FastModelEvaluation fastModelEvaluation;
+        fastModelEvaluation.startEvaluation(testSetups, resultModel);
+    }
 }
 
 QList<ModelInfo> ModelEvaluation::getModelList(QString models) {
@@ -95,6 +109,8 @@ void ModelEvaluation::createTestSetups() {
                 setup.levelP2 = 3 + m;
                 setup.timeout = timeout;
                 setup.boardSize = QPoint(testBoardWidth, testBoardHeight);
+                setup.modelNameP1 = modelList[m].name();
+                setup.modelNameP2 = modelList[m].name();
                 testSetups.append(setup);
             }
             for (int i = 0; i < gamesPerAi / 2; i++) {
@@ -103,6 +119,8 @@ void ModelEvaluation::createTestSetups() {
                 setup.levelP2 = r;
                 setup.timeout = timeout;
                 setup.boardSize = QPoint(testBoardWidth, testBoardHeight);
+                setup.modelNameP1 = modelList[m].name();
+                setup.modelNameP2 = modelList[m].name();
                 testSetups.append(setup);
             }
         }
@@ -116,11 +134,11 @@ void ModelEvaluation::loadTestSetup(const AITestSetup &setup) {
 	int width = setup.boardSize.x();
 	int height = setup.boardSize.y();
 
-    QString modelName = modelList[(setup.levelP1>setup.levelP2?setup.levelP1:setup.levelP2)-3].name();
+    //QString modelName = modelList[(setup.levelP1>setup.levelP2?setup.levelP1:setup.levelP2)-3].name();
 	// create AI players
 	aiList.clear();
-	aiController::Ptr aic0(new aiController(0, 1, width, height, setup.levelP1 > 2 ? KSquares::AI_CONVNET : setup.levelP1, setup.timeout, modelName));
-	aiController::Ptr aic1(new aiController(1, 1, width, height, setup.levelP2 > 2 ? KSquares::AI_CONVNET : setup.levelP2, setup.timeout, modelName));
+	aiController::Ptr aic0(new aiController(0, 1, width, height, setup.levelP1 > 2 ? KSquares::AI_CONVNET : setup.levelP1, setup.timeout, setup.modelNameP1));
+	aiController::Ptr aic1(new aiController(1, 1, width, height, setup.levelP2 > 2 ? KSquares::AI_CONVNET : setup.levelP2, setup.timeout, setup.modelNameP2));
 	aiList.append(aic0);
 	aiList.append(aic1);
 
@@ -219,7 +237,7 @@ void ModelEvaluation::gameOver(const QVector<KSquaresPlayer> &playerList) {
     currentResult.moves = lineLog;
 
     resultModel->addResult(currentResult);
-    resultModel->saveData();
+    //resultModel->saveData(QStringLiteral("ModelEvaluation.csv"));
 
     QTimer::singleShot(1000, this, SLOT(nextGame()));
 }
@@ -243,4 +261,9 @@ QString ModelEvaluation::aiName(int level) {
         default:
             return modelList[level - 3].name();
     }
+}
+
+void ModelEvaluation::saveResultsAs() {
+    QString dest = QFileDialog::getSaveFileName(this, i18n("Save results as"), i18n("ModelEvaluation.csv"), i18n("Comma-separated values (*.csv)"));
+    resultModel->saveData(dest);
 }

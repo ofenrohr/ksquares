@@ -56,8 +56,9 @@ namespace AlphaDots {
 
         /**
          * Save data
+         * @param dest destination file path
          */
-        void saveData();
+        void saveData(QString dest);
     private:
         QList<ModelInfo> modelList;
 

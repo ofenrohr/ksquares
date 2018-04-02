@@ -52,7 +52,7 @@ set(ksquares_SRCS
     alphaDots/modelEvaluation/AITestSetup.cpp
     alphaDots/modelEvaluation/AITestResult.cpp
     alphaDots/modelEvaluation/ModelEvaluation.cpp
-    alphaDots/modelEvaluation/TestResultModel.cpp)
+    alphaDots/modelEvaluation/TestResultModel.cpp alphaDots/modelEvaluation/FastModelEvaluationWorker.cpp alphaDots/modelEvaluation/FastModelEvaluationWorker.h alphaDots/modelEvaluation/FastModelEvaluation.cpp alphaDots/modelEvaluation/FastModelEvaluation.h alphaDots/modelEvaluation/AITestSetupManager.cpp alphaDots/modelEvaluation/AITestSetupManager.h alphaDots/ModelManager.cpp alphaDots/ModelManager.h alphaDots/ModelProcess.cpp alphaDots/ModelProcess.h)
 
 file(GLOB protoMessages alphaDots/protobuf/*.proto)
 PROTOBUF_GENERATE_CPP(ProtoSrcs ProtoHeaders ${protoMessages})

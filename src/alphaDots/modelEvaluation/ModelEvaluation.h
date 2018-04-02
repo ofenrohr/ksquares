@@ -18,8 +18,14 @@ namespace AlphaDots {
     class ModelEvaluation : public KXmlGuiWindow, public Ui::ModelEvaluationForm {
     Q_OBJECT
     public:
-        ModelEvaluation(QString models = QStringLiteral(""));
-        ~ModelEvaluation();
+        /**
+         * Controller for model evaluation.
+         * @param models Empty string to evaluate all available models.
+         * @param fast Run fast multi-threaded evaluation
+         */
+        ModelEvaluation(QString models, bool fast=false);
+
+		~ModelEvaluation();
 
 		QList<ModelInfo> getModelList(QString models);
         void initObject();
@@ -29,6 +35,7 @@ namespace AlphaDots {
 	public slots:
 		void aiChoseLine(const int &line);
 		void nextGame();
+		void saveResultsAs();
 
 	private slots:
 		void aiChooseLine();
@@ -36,12 +43,13 @@ namespace AlphaDots {
 		void gameOver(const QVector<KSquaresPlayer> & /*playerList*/);
 
     private:
-		QString modelsStr;
-        QList<AITestSetup> testSetups;
+		QList<AITestSetup> testSetups;
         AITestSetup currentSetup;
 
         TestResultModel *resultModel;
         QList<ModelInfo> modelList;
+
+        bool fastEvaluation;
 
         QWidget *m_view;
         GameBoardScene *m_scene;
@@ -52,7 +60,18 @@ namespace AlphaDots {
         QList<int> lineLog;
 
 		void createTestSetups();
+		/**
+		 * Loads a slow GUI test setup.
+		 * @param setup
+		 */
         void loadTestSetup(const AITestSetup &setup);
+		/**
+		 * Get the name of a ai. This model evaluation uses its own numbering scheme:
+		 * 0,1,2 = Easy, Medium, Hard
+		 * 3,...,n = Models
+		 * @param level model evaluation ai level
+		 * @return ai name
+		 */
 		QString aiName(int level);
     };
 }
