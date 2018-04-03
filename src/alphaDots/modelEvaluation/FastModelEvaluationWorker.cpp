@@ -4,6 +4,7 @@
 
 #include <aiBoard.h>
 #include <aicontroller.h>
+#include <QtCore/QCoreApplication>
 #include "FastModelEvaluationWorker.h"
 
 using namespace AlphaDots;
@@ -20,7 +21,7 @@ FastModelEvaluationWorker::~FastModelEvaluationWorker() {
 }
 
 void FastModelEvaluationWorker::process() {
-    qDebug() << "[FastModelEvaluationWorker] starting actual model evaluation";
+    //qDebug() << "[FastModelEvaluationWorker] starting actual model evaluation";
     do {
         // get setup
         bool ok = false;
@@ -60,7 +61,7 @@ void FastModelEvaluationWorker::process() {
                 qDebug().nospace().noquote() << board.toString();
             }
         }
-        qDebug() << "finished game";
+        //qDebug() << "finished game";
 
         // save result
         AITestResult result;
@@ -80,6 +81,6 @@ void FastModelEvaluationWorker::process() {
         result.timeP2 = moveTimesP2;
 
         resultModel->addResult(result);
-        qDebug() << "saved result";
+        //qDebug() << "saved result";
     } while (true);
 }

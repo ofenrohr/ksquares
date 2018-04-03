@@ -19,6 +19,8 @@ ModelEvaluation::ModelEvaluation(QString models, bool fast) : KXmlGuiWindow(), m
     resultModel = new TestResultModel(this, modelList);
     sGame = new KSquaresGame();
     thread = nullptr;
+    qRegisterMetaType<QVector<KSquaresPlayer> >("QVector<KSquaresPlayer>");
+    qRegisterMetaType<QVector<int> >("QVector<int>");
     connect(sGame, SIGNAL(gameOver(QVector<KSquaresPlayer>)), this, SLOT(gameOver(QVector<KSquaresPlayer>)));
     connect(sGame, SIGNAL(takeTurnSig(KSquaresPlayer*)), this, SLOT(playerTakeTurn(KSquaresPlayer*)));
     createTestSetups();
@@ -98,6 +100,10 @@ void ModelEvaluation::createTestSetups() {
     int testBoardWidth = 5;
     int testBoardHeight = 5;
     int timeout = 5000;
+
+    if (fastEvaluation) {
+        gamesPerAi = 100;
+    }
 
     testSetups.clear();
 

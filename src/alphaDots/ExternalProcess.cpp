@@ -5,6 +5,8 @@
 #include "ExternalProcess.h"
 
 #include <QDebug>
+#include <QtCore/QCoreApplication>
+#include <QtCore/QTimer>
 
 ExternalProcess::ExternalProcess(QString processPath, QStringList arguments) {
 	processExecutablePath = processPath;
@@ -43,17 +45,29 @@ bool ExternalProcess::startExternalProcess() {
 	connect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(processError(QProcess::ProcessError)));
 	connect(process, SIGNAL(stateChanged(QProcess::ProcessState)), this, SLOT(processStateChanged(QProcess::ProcessState)));
 	connect(process, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(processFinished(int, QProcess::ExitStatus)));
-	connect(process, SIGNAL(readyReadStandardError()), this, SLOT(processReadyReadStandardError()));
-	connect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(processReadyReadStandardOutput()));
+	if (!connect(process, SIGNAL(readyReadStandardError()), this, SLOT(processReadyReadStandardError()))) {
+		qDebug() << "connect stderr failed";
+	}
+	if (!connect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(processReadyReadStandardOutput()))) {
+        qDebug() << "connect stdout failed";
+    }
+	/*
+    if (!connect(process, SIGNAL(readyRead()), this, SLOT(processReadyReadStandardOutput()))) {
+		qDebug() << "connect ready read stdout failed";
+	}
+	 */
 	qDebug().noquote() << "starting process: " << processExecutablePath << processArguments;
-	process->start(processExecutablePath, processArguments);
-	process->setProcessChannelMode(QProcess::ForwardedChannels);
-	process->setReadChannel(QProcess::StandardOutput);
+	process->start(processExecutablePath, processArguments, QIODevice::ReadWrite);
+	//process->setProcessChannelMode(QProcess::MergedChannels);
+	//process->setReadChannel(QProcess::StandardOutput);
 	if (!process->waitForStarted())
 	{
 		qDebug() << "ERROR: starting process failed!";
 		return false;
 	}
+
+	QTimer::singleShot(1000, this, &ExternalProcess::processEvents);
+
     return true;
 }
 
@@ -82,7 +96,7 @@ bool ExternalProcess::stopExternalProcess() {
 		delete process;
 		process = nullptr;
 	}
-	processRunning = true;
+	processRunning = false;
     return true;
 }
 
@@ -116,11 +130,18 @@ void ExternalProcess::processStateChanged(const QProcess::ProcessState newState)
 	QString state;
 	switch (newState)
 	{
-		case QProcess::NotRunning: state = QStringLiteral("NotRunning"); break;
+		case QProcess::NotRunning:
+			state = QStringLiteral("NotRunning");
+            processRunning = false;
+			break;
 		case QProcess::Starting:
 			state = QStringLiteral("Starting");
-		break;
-		case QProcess::Running: state = QStringLiteral("Running"); break;
+			processRunning = false;
+            break;
+		case QProcess::Running:
+			state = QStringLiteral("Running");
+			processRunning = true;
+			break;
 	}
 	qDebug() << "process state: " << state;
 }
@@ -136,16 +157,18 @@ void ExternalProcess::processFinished(const int &exitCode, const QProcess::ExitS
 void ExternalProcess::processReadyReadStandardError() {
 	process->setReadChannel(QProcess::StandardError);
 	QByteArray outputData = process->readAll();
-    qDebug() << "stderr";
 	qDebug() << "stderr: " << outputData.toStdString().c_str();
-    printf("%s\n", outputData.toStdString());
-
 }
 
 void ExternalProcess::processReadyReadStandardOutput() {
 	process->setReadChannel(QProcess::StandardOutput);
 	QByteArray outputData = process->readAll();
-	qDebug() << "stdout";
 	qDebug() << "stdout: " << outputData.toStdString().c_str();
-	printf("%s\n", outputData.toStdString());
+}
+
+void ExternalProcess::processEvents() {
+	QCoreApplication::processEvents();
+	if (processRunning) {
+        QTimer::singleShot(1000, this, &ExternalProcess::processEvents);
+	}
 }

@@ -14,7 +14,7 @@ int ModelManager::ensureProcessRunning(const QString modelName, int width, int h
     ModelProcess::Ptr process = getProcess(modelName, width, height);
     if (!process->isRunning()) {
         qDebug() << "failed to start ModelProcess" << QString::number(process->port());
-        //return -1;
+        return -1;
     }
     return process->port();
 }
@@ -27,7 +27,7 @@ ModelProcess::Ptr ModelManager::getProcess(const QString modelName, int width, i
         processMap[modelKey] = process;
         long waitTime = 0;
         int waitStep = 50;
-        while (!process->isRunning() && waitTime < 600) {
+        while (!process->isRunning() && waitTime < 6000) {
             sleep(waitStep);
             waitTime += waitStep;
         }

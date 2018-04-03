@@ -52,6 +52,9 @@ namespace AlphaDots {
         static bool sendString(zmq::socket_t &socket, std::string msg);
 
         static std::string recvString(zmq::socket_t &socket);
+
+    private:
+        static QList<ModelInfo> cachedModelList;
     };
 }
 

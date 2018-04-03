@@ -27,7 +27,7 @@ aiConvNet::aiConvNet(int newPlayerId, int newMaxPlayerId, int newWidth, int newH
 	turnTime = -5;
 	isTainted = false;
 
-	qDebug() << "aiConvNet";
+	//qDebug() << "aiConvNet";
 
 	port = ModelManager::getInstance().ensureProcessRunning(model.name(), width, height);
 	if (port < 0) {
@@ -35,19 +35,20 @@ aiConvNet::aiConvNet(int newPlayerId, int newMaxPlayerId, int newWidth, int newH
 		isTainted = true;
 	}
 
-	qDebug() << "zmq connect...";
+	//qDebug() << "zmq connect...";
 	//context = zmq::context_t(1);
 	//socket = zmq::socket_t(context, ZMQ_REQ);
 	try {
-		qDebug().noquote().nospace() << "tcp://127.0.0.1:" << QString::number(port);
+		//qDebug().noquote().nospace() << "tcp://127.0.0.1:" << QString::number(port);
 		socket.connect("tcp://127.0.0.1:" + std::to_string(port));
-		qDebug() << "zmq connect done";
+		//qDebug() << "zmq connect done";
 		//socket.connect("icp:///tmp/alphaDots/model");
 	} catch (zmq::error_t err) {
 		qDebug() << "Connection failed! " << err.num() << ": " << err.what();
 		//return -1;
 	}
 
+	// moved to ModelManager and ModelProcess
 	/*
     qDebug() << "Starting: modelServer.py --model" << model.name();
 	QStringList args;
@@ -75,7 +76,7 @@ aiConvNet::~aiConvNet() {
 
 int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners,
                           const QList<Board::Move> &lineHistory) {
-	qDebug() << "aiConvNet chooseLine";
+	//qDebug() << "aiConvNet chooseLine";
 	QElapsedTimer moveTimer;
 	moveTimer.start();
 
@@ -84,7 +85,12 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 		return -1;
 	}
 
-	qDebug() << "connection status: " << socket.connected();
+	//qDebug() << "connection status: " << socket.connected();
+	if (!socket.connected()) {
+		qDebug() << "ERROR: no zmq connection!";
+		isTainted = true;
+		return -1;
+	}
 
     bool *lines = new bool[linesSize];
     for (int i = 0; i < linesSize; ++i)
@@ -100,7 +106,7 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 	}
     else if (modelInfo.type() == QStringLiteral("Sequence") ||
              modelInfo.type() == QStringLiteral("SequenceCategorical")) {
-		qDebug() << "sequence model";
+		//qDebug() << "sequence model";
 		aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(width, height));
 		QList<QImage> imageSeq;
 		imageSeq.append(MLDataGenerator::generateInputImage(board));
@@ -117,15 +123,18 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 		if (errors.size() > 0) {
 			qDebug() << "imageSeq: " << imageSeq;
 		}
-		ProtobufConnector::sendString(socket, seq.SerializeAsString());
+		if (!ProtobufConnector::sendString(socket, seq.SerializeAsString())) {
+            qDebug() << "ProtobufConnector::sendString failed!";
+            isTainted = true;
+			return -1;
+        }
 	} else {
 		qDebug() << "ERROR: unknown model type!";
         qDebug() << modelInfo.type();
 		exit(-1);
 	}
 
-
-	qDebug() << "sending protobuf string done";
+	//qDebug() << "sending protobuf string done";
 
 	zmq::message_t reply;
     try {
@@ -177,13 +186,12 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 		}
         pred << "\n";
 	}
-	qDebug().noquote() << pred.str().c_str();
+	//qDebug().noquote() << pred.str().c_str();
 
-	qDebug() << "Highest value:" << bestVal << "at" << bestPoints;
-
+	//qDebug() << "Highest value:" << bestVal << "at" << bestPoints;
 	if (bestPoints.count() > 1) {
 		linePoint = bestPoints[rand() % bestPoints.count()];
-        qDebug() << "selected point: " << linePoint;
+        //qDebug() << "selected point: " << linePoint;
 	}
 
 
@@ -191,7 +199,7 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 
 	turnTime = moveTimer.elapsed();
 
-    qDebug() << "turn time = " << turnTime;
+    //qDebug() << "turn time = " << turnTime;
 
 	delete lines;
     return ret;

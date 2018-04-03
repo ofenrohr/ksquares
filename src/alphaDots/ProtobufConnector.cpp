@@ -10,6 +10,8 @@
 
 using namespace AlphaDots;
 
+QList<ModelInfo> ProtobufConnector::cachedModelList;
+
 DotsAndBoxesImage ProtobufConnector::dotsAndBoxesImageToProtobuf(QImage img) {
     DotsAndBoxesImage ret;
 
@@ -114,7 +116,10 @@ QImage ProtobufConnector::fromProtobuf(std::string msg) {
 }
 
 QList<ModelInfo> ProtobufConnector::getModelList() {
-    QList<ModelInfo> ret = QList<ModelInfo>();
+    if (!cachedModelList.isEmpty()) {
+        return cachedModelList;
+    }
+    cachedModelList.clear();
 
     QString process = QStringLiteral("/usr/bin/python2.7");
     QStringList processArgs;
@@ -122,7 +127,7 @@ QList<ModelInfo> ProtobufConnector::getModelList() {
     ExternalProcess modelListProc(process, processArgs);
     if (!modelListProc.startExternalProcess()) {
         qDebug() << "ERROR: failed to start " << process << processArgs;
-        return ret;
+        return cachedModelList;
     }
 
     try {
@@ -138,7 +143,7 @@ QList<ModelInfo> ProtobufConnector::getModelList() {
 
         for (int i = 0; i < modelList.models().size(); i++) {
             ProtoModel model = modelList.models().Get(i);
-            ret.append(ModelInfo(QString::fromStdString(model.name()), QString::fromStdString(model.desc()),
+            cachedModelList.append(ModelInfo(QString::fromStdString(model.name()), QString::fromStdString(model.desc()),
                                  QString::fromStdString(model.path()), QString::fromStdString(model.type())));
         }
 
@@ -148,7 +153,7 @@ QList<ModelInfo> ProtobufConnector::getModelList() {
 
     modelListProc.stopExternalProcess();
 
-    return ret;
+    return cachedModelList;
 }
 
 ModelInfo ProtobufConnector::getModelByName(QString name) {
@@ -177,7 +182,9 @@ bool ProtobufConnector::sendString(zmq::socket_t &socket, std::string msg) {
 	zmq::message_t request(message_size);
 	memcpy(request.data(), msg.c_str(), message_size);
     try {
-        socket.send(request);
+        if (!socket.send(request)) {
+            qDebug() << "ERROR: failed to send message via zmq" << errno;
+        }
     } catch (zmq::error_t &ex) {
         qDebug() << "zmq send error: " << ex.num();
         qDebug() << "msg: " << ex.what();
@@ -192,7 +199,9 @@ std::string ProtobufConnector::recvString(zmq::socket_t &socket) {
     int tries = 0;
     while (!done && tries < 3) {
         try {
-            socket.recv(&reply);
+            if (!socket.recv(&reply)) {
+                qDebug() << "ERROR: failed to recv message via zmq" << errno;
+            }
             done = true;
         } catch (zmq::error_t &ex) {
             qDebug() << "zmq recv error: " << ex.num();

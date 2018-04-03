@@ -19,7 +19,7 @@ namespace AlphaDots {
     public:
         static ModelManager& getInstance() {
             static ModelManager instance;
-            qDebug() << "[ModelManager] getInstance";
+            //qDebug() << "[ModelManager] getInstance";
             return instance;
         }
         ModelManager(ModelManager const &) = delete;

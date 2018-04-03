@@ -87,6 +87,16 @@ int main(int argc, char **argv)
 
     srand(time(NULL));
 
+
+    // ExternalProcess debug wtf
+    /*
+    ExternalProcess *process = new ExternalProcess(QStringLiteral("/usr/bin/echo"), QStringList() << QStringLiteral("Hallo"));
+    qDebug() << process->startExternalProcess();
+    qDebug() << process->isRunning();
+    qDebug() << process->stopExternalProcess();
+    return 0;
+    */
+
     if (parser.isSet(QStringLiteral("demo"))) {
         KSquaresDemoWindow *demoWindow = new KSquaresDemoWindow;
         demoWindow->show();

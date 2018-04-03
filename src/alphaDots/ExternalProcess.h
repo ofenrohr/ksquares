@@ -28,11 +28,13 @@ public:
     void addEnvironmentVariable(QString name, QString value);
 
 public slots:
-    void processError(const QProcess::ProcessError error);
-    void processStateChanged(const QProcess::ProcessState newState);
-    void processFinished(const int &exitCode, const QProcess::ExitStatus exitStatus);
+    void processError(QProcess::ProcessError error);
+    void processStateChanged(QProcess::ProcessState newState);
+    void processFinished(const int &exitCode, QProcess::ExitStatus exitStatus);
     void processReadyReadStandardError();
     void processReadyReadStandardOutput();
+
+    void processEvents();
 
 protected:
     QString processExecutablePath;

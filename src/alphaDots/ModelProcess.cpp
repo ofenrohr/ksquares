@@ -26,7 +26,7 @@ ModelProcess::ModelProcess(QString model, int boxesWidth, int boxesHeight, int p
          << QString::number(height*2 + 3)
          << QStringLiteral("--port")
          << QString::number(port)
-         << QStringLiteral("--debug")
+         //<< QStringLiteral("--debug")
             ;
     modelServer = new ExternalProcess(QStringLiteral("/usr/bin/python2.7"), args);
     modelServer->addEnvironmentVariable(QStringLiteral("CUDA_VISIBLE_DEVICES"), QStringLiteral("-1"));
