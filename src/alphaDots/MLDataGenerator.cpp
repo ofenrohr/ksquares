@@ -19,6 +19,7 @@
 using namespace AlphaDots;
 
 MLDataGenerator::MLDataGenerator() : KXmlGuiWindow(), m_view(new QWidget()) {
+    threadCnt = 4;
     examplesCnt = -1;
     generateDatasetType = FirstTry;
     datasetWidth = 5;
@@ -27,13 +28,14 @@ MLDataGenerator::MLDataGenerator() : KXmlGuiWindow(), m_view(new QWidget()) {
     initConstructor();
 }
 
-MLDataGenerator::MLDataGenerator(long samples, DatasetType datasetType, int width, int height, QString destDir) : KXmlGuiWindow(), m_view(new QWidget()) {
+MLDataGenerator::MLDataGenerator(long samples, DatasetType datasetType, int width, int height, QString destDir, int threads) : KXmlGuiWindow(), m_view(new QWidget()) {
     qDebug() << "auto generate mode";
     examplesCnt = samples;
     generateDatasetType = datasetType;
     datasetWidth = width;
     datasetHeight = height;
     datasetDestDir = destDir;
+    threadCnt = threads;
     initConstructor();
 }
 

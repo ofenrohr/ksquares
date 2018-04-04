@@ -38,7 +38,7 @@ namespace AlphaDots {
          * Generate examplesCnt training samples.
          * @param samples number of training examples
          */
-        MLDataGenerator(long samples, DatasetType datasetType, int width, int height, QString destinationDirectory);
+        MLDataGenerator(long samples, DatasetType datasetType, int width, int height, QString destinationDirectory, int threads);
 
         ~MLDataGenerator();
 
@@ -53,7 +53,7 @@ namespace AlphaDots {
         static const int MLImageDot = 215;
         static const int MLImageLine = 255;
         /// number of threads
-        static const int threadCnt = 4;
+        int threadCnt;
 
         static aiBoard::Ptr createEmptyBoard(int width, int height);
 

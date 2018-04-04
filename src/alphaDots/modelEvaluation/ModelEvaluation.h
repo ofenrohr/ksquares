@@ -24,7 +24,7 @@ namespace AlphaDots {
          * @param models Empty string to evaluate all available models.
          * @param fast Run fast multi-threaded evaluation
          */
-        ModelEvaluation(QString models, bool fast=false);
+        ModelEvaluation(QString models, bool fast=false, int threadCnt=4);
 
 		~ModelEvaluation();
 
@@ -54,6 +54,7 @@ namespace AlphaDots {
 		FastModelEvaluation *fastEvaluationHandler;
 
 		int gamesPerAi;
+        int threads;
 
         QWidget *m_view;
         GameBoardScene *m_scene;

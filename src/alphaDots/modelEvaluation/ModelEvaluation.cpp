@@ -13,10 +13,11 @@
 
 using namespace AlphaDots;
 
-ModelEvaluation::ModelEvaluation(QString models, bool fast) : KXmlGuiWindow(), m_view(new QWidget()) {
+ModelEvaluation::ModelEvaluation(QString models, bool fast, int threadCnt) : KXmlGuiWindow(), m_view(new QWidget()) {
     qDebug() << "ModelEvaluation" << models << fast;
     modelList = getModelList(models);
     fastEvaluation = fast;
+    threads = threadCnt;
     fastEvaluationHandler = nullptr;
     sGame = new KSquaresGame();
     thread = nullptr;
@@ -58,7 +59,7 @@ void ModelEvaluation::initObject() {
             QMessageBox::critical(this, tr("ModelEvaluation"), tr("ERROR: fastEvaluationHandler is not null!"));
             return;
         }
-        fastEvaluationHandler = new FastModelEvaluation(8);
+        fastEvaluationHandler = new FastModelEvaluation(threads);
         fastEvaluationHandler->startEvaluation(&testSetups, resultModel);
     }
 }

@@ -57,7 +57,7 @@ int main(int argc, char **argv)
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("generate"), i18n("Generate training data"), i18n("generate")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("show-generate"), i18n("Generate training data")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("dataset-generator"),
-        i18n("Select dataset type to generate. valid values: firstTry, stageOne, basicStrategy, LSTM (only works for numpy dataset generation, not gui)"), i18n("dataset-generator")));
+        i18n("Select dataset type to generate. valid values: firstTry, stageOne, basicStrategy, LSTM"), i18n("dataset-generator")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("dataset-width"), i18n("Dataset width in boxes"), i18n("dataset-width")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("dataset-height"), i18n("Dataset height in boxes"), i18n("dataset-height")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("dataset-dest"), i18n("Dataset destination directory"), i18n("dataset-dest")));
@@ -65,6 +65,7 @@ int main(int argc, char **argv)
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("model-list"), i18n("List all available models")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("models"), i18n("List models to evaluate"), i18n("models")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("fast-model-evaluation"), i18n("Run multi-threaded fast evaluation")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("threads"), i18n("Number of threads for model evaluation and dataset generation"), i18n("threads")));
 
     about.setupCommandLine(&parser);
     parser.process(app);
@@ -87,16 +88,17 @@ int main(int argc, char **argv)
 
     srand(time(NULL));
 
+    // get number of threads
+    int threads = 4;
+    if (parser.isSet(QStringLiteral("threads"))) {
+        bool ok = false;
+        int tmp = parser.value(QStringLiteral("threads")).toInt(&ok);
+        if (ok) {
+            threads = tmp;
+        }
+    }
 
-    // ExternalProcess debug wtf
-    /*
-    ExternalProcess *process = new ExternalProcess(QStringLiteral("/usr/bin/echo"), QStringList() << QStringLiteral("Hallo"));
-    qDebug() << process->startExternalProcess();
-    qDebug() << process->isRunning();
-    qDebug() << process->stopExternalProcess();
-    return 0;
-    */
-
+    // start things
     if (parser.isSet(QStringLiteral("demo"))) {
         KSquaresDemoWindow *demoWindow = new KSquaresDemoWindow;
         demoWindow->show();
@@ -161,7 +163,7 @@ int main(int argc, char **argv)
 
         AlphaDots::MLDataGenerator *dataGenerator=nullptr;
         if (ok) {
-            dataGenerator = new AlphaDots::MLDataGenerator(exampleCnt, datasetType, boardWidth, boardHeight, datasetDest);
+            dataGenerator = new AlphaDots::MLDataGenerator(exampleCnt, datasetType, boardWidth, boardHeight, datasetDest, threads);
         } else {
             dataGenerator = new AlphaDots::MLDataGenerator();
         }
