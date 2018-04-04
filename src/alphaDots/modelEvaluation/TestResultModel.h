@@ -16,7 +16,7 @@ namespace AlphaDots {
     class TestResultModel : public QAbstractTableModel {
     Q_OBJECT
     public:
-        TestResultModel(QObject *parent, QList<ModelInfo> models);
+        TestResultModel(QObject *parent, QList<ModelInfo> *models, int gamesPerAi);
 
         ~TestResultModel();
 
@@ -60,10 +60,11 @@ namespace AlphaDots {
          */
         void saveData(QString dest);
     private:
-        QList<ModelInfo> modelList;
+        QList<ModelInfo> *modelList;
 
         QList<AITestResult> results;
         QList<QList<int>> rows;
+        int gamesPerAiCnt;
 
         mutable QMutex rowsMutex;
     };

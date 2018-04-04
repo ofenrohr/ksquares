@@ -9,6 +9,7 @@
 #include <QtCore/QTimer>
 #include <alphaDots/ProtobufConnector.h>
 #include <QtWidgets/QFileDialog>
+#include <QtWidgets/QMessageBox>
 
 using namespace AlphaDots;
 
@@ -16,7 +17,7 @@ ModelEvaluation::ModelEvaluation(QString models, bool fast) : KXmlGuiWindow(), m
     qDebug() << "ModelEvaluation" << models << fast;
     modelList = getModelList(models);
     fastEvaluation = fast;
-    resultModel = new TestResultModel(this, modelList);
+    fastEvaluationHandler = nullptr;
     sGame = new KSquaresGame();
     thread = nullptr;
     qRegisterMetaType<QVector<KSquaresPlayer> >("QVector<KSquaresPlayer>");
@@ -24,6 +25,7 @@ ModelEvaluation::ModelEvaluation(QString models, bool fast) : KXmlGuiWindow(), m
     connect(sGame, SIGNAL(gameOver(QVector<KSquaresPlayer>)), this, SLOT(gameOver(QVector<KSquaresPlayer>)));
     connect(sGame, SIGNAL(takeTurnSig(KSquaresPlayer*)), this, SLOT(playerTakeTurn(KSquaresPlayer*)));
     createTestSetups();
+    resultModel = new TestResultModel(this, &modelList, gamesPerAi);
 
     QTimer::singleShot(0, this, &ModelEvaluation::initObject);
 }
@@ -52,8 +54,12 @@ void ModelEvaluation::initObject() {
         qDebug() << "[ModelEvaluation] Starting fast model evaluation...";
         currentGameContainer->setVisible(false);
 
-        FastModelEvaluation fastModelEvaluation;
-        fastModelEvaluation.startEvaluation(testSetups, resultModel);
+        if (fastEvaluationHandler != nullptr) {
+            QMessageBox::critical(this, tr("ModelEvaluation"), tr("ERROR: fastEvaluationHandler is not null!"));
+            return;
+        }
+        fastEvaluationHandler = new FastModelEvaluation(8);
+        fastEvaluationHandler->startEvaluation(&testSetups, resultModel);
     }
 }
 
@@ -77,7 +83,7 @@ QList<ModelInfo> ModelEvaluation::getModelList(QString models) {
             }
         }
         if (!foundModel) {
-            qDebug() << "unknown model: " << modelStr;
+            QMessageBox::critical(this, tr("ModelEvaluation"), QStringLiteral("unknown model: ") + modelStr);
         }
     }
 
@@ -96,7 +102,7 @@ void ModelEvaluation::printModelList() {
 }
 
 void ModelEvaluation::createTestSetups() {
-    int gamesPerAi = 10; // should be an even number > 0
+    gamesPerAi = 10; // should be an even number > 0
     int testBoardWidth = 5;
     int testBoardHeight = 5;
     int timeout = 5000;

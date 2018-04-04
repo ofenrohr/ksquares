@@ -20,18 +20,12 @@ int ModelManager::ensureProcessRunning(const QString modelName, int width, int h
 }
 
 ModelProcess::Ptr ModelManager::getProcess(const QString modelName, int width, int height) {
+    QMutexLocker locker(&getProcessMutex);
     QString modelKey = modelInfoToStr(modelName, width, height);
     if (!processMap.contains(modelKey)) {
         qDebug() << "starting new ModelProcess on port " << QString::number(port);
         ModelProcess::Ptr process = ModelProcess::Ptr(new ModelProcess(modelName, width, height, port));
         processMap[modelKey] = process;
-        long waitTime = 0;
-        int waitStep = 50;
-        while (!process->isRunning() && waitTime < 6000) {
-            sleep(waitStep);
-            waitTime += waitStep;
-        }
-        qDebug() << "process started after approx. " << waitTime;
         port++;
     }
     return processMap[modelKey];
@@ -41,6 +35,7 @@ QString ModelManager::modelInfoToStr(QString modelName, int width, int height) {
     return modelName + QStringLiteral("-") + QString::number(width) + QStringLiteral("x") + QString::number(height);
 }
 
+/*
 void ModelManager::sleep(int ms) {
 #ifdef Q_OS_WIN
         Sleep(uint(ms));
@@ -49,3 +44,4 @@ void ModelManager::sleep(int ms) {
         nanosleep(&ts, NULL);
 #endif
 }
+ */

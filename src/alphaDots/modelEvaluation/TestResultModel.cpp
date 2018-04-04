@@ -9,11 +9,12 @@
 
 using namespace AlphaDots;
 
-TestResultModel::TestResultModel(QObject *parent, QList<ModelInfo> models) :
+TestResultModel::TestResultModel(QObject *parent, QList<ModelInfo> *models, int gamesPerAi) :
         QAbstractTableModel(parent),
-        modelList(models)
+        modelList(models),
+        gamesPerAiCnt(gamesPerAi)
 {
-    for (int i = 0; i < modelList.size(); i++) {
+    for (int i = 0; i < modelList->size(); i++) {
         QList<int> columns;
         for (int j = 0; j < columnCount(); j++) {
             columns.append(0);
@@ -25,7 +26,7 @@ TestResultModel::TestResultModel(QObject *parent, QList<ModelInfo> models) :
 TestResultModel::~TestResultModel() = default;
 
 int TestResultModel::rowCount(const QModelIndex &parent) const {
-    return modelList.size();
+    return modelList->size();
 }
 
 int TestResultModel::columnCount(const QModelIndex &parent) const {
@@ -38,16 +39,16 @@ QVariant TestResultModel::headerData(int section, Qt::Orientation orientation, i
         if (orientation == Qt::Horizontal) {
             switch(section) {
                 case 0: return QStringLiteral("Games");
-                case 1: return QStringLiteral("Wins vs. Easy");
-                case 2: return QStringLiteral("Wins vs. Medium");
-                case 3: return QStringLiteral("Wins vs. Hard");
+                case 1: return QStringLiteral("Wins vs. Easy\nin ").append(QString::number(gamesPerAiCnt)).append(QStringLiteral(" games"));
+                case 2: return QStringLiteral("Wins vs. Medium\nin ").append(QString::number(gamesPerAiCnt)).append(QStringLiteral(" games"));
+                case 3: return QStringLiteral("Wins vs. Hard\nin ").append(QString::number(gamesPerAiCnt)).append(QStringLiteral(" games"));
                 case 4: return QStringLiteral("Errors");
                 case 5: return QStringLiteral("Ends with Double Dealing");
                 case 6: return QStringLiteral("Preemtive Sacrifices");
             }
         }
         if (orientation == Qt::Vertical) {
-            return modelList[section].name();
+            return modelList->at(section).name();
         }
     }
     return QVariant();
@@ -108,7 +109,7 @@ void TestResultModel::saveData(QString dest) {
                     output.append(QStringLiteral(","));
                 }
             }
-            output.append(cell);
+            output.append(cell.replace(QStringLiteral("\n"), QStringLiteral("")));
         }
         output.append(QStringLiteral("\n"));
     }

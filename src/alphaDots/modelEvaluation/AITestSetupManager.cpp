@@ -6,17 +6,17 @@
 
 using namespace AlphaDots;
 
-AITestSetupManager::AITestSetupManager(QList<AITestSetup> setupList) {
+AITestSetupManager::AITestSetupManager(QList<AITestSetup> *setupList) {
     setups = setupList;
 }
 
 AITestSetup AITestSetupManager::popSetup(bool *ok) {
     QMutexLocker locker(&setupListMutex);
-    if (setups.isEmpty()) {
+    if (setups->isEmpty()) {
         *ok = false;
         return {};
     } else {
         *ok = true;
     }
-    return setups.takeFirst();
+    return setups->takeFirst();
 }

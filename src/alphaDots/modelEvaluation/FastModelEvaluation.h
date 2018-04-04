@@ -9,16 +9,20 @@
 #include <QObject>
 #include "AITestSetup.h"
 #include "TestResultModel.h"
+#include "AITestSetupManager.h"
 
 namespace AlphaDots {
     class FastModelEvaluation : public QObject {
     Q_OBJECT
     public:
-        FastModelEvaluation();
+        FastModelEvaluation(int threads);
 
-        ~FastModelEvaluation() = default;
+        ~FastModelEvaluation();
 
-        void startEvaluation(QList<AITestSetup> testSetups, TestResultModel *resultModel);
+        void startEvaluation(QList<AITestSetup> *testSetups, TestResultModel *resultModel);
+    private:
+        AITestSetupManager *setupManager;
+        int threadCnt;
     };
 }
 

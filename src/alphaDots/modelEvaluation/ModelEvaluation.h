@@ -13,6 +13,7 @@
 
 #include "ui_ModelEvaluation.h"
 #include "TestResultModel.h"
+#include "FastModelEvaluation.h"
 
 namespace AlphaDots {
     class ModelEvaluation : public KXmlGuiWindow, public Ui::ModelEvaluationForm {
@@ -50,6 +51,9 @@ namespace AlphaDots {
         QList<ModelInfo> modelList;
 
         bool fastEvaluation;
+		FastModelEvaluation *fastEvaluationHandler;
+
+		int gamesPerAi;
 
         QWidget *m_view;
         GameBoardScene *m_scene;

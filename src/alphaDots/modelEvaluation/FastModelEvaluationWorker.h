@@ -15,7 +15,7 @@ namespace AlphaDots {
     class FastModelEvaluationWorker : public QObject {
     Q_OBJECT
     public:
-        FastModelEvaluationWorker(AITestSetupManager &testSetupManager, TestResultModel *testResultModel);
+        FastModelEvaluationWorker(AITestSetupManager *testSetupManager, TestResultModel *testResultModel);
         ~FastModelEvaluationWorker();
 
     public slots:
@@ -25,7 +25,7 @@ namespace AlphaDots {
         void finished(int threadID);
 
     private:
-        AITestSetupManager setupManager;
+        AITestSetupManager *setupManager;
         TestResultModel *resultModel;
     };
 }

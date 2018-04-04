@@ -9,14 +9,22 @@
 
 using namespace AlphaDots;
 
-FastModelEvaluation::FastModelEvaluation() : QObject() {
+FastModelEvaluation::FastModelEvaluation(int threads) : QObject() {
     qDebug() << "[FastModelEvaluation] init";
+    setupManager = nullptr;
+    threadCnt = threads;
 }
 
-void FastModelEvaluation::startEvaluation(QList<AITestSetup> testSetups, TestResultModel *resultModel) {
+FastModelEvaluation::~FastModelEvaluation() {
+    if (setupManager != nullptr) {
+        delete setupManager;
+    }
+}
+
+void FastModelEvaluation::startEvaluation(QList<AITestSetup> *testSetups, TestResultModel *resultModel) {
     qDebug() << "[FastModelEvaluation] starting fast evaluation";
-    AITestSetupManager setupManager(testSetups);
-    for (int t = 0; t < 4; t++) {
+    setupManager = new AITestSetupManager(testSetups);
+    for (int t = 0; t < threadCnt; t++) {
         // https://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
         auto *thread = new QThread();
         auto *worker = new FastModelEvaluationWorker(setupManager, resultModel);

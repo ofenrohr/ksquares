@@ -9,6 +9,7 @@
 #include <QtCore/QString>
 #include <QtCore/QMap>
 #include <qdebug.h>
+#include <QtCore/QMutex>
 #include "ModelProcess.h"
 
 namespace AlphaDots {
@@ -40,6 +41,7 @@ namespace AlphaDots {
 
         QMap<QString, ModelProcess::Ptr> processMap;
         int port = 12354;
+        QMutex getProcessMutex;
 
         /**
          * Get the process for the specified configuration

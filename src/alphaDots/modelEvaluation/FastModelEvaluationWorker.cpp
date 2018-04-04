@@ -9,7 +9,7 @@
 
 using namespace AlphaDots;
 
-FastModelEvaluationWorker::FastModelEvaluationWorker(AITestSetupManager &testSetupManager, TestResultModel *testResultModel) :
+FastModelEvaluationWorker::FastModelEvaluationWorker(AITestSetupManager *testSetupManager, TestResultModel *testResultModel) :
     setupManager(testSetupManager),
     resultModel(testResultModel)
 {
@@ -23,9 +23,10 @@ FastModelEvaluationWorker::~FastModelEvaluationWorker() {
 void FastModelEvaluationWorker::process() {
     //qDebug() << "[FastModelEvaluationWorker] starting actual model evaluation";
     do {
+        QCoreApplication::processEvents();
         // get setup
         bool ok = false;
-        AITestSetup setup = setupManager.popSetup(&ok);
+        AITestSetup setup = setupManager->popSetup(&ok);
         if (!ok) {
             return;
         }
@@ -82,5 +83,6 @@ void FastModelEvaluationWorker::process() {
 
         resultModel->addResult(result);
         //qDebug() << "saved result";
+
     } while (true);
 }

@@ -15,7 +15,7 @@ namespace AlphaDots {
      */
     class AITestSetupManager {
     public:
-        explicit AITestSetupManager(QList<AITestSetup> setupList);
+        explicit AITestSetupManager(QList<AITestSetup> *setupList);
         explicit AITestSetupManager(AITestSetupManager &mgr) { setups = mgr.getSetups(); }
 
         /**
@@ -25,11 +25,11 @@ namespace AlphaDots {
          */
         AITestSetup popSetup(bool *ok);
 
-        QList<AITestSetup> getSetups() { QMutexLocker locker(&setupListMutex); return setups; }
+        QList<AITestSetup>* getSetups() { QMutexLocker locker(&setupListMutex); return setups; }
 
     private:
         mutable QMutex setupListMutex;
-        QList<AITestSetup> setups;
+        QList<AITestSetup> *setups;
     };
 }
 
