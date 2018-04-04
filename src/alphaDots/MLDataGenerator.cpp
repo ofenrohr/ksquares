@@ -12,18 +12,19 @@
 #include <alphaDots/datasets/BasicStrategyDataset.h>
 #include <alphaDots/datasets/SequenceDataset.h>
 #include <alphaDots/datasets/TrainingSequenceDataset.h>
+#include <QtWidgets/QMessageBox>
 #include "aiEasyMediumHard.h"
 #include "MLDataGeneratorWorkerThread.h"
 #include "ExternalProcess.h"
 
 using namespace AlphaDots;
 
-MLDataGenerator::MLDataGenerator() : KXmlGuiWindow(), m_view(new QWidget()) {
+MLDataGenerator::MLDataGenerator(DatasetType datasetType, int width, int height) : KXmlGuiWindow(), m_view(new QWidget()) {
     threadCnt = 4;
     examplesCnt = -1;
-    generateDatasetType = FirstTry;
-    datasetWidth = 5;
-    datasetHeight = 4;
+    generateDatasetType = datasetType;
+    datasetWidth = width;
+    datasetHeight = height;
     datasetDestDir = QStringLiteral("./");
     initConstructor();
 }
@@ -49,7 +50,6 @@ void MLDataGenerator::initConstructor() {
     qDebug() << " |-> height = " << datasetHeight;
     qDebug() << " |-> destination directory = " << datasetDestDir;
     gbs = nullptr;
-    selectGenerator(0);
     threadProgr.clear();
 
     for (int i = 0; i < threadCnt; i++) {
@@ -99,6 +99,18 @@ void MLDataGenerator::selectGenerator(int gen) {
 }
 
 void MLDataGenerator::initObject() {
+    int generatorIndex = 0;
+    switch (generateDatasetType) {
+        case FirstTry: generatorIndex = 0; break;
+        case StageOne: generatorIndex = 1; break;
+        case BasicStrategy: generatorIndex = 2; break;
+        case LSTM: generatorIndex = 3; break;
+        case LSTM2: generatorIndex = 4; break;
+        default: QMessageBox::critical(this, tr("Error"), tr("Unknown dataset type"));
+    }
+    selectGenerator(generatorIndex);
+    generatorSelector->setCurrentIndex(generatorIndex);
+
     generateGUIexample();
 
     setupGeneratorThreads();
@@ -311,6 +323,9 @@ void MLDataGenerator::turnSliderChanged(int turnIdx) {
 
     if (guiDataset.isSequence()) {
         const QList<QImage> &seq = guiDataset.getSequence();
+        if (displayFrame == 0) {
+            displayFrame += 1;
+        }
         inputImage = seq.at(displayFrame-1);
         outputImage = seq.at(displayFrame);
         inputLbl->setPixmap(QPixmap::fromImage(inputImage).scaled(inputLbl->width(), inputLbl->height(), Qt::KeepAspectRatio));

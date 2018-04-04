@@ -16,6 +16,7 @@
 #include <QCommandLineOption>
 #include <kdelibs4configmigrator.h>
 #include <KDBusService>
+#include <QtWidgets/QMessageBox>
 
 #include "ksquareswindow.h"
 #include "ksquaresdemowindow.h"
@@ -65,7 +66,7 @@ int main(int argc, char **argv)
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("model-list"), i18n("List all available models")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("models"), i18n("List models to evaluate"), i18n("models")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("fast-model-evaluation"), i18n("Run multi-threaded fast evaluation")));
-    parser.addOption(QCommandLineOption(QStringList() <<  i18n("threads"), i18n("Number of threads for model evaluation and dataset generation"), i18n("threads")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("threads"), i18n("Number of threads for model evaluation and dataset generation (default: 4)"), i18n("threads")));
 
     about.setupCommandLine(&parser);
     parser.process(app);
@@ -98,6 +99,48 @@ int main(int argc, char **argv)
         }
     }
 
+    // get board width and height
+    int boardWidth = 5;
+    int boardHeight = 4;
+    if (
+        parser.isSet(QStringLiteral("dataset-width")) &&
+        parser.isSet(QStringLiteral("dataset-height"))
+    ) {
+        bool ok2 = false;
+        int tmp = parser.value(QStringLiteral("dataset-width")).toInt(&ok2);
+        if (ok2) {
+            boardWidth = tmp;
+            tmp = parser.value(QStringLiteral("dataset-height")).toInt(&ok2);
+            if (ok2) {
+                boardHeight = tmp;
+            } else {
+                qDebug() << "invalid dataset-height value";
+            }
+        } else {
+            qDebug() << "invalid dataset-width value";
+        }
+    }
+
+    // specific dataset generator requested?
+    AlphaDots::DatasetType datasetType = AlphaDots::FirstTry;
+    if (parser.isSet(QStringLiteral("dataset-generator"))) {
+        QString datasetGeneratorParam = parser.value(QStringLiteral("dataset-generator")).toLower();
+        if (datasetGeneratorParam == QStringLiteral("firsttry")) {
+            datasetType = AlphaDots::FirstTry;
+        } else if (datasetGeneratorParam == QStringLiteral("stageone")) {
+            datasetType = AlphaDots::StageOne;
+        } else if (datasetGeneratorParam == QStringLiteral("basicstrategy")) {
+            datasetType = AlphaDots::BasicStrategy;
+        } else if (datasetGeneratorParam == QStringLiteral("lstm")) {
+            datasetType = AlphaDots::LSTM;
+        } else if (datasetGeneratorParam == QStringLiteral("lstm2")) {
+            datasetType = AlphaDots::LSTM2;
+        } else {
+            QMessageBox::critical(nullptr, i18n("Error"), i18n("ERROR: unknown dataset-generator"));
+            return 1;
+        }
+    }
+
     // start things
     if (parser.isSet(QStringLiteral("demo"))) {
         KSquaresDemoWindow *demoWindow = new KSquaresDemoWindow;
@@ -116,46 +159,6 @@ int main(int argc, char **argv)
         long exampleCnt = parser.value(QStringLiteral("generate")).toLong(&ok);
         qDebug() << parser.value(QStringLiteral("generate"));
 
-        // specific dataset generator requested?
-        AlphaDots::DatasetType datasetType = AlphaDots::FirstTry;
-        if (parser.isSet(QStringLiteral("dataset-generator"))) {
-            QString datasetGeneratorParam = parser.value(QStringLiteral("dataset-generator")).toLower();
-            if (datasetGeneratorParam == QStringLiteral("firsttry")) {
-                datasetType = AlphaDots::FirstTry;
-            } else if (datasetGeneratorParam == QStringLiteral("stageone")) {
-                datasetType = AlphaDots::StageOne;
-            } else if (datasetGeneratorParam == QStringLiteral("basicstrategy")) {
-                datasetType = AlphaDots::BasicStrategy;
-            } else if (datasetGeneratorParam == QStringLiteral("lstm")) {
-                datasetType = AlphaDots::LSTM;
-            } else if (datasetGeneratorParam == QStringLiteral("lstm2")) {
-                datasetType = AlphaDots::LSTM2;
-            } else {
-                ok = false;
-            }
-        }
-
-        int boardWidth = 5;
-        int boardHeight = 4;
-        if (
-            parser.isSet(QStringLiteral("dataset-width")) &&
-            parser.isSet(QStringLiteral("dataset-height"))
-        ) {
-            bool ok2 = false;
-            int tmp = parser.value(QStringLiteral("dataset-width")).toInt(&ok2);
-            if (ok2) {
-                boardWidth = tmp;
-                tmp = parser.value(QStringLiteral("dataset-height")).toInt(&ok2);
-                if (ok2) {
-                    boardHeight = tmp;
-                } else {
-                    qDebug() << "invalid dataset-height value";
-                }
-            } else {
-                qDebug() << "invalid dataset-width value";
-            }
-        }
-
         QString datasetDest = QStringLiteral("./");
         if (parser.isSet(QStringLiteral("dataset-dest"))) {
             datasetDest = parser.value(QStringLiteral("dataset-dest"));
@@ -165,11 +168,11 @@ int main(int argc, char **argv)
         if (ok) {
             dataGenerator = new AlphaDots::MLDataGenerator(exampleCnt, datasetType, boardWidth, boardHeight, datasetDest, threads);
         } else {
-            dataGenerator = new AlphaDots::MLDataGenerator();
+            dataGenerator = new AlphaDots::MLDataGenerator(datasetType, boardWidth, boardHeight);
         }
         dataGenerator->show();
     } else if (parser.isSet(QStringLiteral("show-generate"))) {
-        AlphaDots::MLDataGenerator *dataGenerator = new AlphaDots::MLDataGenerator();
+        AlphaDots::MLDataGenerator *dataGenerator = new AlphaDots::MLDataGenerator(datasetType, boardWidth, boardHeight);
         dataGenerator->show();
     } else if (parser.isSet(QStringLiteral("model-evaluation"))) {
         AlphaDots::ModelEvaluation *modelEvaluation = new AlphaDots::ModelEvaluation(parser.value(QStringLiteral("models")));

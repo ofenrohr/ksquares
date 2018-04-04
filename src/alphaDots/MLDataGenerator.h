@@ -32,7 +32,7 @@ namespace AlphaDots {
     Q_OBJECT
 
     public:
-        MLDataGenerator();
+        MLDataGenerator(DatasetType datasetType, int width, int height);
 
         /**
          * Generate examplesCnt training samples.
