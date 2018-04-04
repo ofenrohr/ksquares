@@ -218,11 +218,7 @@ void MLDataGenerator::generateGUIexample() {
     frameCnt = aiFunctions::toLinesSize(datasetWidth, datasetHeight);
     displayFrame = -1;
 
-    // draw stuff
-    if (gbs != NULL) {
-        delete gbs;
-    }
-    gbs = new GameBoardScene(datasetWidth, datasetWidth, false, this);
+
 
     guiDataset = guiGenerator->generateDataset();
     aiBoard::Ptr board;
@@ -269,19 +265,8 @@ void MLDataGenerator::generateGUIexample() {
     // print board
     qDebug().noquote().nospace() << aiFunctions::boardToString(board);
 
-    // send board to game board view
-    for (int i = 0; i < board->linesSize; i++) {
-        if (board->lines[i]) {
-            gbs->drawLine(i, QColor::fromRgb(0, 0, 0));
-        }
-    }
-    for (int i = 0; i < board->width * board->height; i++) {
-        if (board->squareOwners[i] >= 0) {
-            gbs->drawSquare(i,
-                            board->squareOwners[i] == 0 ? QColor::fromRgb(255, 0, 0) : QColor::fromRgb(0, 0, 255));
-        }
-    }
-    gameStateView->setScene(gbs);
+    // update ksquares board scene
+    updateGameBoardScene(board);
 
     // display board images
     inputLbl->setPixmap(QPixmap::fromImage(inputImage).scaled(inputLbl->width(), inputLbl->height(), Qt::KeepAspectRatio));
@@ -302,6 +287,28 @@ void MLDataGenerator::generateGUIexample() {
     */
 }
 
+void MLDataGenerator::updateGameBoardScene(aiBoard::Ptr board) {
+    // draw stuff
+    if (gbs != NULL) {
+        delete gbs;
+    }
+    gbs = new GameBoardScene(datasetWidth, datasetHeight, false, this);
+    // send board to game board view
+    for (int i = 0; i < board->linesSize; i++) {
+        if (board->lines[i]) {
+            gbs->drawLine(i, QColor::fromRgb(0, 0, 0));
+        }
+    }
+    for (int i = 0; i < board->width * board->height; i++) {
+        if (board->squareOwners[i] >= 0) {
+            gbs->drawSquare(i,
+                            board->squareOwners[i] == 0 ? QColor::fromRgb(255, 0, 0) : QColor::fromRgb(0, 0, 255));
+        }
+    }
+    gameStateView->setScene(gbs);
+
+}
+
 void MLDataGenerator::nextBtnClicked() {
     generateGUIexample();
 }
@@ -310,6 +317,8 @@ void MLDataGenerator::turnSliderChanged(int turnIdx) {
     //qDebug() << "turnSliderChanged: " << turnIdx;
     displayFrame = turnIdx;
     turnLbl->setText(QString::number(displayFrame) + QStringLiteral(" / ") + QString::number(frameCnt));
+
+    //updateGameBoardScene(guiDataset.getBoard());
 
     if (guiDataset.isTrainingSequence()) {
         const QList<QImage> &inputSeq = guiDataset.getInputSequence();

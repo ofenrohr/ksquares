@@ -113,6 +113,7 @@ namespace AlphaDots {
 
         void turnSliderChanged(int turnIdx);
 
+        void updateGameBoardScene(aiBoard::Ptr board);
     private:
         //QLabel *m_view;
         QWidget *m_view;
