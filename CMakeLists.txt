@@ -54,6 +54,10 @@ add_definitions(-fexceptions)
 INCLUDE(FindProtobuf)
 FIND_PACKAGE(Protobuf REQUIRED)
 
+#zlib
+find_package(ZLIB REQUIRED)
+#include_directories(${ZLIB_INCLUDE_DIRS})
+
 include(FeatureSummary)
 include(ECMAddAppIcon)
 include(ECMInstallIcons)

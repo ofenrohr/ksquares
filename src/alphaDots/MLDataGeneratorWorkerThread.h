@@ -13,8 +13,7 @@ namespace AlphaDots {
     class MLDataGeneratorWorkerThread : public QObject {
     Q_OBJECT
     public:
-        MLDataGeneratorWorkerThread(long examples, DatasetGenerator::Ptr generator,
-                                            int threadID);
+        MLDataGeneratorWorkerThread(long examples, DatasetGenerator::Ptr &generator, int threadID);
 
         ~MLDataGeneratorWorkerThread();
 

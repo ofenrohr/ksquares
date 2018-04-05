@@ -13,6 +13,7 @@
 #include <alphaDots/datasets/SequenceDataset.h>
 #include <alphaDots/datasets/TrainingSequenceDataset.h>
 #include <QtWidgets/QMessageBox>
+#include <alphaDots/datasets/StageTwoDataset.h>
 #include "aiEasyMediumHard.h"
 #include "MLDataGeneratorWorkerThread.h"
 #include "ExternalProcess.h"
@@ -45,6 +46,7 @@ MLDataGenerator::~MLDataGenerator() {}
 void MLDataGenerator::initConstructor() {
     qDebug() << "setting up dataset generator";
     qDebug() << " |-> samples = " << examplesCnt;
+    qDebug() << " |-> threads = " << threadCnt;
     qDebug() << " |-> dataset type = " << generateDatasetType;
     qDebug() << " |-> width = " << datasetWidth;
     qDebug() << " |-> height = " << datasetHeight;
@@ -106,7 +108,8 @@ void MLDataGenerator::initObject() {
         case BasicStrategy: generatorIndex = 2; break;
         case LSTM: generatorIndex = 3; break;
         case LSTM2: generatorIndex = 4; break;
-        default: QMessageBox::critical(this, tr("Error"), tr("Unknown dataset type"));
+        case StageTwo: generatorIndex = 1; break;
+        default: QMessageBox::critical(this, tr("Error"), tr("[MLDataGenerator] Unknown dataset type")); QCoreApplication::exit(1);
     }
     selectGenerator(generatorIndex);
     generatorSelector->setCurrentIndex(generatorIndex);
@@ -116,45 +119,22 @@ void MLDataGenerator::initObject() {
     setupGeneratorThreads();
 }
 
-DatasetGenerator::Ptr MLDataGenerator::getDatasetGenerator() {
+DatasetGenerator::Ptr MLDataGenerator::getDatasetGenerator(int thread) {
     switch (generateDatasetType) {
         case FirstTry:
-            return getFirstTryDatasetGenerator();
+            return FirstTryDataset::Ptr(new FirstTryDataset(datasetWidth, datasetHeight, datasetDestDir));
         case StageOne:
-            return getStageOneDatasetGenerator();
+            return StageOneDataset::Ptr(new StageOneDataset(false, datasetWidth, datasetHeight));
         case BasicStrategy:
-            return getBasicStrategyDatasetGenerator();
+            return BasicStrategyDataset::Ptr(new BasicStrategyDataset(false, datasetWidth, datasetHeight));
         case LSTM:
-            return getSequenceDatasetGenerator();
+            return SequenceDataset::Ptr(new SequenceDataset(false, datasetWidth, datasetHeight));
         case LSTM2:
-            return getTrainingSequenceDatasetGenerator();
+            return TrainingSequenceDataset::Ptr(new TrainingSequenceDataset(false, datasetWidth, datasetHeight));
+        case StageTwo:
+            return StageTwoDataset::Ptr(new StageTwoDataset(false, datasetWidth, datasetHeight, thread, threadCnt));
     }
     return DatasetGenerator::Ptr(nullptr);
-}
-
-DatasetGenerator::Ptr MLDataGenerator::getFirstTryDatasetGenerator() {
-    FirstTryDataset::Ptr generator = FirstTryDataset::Ptr(new FirstTryDataset(datasetWidth, datasetHeight, datasetDestDir));
-    return generator;
-}
-
-DatasetGenerator::Ptr MLDataGenerator::getStageOneDatasetGenerator() {
-    StageOneDataset::Ptr gen = StageOneDataset::Ptr(new StageOneDataset(false, datasetWidth, datasetHeight));
-    return gen;
-}
-
-DatasetGenerator::Ptr MLDataGenerator::getBasicStrategyDatasetGenerator() {
-    BasicStrategyDataset::Ptr gen = BasicStrategyDataset::Ptr(new BasicStrategyDataset(false, datasetWidth, datasetHeight));
-    return gen;
-}
-
-DatasetGenerator::Ptr MLDataGenerator::getSequenceDatasetGenerator() {
-    SequenceDataset::Ptr gen = SequenceDataset::Ptr(new SequenceDataset(false, datasetWidth, datasetHeight));
-    return gen;
-}
-
-DatasetGenerator::Ptr MLDataGenerator::getTrainingSequenceDatasetGenerator() {
-    TrainingSequenceDataset::Ptr gen = TrainingSequenceDataset::Ptr(new TrainingSequenceDataset(false, datasetWidth, datasetHeight));
-    return gen;
 }
 
 void MLDataGenerator::setupGeneratorThreads() {
@@ -167,11 +147,19 @@ void MLDataGenerator::setupGeneratorThreads() {
         nextBtn->setEnabled(false);
         progressBar->setValue(0);
 
+        std::vector<uint8_t> *inputData = nullptr;
+        std::vector<uint8_t> *outputData = nullptr;
+
         for (int i = 0; i < threadCnt; i++) {
-            DatasetGenerator::Ptr gen = getDatasetGenerator();
+            DatasetGenerator::Ptr gen = getDatasetGenerator(i);
             threadGenerators.append(gen);
             if (i == 0) {
                 gen->startConverter(examplesCnt, datasetDestDir);
+                inputData = gen->getInputData();
+                outputData = gen->getOutputData();
+            } else {
+                gen->setInputData(inputData);
+                gen->setOutputData(outputData);
             }
             // https://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
             QThread *thread = new QThread;
@@ -208,6 +196,7 @@ void MLDataGenerator::dataGeneratorFinished(int threadIdx) {
     threadGenerators[threadIdx]->cleanup();
     runningThreadCnt--;
     if (runningThreadCnt <= 0) {
+        threadGenerators[0]->stopConverter();
         nextBtn->setEnabled(true);
         //progressBar->setVisible(false);
         qDebug() << "done generating data";
@@ -247,6 +236,7 @@ void MLDataGenerator::generateGUIexample() {
             turnSlider->setEnabled(false);
         }
     } else {
+        QMessageBox::critical(this, tr("Error"), tr("Not using the selected dataset generator!"));
         qDebug() << "NOT generator dataset";
         // generate data
         board = generateRandomBoard(datasetWidth, datasetHeight, 5);
@@ -276,15 +266,6 @@ void MLDataGenerator::generateGUIexample() {
     // display frame progress
     turnSlider->setMaximum(frameCnt-1);
     turnSlider->setValue(displayFrame);
-
-    // save boards
-    /*
-    QUuid id = QUuid::createUuid();
-    saveImage(QStringLiteral("firstTry_5x4"), id.toString() + QStringLiteral("input"), QStringLiteral("/home/ofenrohr/arbeit/master/data"),
-              inputImage);
-    saveImage(QStringLiteral("firstTry_5x4"), id.toString() + QStringLiteral("output_hardai"), QStringLiteral("/home/ofenrohr/arbeit/master/data"),
-              outputImage);
-    */
 }
 
 void MLDataGenerator::updateGameBoardScene(aiBoard::Ptr board) {

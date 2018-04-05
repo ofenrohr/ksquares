@@ -135,6 +135,8 @@ int main(int argc, char **argv)
             datasetType = AlphaDots::LSTM;
         } else if (datasetGeneratorParam == QStringLiteral("lstm2")) {
             datasetType = AlphaDots::LSTM2;
+        } else if (datasetGeneratorParam == QStringLiteral("stagetwo")) {
+            datasetType = AlphaDots::StageTwo;
         } else {
             QMessageBox::critical(nullptr, i18n("Error"), i18n("ERROR: unknown dataset-generator"));
             return 1;
@@ -157,7 +159,14 @@ int main(int argc, char **argv)
     }  else if (parser.isSet(QStringLiteral("generate"))) {
         bool ok = false;
         long exampleCnt = parser.value(QStringLiteral("generate")).toLong(&ok);
-        qDebug() << parser.value(QStringLiteral("generate"));
+        qDebug() << "Requested number of samples: " << parser.value(QStringLiteral("generate"));
+
+        if (exampleCnt % threads != 0) {
+            qDebug() << "ERROR: Number of samples must be divisible by the number of threads!";
+            QMessageBox::critical(nullptr, i18n("Error"),
+                                  i18n("Number of samples must be divisible by the number of threads!"));
+            return 1;
+        }
 
         QString datasetDest = QStringLiteral("./");
         if (parser.isSet(QStringLiteral("dataset-dest"))) {

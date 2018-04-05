@@ -20,8 +20,26 @@ namespace AlphaDots {
         virtual Dataset generateDataset() = 0;
 
         virtual void startConverter(int examplesCnt, QString destinationDirectory) = 0;
+        virtual void stopConverter() {};
 
         virtual void cleanup() {}
+
+        /**
+         * Returns true if it's a local dataset generator that doesn't use the python converter but generates
+         * the .npz file directly. If it's a local dataset, the startConverter function will allocate the space
+         * for the local npz generation.
+         * @return true if it doesn't use the python converter
+         */
+        virtual bool isLocalNPZ() { return false; }
+
+        /**
+         * Returns the data that was allocated in startConverter if this is a local npz dataset generator.
+         * @return allocated npz data
+         */
+        virtual std::vector<uint8_t>* getInputData() { return nullptr; }
+        virtual std::vector<uint8_t>* getOutputData() { return nullptr; }
+        virtual void setInputData(std::vector<uint8_t>* ) {}
+        virtual void setOutputData(std::vector<uint8_t>* ) {}
 
     signals:
 

@@ -96,10 +96,14 @@ void ModelEvaluation::printModelList() {
     qDebug() << "================================================================================";
     qDebug() << "Available models:";
     qDebug() << "================================================================================";
+    QString modelsStr;
     foreach (ModelInfo model, models) {
+        modelsStr.append(model.name());
+        modelsStr.append(QStringLiteral("\n"));
         qDebug().noquote() << model.name();
     }
     qDebug() << "================================================================================";
+    QMessageBox::information(nullptr, tr("KSquares - model list"), modelsStr);
 }
 
 void ModelEvaluation::createTestSetups() {

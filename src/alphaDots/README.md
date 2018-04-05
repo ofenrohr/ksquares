@@ -1,6 +1,8 @@
 # Alpha Dots
 
-This part of KSquares is used to generate training data for Alpha Dots.
+This part of KSquares is used for
+* generating training data for Alpha Dots and
+* evaluating trained models.
 
 ## Setup
 
@@ -15,7 +17,7 @@ git clone https://gitlab.informatik.uni-bremen.de/ofenrohr/alphaDots.git
 ## Data generators
 
 You can generate training data by running ksquares with certain command line 
-arguments. To explore some of the datasets with a graphics user interface, run this:
+arguments. To explore some of the datasets with a graphical user interface, run this:
 
 ```
 ksquares --show-generate
@@ -46,18 +48,24 @@ ksquares --generate 1000 --dataset-generator firstTry --dataset-dest firstTryDat
 ### Stage One
 
 The input and target images are no longer generated as individual image files but
-instead sent directly to the python script. Communication is facilitated with
-zeroMQ, sending images with the protobuf library.
+are sent directly to the python script instead. Communication is facilitated with
+zeroMQ which is used to send images that were serialized with the protobuf library.
+
+This dataset also introduces weak (random) moves so that there are examples of 
+early captures. 10% of all samples end with a random move. The target image is always
+made with the reaction of the Hard AI. Due to an oversight, the first version had a 
+bug so that 90% of all samples were made with a random move. Models trained with the
+buggy version include StageOne and AlphaZeroV1,V2,V3.
 
 ```
-ksquares --generate 1000 --dataset-generator stageOne --dataset-dest /mnt/DATA/stageOneDataset
+ksquares --generate 1000 --dataset-generator stageOne --dataset-dest /mnt/DATA/stageOneDataset --dataset-width 7 --dataset-height 5
 ```
 
 ### Basic Strategy
 
 During the first phase of a Dots and Boxes game, there is a very large amount of 
 acceptable lines. Usually the Hard AI just selects one of those many lines at
-random. The trained neural network does not know, that there are many alternatives
+random. The trained neural network does not know that there are many alternatives
 to the shown target image. This dataset aims to remedy this by putting all
 viable lines in one target image.
 
@@ -83,3 +91,33 @@ This dataset is made of full Dots and Boxes games, played by two Hard AIs.
 ```
 ksquares --generate 1000 --dataset-generator LSTM
 ```
+
+### Training Sequence
+
+This dataset is like the Sequence dataset but with "Basic Strategy" target images.
+
+## Model evaluation
+
+The are two options to evaluate the trained models. The first option uses the native 
+KSquares Dots and Boxes engine and displays all games while the second option is
+optimized for fast evaluation. In both cases, a selection of models will be evaluated
+by playing against the KSquares AIs `Easy`, `Medium` and `Hard`. 
+
+Start the slow, GUI based model evaluation with:
+```
+ksquares --model-evaluation
+```
+
+Start the multi-threaded fast model evaluation with:
+```
+ksquares --fast-model-evaluation --threads 8
+```
+
+Both evaluation modes support the following optional arguments:
+* `--models MODELS` 
+  By default, all models will be evaluated. If you are only interested in a specific
+  subset, use this optional argument. You can get a list of all available models with `ksquares --model-list`
+* `--dataset-width WIDTH` Board width measured in boxes.
+* `--dataset-height HEIGHT` Board height measured in boxes.
+
+

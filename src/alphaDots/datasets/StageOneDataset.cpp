@@ -61,12 +61,14 @@ Dataset StageOneDataset::generateDataset() {
     // make some more moves
     KSquaresAi::Ptr ai = KSquaresAi::Ptr(new aiEasyMediumHard(0, width, height, 2));
     QList<int> freeLines = ai->getFreeLines(board->lines, board->linesSize);
+
+    // add hard ai moves (smart moves)
+    int movesLeft = rand() % freeLines.count() + 1;
+    MLDataGenerator::makeAiMoves(board, ai, movesLeft);
+
+    // do sth random (stupid moves)
     if (rand() % 10 < 2) {
-        // add hard ai moves (smart moves)
-        int movesLeft = rand() % freeLines.count() + 1;
-        MLDataGenerator::makeAiMoves(board, ai, movesLeft);
-    } else {
-        // do sth random (stupid moves)
+        freeLines = ai->getFreeLines(board->lines, board->linesSize);
         board->doMove(freeLines[rand() % freeLines.count()]);
     }
 

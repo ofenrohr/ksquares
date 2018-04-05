@@ -6,53 +6,61 @@
 set(CMAKE_AUTOUIC ON)
 
 set(ksquares_SRCS
-	main.cpp
-	ksquareswindow.cpp
-	gameboardview.cpp
-	gameboardscene.cpp
-	ksquaresgame.cpp
-	aicontroller.cpp
-	newgamedialog.cpp
-	ksquaresdemowindow.cpp
-	themegraphicsitems.cpp
-    highlightanimation.cpp
-	scoresdialog.cpp
-	aifunctions.cpp
-	ksquaresio.cpp
-	board.cpp
-	dbgame.cpp
-	aiEasyMediumHard.cpp
-#	aiMiniMax.cpp
-	aiBoard.cpp
-	aiHeuristic.cpp
-	nim.cpp
-	aiAlphaBeta.cpp
-	aistructs.cpp
-	ksquarestestwindow.cpp
-	lineSorter.cpp
-	boardAnalysis.cpp
-	dbgame-nohash.cpp
-	qdab.cpp
-	knox.cpp
-	aiMCTS.cpp
-    aiDabbleNative.cpp
-    alphaDots/MLDataGenerator.cpp
-    alphaDots/MLDataGeneratorWorkerThread.cpp
-    aiConvNet.cpp
-    alphaDots/ProtobufConnector.cpp
-    alphaDots/datasets/FirstTryDataset.cpp
-    alphaDots/datasets/DatasetGenerator.cpp
-    alphaDots/datasets/StageOneDataset.cpp
-    alphaDots/ExternalProcess.cpp
-    alphaDots/datasets/Dataset.cpp
-    alphaDots/datasets/BasicStrategyDataset.cpp
-    alphaDots/datasets/SequenceDataset.cpp
-    alphaDots/datasets/TrainingSequenceDataset.cpp
-    alphaDots/ModelInfo.cpp
-    alphaDots/modelEvaluation/AITestSetup.cpp
-    alphaDots/modelEvaluation/AITestResult.cpp
-    alphaDots/modelEvaluation/ModelEvaluation.cpp
-    alphaDots/modelEvaluation/TestResultModel.cpp alphaDots/modelEvaluation/FastModelEvaluationWorker.cpp alphaDots/modelEvaluation/FastModelEvaluationWorker.h alphaDots/modelEvaluation/FastModelEvaluation.cpp alphaDots/modelEvaluation/FastModelEvaluation.h alphaDots/modelEvaluation/AITestSetupManager.cpp alphaDots/modelEvaluation/AITestSetupManager.h alphaDots/ModelManager.cpp alphaDots/ModelManager.h alphaDots/ModelProcess.cpp alphaDots/ModelProcess.h)
+        main.cpp
+        ksquareswindow.cpp
+        gameboardview.cpp
+        gameboardscene.cpp
+        ksquaresgame.cpp
+        aicontroller.cpp
+        newgamedialog.cpp
+        ksquaresdemowindow.cpp
+        themegraphicsitems.cpp
+        highlightanimation.cpp
+        scoresdialog.cpp
+        aifunctions.cpp
+        ksquaresio.cpp
+        board.cpp
+        dbgame.cpp
+        aiEasyMediumHard.cpp
+#		 aiMiniMax.cpp
+        aiBoard.cpp
+        aiHeuristic.cpp
+        nim.cpp
+        aiAlphaBeta.cpp
+        aistructs.cpp
+        ksquarestestwindow.cpp
+        lineSorter.cpp
+        boardAnalysis.cpp
+        dbgame-nohash.cpp
+        qdab.cpp
+        knox.cpp
+        aiMCTS.cpp
+        aiDabbleNative.cpp
+        alphaDots/MLDataGenerator.cpp
+        alphaDots/MLDataGeneratorWorkerThread.cpp
+        aiConvNet.cpp
+        alphaDots/ProtobufConnector.cpp
+        alphaDots/datasets/FirstTryDataset.cpp
+        alphaDots/datasets/DatasetGenerator.cpp
+        alphaDots/datasets/StageOneDataset.cpp
+        alphaDots/ExternalProcess.cpp
+        alphaDots/datasets/Dataset.cpp
+        alphaDots/datasets/BasicStrategyDataset.cpp
+        alphaDots/datasets/SequenceDataset.cpp
+        alphaDots/datasets/TrainingSequenceDataset.cpp
+        alphaDots/ModelInfo.cpp
+        alphaDots/modelEvaluation/AITestSetup.cpp
+        alphaDots/modelEvaluation/AITestResult.cpp
+        alphaDots/modelEvaluation/ModelEvaluation.cpp
+        alphaDots/modelEvaluation/TestResultModel.cpp
+        alphaDots/modelEvaluation/FastModelEvaluationWorker.cpp
+        alphaDots/modelEvaluation/FastModelEvaluation.cpp
+        alphaDots/modelEvaluation/AITestSetupManager.cpp
+        alphaDots/ModelManager.cpp
+        alphaDots/ModelProcess.cpp
+        alphaDots/modelEvaluation/gameplayAnalysis/GameplayAnalysis.cpp
+        alphaDots/cnpy.cpp
+		alphaDots/datasets/StageTwoDataset.cpp alphaDots/datasets/StageTwoDataset.h)
 
 file(GLOB protoMessages alphaDots/protobuf/*.proto)
 PROTOBUF_GENERATE_CPP(ProtoSrcs ProtoHeaders ${protoMessages})
@@ -60,7 +68,7 @@ PROTOBUF_GENERATE_CPP(ProtoSrcs ProtoHeaders ${protoMessages})
 message(ProtoSrcs: ${ProtoSrcs})
 message(ProtoHeaders: ${ProtoHeaders})
 
-include_directories(${CMAKE_SOURCE_DIR}/libKF5KDEGames/highscore ${ZeroMQ_INCLUDE_DIR})
+include_directories(${CMAKE_SOURCE_DIR}/libKF5KDEGames/highscore ${ZeroMQ_INCLUDE_DIR} ${ZLIB_INCLUDE_DIRS})
 
 
 ki18n_wrap_ui(ksquares_SRCS newgamewidget.ui scoreswidget.ui prefs_ai.ui prefs_display.ui alphaDots/mldataview.ui alphaDots/modelEvaluation/ModelEvaluation.ui)
@@ -83,6 +91,7 @@ target_link_libraries(ksquares
 	#${QJSON_LIBRARIES}
     ${ZeroMQ_LIBRARY}
 	${PROTOBUF_LIBRARY}
+    ${ZLIB_LIBRARIES}
 )
 
 install(TARGETS ksquares ${KDE_INSTALL_TARGETS_DEFAULT_ARGS})
