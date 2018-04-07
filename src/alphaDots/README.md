@@ -25,6 +25,12 @@ ksquares --show-generate
 
 You can only have one board size per dataset. Models can be trained on many datasets.
 
+All dataset generators accept the following optional command line arguments:
+* `--dataset-dest` Destination directory for the data (.npz file)
+* `--dataset-width` Board width in boxes
+* `--dataset-height` Board height in boxes
+* `--threads` Number of threads
+
 ### First Try
 
 Converts random Dots and Boxes games played by the Hard AI to images.
@@ -95,6 +101,19 @@ ksquares --generate 1000 --dataset-generator LSTM
 ### Training Sequence
 
 This dataset is like the Sequence dataset but with "Basic Strategy" target images.
+```
+ksquares --generate 1000 --dataset-generator LSTM2
+```
+
+### Stage Two
+
+The data is generated just like Stage One, but this dataset generator uses 
+[cnpy](https://github.com/rogersce/cnpy) to directly write the .npz file. This removes
+the overhead of sending the data to a separate, single-threaded python process. As a
+result, this dataset generator can fully utilize the CPU. 
+```
+ksquares --generate 1000 --dataset-generator StageTwo --threads 8
+```
 
 ## Model evaluation
 

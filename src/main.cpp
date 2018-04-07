@@ -58,7 +58,7 @@ int main(int argc, char **argv)
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("generate"), i18n("Generate training data"), i18n("generate")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("show-generate"), i18n("Generate training data")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("dataset-generator"),
-        i18n("Select dataset type to generate. valid values: firstTry, stageOne, basicStrategy, LSTM"), i18n("dataset-generator")));
+        i18n("Select dataset type to generate. valid values: firstTry, stageOne, basicStrategy, LSTM, LSTM2, StageTwo"), i18n("dataset-generator")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("dataset-width"), i18n("Dataset width in boxes"), i18n("dataset-width")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("dataset-height"), i18n("Dataset height in boxes"), i18n("dataset-height")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("dataset-dest"), i18n("Dataset destination directory"), i18n("dataset-dest")));
