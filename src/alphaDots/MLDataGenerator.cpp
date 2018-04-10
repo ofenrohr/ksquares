@@ -200,6 +200,7 @@ void MLDataGenerator::dataGeneratorFinished(int threadIdx) {
         nextBtn->setEnabled(true);
         //progressBar->setVisible(false);
         qDebug() << "done generating data";
+        QCoreApplication::quit();
     }
 }
 

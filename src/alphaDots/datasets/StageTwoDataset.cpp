@@ -52,7 +52,8 @@ void StageTwoDataset::startConverter(int samples, QString destinationDirectory) 
 }
 
 void StageTwoDataset::stopConverter() {
-    std::string filename = "/StageTwo-" + std::to_string(sampleCnt) + "-" + std::to_string(width) + "x" + std::to_string(height) + ".npz";
+    QString timeStr = QDateTime::currentDateTime().toString(QStringLiteral("-hh:mm-dd_MM_yyyy"));
+    std::string filename = "/StageTwo-" + std::to_string(sampleCnt) + "-" + std::to_string(width) + "x" + std::to_string(height) + timeStr.toStdString() + ".npz";
     if (!cnpy::npz_save(destDir.toStdString()+filename, "x_train", &(*input)[0], dataSize, "w")) {
         QMessageBox::critical(nullptr, i18n("Error"), i18n("failed to save input data"));
     }
