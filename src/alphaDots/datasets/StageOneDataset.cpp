@@ -4,8 +4,9 @@
 
 #include <alphaDots/ExternalProcess.h>
 #include <alphaDots/MLDataGenerator.h>
-#include <aiEasyMediumHard.h>
 #include <alphaDots/ProtobufConnector.h>
+#include <alphaDots/MLImageGenerator.h>
+#include <aiEasyMediumHard.h>
 #include <settings.h>
 #include "StageOneDataset.h"
 
@@ -30,8 +31,8 @@ void StageOneDataset::cleanup() {
 }
 
 void StageOneDataset::startConverter(int samples, QString destinationDirectory) {
-    int widthImg = MLDataGenerator::boxesToImgSize(width);
-    int heightImg = MLDataGenerator::boxesToImgSize(height);
+    int widthImg = MLImageGenerator::boxesToImgSize(width);
+    int heightImg = MLImageGenerator::boxesToImgSize(height);
 
     QStringList args;
     args << Settings::alphaDotsDir() + QStringLiteral("/datasetConverter/convert.py")
@@ -73,8 +74,8 @@ Dataset StageOneDataset::generateDataset() {
     }
 
     // generate images
-    QImage inputImage = MLDataGenerator::generateInputImage(board);
-    QImage outputImage = MLDataGenerator::generateOutputImage(board, ai);
+    QImage inputImage = MLImageGenerator::generateInputImage(board);
+    QImage outputImage = MLImageGenerator::generateOutputImage(board, ai);
 
     if (isGUI) {
         return Dataset(inputImage, outputImage, board);

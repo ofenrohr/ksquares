@@ -17,6 +17,7 @@
 #include "aiEasyMediumHard.h"
 #include "MLDataGeneratorWorkerThread.h"
 #include "ExternalProcess.h"
+#include "MLImageGenerator.h"
 
 using namespace AlphaDots;
 
@@ -248,8 +249,8 @@ void MLDataGenerator::generateGUIexample() {
         KSquaresAi::Ptr ai = KSquaresAi::Ptr(new aiEasyMediumHard(0, datasetWidth, datasetHeight, 2));
         makeAiMoves(board, ai, displayFrame);
 
-        inputImage = generateInputImage(board);
-        outputImage = generateOutputImage(board, ai);
+        inputImage = MLImageGenerator::generateInputImage(board);
+        outputImage = MLImageGenerator::generateOutputImage(board, ai);
     }
 
 
@@ -361,94 +362,6 @@ QList<int> MLDataGenerator::makeAiMoves(aiBoard::Ptr board, KSquaresAi::Ptr ai, 
         moves.append(makeAiMove(board, ai));
     }
     return moves;
-}
-
-void MLDataGenerator::drawBackgroundAndDots(QImage &img, bool drawDots) {
-    for (int y = 0; y < img.height(); y++) {
-        for (int x = 0; x < img.width(); x++) {
-            int color = MLImageBackground;
-
-            if (x % 2 == 1 && y % 2 == 1 && drawDots) {
-                color = MLImageDot;
-            }
-
-            img.setPixel(x,y, qRgb(color, color, color));
-        }
-    }
-}
-
-void MLDataGenerator::drawLineAt(QImage &img, int lineIdx, int w, int h) {
-    QPoint p1,p2;
-    if (!Board::indexToPoints(lineIdx, &p1, &p2, w, h, false)) {
-        qDebug() << "fail!";
-    }
-    img.setPixel(p2.x()*2+(p2.y()-p1.y()), p2.y()*2+(p2.x()-p1.x()), qRgb(MLImageLine,MLImageLine,MLImageLine));
-}
-
-void MLDataGenerator::drawLines(QImage &img, aiBoard::Ptr board) {
-    for (int i = 0; i < board->linesSize; i++) {
-        if (board->lines[i]) {
-            drawLineAt(img, i, board->width, board->height);
-        }
-    }
-}
-
-void MLDataGenerator::drawBoxes(QImage &img, aiBoard::Ptr board) {
-    for (int i = 0; i < board->squareOwners.count(); i++) {
-        int squareOwner = board->squareOwners[i];
-        if (squareOwner >= 0) {
-            int x,y,c;
-            x = (i % board->width) * 2 + 2;
-            y = (i / board->width) * 2 + 2;
-            c = squareOwner == 0 ? MLImageBoxA : MLImageBoxB;
-            img.setPixel(x,y, qRgb(c,c,c));
-        }
-    }
-}
-
-int MLDataGenerator::boxesToImgSize(int boxes) {
-    return boxes * 2 + 3;
-}
-
-QImage MLDataGenerator::generateInputImage(aiBoard::Ptr board) {
-    int imgWidth = boxesToImgSize(board->width); // 1px border
-    int imgHeight = boxesToImgSize(board->height);
-
-    QImage img(imgWidth, imgHeight, QImage::Format_ARGB32);
-
-    drawBackgroundAndDots(img);
-    drawLines(img, board);
-    drawBoxes(img, board);
-
-    return img;
-}
-
-QImage MLDataGenerator::generateOutputImage(aiBoard::Ptr board, KSquaresAi::Ptr ai) {
-    int imgWidth = board->width*2+3; // 1px border
-    int imgHeight = board->height*2+3;
-
-    QImage img(imgWidth, imgHeight, QImage::Format_ARGB32);
-
-    int nextLine = ai->chooseLine(board->linesAsList(), board->squareOwners, QList<Board::Move>());
-
-    drawBackgroundAndDots(img, false);
-    drawLineAt(img, nextLine, board->width, board->height);
-
-    return img;
-}
-
-QImage MLDataGenerator::generateOutputImage(aiBoard::Ptr board, QList<int> lines, bool drawDots) {
-    int imgWidth = board->width*2+3; // 1px border
-    int imgHeight = board->height*2+3;
-
-    QImage img(imgWidth, imgHeight, QImage::Format_ARGB32);
-
-    drawBackgroundAndDots(img, drawDots);
-    foreach (int line, lines) {
-        drawLineAt(img, line, board->width, board->height);
-    }
-
-    return img;
 }
 
 void MLDataGenerator::saveImage(QString dataSetName, QString instanceName, QString dest, QImage &img) {

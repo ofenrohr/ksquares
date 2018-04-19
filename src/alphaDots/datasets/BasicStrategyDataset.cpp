@@ -3,9 +3,10 @@
 //
 
 #include <alphaDots/MLDataGenerator.h>
+#include <alphaDots/MLImageGenerator.h>
+#include <alphaDots/ProtobufConnector.h>
 #include <zmq.hpp>
 #include <aiEasyMediumHard.h>
-#include <alphaDots/ProtobufConnector.h>
 #include <settings.h>
 #include "BasicStrategyDataset.h"
 
@@ -22,8 +23,8 @@ BasicStrategyDataset::~BasicStrategyDataset() {
 }
 
 void BasicStrategyDataset::startConverter(int samples, QString destinationDirectory) {
-    int widthImg = MLDataGenerator::boxesToImgSize(width);
-    int heightImg = MLDataGenerator::boxesToImgSize(height);
+    int widthImg = MLImageGenerator::boxesToImgSize(width);
+    int heightImg = MLImageGenerator::boxesToImgSize(height);
 
     QStringList args;
     args << Settings::alphaDotsDir() + QStringLiteral("/datasetConverter/convert.py")
@@ -71,14 +72,14 @@ Dataset BasicStrategyDataset::generateDataset() {
     }
 
     // generate images
-    QImage inputImage = MLDataGenerator::generateInputImage(board);
+    QImage inputImage = MLImageGenerator::generateInputImage(board);
 
     QList<int> safeLines = ai->safeMoves(board->linesSize, board->lines);
     QImage outputImage;
     if (safeLines.count() > 0 && !capture) {
-        outputImage = MLDataGenerator::generateOutputImage(board, safeLines);
+        outputImage = MLImageGenerator::generateOutputImage(board, safeLines);
     } else {
-        outputImage = MLDataGenerator::generateOutputImage(board, ai);
+        outputImage = MLImageGenerator::generateOutputImage(board, ai);
     }
 
     if (isGUI) {

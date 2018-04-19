@@ -1,20 +1,20 @@
 //
-// Created by ofenrohr on 05.04.18.
+// Created by ofenrohr on 19.04.18.
 //
 
-#ifndef KSQUARES_STAGETWODATASET_H
-#define KSQUARES_STAGETWODATASET_H
+#ifndef KSQUARES_STAGETHREE_H
+#define KSQUARES_STAGETHREE_H
 
 #include "DatasetGenerator.h"
 
 namespace AlphaDots {
-    class StageTwoDataset : public DatasetGenerator {
+    class StageThreeDataset : public DatasetGenerator {
     public:
-        typedef QSharedPointer<StageTwoDataset> Ptr;
+        typedef QSharedPointer<StageThreeDataset> Ptr;
 
-        StageTwoDataset(bool gui, int w, int h, int thread=-1, int threads=-1);
+        StageThreeDataset(bool gui, int w, int h, int thread=-1, int threads=-1);
 
-        ~StageTwoDataset();
+        ~StageThreeDataset();
 
         Dataset generateDataset() override;
 
@@ -47,4 +47,5 @@ namespace AlphaDots {
     };
 }
 
-#endif //KSQUARES_STAGETWODATASET_H
+
+#endif //KSQUARES_STAGETHREE_H

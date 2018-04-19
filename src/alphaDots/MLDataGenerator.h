@@ -45,14 +45,6 @@ namespace AlphaDots {
 
         void initObject();
 
-        /**
-         * Define colors to use in images
-         */
-        static const int MLImageBackground = 0;
-        static const int MLImageBoxA = 65;
-        static const int MLImageBoxB = 150;
-        static const int MLImageDot = 215;
-        static const int MLImageLine = 255;
         /// number of threads
         int threadCnt;
 
@@ -71,20 +63,7 @@ namespace AlphaDots {
 
         static QList<int> makeAiMoves(aiBoard::Ptr board, KSquaresAi::Ptr ai, int freeLinesLeft);
 
-        static QImage generateInputImage(aiBoard::Ptr board);
-
-        static QImage generateOutputImage(aiBoard::Ptr board, KSquaresAi::Ptr ai);
-
-        static QImage generateOutputImage(aiBoard::Ptr board, QList<int> lines, bool drawDots = false);
-
         static void saveImage(QString dataSetName, QString instanceName, QString dest, QImage &img);
-
-        /**
-         * Converts boxes (width or height) to pixels
-         * @param boxes
-         * @return
-         */
-        static int boxesToImgSize(int boxes);
 
     public slots:
 
@@ -149,11 +128,6 @@ namespace AlphaDots {
 
         /// Dataset generator to use in GUI
         DatasetGenerator::Ptr guiGenerator;
-
-        static void drawBackgroundAndDots(QImage &img, bool drawDots = true);
-        static void drawLineAt(QImage &img, int lineIdx, int w, int h);
-        static void drawLines(QImage &img, aiBoard::Ptr board);
-        static void drawBoxes(QImage &img, aiBoard::Ptr board);
 
         void initConstructor();
 

@@ -3,8 +3,9 @@
 //
 
 #include <alphaDots/MLDataGenerator.h>
-#include <aiEasyMediumHard.h>
 #include <alphaDots/ProtobufConnector.h>
+#include <alphaDots/MLImageGenerator.h>
+#include <aiEasyMediumHard.h>
 #include <settings.h>
 #include "SequenceDataset.h"
 
@@ -37,7 +38,7 @@ Dataset SequenceDataset::generateDataset() {
         QList<int> completedSquares;
         board.addLine(line, &nextPlayer, &boardFilled, &completedSquares);
         aiboard->doMove(line);
-        seqData.append(MLDataGenerator::generateInputImage(aiboard));
+        seqData.append(MLImageGenerator::generateInputImage(aiboard));
     }
 
     if (!isGUI) {
@@ -62,8 +63,8 @@ Dataset SequenceDataset::generateDataset() {
 }
 
 void SequenceDataset::startConverter(int samples, QString destinationDirectory) {
-    int widthImg = MLDataGenerator::boxesToImgSize(width);
-    int heightImg = MLDataGenerator::boxesToImgSize(height);
+    int widthImg = MLImageGenerator::boxesToImgSize(width);
+    int heightImg = MLImageGenerator::boxesToImgSize(height);
 
 
     QStringList args;

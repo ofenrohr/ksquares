@@ -3,8 +3,9 @@
 //
 
 #include <alphaDots/MLDataGenerator.h>
-#include <aiEasyMediumHard.h>
 #include <alphaDots/ProtobufConnector.h>
+#include <alphaDots/MLImageGenerator.h>
+#include <aiEasyMediumHard.h>
 #include <settings.h>
 #include "TrainingSequenceDataset.h"
 
@@ -33,7 +34,7 @@ Dataset TrainingSequenceDataset::generateDataset() {
     QList<int> linesList;
     bool boardFilled = false;
     while (!boardFilled) {
-        inputSeqData.append(MLDataGenerator::generateInputImage(aiboard));
+        inputSeqData.append(MLImageGenerator::generateInputImage(aiboard));
         int line = ai->chooseLine(board.lines(), board.squares(), board.getLineHistory());
         linesList.append(line);
         bool nextPlayer;
@@ -43,7 +44,7 @@ Dataset TrainingSequenceDataset::generateDataset() {
         QList<int> targetLines;
         targetLines.clear();
         targetLines.append(line);
-        QImage targetImg = MLDataGenerator::generateOutputImage(aiboard, targetLines, false);
+        QImage targetImg = MLImageGenerator::generateOutputImage(aiboard, targetLines, false);
         targetSeqData.append(targetImg);
     }
 
@@ -69,8 +70,8 @@ Dataset TrainingSequenceDataset::generateDataset() {
 }
 
 void TrainingSequenceDataset::startConverter(int samples, QString destinationDirectory) {
-    int widthImg = MLDataGenerator::boxesToImgSize(width);
-    int heightImg = MLDataGenerator::boxesToImgSize(height);
+    int widthImg = MLImageGenerator::boxesToImgSize(width);
+    int heightImg = MLImageGenerator::boxesToImgSize(height);
 
 
     QStringList args;

@@ -63,6 +63,8 @@ set(ksquares_SRCS
 		alphaDots/datasets/StageTwoDataset.cpp
 		aiAlphaZeroMCTS.cpp
 		AlphaZeroMCTSNode.cpp
+		alphaDots/datasets/StageThreeDataset.cpp
+		alphaDots/MLImageGenerator.cpp
 		)
 
 file(GLOB protoMessages alphaDots/protobuf/*.proto)

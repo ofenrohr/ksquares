@@ -1,19 +1,19 @@
 //
-// Created by ofenrohr on 05.04.18.
+// Created by ofenrohr on 19.04.18.
 //
 
 #include <alphaDots/MLDataGenerator.h>
 #include <alphaDots/MLImageGenerator.h>
 #include <alphaDots/cnpy.h>
-#include <settings.h>
-#include <aiEasyMediumHard.h>
+#include <QtCore/QDateTime>
 #include <QtWidgets/QMessageBox>
-#include "StageTwoDataset.h"
+#include <aiEasyMediumHard.h>
+#include "StageThreeDataset.h"
 
 
 using namespace AlphaDots;
 
-StageTwoDataset::StageTwoDataset(bool gui, int w, int h, int thread, int threads) {
+StageThreeDataset::StageThreeDataset(bool gui, int w, int h, int thread, int threads) {
     isGUI = gui;
     width = w;
     height = h;
@@ -27,17 +27,17 @@ StageTwoDataset::StageTwoDataset(bool gui, int w, int h, int thread, int threads
     qDebug() << " |-> threads: " << threadCnt;
 }
 
-StageTwoDataset::~StageTwoDataset() {
+StageThreeDataset::~StageThreeDataset() {
     cleanup();
 }
 
-void StageTwoDataset::cleanup() {
+void StageThreeDataset::cleanup() {
     if (!isGUI) {
         //converter->stopExternalProcess();
     }
 }
 
-void StageTwoDataset::startConverter(int samples, QString destinationDirectory) {
+void StageThreeDataset::startConverter(int samples, QString destinationDirectory) {
     sampleCnt = samples;
     destDir = destinationDirectory;
 
@@ -52,7 +52,7 @@ void StageTwoDataset::startConverter(int samples, QString destinationDirectory) 
     output = new std::vector<uint8_t>(sampleCnt*heightImg*widthImg);
 }
 
-void StageTwoDataset::stopConverter() {
+void StageThreeDataset::stopConverter() {
     QString timeStr = QDateTime::currentDateTime().toString(QStringLiteral("-hh:mm-dd_MM_yyyy"));
     std::string filename = "/StageTwo-" + std::to_string(sampleCnt) + "-" + std::to_string(width) + "x" + std::to_string(height) + timeStr.toStdString() + ".npz";
     if (!cnpy::npz_save(destDir.toStdString()+filename, "x_train", &(*input)[0], dataSize, "w")) {
@@ -63,10 +63,8 @@ void StageTwoDataset::stopConverter() {
     }
 }
 
-Dataset StageTwoDataset::generateDataset() {
-
-
-    // generate data
+Dataset StageThreeDataset::generateDataset() {
+    // generate initial board
     aiBoard::Ptr board = MLDataGenerator::generateRandomBoard(width, height, 15);
 
     // make some more moves
@@ -74,13 +72,13 @@ Dataset StageTwoDataset::generateDataset() {
     QList<int> freeLines = ai->getFreeLines(board->lines, board->linesSize);
 
     // add hard ai moves (smart moves)
-    int movesLeft = rand() % freeLines.count() + 1;
+    int movesLeft = qrand() % freeLines.count() + 1;
     MLDataGenerator::makeAiMoves(board, ai, movesLeft);
 
     // do sth random (stupid moves)
-    if (rand() % 10 < 2) {
+    if (qrand() % 10 < 2) {
         freeLines = ai->getFreeLines(board->lines, board->linesSize);
-        board->doMove(freeLines[rand() % freeLines.count()]);
+        board->doMove(freeLines[qrand() % freeLines.count()]);
     }
 
     // generate images

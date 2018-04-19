@@ -4,6 +4,7 @@
 
 #include <QtCore/QString>
 #include <alphaDots/MLDataGenerator.h>
+#include <alphaDots/MLImageGenerator.h>
 #include <QtCore/QUuid>
 #include <aiEasyMediumHard.h>
 #include "FirstTryDataset.h"
@@ -25,8 +26,8 @@ Dataset FirstTryDataset::generateDataset() {
     MLDataGenerator::makeAiMoves(board, ai, 20);
 
     // generate images
-    QImage inputImage = MLDataGenerator::generateInputImage(board);
-    QImage outputImage = MLDataGenerator::generateOutputImage(board, ai);
+    QImage inputImage = MLImageGenerator::generateInputImage(board);
+    QImage outputImage = MLImageGenerator::generateOutputImage(board, ai);
 
     // save boards
     QUuid id = QUuid::createUuid();

@@ -9,6 +9,7 @@
 #include "aiConvNet.h"
 #include "alphaDots/ProtobufConnector.h"
 #include "alphaDots/MLDataGenerator.h"
+#include "alphaDots/MLImageGenerator.h"
 
 using namespace AlphaDots;
 
@@ -101,7 +102,7 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 	if (modelInfo.type() == QStringLiteral("DirectInference") ||
         modelInfo.type() == QStringLiteral("DirectInferenceCategorical")) {
 		aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(lines, linesSize, width, height, newSquareOwners, playerId, maxPlayerId));
-		DotsAndBoxesImage img = ProtobufConnector::dotsAndBoxesImageToProtobuf(MLDataGenerator::generateInputImage(board));
+		DotsAndBoxesImage img = ProtobufConnector::dotsAndBoxesImageToProtobuf(MLImageGenerator::generateInputImage(board));
 		ProtobufConnector::sendString(socket, img.SerializeAsString());
 	}
     else if (modelInfo.type() == QStringLiteral("Sequence") ||
@@ -109,10 +110,10 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 		//qDebug() << "sequence model";
 		aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(width, height));
 		QList<QImage> imageSeq;
-		imageSeq.append(MLDataGenerator::generateInputImage(board));
+		imageSeq.append(MLImageGenerator::generateInputImage(board));
 		for (Board::Move move : lineHistory) {
 			board->doMove(move.line);
-			imageSeq.append(MLDataGenerator::generateInputImage(board));
+			imageSeq.append(MLImageGenerator::generateInputImage(board));
 		}
 		GameSequence seq = ProtobufConnector::gameSequenceToProtobuf(imageSeq);
         std::vector<std::string> errors;
