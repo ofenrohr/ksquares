@@ -60,7 +60,10 @@ set(ksquares_SRCS
         alphaDots/ModelProcess.cpp
         alphaDots/modelEvaluation/gameplayAnalysis/GameplayAnalysis.cpp
         alphaDots/cnpy.cpp
-		alphaDots/datasets/StageTwoDataset.cpp alphaDots/datasets/StageTwoDataset.h)
+		alphaDots/datasets/StageTwoDataset.cpp
+		aiAlphaZeroMCTS.cpp
+		AlphaZeroMCTSNode.cpp
+		)
 
 file(GLOB protoMessages alphaDots/protobuf/*.proto)
 PROTOBUF_GENERATE_CPP(ProtoSrcs ProtoHeaders ${protoMessages})

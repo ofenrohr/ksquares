@@ -22,19 +22,22 @@
 
 class MCTSNode
 {
-	public:
-		typedef QSharedPointer<MCTSNode> Ptr;
-		
-		MCTSNode();
-		
-		long visitedCnt;
-		double value;
-		long fullValue;
-		QList<int> moveSequence; // lines drawn to get from parent node to this one
-		MCTSNode::Ptr parent;
-		QList<MCTSNode::Ptr> children;
-		bool gameLeaf;
-		bool inTree;
+public:
+    typedef QSharedPointer<MCTSNode> Ptr;
+
+    MCTSNode();
+
+    long visitedCnt;
+    double value;
+    long fullValue;
+    QList<int> moveSequence; // lines drawn to get from parent node to this one
+    MCTSNode::Ptr parent;
+    QList<MCTSNode::Ptr> children;
+    bool gameLeaf;
+    bool inTree;
+
+    QString toString();
+
 };
 
 class aiMCTS : public KSquaresAi

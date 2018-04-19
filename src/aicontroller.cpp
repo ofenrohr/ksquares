@@ -20,6 +20,7 @@
 #include "aiMCTS.h"
 #include "aiDabbleNative.h"
 #include "aiConvNet.h"
+#include "aiAlphaZeroMCTS.h"
 
 #include <ctime>
 #include <QDebug>
@@ -159,6 +160,10 @@ KSquaresAi::Ptr aiController::getAi()
 		case KSquares::AI_MCTS_CONVNET:
 			if (ai.isNull())
 				ai = KSquaresAi::Ptr(new aiMCTS(playerId, maxPlayerId, width, height, KSquares::AI_CONVNET, aiThinkTime));
+		break;
+		case KSquares::AI_MCTS_ALPHAZERO:
+			if (ai.isNull())
+				ai = KSquaresAi::Ptr(new AlphaDots::aiAlphaZeroMCTS(playerId, maxPlayerId, width, height, KSquares::AI_CONVNET, aiThinkTime));
 		break;
 	}
 	return ai;

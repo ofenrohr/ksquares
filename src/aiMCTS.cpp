@@ -37,10 +37,10 @@ aiMCTS::aiMCTS(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight,
 		case KSquares::AI_EASY:
 		case KSquares::AI_MEDIUM:
 		case KSquares::AI_HARD:
-			simAi = KSquaresAi::Ptr(new aiConvNet(0, 1, width, height, 0));
+            simAi = KSquaresAi::Ptr(new aiEasyMediumHard(0, width, height, level));
             break;
 		case KSquares::AI_CONVNET:
-			simAi = KSquaresAi::Ptr(new aiEasyMediumHard(0, width, height, level));
+            simAi = KSquaresAi::Ptr(new aiConvNet(0, 1, width, height, 0));
 		break;
 	}
 }
@@ -59,6 +59,14 @@ MCTSNode::MCTSNode()
 	children = QList<MCTSNode::Ptr>();
 	gameLeaf = false;
 	inTree = false;
+}
+
+QString MCTSNode::toString() {
+	QString ret = QStringLiteral("MCTSNode: value=")+QString::number(value)+QStringLiteral(", visitedCnt=")+QString::number(visitedCnt);
+    for (auto &child : children) {
+		ret.append(QStringLiteral("\nchild value=")+QString::number(child->value)+QStringLiteral(", visitedCnt=") + QString::number(child->visitedCnt));
+	}
+	return ret;
 }
 
 int aiMCTS::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &/*lineHistory*/)
@@ -121,14 +129,17 @@ int aiMCTS::mcts()
 	// select most promising move
 	int line = -1;
 	long mostVisited = -1;
+	MCTSNode::Ptr retNode;
 	for (int i = 0; i < mctsRootNode->children.size(); i++)
 	{
 		if (mctsRootNode->children[i]->visitedCnt > mostVisited)
 		{
 			line = mctsRootNode->children[i]->moveSequence[0];
 			mostVisited = mctsRootNode->children[i]->visitedCnt;
+			retNode = mctsRootNode->children[i];
 		}
 	}
+	qDebug().noquote() << "mcts node:" << mctsRootNode->toString();
 	return line;
 }
 
@@ -230,10 +241,11 @@ void aiMCTS::simulation(MCTSNode::Ptr node)
 		missingLines--;
 	}
 	// get simulation result
-	for (int i = 0; i < board->squareOwners.size(); i++)
-	{
-		node->fullValue += board->squareOwners[i] == playerId ? 1 : -1;
+    int tmp = 0;
+	for (int squareOwner : board->squareOwners) {
+		tmp += squareOwner == playerId ? 1 : -1;
 	}
+    node->fullValue = tmp > 0 ? 1 : (tmp < 0 ? -1 : 0);
 	node->value = node->fullValue;
 	// undo simulation
 	for (int i = simulationHistory.size() -1; i >= 0; i--)

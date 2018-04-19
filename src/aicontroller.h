@@ -52,7 +52,8 @@ namespace KSquares
 		AI_MCTS_C,
 		AI_DABBLENATIVE,
         AI_CONVNET,
-		AI_MCTS_CONVNET
+		AI_MCTS_CONVNET,
+		AI_MCTS_ALPHAZERO
 	};
 }
 
