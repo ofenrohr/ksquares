@@ -14,6 +14,8 @@
 #include <alphaDots/datasets/TrainingSequenceDataset.h>
 #include <QtWidgets/QMessageBox>
 #include <alphaDots/datasets/StageTwoDataset.h>
+#include <alphaDots/datasets/StageThreeDataset.h>
+#include <cmath>
 #include "aiEasyMediumHard.h"
 #include "MLDataGeneratorWorkerThread.h"
 #include "ExternalProcess.h"
@@ -96,6 +98,10 @@ void MLDataGenerator::selectGenerator(int gen) {
             guiGenerator = DatasetGenerator::Ptr(new TrainingSequenceDataset(true, datasetWidth, datasetHeight));
             qDebug() << "selected training sequence generator";
             break;
+        case 5:
+            guiGenerator = DatasetGenerator::Ptr(new StageThreeDataset(true, datasetWidth, datasetHeight));
+            qDebug() << "selected training sequence generator";
+            break;
         default:
             break;
     }
@@ -110,6 +116,7 @@ void MLDataGenerator::initObject() {
         case LSTM: generatorIndex = 3; break;
         case LSTM2: generatorIndex = 4; break;
         case StageTwo: generatorIndex = 1; break;
+        case StageThree: generatorIndex = 5; break;
         default: QMessageBox::critical(this, tr("Error"), tr("[MLDataGenerator] Unknown dataset type")); QCoreApplication::exit(1);
     }
     selectGenerator(generatorIndex);
@@ -134,6 +141,8 @@ DatasetGenerator::Ptr MLDataGenerator::getDatasetGenerator(int thread) {
             return TrainingSequenceDataset::Ptr(new TrainingSequenceDataset(false, datasetWidth, datasetHeight));
         case StageTwo:
             return StageTwoDataset::Ptr(new StageTwoDataset(false, datasetWidth, datasetHeight, thread, threadCnt));
+        case StageThree:
+            return StageThreeDataset::Ptr(new StageThreeDataset(false, datasetWidth, datasetHeight, thread, threadCnt));
     }
     return DatasetGenerator::Ptr(nullptr);
 }
@@ -149,7 +158,8 @@ void MLDataGenerator::setupGeneratorThreads() {
         progressBar->setValue(0);
 
         std::vector<uint8_t> *inputData = nullptr;
-        std::vector<uint8_t> *outputData = nullptr;
+        std::vector<uint8_t> *policyData = nullptr;
+        std::vector<double> *valueData = nullptr;
 
         for (int i = 0; i < threadCnt; i++) {
             DatasetGenerator::Ptr gen = getDatasetGenerator(i);
@@ -157,14 +167,16 @@ void MLDataGenerator::setupGeneratorThreads() {
             if (i == 0) {
                 gen->startConverter(examplesCnt, datasetDestDir);
                 inputData = gen->getInputData();
-                outputData = gen->getOutputData();
+                policyData = gen->getPolicyData();
+                valueData = gen->getValueData();
             } else {
                 gen->setInputData(inputData);
-                gen->setOutputData(outputData);
+                gen->setPolicyData(policyData);
+                gen->setValueData(valueData);
             }
             // https://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
-            QThread *thread = new QThread;
-            MLDataGeneratorWorkerThread *worker = new MLDataGeneratorWorkerThread(examplesCnt / threadCnt, gen, i);
+            auto *thread = new QThread;
+            auto *worker = new MLDataGeneratorWorkerThread(examplesCnt / threadCnt, gen, i);
             worker->moveToThread(thread);
             //connect(worker, SIGNAL(error(QString)), this, SLOT(errorString(QString)));
             connect(thread, SIGNAL(started()), worker, SLOT(process()));
@@ -213,6 +225,7 @@ void MLDataGenerator::generateGUIexample() {
 
     guiDataset = guiGenerator->generateDataset();
     aiBoard::Ptr board;
+    value = -INFINITY;
     if (guiDataset.isValid()) {
         qDebug() << "generator dataset";
         board = guiDataset.getBoard();
@@ -231,6 +244,12 @@ void MLDataGenerator::generateGUIexample() {
             outputImage = targetSeq.at(frameIdx);
             displayFrame = frameIdx;
             turnSlider->setEnabled(true);
+        } else if (guiDataset.isPolicyValue()) {
+            inputImage = guiDataset.getInputImg();
+            outputImage = guiDataset.getOutputImg();
+            displayFrame = frameCnt - aiFunctions::getFreeLines(guiDataset.getBoard()->lines, frameCnt).count();
+            value = guiDataset.getOutputVal();
+            turnSlider->setEnabled(false);
         } else {
             inputImage = guiDataset.getInputImg();
             outputImage = guiDataset.getOutputImg();
@@ -256,6 +275,7 @@ void MLDataGenerator::generateGUIexample() {
 
     // print board
     qDebug().noquote().nospace() << aiFunctions::boardToString(board);
+    qDebug() << "value:" << value;
 
     // update ksquares board scene
     updateGameBoardScene(board);
@@ -264,6 +284,7 @@ void MLDataGenerator::generateGUIexample() {
     inputLbl->setPixmap(QPixmap::fromImage(inputImage).scaled(inputLbl->width(), inputLbl->height(), Qt::KeepAspectRatio));
     outputLbl->setPixmap(
             QPixmap::fromImage(outputImage).scaled(outputLbl->width(), outputLbl->height(), Qt::KeepAspectRatio));
+    valueLbl->setText(QString::number(value));
 
     // display frame progress
     turnSlider->setMaximum(frameCnt-1);

@@ -26,7 +26,8 @@ namespace AlphaDots {
         BasicStrategy,
         LSTM,
         LSTM2,
-        StageTwo
+        StageTwo,
+        StageThree
     };
 
     class MLDataGenerator : public KXmlGuiWindow, public Ui::MLDataView {
@@ -125,6 +126,7 @@ namespace AlphaDots {
 
         QImage inputImage;
         QImage outputImage;
+        double value;
 
         /// Dataset generator to use in GUI
         DatasetGenerator::Ptr guiGenerator;

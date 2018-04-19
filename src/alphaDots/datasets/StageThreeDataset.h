@@ -23,10 +23,12 @@ namespace AlphaDots {
 
         bool isLocalNPZ() override {return true;}
         std::vector<uint8_t>* getInputData() override { return input; }
-        std::vector<uint8_t>* getOutputData() override { return output; }
+        std::vector<uint8_t>* getPolicyData() override { return policy; }
+        std::vector<double>* getValueData() override { return value; }
 
         void setInputData(std::vector<uint8_t>* x) override {input = x;}
-        void setOutputData(std::vector<uint8_t>* x) override {output = x;}
+        void setPolicyData(std::vector<uint8_t> *x) override {policy = x;}
+        void setValueData(std::vector<double> *x) override {value = x;}
 
         void cleanup() override;
 
@@ -42,8 +44,10 @@ namespace AlphaDots {
         int sampleCnt;
         QString destDir;
         std::vector<size_t> dataSize;
+        std::vector<size_t> valueDataSize;
         std::vector<uint8_t> *input;
-        std::vector<uint8_t> *output;
+        std::vector<uint8_t> *policy;
+        std::vector<double> *value;
     };
 }
 

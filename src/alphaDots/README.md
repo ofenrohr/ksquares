@@ -115,6 +115,11 @@ result, this dataset generator can fully utilize the CPU.
 ksquares --generate 1000 --dataset-generator StageTwo --threads 8
 ```
 
+### Stage Three
+
+Data is generated like in Stage Two and additionally offers a value output for
+models like AlphaZeroV6 and up.
+
 ## Model evaluation
 
 The are two options to evaluate the trained models. The first option uses the native 

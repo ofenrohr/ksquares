@@ -23,10 +23,10 @@ namespace AlphaDots {
 
         bool isLocalNPZ() override {return true;}
         std::vector<uint8_t>* getInputData() override { return input; }
-        std::vector<uint8_t>* getOutputData() override { return output; }
+        std::vector<uint8_t>* getPolicyData() override { return output; }
 
         void setInputData(std::vector<uint8_t>* x) override {input = x;}
-        void setOutputData(std::vector<uint8_t>* x) override {output = x;}
+        void setPolicyData(std::vector<uint8_t> *x) override {output = x;}
 
         void cleanup() override;
 

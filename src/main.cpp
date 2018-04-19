@@ -137,6 +137,8 @@ int main(int argc, char **argv)
             datasetType = AlphaDots::LSTM2;
         } else if (datasetGeneratorParam == QStringLiteral("stagetwo")) {
             datasetType = AlphaDots::StageTwo;
+        } else if (datasetGeneratorParam == QStringLiteral("stagethree")) {
+            datasetType = AlphaDots::StageThree;
         } else {
             QMessageBox::critical(nullptr, i18n("Error"), i18n("ERROR: unknown dataset-generator"));
             return 1;

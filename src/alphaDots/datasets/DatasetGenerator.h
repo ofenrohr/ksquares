@@ -37,9 +37,11 @@ namespace AlphaDots {
          * @return allocated npz data
          */
         virtual std::vector<uint8_t>* getInputData() { return nullptr; }
-        virtual std::vector<uint8_t>* getOutputData() { return nullptr; }
+        virtual std::vector<uint8_t>* getPolicyData() { return nullptr; }
+        virtual std::vector<double>* getValueData() { return nullptr; }
         virtual void setInputData(std::vector<uint8_t>* ) {}
-        virtual void setOutputData(std::vector<uint8_t>* ) {}
+        virtual void setPolicyData(std::vector<uint8_t> *) {}
+        virtual void setValueData(std::vector<double> *) {}
 
     signals:
 

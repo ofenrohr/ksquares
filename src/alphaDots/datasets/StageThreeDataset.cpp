@@ -8,6 +8,7 @@
 #include <QtCore/QDateTime>
 #include <QtWidgets/QMessageBox>
 #include <aiEasyMediumHard.h>
+#include <cmath>
 #include "StageThreeDataset.h"
 
 
@@ -22,7 +23,7 @@ StageThreeDataset::StageThreeDataset(bool gui, int w, int h, int thread, int thr
     threadIdx = thread;
     threadCnt = threads;
 
-    qDebug() << "StageTwoDataset: ";
+    qDebug() << "StageThreeDataset: ";
     qDebug() << " |-> thread id: " << threadIdx;
     qDebug() << " |-> threads: " << threadCnt;
 }
@@ -48,19 +49,31 @@ void StageThreeDataset::startConverter(int samples, QString destinationDirectory
             heightImg,
             widthImg
     };
+    valueDataSize = {
+            sampleCnt,
+            1
+    };
     input = new std::vector<uint8_t>(sampleCnt*heightImg*widthImg);
-    output = new std::vector<uint8_t>(sampleCnt*heightImg*widthImg);
+    policy = new std::vector<uint8_t>(sampleCnt*heightImg*widthImg);
+    value = new std::vector<double>(sampleCnt);
 }
 
 void StageThreeDataset::stopConverter() {
     QString timeStr = QDateTime::currentDateTime().toString(QStringLiteral("-hh:mm-dd_MM_yyyy"));
-    std::string filename = "/StageTwo-" + std::to_string(sampleCnt) + "-" + std::to_string(width) + "x" + std::to_string(height) + timeStr.toStdString() + ".npz";
-    if (!cnpy::npz_save(destDir.toStdString()+filename, "x_train", &(*input)[0], dataSize, "w")) {
+    std::string filename = "/StageThree-" + std::to_string(sampleCnt) + "-" + std::to_string(width) + "x" + std::to_string(height) + timeStr.toStdString() + ".npz";
+    //std::string filename = "/StageThree.npz";
+    if (!cnpy::npz_save(destDir.toStdString()+filename, "input", &(*input)[0], dataSize, "w")) {
         QMessageBox::critical(nullptr, i18n("Error"), i18n("failed to save input data"));
     }
-    if (!cnpy::npz_save(destDir.toStdString()+filename, "y_train", &(*output)[0], dataSize, "a")) {
-        QMessageBox::critical(nullptr, i18n("Error"), i18n("failed to save output data"));
+    if (!cnpy::npz_save(destDir.toStdString()+filename, "policy", &(*policy)[0], dataSize, "a")) {
+        QMessageBox::critical(nullptr, i18n("Error"), i18n("failed to save policy data"));
     }
+    if (!cnpy::npz_save(destDir.toStdString()+filename, "value", &(*value)[0], valueDataSize, "a")) {
+        QMessageBox::critical(nullptr, i18n("Error"), i18n("failed to save value data"));
+    }
+    delete input;
+    delete policy;
+    delete value;
 }
 
 Dataset StageThreeDataset::generateDataset() {
@@ -74,37 +87,58 @@ Dataset StageThreeDataset::generateDataset() {
     // add hard ai moves (smart moves)
     int movesLeft = qrand() % freeLines.count() + 1;
     MLDataGenerator::makeAiMoves(board, ai, movesLeft);
+    freeLines = ai->getFreeLines(board->lines, board->linesSize);
 
     // do sth random (stupid moves)
     if (qrand() % 10 < 2) {
-        freeLines = ai->getFreeLines(board->lines, board->linesSize);
-        board->doMove(freeLines[qrand() % freeLines.count()]);
+        int rndLine = qrand() % freeLines.count();
+        board->doMove(freeLines[rndLine]);
+        freeLines.removeAt(rndLine);
     }
+
+    int currentPlayer = 1 - board->playerId;
 
     // generate images
     QImage inputImage = MLImageGenerator::generateInputImage(board);
     QImage outputImage = MLImageGenerator::generateOutputImage(board, ai);
 
+    // calculate value
+    double val = 0;
+    int freeLinesCnt = freeLines.size();
+    for (int i = 0; i < freeLinesCnt; i++) {
+        int line = ai->chooseLine(board->linesAsList(), board->squareOwners, QList<Board::Move_t>());
+        board->doMove(line);
+    }
+    for (const auto &owner: board->squareOwners) {
+        val += owner == currentPlayer ? 1 : -1;
+    }
+    val /= 0.8 * board->squareOwners.size();
+
+    // return gui dataset
     if (isGUI) {
-        return Dataset(inputImage, outputImage, board);
+        return Dataset(inputImage, outputImage, val, board);
     }
 
     // add to data
     int widthImg = MLImageGenerator::boxesToImgSize(width);
     int heightImg = MLImageGenerator::boxesToImgSize(height);
-    if (input != nullptr && output != nullptr) {
+    if (input != nullptr && policy != nullptr && value != nullptr) {
         int sampleStart = (sampleIdx * threadCnt + threadIdx) * heightImg * widthImg;
+        int valueSampleStart = sampleIdx * threadCnt + threadIdx;
         //qDebug() << "sampleStart: " << sampleStart;
         for (int y = 0; y < heightImg; y++) {
             for (int x = 0; x < widthImg; x++) {
                 input->at(sampleStart + y * widthImg + x) = (uint8_t) inputImage.pixelColor(x,y).red();
-                (*output)[sampleStart + y * widthImg + x] = (uint8_t) outputImage.pixelColor(x,y).red();
+                (*policy)[sampleStart + y * widthImg + x] = (uint8_t) outputImage.pixelColor(x,y).red();
+                (*value)[valueSampleStart] = val;
             }
         }
-    };
+    } else {
+        qDebug() << "ERROR: input, policy or value is null";
+    }
 
     //qDebug() << ".";
     sampleIdx++;
 
-    return Dataset(inputImage, outputImage, board);
+    return Dataset(inputImage, outputImage, val, board);
 }

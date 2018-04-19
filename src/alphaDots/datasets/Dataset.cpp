@@ -16,6 +16,7 @@ AlphaDots::Dataset::Dataset(const QImage &inputImg, const QImage &outputImg, con
     valid = true;
     isSeq = false;
     isSeq2 = false;
+    isPV = false;
 }
 
 AlphaDots::Dataset::Dataset(const QList<QImage> &seq, const aiBoard::Ptr &brd) :
@@ -25,6 +26,7 @@ AlphaDots::Dataset::Dataset(const QList<QImage> &seq, const aiBoard::Ptr &brd) :
     valid = true;
     isSeq = true;
     isSeq2 = false;
+    isPV = false;
 }
 
 AlphaDots::Dataset::Dataset(const QList<QImage> &inputSequence, const QList<QImage> &targetSequence,
@@ -36,6 +38,20 @@ AlphaDots::Dataset::Dataset(const QList<QImage> &inputSequence, const QList<QIma
     valid = true;
     isSeq = false;
     isSeq2 = true;
+    isPV = false;
+}
+
+AlphaDots::Dataset::Dataset(const QImage &inputImg, const QImage &outputImg, const double &outputVal,
+                            const aiBoard::Ptr &board) :
+    inputImg(inputImg),
+    outputImg(outputImg),
+    value(outputVal),
+    board(board)
+{
+    valid = true;
+    isSeq = false;
+    isSeq2 = false;
+    isPV = true;
 }
 
 const QImage &AlphaDots::Dataset::getInputImg() const {
@@ -62,6 +78,10 @@ const QList<QImage> &AlphaDots::Dataset::getTargetSequence() const {
     return targetSequence;
 }
 
+const double &AlphaDots::Dataset::getOutputVal() const {
+    return value;
+}
+
 const bool AlphaDots::Dataset::isValid() const {
     return valid;
 }
@@ -72,4 +92,8 @@ const bool AlphaDots::Dataset::isSequence() const {
 
 const bool AlphaDots::Dataset::isTrainingSequence() const {
     return isSeq2;
+}
+
+const bool AlphaDots::Dataset::isPolicyValue() const {
+    return isPV;
 }
