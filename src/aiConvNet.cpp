@@ -5,11 +5,13 @@
 #include <sstream>
 #include <QtCore/QElapsedTimer>
 #include <settings.h>
-#include <alphaDots/ModelManager.h>
 #include "aiConvNet.h"
 #include "alphaDots/ProtobufConnector.h"
 #include "alphaDots/MLDataGenerator.h"
 #include "alphaDots/MLImageGenerator.h"
+#include "alphaDots/ModelManager.h"
+#include <PolicyValueData.pb.h>
+#include <cmath>
 
 using namespace AlphaDots;
 
@@ -129,6 +131,11 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
             isTainted = true;
 			return -1;
         }
+	}
+    else if (modelInfo.type() == QStringLiteral("PolicyValue")) {
+		aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(lines, linesSize, width, height, newSquareOwners, playerId, maxPlayerId));
+		DotsAndBoxesImage img = ProtobufConnector::dotsAndBoxesImageToProtobuf(MLImageGenerator::generateInputImage(board));
+		ProtobufConnector::sendString(socket, img.SerializeAsString());
 	} else {
 		qDebug() << "ERROR: unknown model type!";
         qDebug() << modelInfo.type();
@@ -136,72 +143,89 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 	}
 
 	//qDebug() << "sending protobuf string done";
-
-	zmq::message_t reply;
-    try {
-		socket.recv(&reply);
-	} catch (zmq::error_t &err) {
-		qDebug() << "failed to receive reply: " << err.num() << " - " << err.what();
+	bool ok;
+	std::string rpl = ProtobufConnector::recvString(socket, &ok);
+	if (!ok) {
 		return -1;
 	}
-    std::string rpl = std::string(static_cast<char*>(reply.data()), reply.size());
 
 	//qDebug() << "Received: " << (char*)reply.data();
-	QImage prediction = ProtobufConnector::fromProtobuf(rpl);
+    if (modelInfo.type() == QStringLiteral("PolicyValue")) {
+		PolicyValueData policyValueData;
+		policyValueData.ParseFromString(rpl);
 
-	QList<QPoint> bestPoints;
-    int bestVal = -1;
-	QPoint linePoint;
-	std::stringstream pred;
-	for (int y = 0; y < prediction.height(); y++) {
-		for (int x = 0; x < prediction.width(); x++) {
-			int c = prediction.pixelColor(x,y).red();
-			pred << c << " ";
-			if (c < 10)
-				pred << " ";
-			if (c < 100)
-				pred << " ";
-			bool invalidPoint = true;
-			if (x % 2 == 1 && y % 2 == 0) {
-				invalidPoint = false;
+		int ret = -1;
+        int lineCnt = policyValueData.policy_size();
+		double best = -INFINITY;
+		for (int i = 0; i < lineCnt; i++) {
+			if (lines[i]) {
+				continue;
 			}
-			if (x % 2 == 0 && y % 2 == 1) {
-				invalidPoint = false;
+            if (policyValueData.policy(i) > best) {
+				best = policyValueData.policy(i);
+				ret = i;
 			}
-			if (x == 0 || y == 0 || x == prediction.width()-1 || y == prediction.height()-1) {
-				invalidPoint = true;
+        }
+
+        delete[] lines;
+		return ret;
+	} else {
+		QImage prediction = ProtobufConnector::fromProtobuf(rpl);
+
+		QList<QPoint> bestPoints;
+		int bestVal = -1;
+		QPoint linePoint;
+		std::stringstream pred;
+		for (int y = 0; y < prediction.height(); y++) {
+			for (int x = 0; x < prediction.width(); x++) {
+				int c = prediction.pixelColor(x, y).red();
+				pred << c << " ";
+				if (c < 10)
+					pred << " ";
+				if (c < 100)
+					pred << " ";
+				bool invalidPoint = true;
+				if (x % 2 == 1 && y % 2 == 0) {
+					invalidPoint = false;
+				}
+				if (x % 2 == 0 && y % 2 == 1) {
+					invalidPoint = false;
+				}
+				if (x == 0 || y == 0 || x == prediction.width() - 1 || y == prediction.height() - 1) {
+					invalidPoint = true;
+				}
+				if (lines[ProtobufConnector::pointToLineIndex(QPoint(x, y), width)]) {
+					invalidPoint = true;
+				}
+				if (c > bestVal && !invalidPoint) {
+					bestPoints.clear();
+					bestVal = c;
+					//linePoint.setX(x);
+					//linePoint.setY(y);
+					linePoint = QPoint(x, y);
+				}
+				if (c == bestVal && !invalidPoint) {
+					bestPoints.append(QPoint(x, y));
+				}
 			}
-            if (lines[ProtobufConnector::pointToLineIndex(QPoint(x,y), width)]) {
-				invalidPoint = true;
-			}
-			if (c > bestVal && !invalidPoint) {
-				bestPoints.clear();
-                bestVal = c;
-				//linePoint.setX(x);
-				//linePoint.setY(y);
-				linePoint = QPoint(x,y);
-			}
-            if (c == bestVal && !invalidPoint) {
-				bestPoints.append(QPoint(x,y));
-			}
+			pred << "\n";
 		}
-        pred << "\n";
+		//qDebug().noquote() << pred.str().c_str();
+
+		//qDebug() << "Highest value:" << bestVal << "at" << bestPoints;
+		if (bestPoints.count() > 1) {
+			linePoint = bestPoints[rand() % bestPoints.count()];
+			//qDebug() << "selected point: " << linePoint;
+		}
+
+
+		int ret = ProtobufConnector::pointToLineIndex(linePoint, width);
+
+		turnTime = moveTimer.elapsed();
+
+		//qDebug() << "turn time = " << turnTime;
+
+		delete[] lines;
+		return ret;
 	}
-	//qDebug().noquote() << pred.str().c_str();
-
-	//qDebug() << "Highest value:" << bestVal << "at" << bestPoints;
-	if (bestPoints.count() > 1) {
-		linePoint = bestPoints[rand() % bestPoints.count()];
-        //qDebug() << "selected point: " << linePoint;
-	}
-
-
-	int ret = ProtobufConnector::pointToLineIndex(linePoint, width);
-
-	turnTime = moveTimer.elapsed();
-
-    //qDebug() << "turn time = " << turnTime;
-
-	delete lines;
-    return ret;
 }

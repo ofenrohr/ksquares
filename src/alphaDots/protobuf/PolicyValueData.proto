@@ -1,0 +1,8 @@
+syntax = "proto2";
+
+package AlphaDots;
+
+message PolicyValueData {
+    repeated double policy = 1;
+    required double value = 2;
+}

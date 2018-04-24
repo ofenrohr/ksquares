@@ -193,29 +193,20 @@ bool ProtobufConnector::sendString(zmq::socket_t &socket, std::string msg) {
     return true;
 }
 
-std::string ProtobufConnector::recvString(zmq::socket_t &socket) {
+std::string ProtobufConnector::recvString(zmq::socket_t &socket, bool *ok) {
 	zmq::message_t reply;
-    bool done = false;
-    int tries = 0;
-    while (!done && tries < 3) {
-        try {
-            if (!socket.recv(&reply)) {
-                qDebug() << "ERROR: failed to recv message via zmq" << errno;
-            }
-            done = true;
-        } catch (zmq::error_t &ex) {
-            qDebug() << "zmq recv error: " << ex.num();
-            qDebug() << "msg: " << ex.what();
-            if (ex.num() == 4) {
-                qDebug() << "ignoring error...";
-                qDebug() << reply.data();
-                done = true;
-            }
+    *ok = true;
+    try {
+        if (!socket.recv(&reply)) {
+            qDebug() << "ERROR: failed to recv message via zmq" << errno;
+            *ok = false;
+            return "error";
         }
-        tries++;
-    }
-    if (!done) {
-        return "";
+    } catch (zmq::error_t &ex) {
+        qDebug() << "zmq recv error: " << ex.num();
+        qDebug() << "msg: " << ex.what();
+        *ok = false;
+        return "error";
     }
     std::string rpl = std::string(static_cast<char*>(reply.data()), reply.size());
     return rpl;

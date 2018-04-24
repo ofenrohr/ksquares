@@ -12,6 +12,8 @@
 #include <DotsAndBoxesImage.pb.h>
 #include <AlphaDotsModel.pb.h>
 #include <ModelList.pb.h>
+#include <AlphaZeroMCTSNode.h>
+#include <aiBoard.h>
 #include "ModelInfo.h"
 
 namespace AlphaDots {
@@ -34,6 +36,7 @@ namespace AlphaDots {
          */
         static QImage fromProtobuf(std::string msg);
 
+
         /**
          * Get model list.
          * @return
@@ -51,7 +54,7 @@ namespace AlphaDots {
 
         static bool sendString(zmq::socket_t &socket, std::string msg);
 
-        static std::string recvString(zmq::socket_t &socket);
+        static std::string recvString(zmq::socket_t &socket, bool *ok);
 
     private:
         static QList<ModelInfo> cachedModelList;

@@ -7,13 +7,16 @@
 
 #include <cmath>
 #include <alphaDots/ProtobufConnector.h>
+#include <PolicyValueData.pb.h>
+#include <alphaDots/ModelManager.h>
+#include <alphaDots/MLImageGenerator.h>
 
 using namespace AlphaDots;
 
 aiAlphaZeroMCTS::aiAlphaZeroMCTS(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel,
-                                 int thinkTime) :
+                                 int thinkTime, ModelInfo model=ModelInfo()) :
         KSquaresAi(newWidth, newHeight), playerId(newPlayerId), maxPlayerId(newMaxPlayerId), level(newLevel),
-        mctsTimeout(thinkTime)
+        mctsTimeout(thinkTime), context(zmq::context_t(1)), socket(zmq::socket_t(context, ZMQ_REQ))
 {
     width = newWidth;
     height = newHeight;
@@ -22,11 +25,51 @@ aiAlphaZeroMCTS::aiAlphaZeroMCTS(int newPlayerId, int newMaxPlayerId, int newWid
     for (int i = 0; i < linesSize; i++)
         lines[i] = false;
     mctsTimer = QElapsedTimer();
-    simAi = KSquaresAi::Ptr(new aiConvNet(0, 1, width, height, 0, thinkTime, ProtobufConnector::getModelByName(QStringLiteral("alphaZeroV5"))));
+    isTainted = false;
+    //simAi = KSquaresAi::Ptr(new aiConvNet(0, 1, width, height, 0, thinkTime, ProtobufConnector::getModelByName(QStringLiteral("alphaZeroV5"))));
+
+	modelServerPort = ModelManager::getInstance().ensureProcessRunning(model.name(), width, height);
+	if (modelServerPort < 0) {
+		qDebug() << "ensureProcessRunning failed!";
+		isTainted = true;
+	}
+
+    try {
+        socket.connect("tcp://127.0.0.1:" + std::to_string(modelServerPort));
+    } catch (zmq::error_t err) {
+        qDebug() << "Connection failed! " << err.num() << ": " << err.what();
+        isTainted = true;
+    }
 }
 
 aiAlphaZeroMCTS::~aiAlphaZeroMCTS() {
     delete[] lines;
+}
+
+bool aiAlphaZeroMCTS::predictPolicyValue(AlphaZeroMCTSNode::Ptr parentNode, aiBoard::Ptr board) {
+    // send prediction request
+    DotsAndBoxesImage img = ProtobufConnector::dotsAndBoxesImageToProtobuf(MLImageGenerator::generateInputImage(board));
+    ProtobufConnector::sendString(socket, img.SerializeAsString());
+
+    // receive prediction from model server
+    bool ok = false;
+    std::string rpl = ProtobufConnector::recvString(socket, &ok);
+    if (!ok) {
+        isTainted = true;
+        return false;
+    }
+    PolicyValueData policyValueData;
+    policyValueData.ParseFromString(rpl);
+
+    // put data into mcts nodes
+    int lineCnt = policyValueData.policy_size();
+    parentNode->prior = policyValueData.value();
+    for (const auto &child : parentNode->children) {
+        child->value = policyValueData.policy(child->moveSequence[0]);
+        child->fullValue = child->value;
+    }
+
+    return true;
 }
 
 int aiAlphaZeroMCTS::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners,
@@ -120,7 +163,6 @@ AlphaZeroMCTSNode::Ptr aiAlphaZeroMCTS::selection(AlphaZeroMCTSNode::Ptr node) {
         for (int i : moveSeqToNode) {
             board->doMove(i);
         }
-        KSquares::BoardAnalysis analysis = BoardAnalysisFunctions::analyseBoard(board);
 
         for (int i = moveSeqToNode.size() - 1; i >= 0; i--)
         {

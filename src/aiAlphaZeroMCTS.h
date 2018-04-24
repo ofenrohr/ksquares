@@ -7,14 +7,19 @@
 
 
 #include <QtCore/QElapsedTimer>
+#include <zmq.hpp>
 #include "aicontroller.h"
 #include "AlphaZeroMCTSNode.h"
 
 namespace AlphaDots {
     class aiAlphaZeroMCTS : public KSquaresAi {
     public:
+        //==========================
+        // KSquaresAi interface stuff
+        //==========================
+
         aiAlphaZeroMCTS(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel,
-                        int thinkTime = 5000);
+                        int thinkTime = 5000, ModelInfo model = );
 
         ~aiAlphaZeroMCTS();
 
@@ -25,9 +30,24 @@ namespace AlphaDots {
 
         virtual bool enabled() { return true; }
 
-        virtual bool tainted() { return false; }
+        virtual bool tainted() { return isTainted; }
 
         virtual long lastMoveTime() { return turnTime; }
+
+
+        //==========================
+        // AlphaZero stuff
+        //==========================
+
+        /**
+         * Send a board to the python model server and write the result to the parentNode and its children.
+         * The parentNode's prior will be set to the predicted value and the child nodes' value is set to the
+         * predicted policy probabilities.
+         * @param parentNode parent AlphaZero MCTS Node
+         * @param board current board state that's associated with the parentNode
+         * @return true if there was no error, false otherwise
+         */
+        bool predictPolicyValue(AlphaZeroMCTSNode::Ptr parentNode, aiBoard::Ptr board);
 
     protected:
         int mcts();
@@ -52,12 +72,16 @@ namespace AlphaDots {
         QList<int> squareOwners;
         /// Array of the lines on the board
         bool *lines;
+        /// tainted flag
+        bool isTainted;
         /// mcts tree root node
         AlphaZeroMCTSNode::Ptr mctsRootNode;
         /// initial board
         aiBoard::Ptr board;
 
-        KSquaresAi::Ptr simAi;
+        int modelServerPort;
+        zmq::context_t context;
+        zmq::socket_t socket;
 
         /// time logging
         long turnTime;

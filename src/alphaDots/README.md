@@ -1,12 +1,15 @@
-# Alpha Dots
+# KSquares - AlphaDots
 
-This part of KSquares is used for
-* generating training data for Alpha Dots and
-* evaluating trained models.
+KSquares is used for
+
+* generating training data for [AlphaDots](AlphaDots.html)
+* viewing training data
+* evaluating trained models
+* playing Dots and Boxes
 
 ## Setup
 
-Please make sure to corectly configure Alpha Dots in KSquares by entering the
+Please make sure to corectly configure AlphaDots in KSquares by entering the
 Alpha Dots directory in KSquares -> Settings -> Configure KSquares -> Computer Player.
 
 Clone this git repository to get Alpha Dots:
@@ -26,10 +29,13 @@ ksquares --show-generate
 You can only have one board size per dataset. Models can be trained on many datasets.
 
 All dataset generators accept the following optional command line arguments:
+
 * `--dataset-dest` Destination directory for the data (.npz file)
 * `--dataset-width` Board width in boxes
 * `--dataset-height` Board height in boxes
 * `--threads` Number of threads
+
+![data visualization with KSquares](ksquares_show_generate.png)
 
 ### First Try
 
@@ -50,6 +56,10 @@ mkdir firstTryDataset
 ksquares --generate 1000 --dataset-generator firstTry --dataset-dest firstTryDataset
 ../alphaDots/datasetConverter/convert.py --dataset-dir firstTryDataset --output-file firstTry.npz --debug
 ```
+
+![input image](input.png)
+
+![output image](output.png)
 
 ### Stage One
 
@@ -79,7 +89,12 @@ viable lines in one target image.
 ksquares --generate 1000 --dataset-generator basicStrategy --dataset-width 7 --dataset-height 5
 ```
 
-### Sequence 
+![Basic Strategy input image](basicStrategy_input.png)
+
+![Basic Strategy output image](basicStrategy_output.png)
+
+
+### [Sequence](SequenceData.html)
 
 Despite the efforts in *Basic Strategy*, the trained models were not able to compete
 even with the Medium AI. The main innovation compared to the Easy AI is the ability
@@ -98,9 +113,12 @@ This dataset is made of full Dots and Boxes games, played by two Hard AIs.
 ksquares --generate 1000 --dataset-generator LSTM
 ```
 
+![sequence data](test2.gif)
+
 ### Training Sequence
 
 This dataset is like the Sequence dataset but with "Basic Strategy" target images.
+
 ```
 ksquares --generate 1000 --dataset-generator LSTM2
 ```
@@ -110,7 +128,8 @@ ksquares --generate 1000 --dataset-generator LSTM2
 The data is generated just like Stage One, but this dataset generator uses 
 [cnpy](https://github.com/rogersce/cnpy) to directly write the .npz file. This removes
 the overhead of sending the data to a separate, single-threaded python process. As a
-result, this dataset generator can fully utilize the CPU. 
+result, this dataset generator can fully utilize the CPU and is much faster. 
+
 ```
 ksquares --generate 1000 --dataset-generator StageTwo --threads 8
 ```
@@ -128,20 +147,23 @@ optimized for fast evaluation. In both cases, a selection of models will be eval
 by playing against the KSquares AIs `Easy`, `Medium` and `Hard`. 
 
 Start the slow, GUI based model evaluation with:
+
 ```
 ksquares --model-evaluation
 ```
 
 Start the multi-threaded fast model evaluation with:
+
 ```
 ksquares --fast-model-evaluation --threads 8
 ```
 
 Both evaluation modes support the following optional arguments:
+
 * `--models MODELS` 
   By default, all models will be evaluated. If you are only interested in a specific
   subset, use this optional argument. You can get a list of all available models with `ksquares --model-list`
 * `--dataset-width WIDTH` Board width measured in boxes.
 * `--dataset-height HEIGHT` Board height measured in boxes.
 
-
+![slow model evaluation with KSquares](ksquares_model_evaluation.png)
