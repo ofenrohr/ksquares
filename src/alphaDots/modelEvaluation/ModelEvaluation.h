@@ -24,7 +24,7 @@ namespace AlphaDots {
          * @param models Empty string to evaluate all available models.
          * @param fast Run fast multi-threaded evaluation
          */
-        ModelEvaluation(QString models, bool fast=false, int threadCnt=4);
+        ModelEvaluation(QString models, bool fast=false, int threadCnt=4, int games=10);
 
 		~ModelEvaluation();
 

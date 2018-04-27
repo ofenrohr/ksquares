@@ -97,6 +97,7 @@ target_link_libraries(ksquares
     ${ZeroMQ_LIBRARY}
 	${PROTOBUF_LIBRARY}
     ${ZLIB_LIBRARIES}
+    GSL::gsl
 )
 
 install(TARGETS ksquares ${KDE_INSTALL_TARGETS_DEFAULT_ARGS})

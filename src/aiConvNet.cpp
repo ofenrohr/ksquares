@@ -80,6 +80,7 @@ aiConvNet::~aiConvNet() {
 int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners,
                           const QList<Board::Move> &lineHistory) {
 	//qDebug() << "aiConvNet chooseLine";
+	QCoreApplication::processEvents();
 	QElapsedTimer moveTimer;
 	moveTimer.start();
 

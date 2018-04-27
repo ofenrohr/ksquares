@@ -26,7 +26,8 @@ arguments. To explore some of the datasets with a graphical user interface, run 
 ksquares --show-generate
 ```
 
-You can only have one board size per dataset. Models can be trained on many datasets.
+You can only have one board size per dataset. Models can be trained on many datasets 
+of different size.
 
 All dataset generators accept the following optional command line arguments:
 
@@ -137,7 +138,20 @@ ksquares --generate 1000 --dataset-generator StageTwo --threads 8
 ### Stage Three
 
 Data is generated like in Stage Two and additionally offers a value output for
-models like AlphaZeroV6 and up.
+models like AlphaZeroV6 and up. The value is designed to approximate the chance 
+of winning the game where 1 means winning and -1 means losing the game. It is
+calculated by playing the game to its end and then evaluating the number of 
+captured boxes for each side as follows:
+
+```
+value = (OwnBoxes - EnemyBoxes) / (0.8 * TotalBoxes)
+```
+
+Create a Stage Three dataset by running:
+
+```
+ksquares --generate 1000 --dataset-generator StageThree --threads 8
+```
 
 ## Model evaluation
 
@@ -146,17 +160,24 @@ KSquares Dots and Boxes engine and displays all games while the second option is
 optimized for fast evaluation. In both cases, a selection of models will be evaluated
 by playing against the KSquares AIs `Easy`, `Medium` and `Hard`. 
 
+
+### Slow GUI evaluation
+
 Start the slow, GUI based model evaluation with:
 
 ```
 ksquares --model-evaluation
 ```
 
+### Fast evaluation
+
 Start the multi-threaded fast model evaluation with:
 
 ```
 ksquares --fast-model-evaluation --threads 8
 ```
+
+### Common arguments
 
 Both evaluation modes support the following optional arguments:
 
@@ -166,4 +187,21 @@ Both evaluation modes support the following optional arguments:
 * `--dataset-width WIDTH` Board width measured in boxes.
 * `--dataset-height HEIGHT` Board height measured in boxes.
 
+### Example results
+
+All games are played on a 5x5 board. The 5x5 board size is reserved for evaluation. No model was ever trained on any dataset with 5x5 boards.
+
+Model|Games|Wins vs. Easyin 100 games|Wins vs. Mediumin 100 games|Wins vs. Hardin 100 games|Errors|Ends with Double Dealing|Preemtive Sacrifices
+---|---|---|---|---|---|---|---
+FirstTry|300|1|0|0|0|0|0
+StageOne 3x3|300|58|27|6|0|0|0
+StageOne 5x5|300|0|1|0|0|0|0
+BasicStrategy|300|55|27|7|0|0|0
+AlphaZeroV1|300|82|80|35|0|0|0
+AlphaZeroV3|300|79|94|50|0|0|0
+AlphaZeroV5|300|90|75|45|0|0|0
+AlphaZeroV7|300|96|80|46|0|0|0
+
+### Screenshot
 ![slow model evaluation with KSquares](ksquares_model_evaluation.png)
+

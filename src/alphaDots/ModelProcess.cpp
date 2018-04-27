@@ -34,6 +34,7 @@ ModelProcess::ModelProcess(QString model, int boxesWidth, int boxesHeight, int p
         qDebug() << "ERROR: can't start model server!";
         modelPort = -1;
     }
+    modelServer->processEvents();
 }
 
 ModelProcess::~ModelProcess() {

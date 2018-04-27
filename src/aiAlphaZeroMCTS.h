@@ -8,8 +8,11 @@
 
 #include <QtCore/QElapsedTimer>
 #include <zmq.hpp>
+#include <alphaDots/ProtobufConnector.h>
 #include "aicontroller.h"
 #include "AlphaZeroMCTSNode.h"
+#include <gsl/gsl_randist.h>
+#include <klocalizedstring.h>
 
 namespace AlphaDots {
     class aiAlphaZeroMCTS : public KSquaresAi {
@@ -19,14 +22,14 @@ namespace AlphaDots {
         //==========================
 
         aiAlphaZeroMCTS(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel,
-                        int thinkTime = 5000, ModelInfo model = );
+                        int thinkTime = 5000, ModelInfo model = ProtobufConnector::getModelByName(i18n("AlphaZeroV7")));
 
         ~aiAlphaZeroMCTS();
 
         int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners,
                        const QList<Board::Move> &lineHistory);
 
-        QString getName() { return QStringLiteral("alphazeromcts"); }
+        QString getName() { return i18n("alphazeromcts"); }
 
         virtual bool enabled() { return true; }
 
@@ -47,16 +50,18 @@ namespace AlphaDots {
          * @param board current board state that's associated with the parentNode
          * @return true if there was no error, false otherwise
          */
-        bool predictPolicyValue(AlphaZeroMCTSNode::Ptr parentNode, aiBoard::Ptr board);
+        bool predictPolicyValue(const AlphaZeroMCTSNode::Ptr &parentNode, const aiBoard::Ptr &board);
+
+        void applyDirichletNoiseToChildren(const AlphaZeroMCTSNode::Ptr &parentNode, double alpha);
 
     protected:
         int mcts();
 
-        AlphaZeroMCTSNode::Ptr selection(AlphaZeroMCTSNode::Ptr node);
+        AlphaZeroMCTSNode::Ptr selection(const AlphaZeroMCTSNode::Ptr &node);
 
-        void simulation(AlphaZeroMCTSNode::Ptr node);
+        void simulation(const AlphaZeroMCTSNode::Ptr &node);
 
-        void backpropagation(AlphaZeroMCTSNode::Ptr node);
+        void backpropagation(const AlphaZeroMCTSNode::Ptr &node);
 
         /// The ID of the player this AI belongs to
         int playerId;
@@ -79,9 +84,13 @@ namespace AlphaDots {
         /// initial board
         aiBoard::Ptr board;
 
+        // model server
         int modelServerPort;
         zmq::context_t context;
         zmq::socket_t socket;
+
+        // gsl random number generator
+        gsl_rng *rng;
 
         /// time logging
         long turnTime;

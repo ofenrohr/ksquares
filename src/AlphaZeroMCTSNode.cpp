@@ -11,6 +11,8 @@ AlphaZeroMCTSNode::AlphaZeroMCTSNode() {
     fullValue = 0;
     value = 0;
     prior = 0;
+    move = -1;
+    children.clear();
 }
 
 AlphaZeroMCTSNode::AlphaZeroMCTSNode(const AlphaZeroMCTSNode &node) {
@@ -20,6 +22,7 @@ AlphaZeroMCTSNode::AlphaZeroMCTSNode(const AlphaZeroMCTSNode &node) {
     value = node.value;
     prior = node.prior;
     parent = node.parent;
+    move = node.move;
     children = node.children;
 }
 
@@ -32,15 +35,18 @@ void AlphaZeroMCTSNode::createUUID() {
 QString AlphaZeroMCTSNode::toDotString() {
     createUUID();
     QString ret;
-    ret.append(getNodeName() + QStringLiteral(" [label=\"V: ") + QString::number(value) +
-               QStringLiteral(", P: ") + QString::number(prior) +QStringLiteral("\"];\n")
+    ret.append(getNodeName() + QStringLiteral(" [label=\"")+QString::number(move)+QStringLiteral(", V: ") +
+               QString::number(value, 'f', 3) + QStringLiteral(", N: ") + QString::number(visitCnt) +
+               QStringLiteral(", P: ") + QString::number(prior, 'f', 2) + QStringLiteral("\", shape=\"box\"];\n")
     );
     for (auto &child : children) {
-        child->createUUID();
-        ret.append(child->toDotString());
-        ret.append(getNodeName() + QStringLiteral(" -> ") + child->getNodeName() + QStringLiteral(";\n"));
+        if (child->visitCnt > 0) {
+            child->createUUID();
+            ret.append(child->toDotString());
+            ret.append(getNodeName() + QStringLiteral(" -> ") + child->getNodeName() + QStringLiteral(";\n"));
+        }
     }
-    return QString();
+    return ret;
 }
 
 QString AlphaZeroMCTSNode::getNodeName() {

@@ -48,8 +48,9 @@ Dataset SequenceDataset::generateDataset() {
             qDebug() << "sending data failed!";
             return Dataset();
         }
-        std::string rpl = ProtobufConnector::recvString(*socket);
-        if (rpl != "ok") {
+        bool ok = false;
+        std::string rpl = ProtobufConnector::recvString(*socket, &ok);
+        if (!ok || rpl != "ok") {
             qDebug() << "process sent invalid reply: " << rpl.c_str();
             return Dataset();
         }

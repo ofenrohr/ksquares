@@ -6,6 +6,7 @@
 #include "aiConvNet.h"
 
 #include <cmath>
+#include <chrono>
 #include <alphaDots/ProtobufConnector.h>
 #include <PolicyValueData.pb.h>
 #include <alphaDots/ModelManager.h>
@@ -14,62 +15,44 @@
 using namespace AlphaDots;
 
 aiAlphaZeroMCTS::aiAlphaZeroMCTS(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel,
-                                 int thinkTime, ModelInfo model=ModelInfo()) :
+                                 int thinkTime, ModelInfo model) :
         KSquaresAi(newWidth, newHeight), playerId(newPlayerId), maxPlayerId(newMaxPlayerId), level(newLevel),
         mctsTimeout(thinkTime), context(zmq::context_t(1)), socket(zmq::socket_t(context, ZMQ_REQ))
 {
+    // setup basics
     width = newWidth;
     height = newHeight;
     linesSize = toLinesSize(width, height);
     lines = new bool[linesSize];
-    for (int i = 0; i < linesSize; i++)
+    for (int i = 0; i < linesSize; i++) {
         lines[i] = false;
+    }
     mctsTimer = QElapsedTimer();
     isTainted = false;
-    //simAi = KSquaresAi::Ptr(new aiConvNet(0, 1, width, height, 0, thinkTime, ProtobufConnector::getModelByName(QStringLiteral("alphaZeroV5"))));
 
+    // get a model server
 	modelServerPort = ModelManager::getInstance().ensureProcessRunning(model.name(), width, height);
 	if (modelServerPort < 0) {
 		qDebug() << "ensureProcessRunning failed!";
 		isTainted = true;
 	}
 
+    // connect to model server
     try {
         socket.connect("tcp://127.0.0.1:" + std::to_string(modelServerPort));
-    } catch (zmq::error_t err) {
+    } catch (zmq::error_t &err) {
         qDebug() << "Connection failed! " << err.num() << ": " << err.what();
         isTainted = true;
     }
+
+    // init gsl
+    rng = gsl_rng_alloc(gsl_rng_taus);
+    gsl_rng_set(rng, std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
 }
 
 aiAlphaZeroMCTS::~aiAlphaZeroMCTS() {
     delete[] lines;
-}
-
-bool aiAlphaZeroMCTS::predictPolicyValue(AlphaZeroMCTSNode::Ptr parentNode, aiBoard::Ptr board) {
-    // send prediction request
-    DotsAndBoxesImage img = ProtobufConnector::dotsAndBoxesImageToProtobuf(MLImageGenerator::generateInputImage(board));
-    ProtobufConnector::sendString(socket, img.SerializeAsString());
-
-    // receive prediction from model server
-    bool ok = false;
-    std::string rpl = ProtobufConnector::recvString(socket, &ok);
-    if (!ok) {
-        isTainted = true;
-        return false;
-    }
-    PolicyValueData policyValueData;
-    policyValueData.ParseFromString(rpl);
-
-    // put data into mcts nodes
-    int lineCnt = policyValueData.policy_size();
-    parentNode->prior = policyValueData.value();
-    for (const auto &child : parentNode->children) {
-        child->value = policyValueData.policy(child->moveSequence[0]);
-        child->fullValue = child->value;
-    }
-
-    return true;
+    gsl_rng_free(rng);
 }
 
 int aiAlphaZeroMCTS::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners,
@@ -114,17 +97,29 @@ int aiAlphaZeroMCTS::mcts() {
 
     int mctsIterations = 0;
     // fill mcts tree
-    while (!mctsTimer.hasExpired(mctsTimeout))
+    //while (!mctsTimer.hasExpired(mctsTimeout))
+    while (mctsIterations < 100)
     {
+        applyDirichletNoiseToChildren(mctsRootNode, 0.03);
+
         AlphaZeroMCTSNode::Ptr node = selection(mctsRootNode);
         if (node.isNull()) { // sth failed
             qDebug() << "WARNING: MCTS selection step failed";
             break;
         }
         simulation(node);
+        if (node.isNull()) { // sth failed
+            qDebug() << "WARNING: MCTS simulation step failed";
+            break;
+        }
         backpropagation(node);
+        if (node.isNull()) { // sth failed
+            qDebug() << "WARNING: MCTS backpropagation step failed";
+            break;
+        }
 
         mctsIterations++;
+        QCoreApplication::processEvents();
     }
 
     qDebug() << "MCTS iterations: " << mctsIterations;
@@ -132,125 +127,152 @@ int aiAlphaZeroMCTS::mcts() {
     // select most promising move
     // TODO: update
     int line = -1;
+    long childVisitSum = 0;
+    for (const auto &child : mctsRootNode->children) {
+        childVisitSum += child->visitCnt;
+    }
+    if (childVisitSum == 0) {
+        qDebug() << "ERROR: childVisitSum = 0, children.size() = " << mctsRootNode->children.size();
+        return -1;
+    }
     long mostVisited = -1;
-    AlphaZeroMCTSNode::Ptr retNode;
-    for (int i = 0; i < mctsRootNode->children.size(); i++)
-    {
-        if (mctsRootNode->children[i]->visitCnt > mostVisited)
-        {
-            line = mctsRootNode->children[i]->moveSequence[0];
-            mostVisited = mctsRootNode->children[i]->visitCnt;
-            retNode = mctsRootNode->children[i];
+    for (const auto &child : mctsRootNode->children) {
+        double pi_a_given_s0 = (double)child->visitCnt / (double)childVisitSum;
+        if (pi_a_given_s0 > mostVisited) {
+            mostVisited = pi_a_given_s0;
+            line = child->move;
+            child->value = pi_a_given_s0;
         }
     }
+
+    // debug stuff
     qDebug().noquote() << "mcts node:" << mctsRootNode->toString();
-    qDebug().noquote() << mctsRootNode->toDotString();
+    QFile graph(QStringLiteral("/tmp/AlphaZeroMCTS.dot"));
+    if (graph.open(QIODevice::ReadWrite | QIODevice::Truncate | QIODevice::Text)) {
+        QTextStream stream(&graph);
+        stream << "digraph {";
+        stream << mctsRootNode->toDotString();
+        stream << "}";
+    }
+    /*
+    ExternalProcess renderDot(i18n("/usr/bin/dot"),
+                              QStringList() << i18n("-Tpdf") << i18n("/tmp/AlphaZeroMCTS.dot") << i18n("-o") << i18n("/tmp/AlphaZeroMCTS.pdf"));
+    renderDot.startExternalProcess();
+    while (renderDot.isRunning()) {
+        long ms = 40;
+        struct timespec ts = { ms / 1000, (ms % 1000) * 1000 * 1000 };
+        nanosleep(&ts, NULL);
+    }
+     */
+
+
     return line;
 }
 
-AlphaZeroMCTSNode::Ptr aiAlphaZeroMCTS::selection(AlphaZeroMCTSNode::Ptr node) {
+AlphaZeroMCTSNode::Ptr aiAlphaZeroMCTS::selection(const AlphaZeroMCTSNode::Ptr &node) {
     if (node->children.isEmpty()) // reached leaf of mcts tree
     {
-        // compute (game) children of (mcts) leaf node
-        QList<int> moveSeqToNode;
-        AlphaZeroMCTSNode::Ptr tmpNode = node;
-        while (!tmpNode->parent.isNull())
-        {
-            for (int i = tmpNode->moveSequence.size() - 1; i >= 0; i--)
-                moveSeqToNode.prepend(tmpNode->moveSequence[i]);
-            tmpNode = tmpNode->parent;
-        }
-        for (int i : moveSeqToNode) {
-            board->doMove(i);
-        }
-
-        for (int i = moveSeqToNode.size() - 1; i >= 0; i--)
-        {
-            board->undoMove(moveSeqToNode[i]);
-        }
-        for (const auto &moveSeq : *analysis.moveSequences) {
-            AlphaZeroMCTSNode::Ptr newNode(new AlphaZeroMCTSNode());
-            newNode->moveSequence.append(moveSeq);
-            newNode->parent = node;
-            if (qrand() % 2)
-                node->children.append(newNode);
-            else
-                node->children.prepend(newNode);
+        // create children
+        for (int i = 0; i < board->linesSize; i++) {
+            if (!board->lines[i]) {
+                AlphaZeroMCTSNode::Ptr child = AlphaZeroMCTSNode::Ptr(new AlphaZeroMCTSNode());
+                child->move = i;
+                child->visitCnt = 0;
+                child->fullValue = child->value = child->prior = 0.0;
+                node->children.append(child);
+            }
         }
         return node;
     }
 
     // actual selection
-    AlphaZeroMCTSNode::Ptr selectedNode;
+    AlphaZeroMCTSNode::Ptr selectedNode(nullptr);
     double bestVal = -INFINITY;
-    double C = 4;
+    double C = 1.0;
     double visitSum = 0;
     for (const auto &child : node->children) {
         visitSum += child->visitCnt;
     }
-    for (int i = 0; i < node->children.size(); i++)
-    {
-        double pucbVal = node->children[i]->value + C * node->children[i]->prior * (sqrt(visitSum) / (1 + node->visitCnt));
-        if (pucbVal > bestVal)
-        {
+    for (int i = 0; i < node->children.size(); i++) {
+        double pucbVal = node->children[i]->value + C * node->children[i]->prior * (sqrt(visitSum) / (1.0 + (double)node->visitCnt));
+        if (pucbVal > bestVal) {
             bestVal = pucbVal;
             selectedNode = node->children[i];
         }
     }
 
-    if (selectedNode.isNull())
-    {
+    if (selectedNode.isNull()) {
         qDebug() << "selected node is null, no child has been selected?!";
         return selectedNode;
     }
 
+    board->doMove(selectedNode->move);
+
     return selection(selectedNode);
 }
 
-void aiAlphaZeroMCTS::simulation(AlphaZeroMCTSNode::Ptr node) {
-    QVector<int> simulationHistory;
-    int missingLines = 0;
-    QList<bool> linesList;
-    for (int i = 0; i < board->linesSize; i++) {
-        if (!board->lines[i]) {
-            missingLines++;
-            linesList.append(false);
-        } else {
-            linesList.append(true);
-        }
-    }
-    simulationHistory.reserve(missingLines);
-    // do simulation
-    while (missingLines > 0)
-    {
-        int line = simAi->chooseLine(linesList, QList<int>(), QList<Board::Move_t>());
-        board->doMove(line);
-        linesList[line] = true;
-        simulationHistory.append(line);
-        missingLines--;
-    }
-    // get simulation result
-    int tmp = 0;
-    for (int squareOwner : board->squareOwners) {
-        tmp += squareOwner == playerId ? 1 : -1;
-    }
-    node->fullValue = tmp > 0 ? 1 : (tmp < 0 ? -1 : 0);
-    node->value = node->fullValue;
-    // undo simulation
-    for (int i = simulationHistory.size() -1; i >= 0; i--)
-    {
-        board->undoMove(simulationHistory[i]);
-    }
+void aiAlphaZeroMCTS::simulation(const AlphaZeroMCTSNode::Ptr &node) {
+    // fill values
+    predictPolicyValue(node, board);
 }
 
-void aiAlphaZeroMCTS::backpropagation(AlphaZeroMCTSNode::Ptr node) {
-    AlphaZeroMCTSNode::Ptr tmpNode = node;
-    //int addValue = node->value;
-    while (!tmpNode->parent.isNull())
-    {
+bool aiAlphaZeroMCTS::predictPolicyValue(const AlphaZeroMCTSNode::Ptr &parentNode, const aiBoard::Ptr &board) {
+    // send prediction request
+    DotsAndBoxesImage img = ProtobufConnector::dotsAndBoxesImageToProtobuf(MLImageGenerator::generateInputImage(board));
+    if (!ProtobufConnector::sendString(socket, img.SerializeAsString())) {
+        qDebug() << "failed to send message to model server";
+        isTainted = true;
+        return false;
+    }
+
+    // receive prediction from model server
+    bool ok = false;
+    std::string rpl = ProtobufConnector::recvString(socket, &ok);
+    if (!ok) {
+        qDebug() << "failed to receive message from model server";
+        isTainted = true;
+        return false;
+    }
+    //qDebug() << QString::fromStdString(rpl);
+    PolicyValueData policyValueData;
+    policyValueData.ParseFromString(rpl);
+
+    // put data into mcts nodes
+    //int lineCnt = policyValueData.policy_size();
+    parentNode->value = policyValueData.value();
+    for (const auto &child : parentNode->children) {
+        child->parent = parentNode;
+        child->prior = policyValueData.policy(child->move);
+    }
+
+    return true;
+}
+
+void aiAlphaZeroMCTS::backpropagation(const AlphaZeroMCTSNode::Ptr &node) {
+    AlphaZeroMCTSNode::Ptr tmpNode = node;//AlphaZeroMCTSNode::Ptr(new AlphaZeroMCTSNode(*node.data()));
+    while (!tmpNode->parent.isNull()) {
         tmpNode->visitCnt++;
         tmpNode->fullValue += node->value;
         tmpNode->value = (double)tmpNode->fullValue / (double)tmpNode->visitCnt;
+        board->undoMove(tmpNode->move);
+        //qDebug() << "backup " << tmpNode->move;
         tmpNode = tmpNode->parent;
+    }
+    tmpNode->visitCnt++;
+}
+
+void aiAlphaZeroMCTS::applyDirichletNoiseToChildren(const AlphaZeroMCTSNode::Ptr &parentNode, double alphaValue) {
+    size_t K = parentNode->children.size();
+    auto alpha = new double[K]();
+    auto theta = new double[K]();
+    for (int i = 0; i < K; i++) {
+        alpha[i] = alphaValue;
+        //theta[i] = 0.0;
+    }
+    double eps = 0.5;
+    gsl_ran_dirichlet(rng, K, alpha, theta);
+    for (int i = 0; i < K; i++) {
+        const auto &child = parentNode->children[i];
+        child->prior = (1-eps) * child->prior + eps * theta[i];
     }
 }

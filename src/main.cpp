@@ -67,6 +67,8 @@ int main(int argc, char **argv)
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("models"), i18n("List models to evaluate"), i18n("models")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("fast-model-evaluation"), i18n("Run multi-threaded fast evaluation")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("threads"), i18n("Number of threads for model evaluation and dataset generation (default: 4)"), i18n("threads")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("games"),
+        i18n("Number of games played in evaluation against Easy,Medium and Hard each (default slow: 10, default fast: 100)"), i18n("threads")));
 
     about.setupCommandLine(&parser);
     parser.process(app);
@@ -119,6 +121,13 @@ int main(int argc, char **argv)
         } else {
             qDebug() << "invalid dataset-width value";
         }
+    }
+
+    // get number of games for evaluation
+    int gamesPerAi_slow = 10;
+    int gamesPerAi_fast = 100;
+    if (parser.isSet(QStringLiteral("games"))) {
+
     }
 
     // specific dataset generator requested?
@@ -186,10 +195,10 @@ int main(int argc, char **argv)
         AlphaDots::MLDataGenerator *dataGenerator = new AlphaDots::MLDataGenerator(datasetType, boardWidth, boardHeight);
         dataGenerator->show();
     } else if (parser.isSet(QStringLiteral("model-evaluation"))) {
-        AlphaDots::ModelEvaluation *modelEvaluation = new AlphaDots::ModelEvaluation(parser.value(QStringLiteral("models")));
+        AlphaDots::ModelEvaluation *modelEvaluation = new AlphaDots::ModelEvaluation(parser.value(QStringLiteral("models")), false, threads, gamesPerAi_slow);
         modelEvaluation->show();
     } else if (parser.isSet(QStringLiteral("fast-model-evaluation"))) {
-        AlphaDots::ModelEvaluation *modelEvaluation = new AlphaDots::ModelEvaluation(parser.value(QStringLiteral("models")), true);
+        AlphaDots::ModelEvaluation *modelEvaluation = new AlphaDots::ModelEvaluation(parser.value(QStringLiteral("models")), true, threads, gamesPerAi_fast);
         modelEvaluation->show();
     } else if (parser.isSet(QStringLiteral("model-list"))) {
         AlphaDots::ModelEvaluation::printModelList();

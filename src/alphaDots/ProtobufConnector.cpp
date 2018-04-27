@@ -137,7 +137,12 @@ QList<ModelInfo> ProtobufConnector::getModelList() {
 
         sendString(socket, "get");
 
-        std::string response = recvString(socket);
+        bool ok = false;
+        std::string response = recvString(socket, &ok);
+        if (!ok) {
+            qDebug() << "ERROR: failed to receive model list";
+            return cachedModelList;
+        }
         ModelList modelList;
         modelList.ParseFromString(response);
 

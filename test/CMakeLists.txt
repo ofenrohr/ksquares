@@ -1,11 +1,12 @@
 ENABLE_TESTING()
 cmake_minimum_required(VERSION 2.8)
 
-#FIND_PACKAGE( Qt4 REQUIRED QT_USE_QT* )
-#find_package(QJSON REQUIRED)
+find_package(GSL REQUIRED)
+add_executable(gsltest gsl.cpp)
+target_link_libraries(gsltest GSL::gsl)
 
-#INCLUDE( ${QT_USE_FILE} )
 
+# --- old tests from bachelor's thesis ---
 set(CMAKE_AUTOMOC ON)
 
 # As moc files are generated in the binary dir, tell CMake
@@ -13,6 +14,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 find_package(Qt5Test REQUIRED)
+
 
 set( ksquarestest_SRCS 
 	../src/ksquaresgame.cpp
@@ -70,10 +72,11 @@ link_libraries(ksquarestest
 #  kdegames
 #)
 
-add_test(ksquarestest-hardai
-  ${ksquarestest_SRCS}
-  hardAi.cpp
-)
+#add_executable(ksquarestest-hardai
+#  ${ksquarestest_SRCS}
+#  hardAi.cpp
+#)
+#add_test(ksquarestest-hardai ksquarestest-hardai)
 
 #kde4_add_unit_test( test-hardai
 #  TESTNAME hardai

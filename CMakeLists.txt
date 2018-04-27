@@ -1,6 +1,6 @@
 PROJECT(ksquares)
 
-#ENABLE_TESTING()
+ENABLE_TESTING()
 # set(CMAKE_CXX_FLAGS "-Wno-cpp") # don't use this on release, added to disable warnings about some deprecated stuff
 
 set (CMAKE_CXX_STANDARD 11)
@@ -58,6 +58,9 @@ FIND_PACKAGE(Protobuf REQUIRED)
 find_package(ZLIB REQUIRED)
 #include_directories(${ZLIB_INCLUDE_DIRS})
 
+# gsl (gnu scientific library)
+find_package(GSL REQUIRED)
+
 include(FeatureSummary)
 include(ECMAddAppIcon)
 include(ECMInstallIcons)
@@ -76,7 +79,7 @@ add_definitions(
     -DQT_USE_QSTRINGBUILDER
 )
 
+add_subdirectory(test)
 add_subdirectory(src)
 add_subdirectory(doc)
-add_subdirectory(test)
 feature_summary(WHAT ALL INCLUDE_QUIET_PACKAGES FATAL_ON_MISSING_REQUIRED_PACKAGES)

@@ -13,11 +13,12 @@
 
 using namespace AlphaDots;
 
-ModelEvaluation::ModelEvaluation(QString models, bool fast, int threadCnt) : KXmlGuiWindow(), m_view(new QWidget()) {
+ModelEvaluation::ModelEvaluation(QString models, bool fast, int threadCnt, int games) : KXmlGuiWindow(), m_view(new QWidget()) {
     qDebug() << "ModelEvaluation" << models << fast;
     modelList = getModelList(models);
     fastEvaluation = fast;
     threads = threadCnt;
+    gamesPerAi = games;
     fastEvaluationHandler = nullptr;
     sGame = new KSquaresGame();
     thread = nullptr;
@@ -107,14 +108,9 @@ void ModelEvaluation::printModelList() {
 }
 
 void ModelEvaluation::createTestSetups() {
-    gamesPerAi = 10; // should be an even number > 0
     int testBoardWidth = 5;
     int testBoardHeight = 5;
     int timeout = 5000;
-
-    if (fastEvaluation) {
-        gamesPerAi = 100;
-    }
 
     testSetups.clear();
 

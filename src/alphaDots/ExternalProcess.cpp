@@ -170,8 +170,10 @@ void ExternalProcess::processReadyReadStandardOutput() {
 }
 
 void ExternalProcess::processEvents() {
-	//QCoreApplication::processEvents();
+    /*
+	QCoreApplication::processEvents();
 	if (processRunning) {
         QTimer::singleShot(1000, this, &ExternalProcess::processEvents);
 	}
+     */
 }
