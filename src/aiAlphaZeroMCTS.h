@@ -92,6 +92,10 @@ namespace AlphaDots {
         // gsl random number generator
         gsl_rng *rng;
 
+        // Hyperparameters
+        double C_puct = 100.0;
+        double dirichlet_alpha = 0.03;
+
         /// time logging
         long turnTime;
 

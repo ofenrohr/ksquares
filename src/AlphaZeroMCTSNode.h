@@ -28,6 +28,10 @@ namespace AlphaDots {
         /// lines drawn to get from parent node to this one
         int move;
 
+        /// debug data
+        double puctValue;
+
+
         /// Parent node
         AlphaZeroMCTSNode::Ptr parent;
         /// Child nodes

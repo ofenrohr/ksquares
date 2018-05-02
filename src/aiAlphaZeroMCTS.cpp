@@ -98,9 +98,9 @@ int aiAlphaZeroMCTS::mcts() {
     int mctsIterations = 0;
     // fill mcts tree
     //while (!mctsTimer.hasExpired(mctsTimeout))
-    while (mctsIterations < 100)
+    while (mctsIterations < 10)
     {
-        applyDirichletNoiseToChildren(mctsRootNode, 0.03);
+        //applyDirichletNoiseToChildren(mctsRootNode, dirichlet_alpha);
 
         AlphaZeroMCTSNode::Ptr node = selection(mctsRootNode);
         if (node.isNull()) { // sth failed
@@ -188,15 +188,15 @@ AlphaZeroMCTSNode::Ptr aiAlphaZeroMCTS::selection(const AlphaZeroMCTSNode::Ptr &
     // actual selection
     AlphaZeroMCTSNode::Ptr selectedNode(nullptr);
     double bestVal = -INFINITY;
-    double C = 1.0;
+    //double C = 100.0;
     double visitSum = 0;
     for (const auto &child : node->children) {
         visitSum += child->visitCnt;
     }
     for (int i = 0; i < node->children.size(); i++) {
-        double pucbVal = node->children[i]->value + C * node->children[i]->prior * (sqrt(visitSum) / (1.0 + (double)node->visitCnt));
-        if (pucbVal > bestVal) {
-            bestVal = pucbVal;
+        node->children[i]->puctValue = node->children[i]->value + C_puct * node->children[i]->prior * (sqrt(visitSum) / (1.0 + (double)node->visitCnt));
+        if (node->children[i]->puctValue > bestVal) {
+            bestVal = node->children[i]->puctValue;
             selectedNode = node->children[i];
         }
     }
