@@ -76,7 +76,7 @@ QList<ModelInfo> ModelEvaluation::getModelList(QString models) {
         return allModels;
     }
 
-    QList<QString> selectedModels = models.split(QStringLiteral(","));
+    QList<QString> selectedModels = models.split(tr(","));
     foreach (QString modelStr, selectedModels) {
         bool foundModel = false;
         foreach (ModelInfo modelInfo, allModels) {
@@ -96,7 +96,7 @@ QList<ModelInfo> ModelEvaluation::getModelList(QString models) {
         }
              */
         if (!foundModel) {
-            QMessageBox::critical(this, tr("ModelEvaluation"), QStringLiteral("unknown model: ") + modelStr);
+            QMessageBox::critical(this, tr("ModelEvaluation"), tr("unknown model: ") + modelStr);
         }
     }
 
@@ -111,7 +111,7 @@ void ModelEvaluation::printModelList() {
     QString modelsStr;
     foreach (ModelInfo model, models) {
         modelsStr.append(model.name());
-        modelsStr.append(QStringLiteral("\n"));
+        modelsStr.append(tr("\n"));
         qDebug().noquote() << model.name();
     }
     qDebug() << "================================================================================";
@@ -198,9 +198,9 @@ void ModelEvaluation::loadTestSetup(const AITestSetup &setup) {
 	connect(sGame, SIGNAL(drawSquare(int,QColor)), m_scene, SLOT(drawSquare(int,QColor)));
 
     // update info label
-    infoLbl->setText(QStringLiteral("<br/><br/><b>Current game</b><br/>\n") +
-                     aiName(setup.aiLevelP1) + QStringLiteral(" vs. ") + aiName(setup.aiLevelP2) +
-                     QStringLiteral("<br/><br/>\n\n<b>Games left</b><br/>\n") + QString::number(testSetups.size()));
+    infoLbl->setText(tr("<br/><br/><b>Current game</b><br/>\n") +
+                     aiName(setup.aiLevelP1) + tr(" vs. ") + aiName(setup.aiLevelP2) +
+                     tr("<br/><br/>\n\n<b>Games left</b><br/>\n") + QString::number(testSetups.size()));
 
     // start game
 	sGame->start();
@@ -275,7 +275,7 @@ void ModelEvaluation::gameOver(const QVector<KSquaresPlayer> &playerList) {
     currentResult.moves = lineLog;
 
     resultModel->addResult(currentResult);
-    //resultModel->saveData(QStringLiteral("ModelEvaluation.csv"));
+    //resultModel->saveData(tr("ModelEvaluation.csv"));
 
     QTimer::singleShot(1000, this, SLOT(nextGame()));
 }
@@ -291,11 +291,11 @@ void ModelEvaluation::nextGame() {
 QString ModelEvaluation::aiName(int level) {
     switch (level) {
         case 0:
-            return QStringLiteral("Easy");
+            return tr("Easy");
         case 1:
-            return QStringLiteral("Medium");
+            return tr("Medium");
         case 2:
-            return QStringLiteral("Hard");
+            return tr("Hard");
         default:
             return modelList[level - 3].name();
     }

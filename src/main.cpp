@@ -35,17 +35,17 @@ int main(int argc, char **argv)
     QApplication app(argc, argv);
     qRegisterMetaType< aiBoard::Ptr >("aiBoard::Ptr");
 
-    Kdelibs4ConfigMigrator migrate(QStringLiteral("ksquares"));
-    migrate.setConfigFiles(QStringList() << QStringLiteral("ksquaresrc"));
-    migrate.setUiFiles(QStringList() << QStringLiteral("ksquaresui.rc"));
+    Kdelibs4ConfigMigrator migrate(i18n("ksquares"));
+    migrate.setConfigFiles(QStringList() << i18n("ksquaresrc"));
+    migrate.setUiFiles(QStringList() << i18n("ksquaresui.rc"));
     migrate.migrate();
     KLocalizedString::setApplicationDomain("ksquares");
-    KAboutData about(QStringLiteral("ksquares"), i18n("KSquares"), QLatin1Literal(version), i18n(description),
+    KAboutData about(i18n("ksquares"), i18n("KSquares"), QLatin1Literal(version), i18n(description),
                      KAboutLicense::GPL, i18n("(C) 2006-2007 Matt Williams"));
-    about.addAuthor(i18n("Matt Williams"), i18n("Original creator and maintainer"), QStringLiteral("matt@milliams.com"), QStringLiteral("http://milliams.com"));
+    about.addAuthor(i18n("Matt Williams"), i18n("Original creator and maintainer"), i18n("matt@milliams.com"), i18n("http://milliams.com"));
     about.addCredit(i18n("Fela Winkelmolen"), i18n("Many patches and bugfixes"));
     about.addCredit(i18n("Tom Vincent Peters"), i18n("Hard AI"));
-    about.setHomepage(QStringLiteral("http://games.kde.org/ksquares"));
+    about.setHomepage(i18n("http://games.kde.org/ksquares"));
 
     QCommandLineParser parser;
     KAboutData::setApplicationData(about);
@@ -75,7 +75,7 @@ int main(int argc, char **argv)
     about.processCommandLine(&parser);
     KDBusService service;
 
-    app.setWindowIcon(QIcon::fromTheme(QStringLiteral("ksquares")));
+    app.setWindowIcon(QIcon::fromTheme(i18n("ksquares")));
 
     // default names for players
     KConfigGroup cg(KSharedConfig::openConfig(), "General");
@@ -93,9 +93,9 @@ int main(int argc, char **argv)
 
     // get number of threads
     int threads = 4;
-    if (parser.isSet(QStringLiteral("threads"))) {
+    if (parser.isSet(i18n("threads"))) {
         bool ok = false;
-        int tmp = parser.value(QStringLiteral("threads")).toInt(&ok);
+        int tmp = parser.value(i18n("threads")).toInt(&ok);
         if (ok) {
             threads = tmp;
         }
@@ -105,14 +105,14 @@ int main(int argc, char **argv)
     int boardWidth = 5;
     int boardHeight = 4;
     if (
-        parser.isSet(QStringLiteral("dataset-width")) &&
-        parser.isSet(QStringLiteral("dataset-height"))
+        parser.isSet(i18n("dataset-width")) &&
+        parser.isSet(i18n("dataset-height"))
     ) {
         bool ok2 = false;
-        int tmp = parser.value(QStringLiteral("dataset-width")).toInt(&ok2);
+        int tmp = parser.value(i18n("dataset-width")).toInt(&ok2);
         if (ok2) {
             boardWidth = tmp;
-            tmp = parser.value(QStringLiteral("dataset-height")).toInt(&ok2);
+            tmp = parser.value(i18n("dataset-height")).toInt(&ok2);
             if (ok2) {
                 boardHeight = tmp;
             } else {
@@ -126,27 +126,32 @@ int main(int argc, char **argv)
     // get number of games for evaluation
     int gamesPerAi_slow = 10;
     int gamesPerAi_fast = 100;
-    if (parser.isSet(QStringLiteral("games"))) {
-
+    if (parser.isSet(i18n("games"))) {
+        bool ok = false;
+        int tmp = parser.value(i18n("games")).toInt(&ok);
+        if (ok) {
+            gamesPerAi_slow = tmp;
+            gamesPerAi_fast = tmp;
+        }
     }
 
     // specific dataset generator requested?
     AlphaDots::DatasetType datasetType = AlphaDots::FirstTry;
-    if (parser.isSet(QStringLiteral("dataset-generator"))) {
-        QString datasetGeneratorParam = parser.value(QStringLiteral("dataset-generator")).toLower();
-        if (datasetGeneratorParam == QStringLiteral("firsttry")) {
+    if (parser.isSet(i18n("dataset-generator"))) {
+        QString datasetGeneratorParam = parser.value(i18n("dataset-generator")).toLower();
+        if (datasetGeneratorParam == i18n("firsttry")) {
             datasetType = AlphaDots::FirstTry;
-        } else if (datasetGeneratorParam == QStringLiteral("stageone")) {
+        } else if (datasetGeneratorParam == i18n("stageone")) {
             datasetType = AlphaDots::StageOne;
-        } else if (datasetGeneratorParam == QStringLiteral("basicstrategy")) {
+        } else if (datasetGeneratorParam == i18n("basicstrategy")) {
             datasetType = AlphaDots::BasicStrategy;
-        } else if (datasetGeneratorParam == QStringLiteral("lstm")) {
+        } else if (datasetGeneratorParam == i18n("lstm")) {
             datasetType = AlphaDots::LSTM;
-        } else if (datasetGeneratorParam == QStringLiteral("lstm2")) {
+        } else if (datasetGeneratorParam == i18n("lstm2")) {
             datasetType = AlphaDots::LSTM2;
-        } else if (datasetGeneratorParam == QStringLiteral("stagetwo")) {
+        } else if (datasetGeneratorParam == i18n("stagetwo")) {
             datasetType = AlphaDots::StageTwo;
-        } else if (datasetGeneratorParam == QStringLiteral("stagethree")) {
+        } else if (datasetGeneratorParam == i18n("stagethree")) {
             datasetType = AlphaDots::StageThree;
         } else {
             QMessageBox::critical(nullptr, i18n("Error"), i18n("ERROR: unknown dataset-generator"));
@@ -155,22 +160,22 @@ int main(int argc, char **argv)
     }
 
     // start things
-    if (parser.isSet(QStringLiteral("demo"))) {
+    if (parser.isSet(i18n("demo"))) {
         KSquaresDemoWindow *demoWindow = new KSquaresDemoWindow;
         demoWindow->show();
         demoWindow->gameNew();
-    } else if (parser.isSet(QStringLiteral("test"))) {
+    } else if (parser.isSet(i18n("test"))) {
         KSquaresTestWindow *testWindow = new KSquaresTestWindow;
         testWindow->show();
         testWindow->gameNew();
-    } else if (parser.isSet(QStringLiteral("full-test"))) {
+    } else if (parser.isSet(i18n("full-test"))) {
         KSquaresTestWindow *testWindow = new KSquaresTestWindow(true);
         testWindow->show();
         testWindow->gameNew();
-    }  else if (parser.isSet(QStringLiteral("generate"))) {
+    }  else if (parser.isSet(i18n("generate"))) {
         bool ok = false;
-        long exampleCnt = parser.value(QStringLiteral("generate")).toLong(&ok);
-        qDebug() << "Requested number of samples: " << parser.value(QStringLiteral("generate"));
+        long exampleCnt = parser.value(i18n("generate")).toLong(&ok);
+        qDebug() << "Requested number of samples: " << parser.value(i18n("generate"));
 
         if (exampleCnt % threads != 0) {
             qDebug() << "ERROR: Number of samples must be divisible by the number of threads!";
@@ -179,9 +184,9 @@ int main(int argc, char **argv)
             return 1;
         }
 
-        QString datasetDest = QStringLiteral("./");
-        if (parser.isSet(QStringLiteral("dataset-dest"))) {
-            datasetDest = parser.value(QStringLiteral("dataset-dest"));
+        QString datasetDest = i18n("./");
+        if (parser.isSet(i18n("dataset-dest"))) {
+            datasetDest = parser.value(i18n("dataset-dest"));
         }
 
         AlphaDots::MLDataGenerator *dataGenerator=nullptr;
@@ -191,16 +196,16 @@ int main(int argc, char **argv)
             dataGenerator = new AlphaDots::MLDataGenerator(datasetType, boardWidth, boardHeight);
         }
         dataGenerator->show();
-    } else if (parser.isSet(QStringLiteral("show-generate"))) {
+    } else if (parser.isSet(i18n("show-generate"))) {
         AlphaDots::MLDataGenerator *dataGenerator = new AlphaDots::MLDataGenerator(datasetType, boardWidth, boardHeight);
         dataGenerator->show();
-    } else if (parser.isSet(QStringLiteral("model-evaluation"))) {
-        AlphaDots::ModelEvaluation *modelEvaluation = new AlphaDots::ModelEvaluation(parser.value(QStringLiteral("models")), false, threads, gamesPerAi_slow);
+    } else if (parser.isSet(i18n("model-evaluation"))) {
+        AlphaDots::ModelEvaluation *modelEvaluation = new AlphaDots::ModelEvaluation(parser.value(i18n("models")), false, threads, gamesPerAi_slow);
         modelEvaluation->show();
-    } else if (parser.isSet(QStringLiteral("fast-model-evaluation"))) {
-        AlphaDots::ModelEvaluation *modelEvaluation = new AlphaDots::ModelEvaluation(parser.value(QStringLiteral("models")), true, threads, gamesPerAi_fast);
+    } else if (parser.isSet(i18n("fast-model-evaluation"))) {
+        AlphaDots::ModelEvaluation *modelEvaluation = new AlphaDots::ModelEvaluation(parser.value(i18n("models")), true, threads, gamesPerAi_fast);
         modelEvaluation->show();
-    } else if (parser.isSet(QStringLiteral("model-list"))) {
+    } else if (parser.isSet(i18n("model-list"))) {
         AlphaDots::ModelEvaluation::printModelList();
         return 0;
     } else {

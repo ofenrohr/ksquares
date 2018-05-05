@@ -16,9 +16,7 @@ FastModelEvaluation::FastModelEvaluation(int threads) : QObject() {
 }
 
 FastModelEvaluation::~FastModelEvaluation() {
-    if (setupManager != nullptr) {
-        delete setupManager;
-    }
+    delete setupManager;
 }
 
 void FastModelEvaluation::startEvaluation(QList<AITestSetup> *testSetups, TestResultModel *resultModel) {

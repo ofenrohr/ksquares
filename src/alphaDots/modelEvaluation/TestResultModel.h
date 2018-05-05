@@ -59,11 +59,19 @@ namespace AlphaDots {
          * @param dest destination file path
          */
         void saveData(QString dest);
+
+        /**
+         * Returns the name of the ai/model. 0,1,2 = Easy,Medium,Hard, 3,...,n = Model name
+         * @param aiIndex
+         * @return name of ai/model
+         */
+        QString aiIndexToName(int aiIndex);
     private:
         QList<ModelInfo> *modelList;
 
         QList<AITestResult> results;
         QList<QList<int>> rows;
+        QList<QString> histories;
         int gamesPerAiCnt;
 
         mutable QMutex rowsMutex;
