@@ -93,8 +93,9 @@ namespace AlphaDots {
         gsl_rng *rng;
 
         // Hyperparameters
-        double C_puct = 100.0;
+        double C_puct = 10.0;
         double dirichlet_alpha = 0.03;
+        double mcts_iterations = 100;
 
         /// time logging
         long turnTime;

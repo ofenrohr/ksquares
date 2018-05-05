@@ -98,9 +98,9 @@ int aiAlphaZeroMCTS::mcts() {
     int mctsIterations = 0;
     // fill mcts tree
     //while (!mctsTimer.hasExpired(mctsTimeout))
-    while (mctsIterations < 10)
+    while (mctsIterations < mcts_iterations)
     {
-        //applyDirichletNoiseToChildren(mctsRootNode, dirichlet_alpha);
+        //applyDirichletNoiseToChildren(mctsRootNode, dirichlet_alpha / (linesSize - mctsRootNode->children.size()));
 
         AlphaZeroMCTSNode::Ptr node = selection(mctsRootNode);
         if (node.isNull()) { // sth failed

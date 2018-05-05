@@ -175,8 +175,8 @@ void ModelEvaluation::loadTestSetup(const AITestSetup &setup) {
     //QString modelName = modelList[(setup.aiLevelP1>setup.aiLevelP2?setup.aiLevelP1:setup.aiLevelP2)-3].name();
 	// create AI players
 	aiList.clear();
-	aiController::Ptr aic0(new aiController(0, 1, width, height, setup.aiLevelP1 > 2 ? KSquares::AI_CONVNET : setup.aiLevelP1, setup.timeout, setup.modelNameP1));
-	aiController::Ptr aic1(new aiController(1, 1, width, height, setup.aiLevelP2 > 2 ? KSquares::AI_CONVNET : setup.aiLevelP2, setup.timeout, setup.modelNameP2));
+	aiController::Ptr aic0(new aiController(0, 1, width, height, setup.aiLevelP1 > 2 ? setup.modelAiP1 : setup.aiLevelP1, setup.timeout, setup.modelNameP1));
+	aiController::Ptr aic1(new aiController(1, 1, width, height, setup.aiLevelP2 > 2 ? setup.modelAiP2 : setup.aiLevelP2, setup.timeout, setup.modelNameP2));
 	aiList.append(aic0);
 	aiList.append(aic1);
 
@@ -199,8 +199,8 @@ void ModelEvaluation::loadTestSetup(const AITestSetup &setup) {
 
     // update info label
     infoLbl->setText(tr("<br/><br/><b>Current game</b><br/>\n") +
-                     aiName(setup.aiLevelP1) + tr(" vs. ") + aiName(setup.aiLevelP2) +
-                     tr("<br/><br/>\n\n<b>Games left</b><br/>\n") + QString::number(testSetups.size()));
+                     aiName(setup.aiLevelP1) + tr(" (<span style=\"color: red; background-color: white\">red</span>) vs. ") + aiName(setup.aiLevelP2) +
+                     tr(" (<span style=\"color: blue; background-color: white\">blue</span>)<br/><br/>\n\n<b>Games left</b><br/>\n") + QString::number(testSetups.size()));
 
     // start game
 	sGame->start();
