@@ -8,15 +8,20 @@
 
 #include <QtCore/QVariant>
 #include <QtCore/QPoint>
+#include <aicontroller.h>
 
 class AITestSetup {
 public:
-	int levelP1;
-	int levelP2;
+	/// Used in
+	/// 0-2 = Easy, Medium, Hard, 3-n = evaluated ai+model combination
+	int aiLevelP1;
+	int aiLevelP2; // 0-2 = Easy, Medium, Hard, 3-n = evaluated ai+model combination
 	int timeout;
 	QPoint boardSize;
-	QString modelNameP1;
-	QString modelNameP2;
+	QString modelNameP1; // name of neural network to use
+	QString modelNameP2; // name of neural network to use
+	KSquares::AILevel modelAiP1;
+	KSquares::AILevel modelAiP2;
 
 	QVariant toQVariant();
 	void fromQVariant(QVariant map);

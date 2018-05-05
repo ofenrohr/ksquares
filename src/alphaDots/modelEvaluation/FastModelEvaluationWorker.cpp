@@ -31,14 +31,14 @@ void FastModelEvaluationWorker::process() {
             return;
         }
 
-        qDebug() << "[FastModelEvaluationWorker] starting match: " << setup.levelP1 << "vs." << setup.levelP2;
+        qDebug() << "[FastModelEvaluationWorker] starting match: " << setup.aiLevelP1 << "vs." << setup.aiLevelP2;
 
         // execute setup
         int width = setup.boardSize.x();
         int height = setup.boardSize.y();
         Board board(2, width, height);
-        aiController::Ptr aic0(new aiController(0, 1, width, height, setup.levelP1 > 2 ? KSquares::AI_CONVNET : setup.levelP1, setup.timeout, setup.modelNameP1));
-        aiController::Ptr aic1(new aiController(1, 1, width, height, setup.levelP2 > 2 ? KSquares::AI_CONVNET : setup.levelP2, setup.timeout, setup.modelNameP2));
+        aiController::Ptr aic0(new aiController(0, 1, width, height, setup.modelAiP1, setup.timeout, setup.modelNameP1));
+        aiController::Ptr aic1(new aiController(1, 1, width, height, setup.modelAiP2, setup.timeout, setup.modelNameP2));
 
         //qDebug() << "board info: " << board.lines().size() << ":" << board.lines();
 

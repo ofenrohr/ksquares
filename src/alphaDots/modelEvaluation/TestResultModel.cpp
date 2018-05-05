@@ -70,14 +70,14 @@ void TestResultModel::addResult(AITestResult result) {
     int modelAi = -1;
     int ruleBasedAiScore = -1;
     int modelAiScore = -1;
-    if (result.setup.levelP1 > result.setup.levelP2) {
-        modelAi = result.setup.levelP1;
-        ruleBasedAi = result.setup.levelP2;
+    if (result.setup.aiLevelP1 > result.setup.aiLevelP2) {
+        modelAi = result.setup.aiLevelP1;
+        ruleBasedAi = result.setup.aiLevelP2;
         modelAiScore = result.scoreP1;
         ruleBasedAiScore = result.scoreP2;
     } else {
-        modelAi = result.setup.levelP2;
-        ruleBasedAi = result.setup.levelP1;
+        modelAi = result.setup.aiLevelP2;
+        ruleBasedAi = result.setup.aiLevelP1;
         modelAiScore = result.scoreP2;
         ruleBasedAiScore = result.scoreP1;
     }

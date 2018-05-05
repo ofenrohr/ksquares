@@ -7,6 +7,9 @@
 
 #include <QDebug>
 #include <settings.h>
+#include <AlphaDotsModel.pb.h>
+#include <DotsAndBoxesImage.pb.h>
+#include <TrainingExample.pb.h>
 
 using namespace AlphaDots;
 
@@ -149,7 +152,7 @@ QList<ModelInfo> ProtobufConnector::getModelList() {
         for (int i = 0; i < modelList.models().size(); i++) {
             ProtoModel model = modelList.models().Get(i);
             cachedModelList.append(ModelInfo(QString::fromStdString(model.name()), QString::fromStdString(model.desc()),
-                                 QString::fromStdString(model.path()), QString::fromStdString(model.type())));
+                                 QString::fromStdString(model.path()), QString::fromStdString(model.type()), QString::fromStdString(model.ai())));
         }
 
     } catch (zmq::error_t &err) {

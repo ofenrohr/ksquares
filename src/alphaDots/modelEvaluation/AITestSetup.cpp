@@ -8,8 +8,8 @@
 QVariant AITestSetup::toQVariant()
 {
     QVariantMap map;
-    map[QStringLiteral("levelP1")] = levelP1;
-    map[QStringLiteral("levelP2")] = levelP2;
+    map[QStringLiteral("aiLevelP1")] = aiLevelP1;
+    map[QStringLiteral("aiLevelP2")] = aiLevelP2;
     map[QStringLiteral("timeout")] = timeout;
     QVariantMap boardSizeMap;
     boardSizeMap[QStringLiteral("width")] = boardSize.x();
@@ -21,8 +21,8 @@ QVariant AITestSetup::toQVariant()
 void AITestSetup::fromQVariant(QVariant var)
 {
     QVariantMap map = var.toMap();
-    levelP1 = map[QStringLiteral("levelP1")].toInt();
-    levelP2 = map[QStringLiteral("levelP2")].toInt();
+    aiLevelP1 = map[QStringLiteral("aiLevelP1")].toInt();
+    aiLevelP2 = map[QStringLiteral("aiLevelP2")].toInt();
     timeout = map[QStringLiteral("timeout")].toInt();
     boardSize = QPoint();
     boardSize.setX(map[QStringLiteral("boardSize")].toMap()[QStringLiteral("width")].toInt());

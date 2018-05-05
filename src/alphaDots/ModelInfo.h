@@ -12,18 +12,20 @@ namespace AlphaDots {
     class ModelInfo {
     public:
         ModelInfo();
-        ModelInfo(QString name, QString desc, QString path, QString type);
+        ModelInfo(QString name, QString desc, QString path, QString type, QString ai);
 
         QString name() const;
         QString desc();
         QString path();
         QString type();
+        QString ai();
 
     protected:
         QString _name;
         QString _desc;
         QString _path;
         QString _type;
+        QString _ai;
     };
 }
 

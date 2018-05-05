@@ -65,7 +65,7 @@ set(ksquares_SRCS
 		AlphaZeroMCTSNode.cpp
 		alphaDots/datasets/StageThreeDataset.cpp
 		alphaDots/MLImageGenerator.cpp
-		)
+		alphaDots/aiEvaluation/SelfPlay.cpp alphaDots/aiEvaluation/SelfPlay.h)
 
 file(GLOB protoMessages alphaDots/protobuf/*.proto)
 PROTOBUF_GENERATE_CPP(ProtoSrcs ProtoHeaders ${protoMessages})

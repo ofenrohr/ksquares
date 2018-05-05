@@ -10,6 +10,27 @@
 #ifndef AIFUNCTIONS_H
 #define AIFUNCTIONS_H
 
+namespace KSquares {
+	enum AILevel {
+		AI_EASY,
+		AI_MEDIUM,
+		AI_HARD,
+		AI_VERYHARD,
+		AI_DABBLE,
+		AI_DABBLENOHASH,
+		AI_QDAB,
+		AI_KNOX,
+		AI_MCTS_A,
+		AI_MCTS_B,
+		AI_MCTS_C,
+		AI_DABBLENATIVE,
+		AI_CONVNET,
+		AI_MCTS_CONVNET,
+		AI_MCTS_ALPHAZERO
+		// if you add an ai here, also add it to alphaDots/modelEvaluation/ModelEvaluation.cpp -> parseAiLevel
+	};
+}
+
 #include <QList>
 #include <QString>
 #include <QSharedPointer>
@@ -125,7 +146,7 @@ class aiFunctions
 		/**
 		 * Classifies a given chain as short, long or loop chain.
 		 * @param chain list of lines the chain is made up of
-     * @param lines lines of the board
+     	 * @param lines lines of the board
 		 * @return 0: long chain, 1: short chain, 2: loop chain, -1: no chain
 		 */
 		KSquares::ChainType classifyChain(const QList<int> &chain, bool *lines) const;
@@ -159,14 +180,16 @@ class aiFunctions
         QString boardToString(bool *lines) const;
         static QString linelistToString(const QList<int> list, int linesSize, int width, int height);
         QString linelistToString(const QList<int> list) const;
-		
-	protected:
+
+		static KSquares::AILevel parseAiLevel(QString aiLevel, bool *ok);
+
+protected:
 		/// Width of the game board
 		int width;
 		/// Height of the game board
 		int height;
-    /// Size of list of which lines are complete
-    int linesSize;
+        /// Size of list of which lines are complete
+        int linesSize;
 };
 
 #endif // AIFUNCTIONS_H

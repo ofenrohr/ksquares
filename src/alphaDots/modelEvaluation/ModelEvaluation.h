@@ -11,9 +11,9 @@
 #include <ksquaresgame.h>
 #include <aicontroller.h>
 
-#include "ui_ModelEvaluation.h"
 #include "TestResultModel.h"
 #include "FastModelEvaluation.h"
+#include "ui_ModelEvaluation.h"
 
 namespace AlphaDots {
     class ModelEvaluation : public KXmlGuiWindow, public Ui::ModelEvaluationForm {
@@ -24,16 +24,16 @@ namespace AlphaDots {
          * @param models Empty string to evaluate all available models.
          * @param fast Run fast multi-threaded evaluation
          */
-        ModelEvaluation(QString models, bool fast=false, int threadCnt=4, int games=10);
+        explicit ModelEvaluation(QString models, bool fast=false, int threadCnt=4, int games=10);
 
-		~ModelEvaluation();
+		~ModelEvaluation() override;
 
 		QList<ModelInfo> getModelList(QString models);
         void initObject();
 
 		static void printModelList();
 
-	public slots:
+    public slots:
 		void aiChoseLine(const int &line);
 		void nextGame();
 		void saveResultsAs();

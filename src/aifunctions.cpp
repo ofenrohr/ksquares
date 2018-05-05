@@ -7,11 +7,13 @@
  *   (at your option) any later version.                                   *
  ***************************************************************************/
 
+#include <QtCore/QTimer>
 #include "aifunctions.h"
 #include <QDebug>
 #include <QStack>
 #include <algorithm>
 #include <sstream>
+#include <kcombobox.h>
 
 aiFunctions::aiFunctions(int w, int h) : width(w), height(h)
 {
@@ -928,4 +930,55 @@ KSquares::ChainType aiFunctions::classifyChain(int width, int height, const QLis
   
   // long chain
   return KSquares::CHAIN_LONG; 
+}
+
+KSquares::AILevel aiFunctions::parseAiLevel(QString aiLevel, bool *ok) {
+    *ok = true;
+    if (aiLevel.toLower().toStdString() == "easy") {
+        return KSquares::AI_EASY;
+    }
+    if (aiLevel.toLower().toStdString() == "medium") {
+        return KSquares::AI_MEDIUM;
+    }
+    if (aiLevel.toLower().toStdString() == "hard") {
+        return KSquares::AI_HARD;
+    }
+    if (aiLevel.toLower().toStdString() == "alphabeta") {
+        return KSquares::AI_VERYHARD;
+    }
+    if (aiLevel.toLower().toStdString() == "dabble") {
+        return KSquares::AI_DABBLE;
+    }
+    if (aiLevel.toLower().toStdString() == "dabblenohash") {
+        return KSquares::AI_DABBLENOHASH;
+    }
+    if (aiLevel.toLower().toStdString() == "qdab") {
+        return KSquares::AI_QDAB;
+    }
+    if (aiLevel.toLower().toStdString() == "knox") {
+        return KSquares::AI_KNOX;
+    }
+    if (aiLevel.toLower().toStdString() == "mcts-a") {
+        return KSquares::AI_MCTS_A;
+    }
+    if (aiLevel.toLower().toStdString() == "mcts-b") {
+        return KSquares::AI_MCTS_B;
+    }
+    if (aiLevel.toLower().toStdString() == "mcts-c") {
+        return KSquares::AI_MCTS_C;
+    }
+    if (aiLevel.toLower().toStdString() == "dabblenative") {
+        return KSquares::AI_DABBLENATIVE;
+    }
+    if (aiLevel.toLower().toStdString() == "convnet") {
+        return KSquares::AI_CONVNET;
+    }
+    if (aiLevel.toLower().toStdString() == "mcts-convnet") {
+        return KSquares::AI_MCTS_CONVNET;
+    }
+    if (aiLevel.toLower().toStdString() == "mcts-alphazero") {
+        return KSquares::AI_MCTS_ALPHAZERO;
+    }
+    *ok = false;
+    return KSquares::AI_EASY;
 }
