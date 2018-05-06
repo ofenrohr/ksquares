@@ -205,3 +205,8 @@ AlphaZeroV7|300|96|80|46|0|0|0
 ### Screenshot
 ![slow model evaluation with KSquares](ksquares_model_evaluation.png)
 
+## AlphaZero MCTS
+
+AlphaZero is an AI in KSquares that is built according to the [Alpha Zero paper](https://arxiv.org/abs/1712.01815)
+
+
