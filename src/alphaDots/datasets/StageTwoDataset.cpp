@@ -56,10 +56,10 @@ void StageTwoDataset::stopConverter() {
     QString timeStr = QDateTime::currentDateTime().toString(QStringLiteral("-hh:mm-dd_MM_yyyy"));
     std::string filename = "/StageTwo-" + std::to_string(sampleCnt) + "-" + std::to_string(width) + "x" + std::to_string(height) + timeStr.toStdString() + ".npz";
     if (!cnpy::npz_save(destDir.toStdString()+filename, "x_train", &(*input)[0], dataSize, "w")) {
-        QMessageBox::critical(nullptr, i18n("Error"), i18n("failed to save input data"));
+        QMessageBox::critical(nullptr, QObject::tr("Error"), QObject::tr("failed to save input data"));
     }
     if (!cnpy::npz_save(destDir.toStdString()+filename, "y_train", &(*output)[0], dataSize, "a")) {
-        QMessageBox::critical(nullptr, i18n("Error"), i18n("failed to save output data"));
+        QMessageBox::critical(nullptr, QObject::tr("Error"), QObject::tr("failed to save output data"));
     }
 }
 

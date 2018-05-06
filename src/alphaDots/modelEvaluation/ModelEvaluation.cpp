@@ -6,6 +6,7 @@
 #include "FastModelEvaluation.h"
 #include "aifunctions.h"
 
+#include <QLocale>
 #include <QtCore/QTimer>
 #include <alphaDots/ProtobufConnector.h>
 #include <QtWidgets/QFileDialog>
@@ -302,6 +303,6 @@ QString ModelEvaluation::aiName(int level) {
 }
 
 void ModelEvaluation::saveResultsAs() {
-    QString dest = QFileDialog::getSaveFileName(this, i18n("Save results as"), i18n("ModelEvaluation.csv"), i18n("Comma-separated values (*.csv)"));
+    QString dest = QFileDialog::getSaveFileName(this, QObject::tr("Save results as"), QObject::tr("ModelEvaluation.csv"), QObject::tr("Comma-separated values (*.csv)"));
     resultModel->saveData(dest);
 }

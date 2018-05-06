@@ -8,6 +8,7 @@ target_link_libraries(gsltest GSL::gsl)
 
 # --- old tests from bachelor's thesis ---
 set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
 
 # As moc files are generated in the binary dir, tell CMake
 # to always look for includes there:
@@ -15,32 +16,53 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 find_package(Qt5Test REQUIRED)
 
+file(GLOB protoMessages ../src/alphaDots/protobuf/*.proto)
+PROTOBUF_GENERATE_CPP(ProtoSrcs ProtoHeaders ${protoMessages})
+
+file(GLOB alphaDotsSRCS ../src/alphaDots/*.cpp)
+file(GLOB alphaDotsModelEvaluationSRCS ../src/alphaDots/modelEvaluation/*.cpp)
+file(GLOB alphaDotsDatasetsSRCS ../src/alphaDots/datasets/*.cpp)
+
 
 set( ksquarestest_SRCS 
-	../src/ksquaresgame.cpp
-	../src/aicontroller.cpp
-	../src/aifunctions.cpp
-	../src/ksquaresio.cpp
-	../src/board.cpp
-	../src/aiEasyMediumHard.cpp
-#	../src/aiMiniMax.cpp
-	../src/aiBoard.cpp
-	../src/aiHeuristic.cpp
-	../src/aiAlphaBeta.cpp
-	../src/aistructs.cpp
-	../src/lineSorter.cpp
-	../src/boardAnalysis.cpp
-	../src/dbgame.cpp
-#	../src/dbgame-nohash.cpp
-	../src/qdab.cpp
-	../src/knox.cpp
-	../src/aiMCTS.cpp
+        ../src/ksquaresgame.cpp
+		../src/gameboardscene.cpp
+		../src/gameboardview.cpp
+		../src/highlightanimation.cpp
+        ../src/aicontroller.cpp
+        ../src/aifunctions.cpp
+        ../src/ksquaresio.cpp
+        ../src/board.cpp
+        ../src/aiEasyMediumHard.cpp
+    #	../src/aiMiniMax.cpp
+        ../src/aiBoard.cpp
+        ../src/aiHeuristic.cpp
+        ../src/aiAlphaBeta.cpp
+        ../src/aistructs.cpp
+        ../src/lineSorter.cpp
+        ../src/boardAnalysis.cpp
+        ../src/dbgame.cpp
+    #	../src/dbgame-nohash.cpp
+        ../src/qdab.cpp
+        ../src/knox.cpp
+        ../src/aiMCTS.cpp
+		../src/dbgame-nohash.cpp
+		../src/aiDabbleNative.cpp
+		../src/aiConvNet.cpp
+		../src/AlphaZeroMCTSNode.cpp
+		../src/aiAlphaZeroMCTS.cpp
+        ${ProtoSrcs}
+        ${alphaDotsSRCS}
+		${alphaDotsModelEvaluationSRCS}
+		${alphaDotsDatasetsSRCS}
 )
+
+kconfig_add_kcfg_files(ksquarestest_SRCS GENERATE_MOC ../src/settings.kcfgc)
 
 #kde4_add_kcfg_files(ksquarestest_SRCS GENERATE_MOC settings.kcfgc) #GENERATE_MOC is not needed but it doesn't work without it for some reason :S
 kconfig_add_kcfg_files(ksquarestest_SRCS GENERATE_MOC settings.kcfgc) #GENERATE_MOC is not needed but it doesn't work without it for some reason :S
 
-include_directories( ../src ${QJSON_INCLUDE_DIR} )
+include_directories( ../src ${QJSON_INCLUDE_DIR} ${ZeroMQ_INCLUDE_DIR} ${ZLIB_INCLUDE_DIRS} )
 
 
 set(TESTBOARDPATH "${CMAKE_CURRENT_SOURCE_DIR}/boards")
@@ -53,30 +75,27 @@ include_directories( ${CMAKE_CURRENT_BINARY_DIR}/generated/ )
 
 #add_executable(ksquarestest ${ksquarestest_SRCS})
 link_libraries(ksquarestest
-    KF5::Completion
-    KF5::Crash
-    KF5::DBusAddons
-    KF5::I18n
-    KF5::XmlGui
-    Qt5::Test
-    KF5KDEGames
-	#${QJSON_LIBRARIES}
+        KF5::Completion
+        KF5::Crash
+        KF5::DBusAddons
+        KF5::I18n
+        KF5::XmlGui
+        Qt5::Test
+        KF5KDEGames
+        #${QJSON_LIBRARIES}
+		${ZeroMQ_LIBRARY}
+		${PROTOBUF_LIBRARY}
+		${ZLIB_LIBRARIES}
+		GSL::gsl
 )
 
-#link_libraries(
-#  ${KDE4_KDECORE_LIBS}
-#  ${QT_QTTEST_LIBRARY}
-#  ${KDE4_KDEUI_LIBS}
-#  ${KDE4_KIO_LIBS}
-#  ${QJSON_LIBRARIES}
-#  kdegames
-#)
-
-#add_executable(ksquarestest-hardai
-#  ${ksquarestest_SRCS}
-#  hardAi.cpp
-#)
-#add_test(ksquarestest-hardai ksquarestest-hardai)
+add_executable(ksquarestest
+		main.cpp
+        ${ksquarestest_SRCS}
+        hardAi.cpp
+        berlekamp.cpp
+)
+add_test(ksquarestest ksquarestest-hardai)
 
 #kde4_add_unit_test( test-hardai
 #  TESTNAME hardai

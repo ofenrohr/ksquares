@@ -65,7 +65,8 @@ set(ksquares_SRCS
 		AlphaZeroMCTSNode.cpp
 		alphaDots/datasets/StageThreeDataset.cpp
 		alphaDots/MLImageGenerator.cpp
-		alphaDots/aiEvaluation/SelfPlay.cpp alphaDots/aiEvaluation/SelfPlay.h)
+		alphaDots/aiEvaluation/SelfPlay.cpp
+		)
 
 file(GLOB protoMessages alphaDots/protobuf/*.proto)
 PROTOBUF_GENERATE_CPP(ProtoSrcs ProtoHeaders ${protoMessages})
@@ -78,7 +79,7 @@ include_directories(${CMAKE_SOURCE_DIR}/libKF5KDEGames/highscore ${ZeroMQ_INCLUD
 
 ki18n_wrap_ui(ksquares_SRCS newgamewidget.ui scoreswidget.ui prefs_ai.ui prefs_display.ui alphaDots/mldataview.ui alphaDots/modelEvaluation/ModelEvaluation.ui)
 
-kconfig_add_kcfg_files(ksquares_SRCS GENERATE_MOC settings.kcfgc) #GENERATE_MOC is not needed but it doesn't work without it for some reason :S
+kconfig_add_kcfg_files(ksquares_SRCS GENERATE_MOC settings.kcfgc)
 
 set(CMAKE_AUTOMOC ON)
 

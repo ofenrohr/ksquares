@@ -1,26 +1,4 @@
-#include <QtTest>
-#include <QtCore>
-
-#include "aicontroller.h"
-#include "ksquaresgame.h"
-#include "ksquaresio.h"
-
-//Qt
-#include <QDebug>
-
-// generated
-#include "testboardpath.h"
-
-class hardAi: public QObject
-{
-	Q_OBJECT
-	private slots:
-		void testBoard001();
-		void testBoard002();
-		void testBoard003();
-		void testBoard005();
-		//void testBoard006();
-};
+#include "hardAi.h"
 
 /**
  * hard ai
@@ -32,7 +10,7 @@ void hardAi::testBoard001()
 {
 	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
 	QList<int> lines;
-	QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/4x4-test1.dbl", sGame.data(), &lines));
+	QVERIFY(KSquaresIO::loadGame(QStringLiteral(TESTBOARDPATH) + tr("/4x4-test1.dbl"), sGame.data(), &lines));
 	for (int i = 0; i < lines.size(); i++)
 	{
 		sGame->addLineToIndex(lines.at(i));
@@ -52,7 +30,7 @@ void hardAi::testBoard002()
 {
 	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
 	QList<int> lines;
-	QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/4x4-test2.dbl", sGame.data(), &lines));
+	QVERIFY(KSquaresIO::loadGame(QStringLiteral(TESTBOARDPATH) + tr("/4x4-test2.dbl"), sGame.data(), &lines));
 	for (int i = 0; i < lines.size(); i++)
 	{
 		sGame->addLineToIndex(lines.at(i));
@@ -71,7 +49,7 @@ void hardAi::testBoard003()
 {
 	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
 	QList<int> lines;
-	QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/3x3-test3.dbl", sGame.data(), &lines));
+	QVERIFY(KSquaresIO::loadGame(QStringLiteral(TESTBOARDPATH) + tr("/3x3-test3.dbl"), sGame.data(), &lines));
 	for (int i = 0; i < lines.size(); i++)
 	{
 		sGame->addLineToIndex(lines.at(i));
@@ -90,7 +68,7 @@ void hardAi::testBoard005()
 {
 	QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
 	QList<int> lines;
-	QVERIFY(KSquaresIO::loadGame(QString(TESTBOARDPATH) + "/3x2-test5.dbl", sGame.data(), &lines));
+	QVERIFY(KSquaresIO::loadGame(QStringLiteral(TESTBOARDPATH) + tr("/3x2-test5.dbl"), sGame.data(), &lines));
 	for (int i = 0; i < lines.size(); i++)
 	{
 		sGame->addLineToIndex(lines.at(i));
@@ -130,5 +108,4 @@ void hardAi::testBoard006()
 	QVERIFY(false);
 */
 
-QTEST_MAIN(hardAi)
-#include "hardAi.moc"
+//QTEST_MAIN(hardAi)

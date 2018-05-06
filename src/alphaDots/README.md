@@ -186,6 +186,7 @@ Both evaluation modes support the following optional arguments:
   subset, use this optional argument. You can get a list of all available models with `ksquares --model-list`
 * `--dataset-width WIDTH` Board width measured in boxes.
 * `--dataset-height HEIGHT` Board height measured in boxes.
+* `--gpu` Allow the model server to use the GPU.
 
 ### Example results
 
