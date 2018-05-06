@@ -8,7 +8,7 @@
 
 using namespace AlphaDots;
 
-ModelProcess::ModelProcess(QString model, int boxesWidth, int boxesHeight, int port) :
+ModelProcess::ModelProcess(QString model, int boxesWidth, int boxesHeight, int port, bool allowGPU) :
     width(boxesWidth),
     height(boxesHeight),
     modelPort(port)
@@ -29,7 +29,9 @@ ModelProcess::ModelProcess(QString model, int boxesWidth, int boxesHeight, int p
          //<< QStringLiteral("--debug")
             ;
     modelServer = new ExternalProcess(QStringLiteral("/usr/bin/python2.7"), args);
-    modelServer->addEnvironmentVariable(QStringLiteral("CUDA_VISIBLE_DEVICES"), QStringLiteral("-1"));
+    if (!allowGPU) {
+        modelServer->addEnvironmentVariable(QStringLiteral("CUDA_VISIBLE_DEVICES"), QStringLiteral("-1"));
+    }
     if (!modelServer->startExternalProcess()) {
         qDebug() << "ERROR: can't start model server!";
         modelPort = -1;

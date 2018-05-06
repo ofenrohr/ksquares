@@ -36,6 +36,12 @@ namespace AlphaDots {
          */
         int ensureProcessRunning(QString modelName, int width, int height);
 
+        /**
+         * Allow the model Process to use gpu resources.
+         * @param allowGPU
+         */
+        void allowGPU(bool allowGPU);
+
     private:
         ModelManager() = default;
 
@@ -61,7 +67,7 @@ namespace AlphaDots {
          */
         QString modelInfoToStr(QString modelName, int width, int height);
 
-        void sleep(int ms);
+        bool useGPU;
     };
 }
 

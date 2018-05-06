@@ -120,9 +120,25 @@ int aiAlphaZeroMCTS::mcts() {
 
         mctsIterations++;
         QCoreApplication::processEvents();
+
+        // debug stuff
+        /*
+        #!/usr/bin/bash
+        for file in /tmp/AlphaZeroMCTS.*.dot; do; dot -Tpng $file -o $(basename $file .dot).png; done
+         */
+        //qDebug().noquote() << "mcts node:" << mctsRootNode->toString();
+        /*
+        QFile graph(i18n("/tmp/AlphaZeroMCTS.") + QString::number(mctsIterations) + i18n(".dot"));
+        if (graph.open(QIODevice::ReadWrite | QIODevice::Truncate | QIODevice::Text)) {
+            QTextStream stream(&graph);
+            stream << "digraph {";
+            stream << mctsRootNode->toDotString();
+            stream << "}";
+        }
+         */
     }
 
-    qDebug() << "MCTS iterations: " << mctsIterations;
+    //qDebug() << "MCTS iterations: " << mctsIterations;
 
     // select most promising move
     // TODO: update
@@ -144,26 +160,6 @@ int aiAlphaZeroMCTS::mcts() {
             child->value = pi_a_given_s0;
         }
     }
-
-    // debug stuff
-    qDebug().noquote() << "mcts node:" << mctsRootNode->toString();
-    QFile graph(QStringLiteral("/tmp/AlphaZeroMCTS.dot"));
-    if (graph.open(QIODevice::ReadWrite | QIODevice::Truncate | QIODevice::Text)) {
-        QTextStream stream(&graph);
-        stream << "digraph {";
-        stream << mctsRootNode->toDotString();
-        stream << "}";
-    }
-    /*
-    ExternalProcess renderDot(i18n("/usr/bin/dot"),
-                              QStringList() << i18n("-Tpdf") << i18n("/tmp/AlphaZeroMCTS.dot") << i18n("-o") << i18n("/tmp/AlphaZeroMCTS.pdf"));
-    renderDot.startExternalProcess();
-    while (renderDot.isRunning()) {
-        long ms = 40;
-        struct timespec ts = { ms / 1000, (ms % 1000) * 1000 * 1000 };
-        nanosleep(&ts, NULL);
-    }
-     */
 
 
     return line;
@@ -188,7 +184,6 @@ AlphaZeroMCTSNode::Ptr aiAlphaZeroMCTS::selection(const AlphaZeroMCTSNode::Ptr &
     // actual selection
     AlphaZeroMCTSNode::Ptr selectedNode(nullptr);
     double bestVal = -INFINITY;
-    //double C = 100.0;
     double visitSum = 0;
     for (const auto &child : node->children) {
         visitSum += child->visitCnt;

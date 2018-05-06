@@ -23,8 +23,9 @@ namespace AlphaDots {
          * @param boxesWidth Width of the board in boxes
          * @param boxesHeight Height of the board in boxes
          * @param port The port the model server should listen on
+         * @param allowGPU Disable GPU restriction by environment variables
          */
-        ModelProcess(QString model, int boxesWidth, int boxesHeight, int port);
+        ModelProcess(QString model, int boxesWidth, int boxesHeight, int port, bool allowGPU);
         ~ModelProcess();
 
         bool isRunning();

@@ -24,7 +24,7 @@ ModelProcess::Ptr ModelManager::getProcess(const QString modelName, int width, i
     QString modelKey = modelInfoToStr(modelName, width, height);
     if (!processMap.contains(modelKey)) {
         qDebug() << "starting new ModelProcess on port " << QString::number(port);
-        ModelProcess::Ptr process = ModelProcess::Ptr(new ModelProcess(modelName, width, height, port));
+        ModelProcess::Ptr process = ModelProcess::Ptr(new ModelProcess(modelName, width, height, port, useGPU));
         processMap[modelKey] = process;
         port++;
     }
@@ -45,3 +45,7 @@ void ModelManager::sleep(int ms) {
 #endif
 }
  */
+
+void ModelManager::allowGPU(bool allowGPU) {
+    useGPU = allowGPU;
+}

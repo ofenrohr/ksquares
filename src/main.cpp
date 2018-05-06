@@ -17,6 +17,7 @@
 #include <kdelibs4configmigrator.h>
 #include <KDBusService>
 #include <QtWidgets/QMessageBox>
+#include <alphaDots/ModelManager.h>
 
 #include "ksquareswindow.h"
 #include "ksquaresdemowindow.h"
@@ -69,6 +70,7 @@ int main(int argc, char **argv)
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("threads"), i18n("Number of threads for model evaluation and dataset generation (default: 4)"), i18n("threads")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("games"),
         i18n("Number of games played in evaluation against Easy,Medium and Hard each (default slow: 10, default fast: 100)"), i18n("threads")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("gpu"), i18n("When set, the model process will be allowed to use the GPU")));
 
     about.setupCommandLine(&parser);
     parser.process(app);
@@ -157,6 +159,11 @@ int main(int argc, char **argv)
             QMessageBox::critical(nullptr, i18n("Error"), i18n("ERROR: unknown dataset-generator"));
             return 1;
         }
+    }
+
+    // allow gpu acceleration?
+    if (parser.isSet(i18n("gpu"))) {
+        AlphaDots::ModelManager::getInstance().allowGPU(true);
     }
 
     // start things
