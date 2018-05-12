@@ -94,6 +94,7 @@ add_executable(ksquarestest
         ${ksquarestest_SRCS}
         hardAi.cpp
         berlekamp.cpp
+		aiboard.cpp
 )
 add_test(ksquarestest ksquarestest-hardai)
 

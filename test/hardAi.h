@@ -25,6 +25,6 @@ class hardAi: public QObject
 		//void testBoard006();
 };
 
-#include "hardAi.moc"
+//#include "hardAi.moc"
 
 #endif //KSQUARES_HARDAI_H

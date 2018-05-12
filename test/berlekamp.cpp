@@ -1,5 +1,13 @@
 #include "berlekamp.h"
 
+const int berlekamp::testAIs[] = {
+    KSquares::AILevel::AI_EASY,
+    KSquares::AILevel::AI_MEDIUM,
+    KSquares::AILevel::AI_HARD,
+    KSquares::AILevel::AI_CONVNET
+};
+
+
 void berlekamp::executeAi(Board *board, int player, QString name, QList<int> expectedLines) {
     // open the file
     QString filename = tr("test-") + name + tr(".log");
@@ -13,7 +21,20 @@ void berlekamp::executeAi(Board *board, int player, QString name, QList<int> exp
     QTextStream summary(&summaryStr);
 
     summary << "Summary for " << name << ": \n";
-    for (int i = 0; i <= 2; i++) {
+    summary << "input board:" << board->toString() << "\n\n";
+
+    /*
+    Board tmp(board->getNumOfPlayers(), board->width(), board->height());
+    for (const auto &line : expectedLines) {
+        bool next, filled;
+        QList<int> completed;
+        tmp.addLine(line, &next, &filled, &completed);
+    }
+     */
+    summary << "expected output:" << aiFunctions::linelistToString(expectedLines, aiFunctions::toLinesSize(board->width(), board->height()), board->width(), board->height()) << "\n\n";
+
+    //for (int i = 0; i <= 2; i++) {
+    for (int i : testAIs) {
         aiController aic(player, 1, board->width(), board->height(), i);
         KSquaresAi::Ptr ai = aic.getAi();
         if (!ai->enabled())
@@ -24,9 +45,11 @@ void berlekamp::executeAi(Board *board, int player, QString name, QList<int> exp
         if (expectedLines.contains(aiLine)) {
             summary << "PASS " << name << ": " << ai->getName() << "\n";
         } else {
-            summary << "FAIL " << name << ": " << ai->getName() << ", returned: " << aiLine << ", expected: ";
+            summary << "FAIL " << name << ": " << ai->getName() << ", expected: ";
             for (int j = 0; j < expectedLines.size(); j++)
                 summary << QString::number(expectedLines[j]) << (j != expectedLines.size() - 1 ? "," : "");
+            summary << ", returned: " << aiLine << ":\n";
+            summary  << aiFunctions::linelistToString(QList<int>() << aiLine, aiFunctions::toLinesSize(board->width(), board->height()), board->width(), board->height()) << "\n\n";
             summary << "\n";
         }
     }

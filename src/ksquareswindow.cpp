@@ -218,7 +218,7 @@ void KSquaresWindow::resetBoard(int width, int height)
 {
   //create physical board
   GameBoardScene* temp = m_scene;
-  m_scene = new GameBoardScene(width, height, true);
+  m_scene = new GameBoardScene(width, height, Settings::displayLineNumbers());
 
   m_view->setScene(m_scene);
   delete temp;

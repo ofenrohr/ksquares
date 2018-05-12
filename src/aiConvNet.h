@@ -9,12 +9,14 @@
 #include "aicontroller.h"
 #include <zmq.hpp>
 #include <alphaDots/ExternalProcess.h>
+#include <alphaDots/ProtobufConnector.h>
 #include "DotsAndBoxesImage.pb.h"
 
 
 class aiConvNet : public KSquaresAi {
     public:
-        aiConvNet(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel, int thinkTime = 5000, AlphaDots::ModelInfo model = AlphaDots::ModelInfo());
+        aiConvNet(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel, int thinkTime = 5000,
+				  AlphaDots::ModelInfo model = AlphaDots::ProtobufConnector::getModelByName(QStringLiteral("AlphaZeroV7")));
 		~aiConvNet();
 
 		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory) override;

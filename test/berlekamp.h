@@ -21,6 +21,8 @@
 class berlekamp : public QObject {
 Q_OBJECT
 
+    static const int testAIs[];
+
     void executeAi(Board *board, int player, QString name, QList<int> expectedLines);
 
 private slots:
@@ -40,6 +42,6 @@ private slots:
     void testBerlekamp013(); // 17
 };
 
-#include "berlekamp.moc"
+//#include "berlekamp.moc"
 
 #endif

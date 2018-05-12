@@ -1,6 +1,7 @@
-# KSquares - AlphaDots
 
-KSquares is used for
+# AlphaDots in KSquares
+
+AlphaDots uses KSquares for
 
 * generating training data for [AlphaDots](AlphaDots.html)
 * viewing training data
@@ -13,6 +14,7 @@ Please make sure to corectly configure AlphaDots in KSquares by entering the
 Alpha Dots directory in KSquares -> Settings -> Configure KSquares -> Computer Player.
 
 Clone this git repository to get Alpha Dots:
+
 ```
 git clone https://gitlab.informatik.uni-bremen.de/ofenrohr/alphaDots.git
 ```
