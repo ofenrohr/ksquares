@@ -53,7 +53,7 @@ Like MCTS A,B,C but uses ConvNet for simulation.
 MCTS as described in the paper about [AlphaZero](https://arxiv.org/abs/1712.01815)
 
 
-## Tests
+## [Tests](Tests.html)
 
 You can run various test suites with `CMAKE_BUILD_DIR/test/ksquarestest`. Call
 `ksquarestest` without arguments to execute all available test suites. You

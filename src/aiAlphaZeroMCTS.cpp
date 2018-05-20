@@ -98,9 +98,16 @@ int aiAlphaZeroMCTS::mcts() {
     int mctsIterations = 0;
     // fill mcts tree
     //while (!mctsTimer.hasExpired(mctsTimeout))
+    for (const auto &child : mctsRootNode->children) {
+        child->prior_orig = child->prior;
+    }
     while (mctsIterations < mcts_iterations)
     {
         //applyDirichletNoiseToChildren(mctsRootNode, dirichlet_alpha / (linesSize - mctsRootNode->children.size()));
+        for (const auto &child : mctsRootNode->children) {
+            child->prior = child->prior_orig;
+        }
+        applyDirichletNoiseToChildren(mctsRootNode, dirichlet_alpha);
 
         AlphaZeroMCTSNode::Ptr node = selection(mctsRootNode);
         if (node.isNull()) { // sth failed
@@ -121,21 +128,7 @@ int aiAlphaZeroMCTS::mcts() {
         mctsIterations++;
         QCoreApplication::processEvents();
 
-        // debug stuff
-        /*
-        #!/usr/bin/bash
-        for file in /tmp/AlphaZeroMCTS.*.dot; do; dot -Tpng $file -o $(basename $file .dot).png; done
-         */
-        //qDebug().noquote() << "mcts node:" << mctsRootNode->toString();
-        /*
-        QFile graph(i18n("/tmp/AlphaZeroMCTS.") + QString::number(mctsIterations) + i18n(".dot"));
-        if (graph.open(QIODevice::ReadWrite | QIODevice::Truncate | QIODevice::Text)) {
-            QTextStream stream(&graph);
-            stream << "digraph {";
-            stream << mctsRootNode->toDotString();
-            stream << "}";
-        }
-         */
+
     }
 
     //qDebug() << "MCTS iterations: " << mctsIterations;
@@ -161,6 +154,20 @@ int aiAlphaZeroMCTS::mcts() {
         }
     }
 
+    // debug stuff
+    /*
+    #!/usr/bin/bash
+    for file in /tmp/AlphaZeroMCTS.*.dot; do; dot -Tpng $file -o $(basename $file .dot).png; done
+     */
+    //qDebug().noquote() << "mcts node:" << mctsRootNode->toString();
+    //QFile graph(i18n("/tmp/AlphaZeroMCTS.") + QString::number(mctsIterations) + i18n(".dot"));
+    QFile graph(i18n("/tmp/AlphaZeroMCTS.dot"));
+    if (graph.open(QIODevice::ReadWrite | QIODevice::Truncate | QIODevice::Text)) {
+        QTextStream stream(&graph);
+        stream << "digraph {";
+        stream << mctsRootNode->toDotString();
+        stream << "}";
+    }
 
     return line;
 }
@@ -234,10 +241,16 @@ bool aiAlphaZeroMCTS::predictPolicyValue(const AlphaZeroMCTSNode::Ptr &parentNod
 
     // put data into mcts nodes
     //int lineCnt = policyValueData.policy_size();
+    double priorSum = 0; // sum up prior to normalize
     parentNode->value = policyValueData.value();
     for (const auto &child : parentNode->children) {
         child->parent = parentNode;
         child->prior = policyValueData.policy(child->move);
+        priorSum += child->prior;
+    }
+    // normalize
+    for (const auto &child : parentNode->children) {
+        child->prior /= priorSum;
     }
 
     return true;

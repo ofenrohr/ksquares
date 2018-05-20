@@ -42,6 +42,4 @@ private slots:
     void testBerlekamp013(); // 17
 };
 
-//#include "berlekamp.moc"
-
 #endif

@@ -3,6 +3,7 @@
 #include "berlekamp.h"
 #include "hardAi.h"
 #include "aiboard.h"
+#include "alphazero.h"
 
 int main(int argc, char *argv[])
 {
@@ -65,6 +66,12 @@ int main(int argc, char *argv[])
             printf(" EXECUTING: aiboard\n");
             printf("~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=\n");
             status |= QTest::qExec(new aiboard, subargc, subargv);
+        }
+        if (all || argvec[i] == "alphazero") {
+            printf("~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=\n");
+            printf(" EXECUTING: alphazero\n");
+            printf("~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=\n");
+            status |= QTest::qExec(new alphazero, subargc, subargv);
         }
     }
     return status;

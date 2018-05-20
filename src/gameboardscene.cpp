@@ -71,10 +71,10 @@ GameBoardScene::GameBoardScene(int newWidth, int newHeight, bool displayLineNums
 		}
 		txt->setPos(txtPos);
 		txt->setZValue(1);
-        if (displayLineNumbers) {
-            addItem(txt);
-            update(txt->boundingRect());
-        }
+        txt->setVisible(displayLineNums);
+        lineNumbers.append(txt);
+        addItem(txt);
+        update(txt->boundingRect());
 	}
 
 	setBackgroundBrush(QBrush(Qt::white));
@@ -100,6 +100,9 @@ GameBoardScene::GameBoardScene(int newWidth, int newHeight, bool displayLineNums
 GameBoardScene::~GameBoardScene()
 {
     //qDebug() << "GameBoardScene::~GameBoardScene()";
+    for (QGraphicsTextItem *i : lineNumbers) {
+        delete i;
+    }
     delete indicatorLine;
 }
 
@@ -296,3 +299,9 @@ void GameBoardScene::mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent)
     QGraphicsScene::mouseMoveEvent(mouseEvent);
 }
 
+void GameBoardScene::setDebugLineDisplay(bool debugLines) {
+    displayLineNumbers = debugLines;
+    for (QGraphicsTextItem *i : lineNumbers) {
+        i->setVisible(displayLineNumbers);
+    }
+}

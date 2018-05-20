@@ -46,6 +46,8 @@ public:
 
     void acknowledgeMove(int x1, int y1, int x2, int y2);
 
+    void setDebugLineDisplay(bool debugLines);
+
 public slots:
     /**
      * Add the line to the scene so it shows up in the view
@@ -127,6 +129,9 @@ protected:
     bool acceptEvents;
     ///display line numbers for debugging purposes
     bool displayLineNumbers;
+
+    ///line number elements
+    QList<QGraphicsTextItem*> lineNumbers;
 
     //event handlers
     //void mousePressEvent (QGraphicsSceneMouseEvent* mouseEvent);

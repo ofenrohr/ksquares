@@ -59,6 +59,7 @@ public slots:
     int getAiLevel(int playerId);
     void aiChoseLine(const int &line); // testing only
 
+    void updateLineNumberDisplaySetting(int x);
 //	signals:
 //		void startAi(const QList<bool> &lines, const QList<int> &squares);
 

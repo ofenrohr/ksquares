@@ -74,6 +74,7 @@ configure_file( testboardpath.h.in ${CMAKE_CURRENT_BINARY_DIR}/generated/testboa
 include_directories( ${CMAKE_CURRENT_BINARY_DIR}/generated/ )
 
 #add_executable(ksquarestest ${ksquarestest_SRCS})
+
 link_libraries(ksquarestest
         KF5::Completion
         KF5::Crash
@@ -89,14 +90,17 @@ link_libraries(ksquarestest
 		GSL::gsl
 )
 
+
 add_executable(ksquarestest
 		main.cpp
+		testutils.cpp
         ${ksquarestest_SRCS}
         hardAi.cpp
         berlekamp.cpp
 		aiboard.cpp
+		alphazero.cpp
 )
-add_test(ksquarestest ksquarestest-hardai)
+#add_test(ksquarestest ksquarestest-hardai)
 
 #kde4_add_unit_test( test-hardai
 #  TESTNAME hardai

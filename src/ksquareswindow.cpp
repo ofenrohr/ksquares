@@ -174,7 +174,7 @@ void KSquaresWindow::gameReset()
     //create players
     QVector<KSquaresPlayer> playerList = KSquaresGame::createPlayers(Settings::numOfPlayers(), Settings::humanList());
 
-  //reset visible board
+    //reset visible board
 	resetBoard(Settings::boardWidth(), Settings::boardHeight());
 
 	// create ai
@@ -200,7 +200,7 @@ void KSquaresWindow::gameReset()
 		while (i.hasNext()) {
 			sGame->addLineToIndex(i.next());
 		}
-        disconnect(sGame, &KSquaresGame::highlightMove, m_scene, &GameBoardScene::highlightLine);
+        connect(sGame, &KSquaresGame::highlightMove, m_scene, &GameBoardScene::highlightLine);
 	}
 	sGame->start();
     playerTakeTurn(sGame->currentPlayer());
@@ -311,28 +311,45 @@ void KSquaresWindow::loadGame()
 {
     qDebug() << "loadGame";
     // TODO get filename!
-    QString filename; //QFileDialog::getOpenFileName(QUrl("kfiledialog:///ksquares"), "*.dbl|Dabble savegames\n*.ksq|KSquares savegames");
+    QFileDialog dialog(this);
+    dialog.setFileMode(QFileDialog::ExistingFile);
+    dialog.showExtension(true);
+    dialog.setNameFilter(tr("Dabble savegames (*.dbl);;KSquares savegames (*.ksq);;LaTeX Picture (*.tex);;LaTeX Strings and Coins Picture (*.sc.tex)"));
+    if (!dialog.exec()) {
+        return;
+    }
+    QString filename = dialog.selectedFiles().at(0);
     if (filename.isEmpty())
     {
         return;
-    }
-    ais.clear();
-    for (int i = 0; i < 2; i++)
-    {
-        int aiLevel = getAiLevel(i);
-        ais.append(aiController::Ptr(new aiController(i, 1, Settings::boardWidth(), Settings::boardHeight(), aiLevel, Settings::aiThinkTime()*1000, Settings::alphaDotsModel())));
     }
 
     QList<int> lines;
     KSquaresIO::loadGame(filename, sGame, &lines);
     resetBoard(sGame->board()->width(), sGame->board()->height());
     connectSignalsAndSlots();
+
+    // add all lines except the last one...
     for (int i = 0; i < lines.size()-1; i++)
     {
         sGame->addLineToIndex(lines.at(i));
     }
+
+    //create players
+    QVector<KSquaresPlayer> playerList = KSquaresGame::createPlayers(Settings::numOfPlayers(), Settings::humanList());
+
+    // reset ais
+    ais.clear();
+    for (int i = 0; i < 2; i++)
+    {
+        int aiLevel = getAiLevel(i);
+        ais.append(aiController::Ptr(new aiController(i, 1, sGame->board()->width(), sGame->board()->height(), aiLevel, Settings::aiThinkTime()*1000, Settings::alphaDotsModel())));
+    }
+
+//    sGame->createGame(playerList, Settings::boardWidth(), Settings::boardHeight());
+    // start the game
     sGame->start();
-    if (lines.size() > 0)
+    if (!lines.empty())
     {
         sGame->addLineToIndex(lines.at(lines.size()-1));
     }
@@ -355,6 +372,7 @@ void KSquaresWindow::saveGameAs()
 	// savegamePath = KFileDialog::getSaveFileName(QUrl("kfiledialog:///ksquares"), "*.dbl|Dabble savegames\n*.ksq|KSquares savegames\n*.tex|LaTeX Picture\n*.sc.tex|LaTeX Strings and Coins Picture");
     QFileDialog dialog(this);
     dialog.setFileMode(QFileDialog::AnyFile);
+    dialog.showExtension(true);
     dialog.setNameFilter(tr("Dabble savegames (*.dbl);;KSquares savegames (*.ksq);;LaTeX Picture (*.tex);;LaTeX Strings and Coins Picture (*.sc.tex)"));
     if (!dialog.exec()) {
         return;
@@ -437,6 +455,21 @@ void KSquaresWindow::optionsPreferences()
 	dialog->addPage(aiSettingsDialog, i18n("Computer Player"), QStringLiteral("games-difficult"));
 
     connect(dialog, &KConfigDialog::settingsChanged, m_view, &GameBoardView::setBoardSize);
+    // TODO this doesn't seem right?! there should be no need to explicitly capture changed states in the configuration page
+    connect(ui_prefs_display.kcfg_DisplayLineNumbers, SIGNAL(stateChanged(int)), this, SLOT(updateLineNumberDisplaySetting(int)));
     dialog->show();
+}
+
+void KSquaresWindow::updateLineNumberDisplaySetting(int x) {
+    qDebug() << "update line number display setting" << x;
+    Settings::setDisplayLineNumbers(x);
+    m_scene->setDebugLineDisplay(x!=0);
+    m_view->setBoardSize();
+    Settings::self()->save();
+    /*
+    if (sGame->isRunning()) {
+        resetBoard(sGame->board()->width(), sGame->board()->height());
+    }
+     */
 }
 

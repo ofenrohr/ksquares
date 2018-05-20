@@ -72,7 +72,7 @@
        <widget class="KColorButton" name="kcfg_HighlightColor"/>
       </item>
       <item row="3" column="0" colspan="2">
-       <widget class="QCheckBox" name="checkBox">
+       <widget class="QCheckBox" name="kcfg_DisplayLineNumbers">
         <property name="text">
          <string>Debug line numbers</string>
         </property>

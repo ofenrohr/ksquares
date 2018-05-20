@@ -95,7 +95,7 @@ namespace AlphaDots {
         // Hyperparameters
         double C_puct = 10.0;
         double dirichlet_alpha = 0.03;
-        double mcts_iterations = 10;
+        double mcts_iterations = 1000;
 
         /// time logging
         long turnTime;
