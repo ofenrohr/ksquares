@@ -163,7 +163,7 @@ KSquaresAi::Ptr aiController::getAi()
 		break;
 		case KSquares::AI_MCTS_ALPHAZERO:
 			if (ai.isNull())
-				ai = KSquaresAi::Ptr(new AlphaDots::aiAlphaZeroMCTS(playerId, maxPlayerId, width, height, KSquares::AI_CONVNET, aiThinkTime));
+				ai = KSquaresAi::Ptr(new AlphaDots::aiAlphaZeroMCTS(playerId, maxPlayerId, width, height, aiThinkTime));
 		break;
 	}
 	return ai;

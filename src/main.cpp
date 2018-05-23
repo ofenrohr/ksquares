@@ -18,6 +18,7 @@
 #include <KDBusService>
 #include <QtWidgets/QMessageBox>
 #include <alphaDots/ModelManager.h>
+#include <alphaDots/aiEvaluation/SelfPlay.h>
 
 #include "ksquareswindow.h"
 #include "ksquaresdemowindow.h"
@@ -70,7 +71,8 @@ int main(int argc, char **argv)
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("threads"), i18n("Number of threads for model evaluation and dataset generation (default: 4)"), i18n("threads")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("games"),
         i18n("Number of games played in evaluation against Easy,Medium and Hard each (default slow: 10, default fast: 100)"), i18n("threads")));
-    parser.addOption(QCommandLineOption(QStringList() <<  i18n("gpu"), i18n("When set, the model process will be allowed to use the GPU")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("gpu"), i18n("When set, the model process will be allowed to use the GPU. In combination with model evaluation of more than one model, this can cause problems when more than one model is evaluated.")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("self-play"), i18n("Generate training data in self-play")));
 
     about.setupCommandLine(&parser);
     parser.process(app);
@@ -161,6 +163,12 @@ int main(int argc, char **argv)
         }
     }
 
+    // get dataset destination
+    QString datasetDest = i18n("./");
+    if (parser.isSet(i18n("dataset-dest"))) {
+        datasetDest = parser.value(i18n("dataset-dest"));
+    }
+
     // allow gpu acceleration?
     if (parser.isSet(i18n("gpu"))) {
         AlphaDots::ModelManager::getInstance().allowGPU(true);
@@ -191,11 +199,6 @@ int main(int argc, char **argv)
             return 1;
         }
 
-        QString datasetDest = i18n("./");
-        if (parser.isSet(i18n("dataset-dest"))) {
-            datasetDest = parser.value(i18n("dataset-dest"));
-        }
-
         AlphaDots::MLDataGenerator *dataGenerator=nullptr;
         if (ok) {
             dataGenerator = new AlphaDots::MLDataGenerator(exampleCnt, datasetType, boardWidth, boardHeight, datasetDest, threads);
@@ -215,6 +218,9 @@ int main(int argc, char **argv)
     } else if (parser.isSet(i18n("model-list"))) {
         AlphaDots::ModelEvaluation::printModelList();
         return 0;
+    } else if (parser.isSet(i18n("self-play"))) {
+        AlphaDots::SelfPlay *selfPlay = new AlphaDots::SelfPlay(datasetDest, threads, i18n("AlphaZeroV7"), 1000);
+        selfPlay->show();
     } else {
         KSquaresWindow *mainWindow = new KSquaresWindow;
         mainWindow->show();

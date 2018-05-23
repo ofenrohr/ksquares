@@ -127,7 +127,7 @@ void ModelEvaluation::createTestSetups() {
     testSetups.clear();
 
     for (int m = 0; m < modelList.size(); m++) { // all models
-        for (int r = 2; r < 3; r++) { // ai easy, medium, hard (r = rule based ai id)
+        for (int r = 0; r < 3; r++) { // ai easy, medium, hard (r = rule based ai id)
             for (int i = 0; i < gamesPerAi / 2; i++) {
                 AITestSetup setup;
                 setup.aiLevelP1 = r;

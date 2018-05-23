@@ -2,12 +2,8 @@ ENABLE_TESTING()
 cmake_minimum_required(VERSION 2.8)
 
 find_package(GSL REQUIRED)
-add_executable(gsltest gsl.cpp)
-target_link_libraries(gsltest GSL::gsl)
 
-
-# --- old tests from bachelor's thesis ---
-set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOMOC OFF)
 set(CMAKE_AUTOUIC ON)
 
 # As moc files are generated in the binary dir, tell CMake
@@ -81,6 +77,7 @@ link_libraries(ksquarestest
         KF5::DBusAddons
         KF5::I18n
         KF5::XmlGui
+		Qt5::Core
         Qt5::Test
         KF5KDEGames
         #${QJSON_LIBRARIES}
@@ -99,6 +96,7 @@ add_executable(ksquarestest
         berlekamp.cpp
 		aiboard.cpp
 		alphazero.cpp
+		GSLTest.cpp
 )
 #add_test(ksquarestest ksquarestest-hardai)
 

@@ -4,6 +4,7 @@
 #include "hardAi.h"
 #include "aiboard.h"
 #include "alphazero.h"
+#include "GSLTest.h"
 
 int main(int argc, char *argv[])
 {
@@ -34,6 +35,7 @@ int main(int argc, char *argv[])
         memcpy(arg, argv[i+subarg_start], len);
         subargv[i+1] = argv[i+subarg_start];
     }
+    /*
     printf("argc: %d, subargc: %d, subarg_start: %d\nargs:\n", argc, subargc, subarg_start);
     for (int i = 0; i < argc; i++) {
         printf("%d: %s\n", i, argv[i]);
@@ -42,6 +44,7 @@ int main(int argc, char *argv[])
     for (int i = 0; i < subargc; i++) {
         printf("%d: %s\n", i, subargv[i]);
     }
+    */
 
 
     bool all = false;
@@ -72,6 +75,12 @@ int main(int argc, char *argv[])
             printf(" EXECUTING: alphazero\n");
             printf("~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=\n");
             status |= QTest::qExec(new alphazero, subargc, subargv);
+        }
+        if (all || argvec[i] == "GSLTest") {
+            printf("~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=\n");
+            printf(" EXECUTING: GSLTest\n");
+            printf("~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=\n");
+            status |= QTest::qExec(new GSLTest, subargc, subargv);
         }
     }
     return status;

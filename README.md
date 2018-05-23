@@ -48,10 +48,21 @@ network with the `AlphaDots model` drop down list.
 
 Like MCTS A,B,C but uses ConvNet for simulation.
 
+You can find the code in `src/aiConvNet.[h|cpp]`.
+
 ### AlphaZero
 
 MCTS as described in the paper about [AlphaZero](https://arxiv.org/abs/1712.01815)
 
+Relevant code files:
+
+```
+src/aiAlphaZeroMCTS.[h|cpp]
+src/AlphaZeroMCTSNode.[h|cpp]
+```
+
+There is a test suite called `alphazero` that tests some behaviour of the MCTS 
+algorithm.
 
 ## [Tests](Tests.html)
 

@@ -58,7 +58,7 @@ FIND_PACKAGE(Protobuf REQUIRED)
 find_package(ZLIB REQUIRED)
 #include_directories(${ZLIB_INCLUDE_DIRS})
 
-# gsl (gnu scientific library)
+# GSLTest (gnu scientific library)
 find_package(GSL REQUIRED)
 
 include(FeatureSummary)

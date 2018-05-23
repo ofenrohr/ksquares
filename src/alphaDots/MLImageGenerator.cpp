@@ -74,13 +74,16 @@ QImage MLImageGenerator::generateInputImage(QSharedPointer <aiBoard> board) {
     return img;
 }
 
-QImage MLImageGenerator::generateOutputImage(QSharedPointer <aiBoard> board, QSharedPointer <KSquaresAi> ai) {
+QImage MLImageGenerator::generateOutputImage(aiBoard::Ptr board, QSharedPointer <KSquaresAi> ai, int *line) {
     int imgWidth = board->width*2+3; // 1px border
     int imgHeight = board->height*2+3;
 
     QImage img(imgWidth, imgHeight, QImage::Format_ARGB32);
 
     int nextLine = ai->chooseLine(board->linesAsList(), board->squareOwners, QList<Board::Move_t>());
+    if (line != nullptr) {
+        *line = nextLine;
+    }
 
     drawBackgroundAndDots(img, false);
     drawLineAt(img, nextLine, board->width, board->height);
@@ -88,7 +91,7 @@ QImage MLImageGenerator::generateOutputImage(QSharedPointer <aiBoard> board, QSh
     return img;
 }
 
-QImage MLImageGenerator::generateOutputImage(QSharedPointer <aiBoard> board, QList<int> lines, bool drawDots) {
+QImage MLImageGenerator::generateOutputImage(aiBoard::Ptr board, QList<int> lines, bool drawDots) {
     int imgWidth = board->width*2+3; // 1px border
     int imgHeight = board->height*2+3;
 

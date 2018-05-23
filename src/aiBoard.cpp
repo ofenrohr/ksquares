@@ -12,6 +12,7 @@
 
 #include <QDebug>
 #include <sstream>
+#include <assert.h>
 
 aiBoard::aiBoard(bool *newLines, int newLinesSize, int newWidth, int newHeight, const QList<int> newSquareOwners, int newPlayerId, int newMaxPlayerId, QList<int> *newHashLines) : lines(newLines), linesSize(newLinesSize), width(newWidth), height(newHeight), squareOwners(newSquareOwners), playerId(newPlayerId), maxPlayerId(newMaxPlayerId), hashLines(newHashLines)
 {
@@ -65,6 +66,7 @@ void aiBoard::doMove(int line)
 		for (int i = 0; i < linesSize; i++)
 			lineDebug << ( lines[i] ? "1" : "0" );
 		qDebug() << "WARNING: adding an invalid line! line = " << line << ", lines = " << QString::fromStdString(lineDebug.str());
+		assert(false);
 		//return;
 	}
 	

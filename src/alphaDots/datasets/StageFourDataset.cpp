@@ -1,20 +1,20 @@
 //
-// Created by ofenrohr on 19.04.18.
+// Created by ofenrohr on 22.05.18.
 //
 
-#include <alphaDots/MLDataGenerator.h>
-#include <alphaDots/MLImageGenerator.h>
+#include <QtWidgets/QMessageBox>
 #include <alphaDots/cnpy.h>
 #include <QtCore/QDateTime>
-#include <QtWidgets/QMessageBox>
+#include <alphaDots/MLDataGenerator.h>
+#include <alphaDots/MLImageGenerator.h>
+#include <aiAlphaZeroMCTS.h>
 #include <aiEasyMediumHard.h>
-#include <cmath>
-#include "StageThreeDataset.h"
+#include "StageFourDataset.h"
 
 
 using namespace AlphaDots;
 
-StageThreeDataset::StageThreeDataset(bool gui, int w, int h, int thread, int threads) {
+StageFourDataset::StageFourDataset(bool gui, int w, int h, QString modelName, int thread, int threads) {
     isGUI = gui;
     width = w;
     height = h;
@@ -23,22 +23,29 @@ StageThreeDataset::StageThreeDataset(bool gui, int w, int h, int thread, int thr
     threadIdx = thread;
     threadCnt = threads;
 
-    qDebug() << "StageThreeDataset: ";
+    model = ProtobufConnector::getModelByName(modelName);
+
+    // init GSLTest
+    rng = gsl_rng_alloc(gsl_rng_taus);
+    gsl_rng_set(rng, std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+
+    qDebug() << "StageFourDataset: ";
     qDebug() << " |-> thread id: " << threadIdx;
     qDebug() << " |-> threads: " << threadCnt;
+    qDebug() << " |-> model: " << model.name();
 }
 
-StageThreeDataset::~StageThreeDataset() {
+StageFourDataset::~StageFourDataset() {
     cleanup();
 }
 
-void StageThreeDataset::cleanup() {
+void StageFourDataset::cleanup() {
     if (!isGUI) {
         //converter->stopExternalProcess();
     }
 }
 
-void StageThreeDataset::startConverter(int samples, QString destinationDirectory) {
+void StageFourDataset::startConverter(int samples, QString destinationDirectory) {
     sampleCnt = samples;
     destDir = destinationDirectory;
 
@@ -58,9 +65,9 @@ void StageThreeDataset::startConverter(int samples, QString destinationDirectory
     value = new std::vector<double>(sampleCnt);
 }
 
-void StageThreeDataset::stopConverter() {
+void StageFourDataset::stopConverter() {
     QString timeStr = QDateTime::currentDateTime().toString(QStringLiteral("-hh:mm-dd_MM_yyyy"));
-    std::string filename = "/StageThree-" + std::to_string(sampleCnt) + "-" + std::to_string(width) + "x" + std::to_string(height) + timeStr.toStdString() + ".npz";
+    std::string filename = "/StageFour-" + model.name().toStdString() + "-" + std::to_string(sampleCnt) + "-" + std::to_string(width) + "x" + std::to_string(height) + timeStr.toStdString() + ".npz";
     //std::string filename = "/StageThree.npz";
     if (!cnpy::npz_save(destDir.toStdString()+filename, "input", &(*input)[0], dataSize, "w")) {
         QMessageBox::critical(nullptr, QObject::tr("Error"), QObject::tr("failed to save input data"));
@@ -76,50 +83,46 @@ void StageThreeDataset::stopConverter() {
     delete value;
 }
 
-Dataset StageThreeDataset::generateDataset() {
-    // generate initial board
-    aiBoard::Ptr board = MLDataGenerator::generateRandomBoard(width, height, 15);
+Dataset StageFourDataset::generateDataset() {
+    // create board
+    aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(width, height));//MLDataGenerator::generateRandomBoard(width, height, 15);
 
-    // make some more moves
-    KSquaresAi::Ptr ai = KSquaresAi::Ptr(new aiEasyMediumHard(0, width, height, 2));
-    QList<int> freeLines = ai->getFreeLines(board->lines, board->linesSize);
+    // create ais
+    KSquaresAi::Ptr alphaZeroAi = KSquaresAi::Ptr(new aiAlphaZeroMCTS(0, 1, width, height, 5000, model));// aiEasyMediumHard(0, width, height, 2));
+    KSquaresAi::Ptr fastAi = KSquaresAi::Ptr(new aiEasyMediumHard(0, width, height, 2));
 
-    // add hard ai moves (smart moves)
-    int movesLeft = qrand() % freeLines.count() + 1;
-    MLDataGenerator::makeAiMoves(board, ai, movesLeft);
-    freeLines = ai->getFreeLines(board->lines, board->linesSize);
+    // add hard ai moves
+    int linesSize = aiFunctions::toLinesSize(width, height);
+    double maxMoves = linesSize - 1;
+    int movesLeft = gsl_ran_gaussian(rng, maxMoves/8.0) + maxMoves/2.0;
+    MLDataGenerator::makeAiMoves(board, fastAi, movesLeft);
 
-    // do sth random (stupid moves)
-    if (qrand() % 10 < 2) {
-        int rndLine = qrand() % freeLines.count();
-        board->doMove(freeLines[rndLine]);
-        freeLines.removeAt(rndLine);
-    }
+    int currentPlayer = board->playerId;
 
-    int currentPlayer = 1 - board->playerId;
-
-    // generate images
+    // generate input image
     QImage inputImage = MLImageGenerator::generateInputImage(board);
-    QImage outputImage = MLImageGenerator::generateOutputImage(board, ai);
+    // output image is generated with AlphaZero MCTS
+    int alphaZeroLine = -1;
+    QImage outputImage = MLImageGenerator::generateOutputImage(board, alphaZeroAi, &alphaZeroLine);
+    board->doMove(alphaZeroLine);
 
     // calculate value
     double val = 0;
-    int freeLinesCnt = freeLines.size();
     QList<int> extraLines;
-    for (int i = 0; i < freeLinesCnt; i++) {
-        int line = ai->chooseLine(board->linesAsList(), board->squareOwners, QList<Board::Move_t>());
+    for (int i = 1; i < movesLeft; i++) {
+        int line = fastAi->chooseLine(board->linesAsList(), board->squareOwners, QList<Board::Move_t>());
         board->doMove(line);
         extraLines.prepend(line);
     }
     for (const auto &owner: board->squareOwners) {
         val += owner == currentPlayer ? 1 : -1;
     }
-    val /= 0.8 * board->squareOwners.size();
+    val /= board->squareOwners.size();
 
     // return gui dataset
     if (isGUI) {
-        for (const auto &line : extraLines) {
-            board->undoMove(line);
+        for (const auto &l: extraLines) {
+            board->undoMove(l);
         }
         return Dataset(inputImage, outputImage, val, board);
     }

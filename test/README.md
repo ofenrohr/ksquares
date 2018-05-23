@@ -214,3 +214,24 @@ Input:                   Expected output:
          |     |                         
 +  +  +  +  +  +         +  +  +  +  +  +
 ```
+
+## AlphaZero
+
+Execute the AlphaZero test suite by running the following command:
+
+```
+ksquarestest alphazero
+```
+
+### AlphaZero 001
+
+This tests executes AlphaZero MCTS on Berlekamp 003. It was used to debug
+the MCTS algorithm. The Monte-Carlo Tree was printed in dot-format to the 
+`/tmp` directory. It was then converted to a png image with graphviz.
+
+Take a look at the 
+[example Monte-Carlo tree](AlphaZeroMCTS.png)
+to get an impression. The first number in each node is the line number that
+this node represents. All line numbers are displayed in the following image.
+
+![Berlekamp 003 with line numbers](berlekamp-003-debug.png)

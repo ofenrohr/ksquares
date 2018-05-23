@@ -25,7 +25,6 @@ namespace AlphaDots {
         double value;
         /// prior probability (P) of this node according to the policy network
         double prior;
-        double prior_orig;
         /// lines drawn to get from parent node to this one
         int move;
 

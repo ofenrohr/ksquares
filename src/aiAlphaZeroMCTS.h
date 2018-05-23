@@ -21,7 +21,7 @@ namespace AlphaDots {
         // KSquaresAi interface stuff
         //==========================
 
-        aiAlphaZeroMCTS(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel,
+        aiAlphaZeroMCTS(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight,
                         int thinkTime = 5000, ModelInfo model = ProtobufConnector::getModelByName(i18n("AlphaZeroV7")));
 
         ~aiAlphaZeroMCTS();
@@ -72,7 +72,7 @@ namespace AlphaDots {
         /// board height in squares
         int height;
         /// The strength of the ai
-        int level;
+        //int level;
         /// List of the owners of each square
         QList<int> squareOwners;
         /// Array of the lines on the board
@@ -89,13 +89,16 @@ namespace AlphaDots {
         zmq::context_t context;
         zmq::socket_t socket;
 
-        // gsl random number generator
+        // GSLTest random number generator
         gsl_rng *rng;
 
         // Hyperparameters
         double C_puct = 10.0;
         double dirichlet_alpha = 0.03;
         double mcts_iterations = 1000;
+
+        // list of original prior values
+        QList<double> original_priors;
 
         /// time logging
         long turnTime;

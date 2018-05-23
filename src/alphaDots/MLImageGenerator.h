@@ -37,7 +37,7 @@ namespace AlphaDots {
 
         static QImage generateInputImage(QSharedPointer<aiBoard> board);
 
-        static QImage generateOutputImage(QSharedPointer<aiBoard> board, QSharedPointer<KSquaresAi> ai);
+        static QImage generateOutputImage(QSharedPointer<aiBoard> board, QSharedPointer<KSquaresAi> ai, int *line=nullptr);
 
         static QImage generateOutputImage(QSharedPointer<aiBoard> board, QList<int> lines, bool drawDots = false);
 

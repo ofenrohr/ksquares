@@ -93,7 +93,7 @@ GameBoardScene::GameBoardScene(int newWidth, int newHeight, bool displayLineNums
 	rect.setLeft(rect.left() - border);
 	rect.setRight(rect.right() + border);
 	rect.setTop(rect.top() - border);
-	rect.setBottom(rect.bottom() + border);
+	rect.setBottom(rect.bottom() + border - 20);
 	setSceneRect(rect);
 }
 

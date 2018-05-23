@@ -66,6 +66,8 @@ set(ksquares_SRCS
 		alphaDots/datasets/StageThreeDataset.cpp
 		alphaDots/MLImageGenerator.cpp
 		alphaDots/aiEvaluation/SelfPlay.cpp
+		alphaDots/aiEvaluation/SelfPlayWorker.cpp
+		alphaDots/datasets/StageFourDataset.cpp
 		)
 
 file(GLOB protoMessages alphaDots/protobuf/*.proto)
@@ -77,7 +79,15 @@ message(ProtoHeaders: ${ProtoHeaders})
 include_directories(${CMAKE_SOURCE_DIR}/libKF5KDEGames/highscore ${ZeroMQ_INCLUDE_DIR} ${ZLIB_INCLUDE_DIRS})
 
 
-ki18n_wrap_ui(ksquares_SRCS newgamewidget.ui scoreswidget.ui prefs_ai.ui prefs_display.ui alphaDots/mldataview.ui alphaDots/modelEvaluation/ModelEvaluation.ui)
+ki18n_wrap_ui(ksquares_SRCS
+		newgamewidget.ui
+		scoreswidget.ui
+		prefs_ai.ui
+		prefs_display.ui
+		alphaDots/mldataview.ui
+		alphaDots/modelEvaluation/ModelEvaluation.ui
+        alphaDots/aiEvaluation/SelfPlayForm.ui
+)
 
 kconfig_add_kcfg_files(ksquares_SRCS GENERATE_MOC settings.kcfgc)
 

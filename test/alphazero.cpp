@@ -13,7 +13,7 @@
 #include "testboardpath.h"
 
 void alphazero::testAlphaZero001() {
-    AlphaDots::ModelManager::getInstance().allowGPU(true);
+    //AlphaDots::ModelManager::getInstance().allowGPU(true);
 
     QList<int> lines;
     QScopedPointer<KSquaresGame> sGame(new KSquaresGame());

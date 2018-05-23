@@ -16,6 +16,7 @@
 #include <alphaDots/datasets/StageTwoDataset.h>
 #include <alphaDots/datasets/StageThreeDataset.h>
 #include <cmath>
+#include <alphaDots/datasets/StageFourDataset.h>
 #include "aiEasyMediumHard.h"
 #include "MLDataGeneratorWorkerThread.h"
 #include "ExternalProcess.h"
@@ -100,7 +101,11 @@ void MLDataGenerator::selectGenerator(int gen) {
             break;
         case 5:
             guiGenerator = DatasetGenerator::Ptr(new StageThreeDataset(true, datasetWidth, datasetHeight));
-            qDebug() << "selected training sequence generator";
+            qDebug() << "selected stage three generator";
+            break;
+        case 6:
+            guiGenerator = DatasetGenerator::Ptr(new StageFourDataset(true, datasetWidth, datasetHeight, tr("AlphaZeroV7")));
+            qDebug() << "selected stage four generator";
             break;
         default:
             break;
@@ -143,6 +148,8 @@ DatasetGenerator::Ptr MLDataGenerator::getDatasetGenerator(int thread) {
             return StageTwoDataset::Ptr(new StageTwoDataset(false, datasetWidth, datasetHeight, thread, threadCnt));
         case StageThree:
             return StageThreeDataset::Ptr(new StageThreeDataset(false, datasetWidth, datasetHeight, thread, threadCnt));
+        case StageFour:
+            return StageFourDataset::Ptr(new StageFourDataset(false, datasetWidth, datasetHeight, tr("AlphaZeroV7"), thread, threadCnt));
     }
     return DatasetGenerator::Ptr(nullptr);
 }
@@ -218,10 +225,10 @@ void MLDataGenerator::dataGeneratorFinished(int threadIdx) {
 }
 
 void MLDataGenerator::generateGUIexample() {
+    statusLbl->setText(tr("generating example..."));
+
     frameCnt = aiFunctions::toLinesSize(datasetWidth, datasetHeight);
     displayFrame = -1;
-
-
 
     guiDataset = guiGenerator->generateDataset();
     aiBoard::Ptr board;
@@ -281,14 +288,18 @@ void MLDataGenerator::generateGUIexample() {
     updateGameBoardScene(board);
 
     // display board images
+    inputLbl->setMinimumSize(inputImage.width()*10, inputImage.height()*10);
     inputLbl->setPixmap(QPixmap::fromImage(inputImage).scaled(inputLbl->width(), inputLbl->height(), Qt::KeepAspectRatio));
     outputLbl->setPixmap(
             QPixmap::fromImage(outputImage).scaled(outputLbl->width(), outputLbl->height(), Qt::KeepAspectRatio));
+    outputLbl->setMinimumSize(outputImage.width()*10, outputImage.height()*10);
     valueLbl->setText(QString::number(value));
 
     // display frame progress
     turnSlider->setMaximum(frameCnt-1);
     turnSlider->setValue(displayFrame);
+
+    statusLbl->setText(tr(""));
 }
 
 void MLDataGenerator::updateGameBoardScene(aiBoard::Ptr board) {
@@ -379,8 +390,11 @@ int MLDataGenerator::makeAiMove(aiBoard::Ptr board, KSquaresAi::Ptr ai) {
 
 QList<int> MLDataGenerator::makeAiMoves(aiBoard::Ptr board, KSquaresAi::Ptr ai, int freeLinesLeft) {
     QList<int> moves;
-    while (aiFunctions::getFreeLines(board->lines, board->linesSize).count() > freeLinesLeft) {
+    int freeLines = aiFunctions::getFreeLines(board->lines, board->linesSize).count();
+    int i = 0;
+    while (freeLines - i > freeLinesLeft) {
         moves.append(makeAiMove(board, ai));
+        i++;
     }
     return moves;
 }

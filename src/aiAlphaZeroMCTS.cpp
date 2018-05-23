@@ -14,9 +14,9 @@
 
 using namespace AlphaDots;
 
-aiAlphaZeroMCTS::aiAlphaZeroMCTS(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel,
+aiAlphaZeroMCTS::aiAlphaZeroMCTS(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight,
                                  int thinkTime, ModelInfo model) :
-        KSquaresAi(newWidth, newHeight), playerId(newPlayerId), maxPlayerId(newMaxPlayerId), level(newLevel),
+        KSquaresAi(newWidth, newHeight), playerId(newPlayerId), maxPlayerId(newMaxPlayerId),
         mctsTimeout(thinkTime), context(zmq::context_t(1)), socket(zmq::socket_t(context, ZMQ_REQ))
 {
     // setup basics
@@ -45,7 +45,7 @@ aiAlphaZeroMCTS::aiAlphaZeroMCTS(int newPlayerId, int newMaxPlayerId, int newWid
         isTainted = true;
     }
 
-    // init gsl
+    // init GSLTest
     rng = gsl_rng_alloc(gsl_rng_taus);
     gsl_rng_set(rng, std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
 }
@@ -98,14 +98,12 @@ int aiAlphaZeroMCTS::mcts() {
     int mctsIterations = 0;
     // fill mcts tree
     //while (!mctsTimer.hasExpired(mctsTimeout))
-    for (const auto &child : mctsRootNode->children) {
-        child->prior_orig = child->prior;
-    }
     while (mctsIterations < mcts_iterations)
     {
-        //applyDirichletNoiseToChildren(mctsRootNode, dirichlet_alpha / (linesSize - mctsRootNode->children.size()));
+        // reset priors, then apply dirichlet noise
+        int i = 0;
         for (const auto &child : mctsRootNode->children) {
-            child->prior = child->prior_orig;
+            child->prior = original_priors[i++];
         }
         applyDirichletNoiseToChildren(mctsRootNode, dirichlet_alpha);
 
@@ -125,10 +123,16 @@ int aiAlphaZeroMCTS::mcts() {
             break;
         }
 
+        // remember priors of root node
+        if (mctsIterations == 0) {
+            original_priors.clear();
+            for (const auto &child : mctsRootNode->children) {
+                original_priors.append(child->prior);
+            }
+        }
+
         mctsIterations++;
         QCoreApplication::processEvents();
-
-
     }
 
     //qDebug() << "MCTS iterations: " << mctsIterations;

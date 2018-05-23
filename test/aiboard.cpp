@@ -94,4 +94,4 @@ void aiboard::testAiBoard002()
 }
 
 //QTEST_MAIN(aiboard)
-#include "aiboard.moc"
+//#include "aiboard.moc"
