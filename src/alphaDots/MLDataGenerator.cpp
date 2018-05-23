@@ -122,7 +122,10 @@ void MLDataGenerator::initObject() {
         case LSTM2: generatorIndex = 4; break;
         case StageTwo: generatorIndex = 1; break;
         case StageThree: generatorIndex = 5; break;
-        default: QMessageBox::critical(this, tr("Error"), tr("[MLDataGenerator] Unknown dataset type")); QCoreApplication::exit(1);
+        case StageFour: generatorIndex = 6; break;
+        default:
+            QMessageBox::critical(this, tr("Error"), tr("[MLDataGenerator] Unknown dataset type"));
+            generatorIndex = 0;
     }
     selectGenerator(generatorIndex);
     generatorSelector->setCurrentIndex(generatorIndex);

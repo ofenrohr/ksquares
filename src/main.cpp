@@ -157,6 +157,8 @@ int main(int argc, char **argv)
             datasetType = AlphaDots::StageTwo;
         } else if (datasetGeneratorParam == i18n("stagethree")) {
             datasetType = AlphaDots::StageThree;
+        } else if (datasetGeneratorParam == i18n("stagefour")) {
+            datasetType = AlphaDots::StageFour;
         } else {
             QMessageBox::critical(nullptr, i18n("Error"), i18n("ERROR: unknown dataset-generator"));
             return 1;
