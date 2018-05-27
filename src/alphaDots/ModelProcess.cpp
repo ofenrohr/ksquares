@@ -51,3 +51,7 @@ bool ModelProcess::isRunning() {
 int ModelProcess::port() {
     return modelPort;
 }
+
+void ModelProcess::stop() {
+    modelServer->stopExternalProcess();
+}

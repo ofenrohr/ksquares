@@ -95,7 +95,7 @@ namespace AlphaDots {
         // Hyperparameters
         double C_puct = 10.0;
         double dirichlet_alpha = 0.03;
-        double mcts_iterations = 1000;
+        double mcts_iterations = 50;
 
         // list of original prior values
         QList<double> original_priors;

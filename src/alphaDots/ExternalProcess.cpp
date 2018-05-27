@@ -155,6 +155,7 @@ void ExternalProcess::processFinished(const int &exitCode, const QProcess::ExitS
 	qDebug() << "exit status: " << (exitStatus == QProcess::NormalExit ? "normal" : "crash");
 
 	processRunning = false;
+	emit processFinished();
 }
 
 void ExternalProcess::processReadyReadStandardError() {

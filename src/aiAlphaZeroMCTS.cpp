@@ -87,6 +87,7 @@ int aiAlphaZeroMCTS::chooseLine(const QList<bool> &newLines, const QList<int> &n
     }
 
     turnTime = moveTimer.elapsed();
+    qDebug() << "alphaZeroMCTS selected line";
     return line;
 }
 
@@ -95,10 +96,10 @@ int aiAlphaZeroMCTS::mcts() {
     mctsTimer.start();
     mctsRootNode = AlphaZeroMCTSNode::Ptr(new AlphaZeroMCTSNode());
 
-    int mctsIterations = 0;
+    int finishedIterations = 0;
     // fill mcts tree
     //while (!mctsTimer.hasExpired(mctsTimeout))
-    while (mctsIterations < mcts_iterations)
+    while (finishedIterations < mcts_iterations)
     {
         // reset priors, then apply dirichlet noise
         int i = 0;
@@ -124,18 +125,18 @@ int aiAlphaZeroMCTS::mcts() {
         }
 
         // remember priors of root node
-        if (mctsIterations == 0) {
+        if (finishedIterations == 0) {
             original_priors.clear();
             for (const auto &child : mctsRootNode->children) {
                 original_priors.append(child->prior);
             }
         }
 
-        mctsIterations++;
+        finishedIterations++;
         QCoreApplication::processEvents();
     }
 
-    //qDebug() << "MCTS iterations: " << mctsIterations;
+    //qDebug() << "MCTS iterations: " << finishedIterations;
 
     // select most promising move
     // TODO: update
@@ -164,7 +165,9 @@ int aiAlphaZeroMCTS::mcts() {
     for file in /tmp/AlphaZeroMCTS.*.dot; do; dot -Tpng $file -o $(basename $file .dot).png; done
      */
     //qDebug().noquote() << "mcts node:" << mctsRootNode->toString();
-    //QFile graph(i18n("/tmp/AlphaZeroMCTS.") + QString::number(mctsIterations) + i18n(".dot"));
+    //QFile graph(i18n("/tmp/AlphaZeroMCTS.") + QString::number(finishedIterations) + i18n(".dot"));
+
+    /*
     QFile graph(i18n("/tmp/AlphaZeroMCTS.dot"));
     if (graph.open(QIODevice::ReadWrite | QIODevice::Truncate | QIODevice::Text)) {
         QTextStream stream(&graph);
@@ -172,6 +175,7 @@ int aiAlphaZeroMCTS::mcts() {
         stream << mctsRootNode->toDotString();
         stream << "}";
     }
+     */
 
     return line;
 }

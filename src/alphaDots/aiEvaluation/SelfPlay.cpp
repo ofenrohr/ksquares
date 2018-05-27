@@ -7,6 +7,11 @@
 #include <QDebug>
 #include <alphaDots/ProtobufConnector.h>
 #include <alphaDots/MLImageGenerator.h>
+#include <alphaDots/datasets/StageFourDataset.h>
+#include <alphaDots/ExternalProcess.h>
+#include <settings.h>
+#include <QtWidgets/QMessageBox>
+#include <alphaDots/ModelManager.h>
 #include "SelfPlay.h"
 #include "SelfPlayWorker.h"
 
@@ -42,6 +47,8 @@ SelfPlay::SelfPlay(QString datasetDest, int threads, QString initialModelName, i
     output = nullptr;
     value = nullptr;
 
+    alphaZeroV10Training = ExternalProcess::Ptr(nullptr);
+
     assert(iterationSize % threads == 0);
 
     QTimer::singleShot(0, this, &SelfPlay::initObject);
@@ -55,6 +62,7 @@ void SelfPlay::initObject() {
     setupGUI();
 
     setupIteration();
+    trainingStatusLbl->setText(tr("waiting for data..."));
 }
 
 void SelfPlay::updateInfo() {
@@ -68,6 +76,7 @@ void SelfPlay::updateInfo() {
 
 void SelfPlay::setupIteration() {
     iteration++;
+    gamesCompleted = 0;
 
     // prepare the data containers
     if (input != nullptr && output != nullptr && value != nullptr) {
@@ -89,9 +98,31 @@ void SelfPlay::setupIteration() {
     threadRunning.clear();
 
     // start the threads
+    int examplesCnt = 64; // todo: parameterize
+    QString datasetDestDir = QStringLiteral(""); // todo: parameterize
+
+    threadGenerators.clear();
     for (int i = 0; i < threadCnt; i++) {
+        StageFourDataset::Ptr gen = StageFourDataset::Ptr(new StageFourDataset(false,
+                                                                               currentBoardSize.x(),
+                                                                               currentBoardSize.y(),
+                                                                               currentModel.name(),
+                                                                               i,
+                                                                               threadCnt));
+        threadGenerators.append(gen);
+        if (i == 0) {
+            gen->startConverter(examplesCnt, datasetDestDir);
+            input = gen->getInputData();
+            output = gen->getPolicyData();
+            value = gen->getValueData();
+        } else {
+            gen->setInputData(input);
+            gen->setPolicyData(output);
+            gen->setValueData(value);
+        }
+
         auto *thread = new QThread();
-        auto *worker = new SelfPlayWorker(i, iterationSize / threadCnt, currentModel, input, output, value);
+        auto *worker = new SelfPlayWorker(gen, i, iterationSize / threadCnt, currentModel, input, output, value);
         worker->moveToThread(thread);
         connect(thread, SIGNAL(started()), worker, SLOT(process()));
         connect(worker, SIGNAL(finished(int)), thread, SLOT(quit()));
@@ -106,16 +137,68 @@ void SelfPlay::setupIteration() {
     updateInfo();
 }
 
+void SelfPlay::recvProgress(int progress, int thread) {
+    QMutexLocker locker(&recvProgressMutex);
+    gamesCompleted++;
+    updateInfo();
+}
+
 void SelfPlay::threadFinished(int thread) {
+    QMutexLocker locker(&threadFinishedMutex);
+
     threadRunning[thread] = false;
     bool done = true;
     for (const auto &i : threadRunning) {
         done = !i && done;
     }
-    finishIteration();
-    setupIteration();
+    if (done) {
+        finishIteration();
+        setupIteration();
+    }
+}
+
+void SelfPlay::trainingFinished() {
+    trainingStatusLbl->setText(tr("waiting for new data..."));
 }
 
 void SelfPlay::finishIteration() {
+    // stop model process to free up gpu
+    // (do this before saving data so give it a little time to stop)
+    ModelManager::getInstance().stopAll();
+
     // save data
+    threadGenerators[0]->stopConverter();
+    QString datasetPath = threadGenerators[0]->getDatasetPath();
+
+    // start training on new data
+    QString processPath = Settings::pythonExecutable();
+    QStringList processArgs;
+    processArgs
+            << tr("modelServer/models/alphaZeroV10.py")
+            << tr("--dataset")
+            << datasetPath
+            << tr("--iteration")
+            << QString::number(iteration)
+            << tr("--epochs")
+            << tr("10")
+            ;
+    if (alphaZeroV10Training.isNull()) {
+        alphaZeroV10Training = ExternalProcess::Ptr(new ExternalProcess(processPath, processArgs));
+    } else {
+        if (alphaZeroV10Training->isRunning()) {
+            QMessageBox::critical(this, tr("SelfPlay error"),
+                                  tr("Training takes longer than generating data. sth seems wrong! Waiting for training to finish..."));
+            while (alphaZeroV10Training->isRunning()) {
+                QThread::sleep(1000);
+            }
+        }
+        disconnect(alphaZeroV10Training.data(), SIGNAL(processFinished()), this, SLOT(trainingFinished()));
+        alphaZeroV10Training = ExternalProcess::Ptr(new ExternalProcess(processPath, processArgs));
+    }
+    connect(alphaZeroV10Training.data(), SIGNAL(processFinished()), this, SLOT(trainingFinished()));
+    if (!alphaZeroV10Training->startExternalProcess()) {
+        QMessageBox::critical(this, tr("SelfPlay error"),
+                              tr("Failed to start external process for training!"));
+    }
+    trainingStatusLbl->setText(tr("training..."));
 }

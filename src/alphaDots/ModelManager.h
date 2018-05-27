@@ -42,6 +42,11 @@ namespace AlphaDots {
          */
         void allowGPU(bool allowGPU);
 
+        /**
+         * Stops all running model processes
+         */
+        void stopAll();
+
     private:
         ModelManager() = default;
 

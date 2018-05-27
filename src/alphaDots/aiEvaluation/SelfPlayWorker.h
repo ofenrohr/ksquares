@@ -8,11 +8,14 @@
 
 #include <QtCore/QObject>
 #include <alphaDots/ModelInfo.h>
+#include <alphaDots/datasets/DatasetGenerator.h>
 
 namespace AlphaDots {
     class SelfPlayWorker : public QObject {
+    Q_OBJECT
     public:
-        SelfPlayWorker(int threadIndex,
+        SelfPlayWorker(DatasetGenerator::Ptr generator,
+                       int threadIndex,
                        int samples,
                        ModelInfo &modelInfo,
                        std::vector<uint8_t> *inputData,
@@ -23,11 +26,14 @@ namespace AlphaDots {
         void process();
 
     signals:
+        void progress(int samplesGenerated, int threadID);
         void finished(int threadID);
 
     private:
+        DatasetGenerator::Ptr datasetGen;
         int threadIdx;
         int sampleCnt;
+        int samplesGenerated;
         ModelInfo model;
         std::vector<uint8_t> *input;
         std::vector<uint8_t> *output;

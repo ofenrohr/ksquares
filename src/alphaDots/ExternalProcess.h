@@ -14,6 +14,8 @@
 class ExternalProcess : public QObject {
 Q_OBJECT
 public:
+    typedef QSharedPointer<ExternalProcess> Ptr;
+
     ExternalProcess(QString processPath, QStringList arguments);
     ~ExternalProcess();
     /**
@@ -35,6 +37,9 @@ public slots:
     void processReadyReadStandardOutput();
 
     void processEvents();
+
+signals:
+    void processFinished();
 
 protected:
     QString processExecutablePath;

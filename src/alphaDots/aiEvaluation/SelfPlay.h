@@ -7,6 +7,9 @@
 
 #include <KXmlGui/KXmlGuiWindow>
 #include <alphaDots/ModelInfo.h>
+#include <alphaDots/ExternalProcess.h>
+#include <alphaDots/datasets/StageFourDataset.h>
+#include <QtCore/QMutexLocker>
 #include "ui_SelfPlayForm.h"
 
 namespace AlphaDots {
@@ -24,7 +27,11 @@ namespace AlphaDots {
         void finishIteration();
 
     public slots:
+        void recvProgress(int progress, int thread);
+
         void threadFinished(int thread);
+
+        void trainingFinished();
 
     private:
         QWidget *m_view;
@@ -41,11 +48,19 @@ namespace AlphaDots {
         int iteration;
         int gamesCompleted;
         QList<bool> threadRunning;
+        QList<StageFourDataset::Ptr> threadGenerators;
+
+        // mutex lockers
+        mutable QMutex recvProgressMutex;
+        mutable QMutex threadFinishedMutex;
 
         // data container for one iteration
         std::vector<uint8_t> *input;
         std::vector<uint8_t> *output;
         std::vector<double> *value;
+
+        // training process
+        ExternalProcess::Ptr alphaZeroV10Training;
     };
 }
 

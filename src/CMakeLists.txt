@@ -68,7 +68,7 @@ set(ksquares_SRCS
 		alphaDots/aiEvaluation/SelfPlay.cpp
 		alphaDots/aiEvaluation/SelfPlayWorker.cpp
 		alphaDots/datasets/StageFourDataset.cpp
-		)
+        alphaDots/ProtobufBatch.cpp alphaDots/ProtobufBatch.h)
 
 file(GLOB protoMessages alphaDots/protobuf/*.proto)
 PROTOBUF_GENERATE_CPP(ProtoSrcs ProtoHeaders ${protoMessages})

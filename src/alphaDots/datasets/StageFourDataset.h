@@ -35,6 +35,10 @@ namespace AlphaDots {
 
         void cleanup() override;
 
+
+        // StageFourDataset specific stuff:
+        QString getDatasetPath() {return datasetPath;}
+
     protected:
         int width;
         int height;
@@ -53,6 +57,7 @@ namespace AlphaDots {
         std::vector<double> *value;
         ModelInfo model;
         gsl_rng *rng;
+        QString datasetPath;
     };
 }
 

@@ -49,3 +49,9 @@ void ModelManager::sleep(int ms) {
 void ModelManager::allowGPU(bool allowGPU) {
     useGPU = allowGPU;
 }
+
+void ModelManager::stopAll() {
+    for (const auto &process : processMap) {
+        process->stop();
+    }
+}
