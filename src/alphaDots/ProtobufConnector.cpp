@@ -14,6 +14,8 @@
 using namespace AlphaDots;
 
 QList<ModelInfo> ProtobufConnector::cachedModelList;
+QMutex ProtobufConnector::getModelListMutex;
+QMutex ProtobufConnector::getModelByNameMutex;
 
 DotsAndBoxesImage ProtobufConnector::dotsAndBoxesImageToProtobuf(QImage img) {
     DotsAndBoxesImage ret;
@@ -119,6 +121,7 @@ QImage ProtobufConnector::fromProtobuf(std::string msg) {
 }
 
 QList<ModelInfo> ProtobufConnector::getModelList() {
+    QMutexLocker locker(&getModelListMutex);
     if (!cachedModelList.isEmpty()) {
         return cachedModelList;
     }
@@ -165,6 +168,7 @@ QList<ModelInfo> ProtobufConnector::getModelList() {
 }
 
 ModelInfo ProtobufConnector::getModelByName(QString name) {
+    QMutexLocker locker(&getModelByNameMutex);
     QList<ModelInfo> modelList = getModelList();
     for (auto model : modelList) {
         if (model.name() == name) {

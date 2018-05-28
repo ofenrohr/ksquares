@@ -14,7 +14,7 @@ namespace AlphaDots {
     class SelfPlayWorker : public QObject {
     Q_OBJECT
     public:
-        SelfPlayWorker(DatasetGenerator::Ptr generator,
+        SelfPlayWorker(DatasetGenerator *generator,
                        int threadIndex,
                        int samples,
                        ModelInfo &modelInfo,
@@ -30,7 +30,7 @@ namespace AlphaDots {
         void finished(int threadID);
 
     private:
-        DatasetGenerator::Ptr datasetGen;
+        DatasetGenerator *datasetGen;
         int threadIdx;
         int sampleCnt;
         int samplesGenerated;

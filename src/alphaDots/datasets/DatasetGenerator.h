@@ -20,7 +20,7 @@ namespace AlphaDots {
         virtual Dataset generateDataset() = 0;
 
         virtual void startConverter(int examplesCnt, QString destinationDirectory) = 0;
-        virtual void stopConverter() {};
+        virtual bool stopConverter() { return true; };
 
         virtual void cleanup() {}
 

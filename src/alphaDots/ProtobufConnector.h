@@ -14,6 +14,7 @@
 #include <ModelList.pb.h>
 #include <AlphaZeroMCTSNode.h>
 #include <aiBoard.h>
+#include <QtCore/QMutex>
 #include "ModelInfo.h"
 
 namespace AlphaDots {
@@ -58,6 +59,8 @@ namespace AlphaDots {
 
     private:
         static QList<ModelInfo> cachedModelList;
+        static QMutex getModelListMutex;
+        static QMutex getModelByNameMutex;
     };
 }
 

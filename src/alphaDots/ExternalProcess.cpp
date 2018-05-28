@@ -18,6 +18,7 @@ ExternalProcess::~ExternalProcess() {
     if (!stopExternalProcess()) {
         qDebug() << "failed to stop process";
     }
+	QCoreApplication::processEvents();
 }
 
 bool ExternalProcess::startExternalProcess() {
@@ -66,20 +67,15 @@ bool ExternalProcess::startExternalProcess() {
 		return false;
 	}
 
-	QTimer::singleShot(1000, this, &ExternalProcess::processEvents);
+	//QTimer::singleShot(1000, this, &ExternalProcess::processEvents);
 
     return true;
 }
 
 bool ExternalProcess::stopExternalProcess() {
-	//qDebug() << "stopExternalProcess()";
-	if (process!=nullptr)
+	if (process != nullptr)
 	{
-		disconnect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(processError(QProcess::ProcessError)));
-		disconnect(process, SIGNAL(stateChanged(QProcess::ProcessState)), this, SLOT(processStateChanged(QProcess::ProcessState)));
-		disconnect(process, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(processFinished(int, QProcess::ExitStatus)));
-		disconnect(process, SIGNAL(readyReadStandardError()), this, SLOT(processReadyReadStandardError()));
-		disconnect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(processReadyReadStandardOutput()));
+		qDebug() << "stopExternalProcess " << processExecutablePath << processArguments;
 
 		if (process->state() != QProcess::NotRunning)
 		{
@@ -87,17 +83,25 @@ bool ExternalProcess::stopExternalProcess() {
 			process->terminate();
 			process->kill();
 			// don't wait for it
-            /*
 			if (process->waitForFinished()) {
 				qDebug() << "killed process";
 			} else {
 				qDebug() << "killing process failed!";
 				return false;
 			}
-             */
 		}
-		delete process;
-		process = nullptr;
+
+        QCoreApplication::processEvents();
+
+		disconnect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(processError(QProcess::ProcessError)));
+		disconnect(process, SIGNAL(stateChanged(QProcess::ProcessState)), this, SLOT(processStateChanged(QProcess::ProcessState)));
+		disconnect(process, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(processFinished(int, QProcess::ExitStatus)));
+		disconnect(process, SIGNAL(readyReadStandardError()), this, SLOT(processReadyReadStandardError()));
+		disconnect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(processReadyReadStandardOutput()));
+
+		process->deleteLater();
+
+		QCoreApplication::processEvents();
 	}
 	processRunning = false;
     return true;

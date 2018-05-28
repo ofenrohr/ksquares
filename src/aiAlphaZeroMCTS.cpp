@@ -87,7 +87,6 @@ int aiAlphaZeroMCTS::chooseLine(const QList<bool> &newLines, const QList<int> &n
     }
 
     turnTime = moveTimer.elapsed();
-    qDebug() << "alphaZeroMCTS selected line";
     return line;
 }
 

@@ -6,7 +6,10 @@
 #define KSQUARES_DATASETCONVERTER_H
 
 
-#include <QtCore/Q_PID>
+#include <QObject>
+#include <QString>
+#include <QSharedPointer>
+#include <QProcess>
 
 /**
  * This class is a wrapper to start the dataset converter service from the alphaDots repository.

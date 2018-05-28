@@ -221,7 +221,7 @@ int main(int argc, char **argv)
         AlphaDots::ModelEvaluation::printModelList();
         return 0;
     } else if (parser.isSet(i18n("self-play"))) {
-        AlphaDots::SelfPlay *selfPlay = new AlphaDots::SelfPlay(datasetDest, threads, i18n("AlphaZeroV7"), 128);
+        AlphaDots::SelfPlay *selfPlay = new AlphaDots::SelfPlay(datasetDest, threads, i18n("AlphaZeroV7"), 16);
         selfPlay->show();
     } else {
         KSquaresWindow *mainWindow = new KSquaresWindow;

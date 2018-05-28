@@ -163,6 +163,7 @@ namespace cnpy {
         }
 
         if (!fp) {
+            printf("cnpy: failed to open file %s with errno %d\n", zipname, errno);
             return false;
         }
 

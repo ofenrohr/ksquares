@@ -58,22 +58,27 @@ void StageThreeDataset::startConverter(int samples, QString destinationDirectory
     value = new std::vector<double>(sampleCnt);
 }
 
-void StageThreeDataset::stopConverter() {
+bool StageThreeDataset::stopConverter() {
     QString timeStr = QDateTime::currentDateTime().toString(QStringLiteral("-hh:mm-dd_MM_yyyy"));
     std::string filename = "/StageThree-" + std::to_string(sampleCnt) + "-" + std::to_string(width) + "x" + std::to_string(height) + timeStr.toStdString() + ".npz";
     //std::string filename = "/StageThree.npz";
+    bool success = true;
     if (!cnpy::npz_save(destDir.toStdString()+filename, "input", &(*input)[0], dataSize, "w")) {
         QMessageBox::critical(nullptr, QObject::tr("Error"), QObject::tr("failed to save input data"));
+        success = false;
     }
     if (!cnpy::npz_save(destDir.toStdString()+filename, "policy", &(*policy)[0], dataSize, "a")) {
         QMessageBox::critical(nullptr, QObject::tr("Error"), QObject::tr("failed to save policy data"));
+        success = false;
     }
     if (!cnpy::npz_save(destDir.toStdString()+filename, "value", &(*value)[0], valueDataSize, "a")) {
         QMessageBox::critical(nullptr, QObject::tr("Error"), QObject::tr("failed to save value data"));
+        success = false;
     }
     delete input;
     delete policy;
     delete value;
+    return success;
 }
 
 Dataset StageThreeDataset::generateDataset() {

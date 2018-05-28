@@ -43,9 +43,12 @@ SelfPlay::SelfPlay(QString datasetDest, int threads, QString initialModelName, i
 
     currentBoardSize = availableBoardSizes[0];
 
-    input = nullptr;
-    output = nullptr;
-    value = nullptr;
+    //input = nullptr;
+    //output = nullptr;
+    //value = nullptr;
+    input = new std::vector<uint8_t>();//imgDataSize);
+    output = new std::vector<uint8_t>();//imgDataSize);
+    value = new std::vector<double >();//iterationSize);
 
     alphaZeroV10Training = ExternalProcess::Ptr(nullptr);
 
@@ -67,7 +70,7 @@ void SelfPlay::initObject() {
 
 void SelfPlay::updateInfo() {
     currentModelLabel->setText(currentModel.name());
-    boardSizeLabel->setText(QStringLiteral("%1 x %2").arg(currentBoardSize.x()).arg(currentBoardSize.y()));
+    boardSizeLabel->setText(tr("%1 x %2").arg(currentBoardSize.x()).arg(currentBoardSize.y()));
     iterationLabel->setText(QString::number(iteration));
     progressBar->setMinimum(0);
     progressBar->setMaximum(iterationSize);
@@ -79,17 +82,19 @@ void SelfPlay::setupIteration() {
     gamesCompleted = 0;
 
     // prepare the data containers
+    /*
     if (input != nullptr && output != nullptr && value != nullptr) {
         delete input;
         delete output;
         delete value;
     }
+     */
     int w = MLImageGenerator::boxesToImgSize(currentBoardSize.x());
     int h = MLImageGenerator::boxesToImgSize(currentBoardSize.y());
     int imgDataSize = iterationSize * w * h;
-    input = new std::vector<uint8_t>(imgDataSize);
-    output = new std::vector<uint8_t>(imgDataSize);
-    value = new std::vector<double >(iterationSize);
+    input->resize(imgDataSize);
+    output->resize(imgDataSize);
+    value->resize(iterationSize);
 
     // check and reset thread status
     for (const auto &i : threadRunning) {
@@ -99,19 +104,18 @@ void SelfPlay::setupIteration() {
 
     // start the threads
     int examplesCnt = 64; // todo: parameterize
-    QString datasetDestDir = QStringLiteral(""); // todo: parameterize
 
-    threadGenerators.clear();
+    assert(threadGenerators.empty());
     for (int i = 0; i < threadCnt; i++) {
-        StageFourDataset::Ptr gen = StageFourDataset::Ptr(new StageFourDataset(false,
-                                                                               currentBoardSize.x(),
-                                                                               currentBoardSize.y(),
-                                                                               currentModel.name(),
-                                                                               i,
-                                                                               threadCnt));
+        StageFourDataset *gen = new StageFourDataset(false,
+                                               currentBoardSize.x(),
+                                               currentBoardSize.y(),
+                                               currentModel.name(),
+                                               i,
+                                               threadCnt);
         threadGenerators.append(gen);
         if (i == 0) {
-            gen->startConverter(examplesCnt, datasetDestDir);
+            gen->startConverter(examplesCnt, datasetDirectory);
             input = gen->getInputData();
             output = gen->getPolicyData();
             value = gen->getValueData();
@@ -167,14 +171,20 @@ void SelfPlay::finishIteration() {
     ModelManager::getInstance().stopAll();
 
     // save data
-    threadGenerators[0]->stopConverter();
+    if (!threadGenerators[0]->stopConverter()) {
+        QCoreApplication::quit();
+    }
     QString datasetPath = threadGenerators[0]->getDatasetPath();
+    for (const auto &gen : threadGenerators) {
+        gen->deleteLater();
+    }
+    threadGenerators.clear();
 
     // start training on new data
     QString processPath = Settings::pythonExecutable();
     QStringList processArgs;
     processArgs
-            << tr("modelServer/models/alphaZeroV10.py")
+            << Settings::alphaDotsDir() + tr("/modelServer/models/alphaZero/alphaZeroV10.py")
             << tr("--dataset")
             << datasetPath
             << tr("--iteration")

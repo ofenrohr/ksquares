@@ -22,7 +22,7 @@ namespace AlphaDots {
         Dataset generateDataset() override;
 
         void startConverter(int samples, QString destinationDirectory) override;
-        void stopConverter() override;
+        bool stopConverter() override;
 
         bool isLocalNPZ() override {return true;}
         std::vector<uint8_t>* getInputData() override { return input; }

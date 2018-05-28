@@ -54,4 +54,5 @@ void ModelManager::stopAll() {
     for (const auto &process : processMap) {
         process->stop();
     }
+    processMap.clear();
 }

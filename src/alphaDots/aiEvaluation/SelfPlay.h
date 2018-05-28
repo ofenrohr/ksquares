@@ -48,7 +48,7 @@ namespace AlphaDots {
         int iteration;
         int gamesCompleted;
         QList<bool> threadRunning;
-        QList<StageFourDataset::Ptr> threadGenerators;
+        QList<StageFourDataset *> threadGenerators;
 
         // mutex lockers
         mutable QMutex recvProgressMutex;

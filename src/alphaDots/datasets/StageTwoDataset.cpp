@@ -52,20 +52,24 @@ void StageTwoDataset::startConverter(int samples, QString destinationDirectory) 
     output = new std::vector<uint8_t>(sampleCnt*heightImg*widthImg);
 }
 
-void StageTwoDataset::stopConverter() {
+bool StageTwoDataset::stopConverter() {
     QString timeStr = QDateTime::currentDateTime().toString(QStringLiteral("-hh:mm-dd_MM_yyyy"));
     std::string filename = "/StageTwo-" + std::to_string(sampleCnt) + "-" + std::to_string(width) + "x" + std::to_string(height) + timeStr.toStdString() + ".npz";
+    bool success = true;
     if (!cnpy::npz_save(destDir.toStdString()+filename, "x_train", &(*input)[0], dataSize, "w")) {
         QMessageBox::critical(nullptr, QObject::tr("Error"), QObject::tr("failed to save input data"));
+        success = false;
     }
     if (!cnpy::npz_save(destDir.toStdString()+filename, "y_train", &(*output)[0], dataSize, "a")) {
         QMessageBox::critical(nullptr, QObject::tr("Error"), QObject::tr("failed to save output data"));
+        success = false;
     }
+    delete input;
+    delete output;
+    return success;
 }
 
 Dataset StageTwoDataset::generateDataset() {
-
-
     // generate data
     aiBoard::Ptr board = MLDataGenerator::generateRandomBoard(width, height, 15);
 
