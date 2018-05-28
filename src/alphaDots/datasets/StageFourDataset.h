@@ -15,7 +15,7 @@ namespace AlphaDots {
     public:
         typedef QSharedPointer<StageFourDataset> Ptr;
 
-        StageFourDataset(bool gui, int w, int h, QString modelName, int thread=-1, int threads=-1);
+        StageFourDataset(bool gui, int w, int h, QString modelName, int thread=-1, int threads=-1, int iteration=-1);
 
         ~StageFourDataset();
 
@@ -58,6 +58,7 @@ namespace AlphaDots {
         ModelInfo model;
         gsl_rng *rng;
         QString datasetPath;
+        int selfPlayIteration;
     };
 }
 

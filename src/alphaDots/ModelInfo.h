@@ -20,6 +20,8 @@ namespace AlphaDots {
         QString type();
         QString ai();
 
+        void setName(QString name) {_name=name;}
+
     protected:
         QString _name;
         QString _desc;

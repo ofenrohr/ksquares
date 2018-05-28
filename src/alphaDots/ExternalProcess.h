@@ -19,7 +19,7 @@ Q_OBJECT
 public:
     typedef QSharedPointer<ExternalProcess> Ptr;
 
-    ExternalProcess(QString processPath, QStringList arguments);
+    ExternalProcess(QString processPath, QStringList arguments, QString workingDirectory = tr("./"));
     ~ExternalProcess();
     /**
      * Launch the dataset converter.
@@ -47,6 +47,7 @@ signals:
 protected:
     QString processExecutablePath;
     QStringList processArguments;
+    QString processWorkingDirectory;
     QProcess *process;
     bool processRunning;
     QList<QPair<QString, QString>> envVars;

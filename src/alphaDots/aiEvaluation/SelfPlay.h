@@ -16,7 +16,7 @@ namespace AlphaDots {
     class SelfPlay : public KXmlGuiWindow, public Ui::SelfPlayForm {
     Q_OBJECT
     public:
-        SelfPlay(QString datasetDest, int threads, QString initialModel, int gamesPerIteration);
+        SelfPlay(QString datasetDest, int threads, QString initialModel, QString targetModelName, int gamesPerIteration);
 
         void initObject();
 
@@ -41,6 +41,7 @@ namespace AlphaDots {
         int threadCnt;
         QList<QPoint> availableBoardSizes;
         int iterationSize;
+        QString targetModelName;
 
         // current state infos
         ModelInfo currentModel;
@@ -60,7 +61,7 @@ namespace AlphaDots {
         std::vector<double> *value;
 
         // training process
-        ExternalProcess::Ptr alphaZeroV10Training;
+        ExternalProcess *alphaZeroV10Training;
     };
 }
 

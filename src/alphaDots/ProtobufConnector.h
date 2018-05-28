@@ -42,7 +42,7 @@ namespace AlphaDots {
          * Get model list.
          * @return
          */
-        static QList<ModelInfo> getModelList();
+        static QList<ModelInfo> getModelList(bool locked=false);
         static ModelInfo getModelByName(QString name);
 
         /**
@@ -59,8 +59,7 @@ namespace AlphaDots {
 
     private:
         static QList<ModelInfo> cachedModelList;
-        static QMutex getModelListMutex;
-        static QMutex getModelByNameMutex;
+        static QMutex modelListMutex;
     };
 }
 

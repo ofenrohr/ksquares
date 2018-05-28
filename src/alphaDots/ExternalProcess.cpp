@@ -8,9 +8,10 @@
 #include <QtCore/QCoreApplication>
 #include <QtCore/QTimer>
 
-ExternalProcess::ExternalProcess(QString processPath, QStringList arguments) {
+ExternalProcess::ExternalProcess(QString processPath, QStringList arguments, QString workingDirectory) {
 	processExecutablePath = processPath;
 	processArguments = arguments;
+	processWorkingDirectory = workingDirectory;
 	process = nullptr;
 }
 
@@ -40,6 +41,7 @@ bool ExternalProcess::startExternalProcess() {
         env.insert(envVars[i].first, envVars[i].second);
     }
 	process->setProcessEnvironment(env);
+	process->setWorkingDirectory(processWorkingDirectory);
 	qRegisterMetaType<QProcess::ProcessError>("QProcess::ProcessError");
 	qRegisterMetaType<QProcess::ProcessState>("QProcess::ProcessState");
 	qRegisterMetaType<QProcess::ExitStatus>("QProcess::ExitStatus");
@@ -67,7 +69,7 @@ bool ExternalProcess::startExternalProcess() {
 		return false;
 	}
 
-	//QTimer::singleShot(1000, this, &ExternalProcess::processEvents);
+	QTimer::singleShot(1000, this, &ExternalProcess::processEvents);
 
     return true;
 }
@@ -175,10 +177,8 @@ void ExternalProcess::processReadyReadStandardOutput() {
 }
 
 void ExternalProcess::processEvents() {
-    /*
 	QCoreApplication::processEvents();
 	if (processRunning) {
         QTimer::singleShot(1000, this, &ExternalProcess::processEvents);
 	}
-     */
 }

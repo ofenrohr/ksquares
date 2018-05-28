@@ -14,7 +14,7 @@
 
 using namespace AlphaDots;
 
-StageFourDataset::StageFourDataset(bool gui, int w, int h, QString modelName, int thread, int threads) {
+StageFourDataset::StageFourDataset(bool gui, int w, int h, QString modelName, int thread, int threads, int iteration) {
     isGUI = gui;
     width = w;
     height = h;
@@ -22,6 +22,7 @@ StageFourDataset::StageFourDataset(bool gui, int w, int h, QString modelName, in
     sampleIdx = 0;
     threadIdx = thread;
     threadCnt = threads;
+    selfPlayIteration = iteration;
 
     model = ProtobufConnector::getModelByName(modelName);
 
@@ -32,7 +33,11 @@ StageFourDataset::StageFourDataset(bool gui, int w, int h, QString modelName, in
     qDebug() << "StageFourDataset: ";
     qDebug() << " |-> thread id: " << threadIdx;
     qDebug() << " |-> threads: " << threadCnt;
+    qDebug() << " |-> modelName: " << modelName;
     qDebug() << " |-> model: " << model.name();
+    if (selfPlayIteration >= 0) {
+        qDebug() << " |-> iteration: " << selfPlayIteration;
+    }
 }
 
 StageFourDataset::~StageFourDataset() {
@@ -67,7 +72,13 @@ void StageFourDataset::startConverter(int samples, QString destinationDirectory)
 
 bool StageFourDataset::stopConverter() {
     QString timeStr = QDateTime::currentDateTime().toString(QStringLiteral("-hh:mm-dd_MM_yyyy"));
-    std::string filename = "/StageFour-" + model.name().toStdString() + "-" + std::to_string(sampleCnt) + "-" + std::to_string(width) + "x" + std::to_string(height) + timeStr.toStdString() + ".npz";
+    std::string filename =
+            "/StageFour-" + model.name().toStdString() +
+            (selfPlayIteration >= 0 ? "." + std::to_string(selfPlayIteration) : "") +
+            "-" + std::to_string(sampleCnt) +
+            "-" + std::to_string(width) + "x" + std::to_string(height) +
+            timeStr.toStdString() +
+            ".npz";
     //std::string filename = "/StageThree.npz";
     datasetPath = destDir + QString::fromStdString(filename);
     bool success = true;

@@ -113,7 +113,7 @@
          </sizepolicy>
         </property>
         <property name="text">
-         <string>Progress:</string>
+         <string>Data gen. progress:</string>
         </property>
        </widget>
       </item>

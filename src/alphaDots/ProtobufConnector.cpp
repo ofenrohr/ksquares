@@ -14,8 +14,7 @@
 using namespace AlphaDots;
 
 QList<ModelInfo> ProtobufConnector::cachedModelList;
-QMutex ProtobufConnector::getModelListMutex;
-QMutex ProtobufConnector::getModelByNameMutex;
+QMutex ProtobufConnector::modelListMutex;
 
 DotsAndBoxesImage ProtobufConnector::dotsAndBoxesImageToProtobuf(QImage img) {
     DotsAndBoxesImage ret;
@@ -120,12 +119,18 @@ QImage ProtobufConnector::fromProtobuf(std::string msg) {
     return ret;
 }
 
-QList<ModelInfo> ProtobufConnector::getModelList() {
-    QMutexLocker locker(&getModelListMutex);
+QList<ModelInfo> ProtobufConnector::getModelList(bool locked) {
+    if (!locked) {
+        modelListMutex.lock();
+    }
     if (!cachedModelList.isEmpty()) {
+        if (!locked) {
+            modelListMutex.unlock();
+        }
         return cachedModelList;
     }
     cachedModelList.clear();
+
 
     QString process = QStringLiteral("/usr/bin/python2.7");
     QStringList processArgs;
@@ -133,6 +138,9 @@ QList<ModelInfo> ProtobufConnector::getModelList() {
     ExternalProcess modelListProc(process, processArgs);
     if (!modelListProc.startExternalProcess()) {
         qDebug() << "ERROR: failed to start " << process << processArgs;
+        if (!locked) {
+            modelListMutex.unlock();
+        }
         return cachedModelList;
     }
 
@@ -147,6 +155,9 @@ QList<ModelInfo> ProtobufConnector::getModelList() {
         std::string response = recvString(socket, &ok);
         if (!ok) {
             qDebug() << "ERROR: failed to receive model list";
+            if (!locked) {
+                modelListMutex.unlock();
+            }
             return cachedModelList;
         }
         ModelList modelList;
@@ -164,19 +175,25 @@ QList<ModelInfo> ProtobufConnector::getModelList() {
 
     modelListProc.stopExternalProcess();
 
+    if (!locked) {
+        modelListMutex.unlock();
+    }
     return cachedModelList;
 }
 
 ModelInfo ProtobufConnector::getModelByName(QString name) {
-    QMutexLocker locker(&getModelByNameMutex);
-    QList<ModelInfo> modelList = getModelList();
+    modelListMutex.lock();
+    QList<ModelInfo> modelList = getModelList(true);
     for (auto model : modelList) {
         if (model.name() == name) {
+            modelListMutex.unlock();
             return model;
         }
     }
     qDebug() << "ERROR: failed to find model with name " << name;
-    return modelList[0];
+    ModelInfo ret = modelList[0];
+    modelListMutex.unlock();
+    return ret;
 }
 
 int ProtobufConnector::pointToLineIndex(QPoint linePoint, int width) {

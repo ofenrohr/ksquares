@@ -17,17 +17,18 @@
 
 using namespace AlphaDots;
 
-SelfPlay::SelfPlay(QString datasetDest, int threads, QString initialModelName, int gamesPerIteration) :
+SelfPlay::SelfPlay(QString datasetDest, int threads, QString initialModelName, QString targetModel, int gamesPerIteration) :
     KXmlGuiWindow(),
     m_view(new QWidget())
 {
     qDebug() << "SelfPlay()";
 
     datasetDirectory = datasetDest;
+    targetModelName = targetModel;
     threadCnt = threads;
 
     currentModel = ProtobufConnector::getModelByName(initialModelName);
-    iteration = 0;
+    iteration = -1;
     iterationSize = gamesPerIteration;
     gamesCompleted = 0;
 
@@ -50,7 +51,7 @@ SelfPlay::SelfPlay(QString datasetDest, int threads, QString initialModelName, i
     output = new std::vector<uint8_t>();//imgDataSize);
     value = new std::vector<double >();//iterationSize);
 
-    alphaZeroV10Training = ExternalProcess::Ptr(nullptr);
+    alphaZeroV10Training = nullptr;
 
     assert(iterationSize % threads == 0);
 
@@ -103,8 +104,6 @@ void SelfPlay::setupIteration() {
     threadRunning.clear();
 
     // start the threads
-    int examplesCnt = 64; // todo: parameterize
-
     assert(threadGenerators.empty());
     for (int i = 0; i < threadCnt; i++) {
         StageFourDataset *gen = new StageFourDataset(false,
@@ -115,7 +114,7 @@ void SelfPlay::setupIteration() {
                                                threadCnt);
         threadGenerators.append(gen);
         if (i == 0) {
-            gen->startConverter(examplesCnt, datasetDirectory);
+            gen->startConverter(iterationSize, datasetDirectory);
             input = gen->getInputData();
             output = gen->getPolicyData();
             value = gen->getValueData();
@@ -166,6 +165,12 @@ void SelfPlay::trainingFinished() {
 }
 
 void SelfPlay::finishIteration() {
+    if (iteration == 0) {
+        currentModel = ProtobufConnector::getModelByName(targetModelName);
+        //currentModel.setName(currentModel.name()+tr(".")+QString::number(iteration));
+    }
+    currentBoardSize = availableBoardSizes[qrand() % availableBoardSizes.size()];
+
     // stop model process to free up gpu
     // (do this before saving data so give it a little time to stop)
     ModelManager::getInstance().stopAll();
@@ -192,8 +197,9 @@ void SelfPlay::finishIteration() {
             << tr("--epochs")
             << tr("10")
             ;
-    if (alphaZeroV10Training.isNull()) {
-        alphaZeroV10Training = ExternalProcess::Ptr(new ExternalProcess(processPath, processArgs));
+    QString processWorkingDirectory = Settings::alphaDotsDir() + tr("/modelServer/models/alphaZero");
+    if (alphaZeroV10Training == nullptr) {
+        alphaZeroV10Training = new ExternalProcess(processPath, processArgs, processWorkingDirectory);
     } else {
         if (alphaZeroV10Training->isRunning()) {
             QMessageBox::critical(this, tr("SelfPlay error"),
@@ -202,10 +208,13 @@ void SelfPlay::finishIteration() {
                 QThread::sleep(1000);
             }
         }
-        disconnect(alphaZeroV10Training.data(), SIGNAL(processFinished()), this, SLOT(trainingFinished()));
-        alphaZeroV10Training = ExternalProcess::Ptr(new ExternalProcess(processPath, processArgs));
+        disconnect(alphaZeroV10Training, SIGNAL(processFinished()), this, SLOT(trainingFinished()));
+        alphaZeroV10Training->deleteLater();
+        alphaZeroV10Training = new ExternalProcess(processPath, processArgs, processWorkingDirectory);
     }
-    connect(alphaZeroV10Training.data(), SIGNAL(processFinished()), this, SLOT(trainingFinished()));
+    // disable gpu, training on very little data -> cpu is enough
+    alphaZeroV10Training->addEnvironmentVariable(QStringLiteral("CUDA_VISIBLE_DEVICES"), QStringLiteral("-1"));
+    connect(alphaZeroV10Training, SIGNAL(processFinished()), this, SLOT(trainingFinished()));
     if (!alphaZeroV10Training->startExternalProcess()) {
         QMessageBox::critical(this, tr("SelfPlay error"),
                               tr("Failed to start external process for training!"));
