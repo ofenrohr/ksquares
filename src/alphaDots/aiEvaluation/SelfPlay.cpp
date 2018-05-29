@@ -114,7 +114,7 @@ void SelfPlay::setupIteration() {
                                                threadCnt);
         threadGenerators.append(gen);
         if (i == 0) {
-            gen->startConverter(iterationSize, datasetDirectory);
+            gen->startConverter(iterationSize, datasetDirectory, iteration == 0);
             input = gen->getInputData();
             output = gen->getPolicyData();
             value = gen->getValueData();
@@ -202,10 +202,12 @@ void SelfPlay::finishIteration() {
         alphaZeroV10Training = new ExternalProcess(processPath, processArgs, processWorkingDirectory);
     } else {
         if (alphaZeroV10Training->isRunning()) {
+            /*
             QMessageBox::critical(this, tr("SelfPlay error"),
                                   tr("Training takes longer than generating data. sth seems wrong! Waiting for training to finish..."));
+             */
             while (alphaZeroV10Training->isRunning()) {
-                QThread::sleep(1000);
+                QThread::sleep(1);
             }
         }
         disconnect(alphaZeroV10Training, SIGNAL(processFinished()), this, SLOT(trainingFinished()));

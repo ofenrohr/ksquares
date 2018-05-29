@@ -22,6 +22,7 @@ namespace AlphaDots {
         Dataset generateDataset() override;
 
         void startConverter(int samples, QString destinationDirectory) override;
+        void startConverter(int samples, QString destinationDirectory, bool createData);
         bool stopConverter() override;
 
         bool isLocalNPZ() override {return true;}

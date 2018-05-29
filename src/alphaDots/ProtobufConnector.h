@@ -42,7 +42,7 @@ namespace AlphaDots {
          * Get model list.
          * @return
          */
-        static QList<ModelInfo> getModelList(bool locked=false);
+        static QList<ModelInfo> getModelList(bool useLocking=false);
         static ModelInfo getModelByName(QString name);
 
         /**

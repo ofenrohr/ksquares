@@ -51,6 +51,10 @@ void StageFourDataset::cleanup() {
 }
 
 void StageFourDataset::startConverter(int samples, QString destinationDirectory) {
+    startConverter(samples, destinationDirectory, true);
+}
+
+void StageFourDataset::startConverter(int samples, QString destinationDirectory, bool createData) {
     sampleCnt = samples;
     destDir = destinationDirectory;
 
@@ -65,9 +69,11 @@ void StageFourDataset::startConverter(int samples, QString destinationDirectory)
             sampleCnt,
             1
     };
-    input = new std::vector<uint8_t>(sampleCnt*heightImg*widthImg);
-    policy = new std::vector<uint8_t>(sampleCnt*heightImg*widthImg);
-    value = new std::vector<double>(sampleCnt);
+    if (createData) {
+        input = new std::vector<uint8_t>(sampleCnt * heightImg * widthImg);
+        policy = new std::vector<uint8_t>(sampleCnt * heightImg * widthImg);
+        value = new std::vector<double>(sampleCnt);
+    }
 }
 
 bool StageFourDataset::stopConverter() {
