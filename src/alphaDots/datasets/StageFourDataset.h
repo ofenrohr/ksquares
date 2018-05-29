@@ -60,6 +60,7 @@ namespace AlphaDots {
         gsl_rng *rng;
         QString datasetPath;
         int selfPlayIteration;
+        bool createdData;
     };
 }
 

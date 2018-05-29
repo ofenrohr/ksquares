@@ -57,6 +57,7 @@ void StageFourDataset::startConverter(int samples, QString destinationDirectory)
 void StageFourDataset::startConverter(int samples, QString destinationDirectory, bool createData) {
     sampleCnt = samples;
     destDir = destinationDirectory;
+    createdData = createData;
 
     int widthImg = MLImageGenerator::boxesToImgSize(width);
     int heightImg = MLImageGenerator::boxesToImgSize(height);
@@ -100,9 +101,11 @@ bool StageFourDataset::stopConverter() {
         QMessageBox::critical(nullptr, QObject::tr("Error"), QObject::tr("failed to save value data"));
         success = false;
     }
-    delete input;
-    delete policy;
-    delete value;
+    if (createdData) {
+        delete input;
+        delete policy;
+        delete value;
+    }
     return success;
 }
 

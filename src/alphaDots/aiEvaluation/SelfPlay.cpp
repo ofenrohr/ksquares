@@ -114,15 +114,11 @@ void SelfPlay::setupIteration() {
                                                threadCnt);
         threadGenerators.append(gen);
         if (i == 0) {
-            gen->startConverter(iterationSize, datasetDirectory, iteration == 0);
-            input = gen->getInputData();
-            output = gen->getPolicyData();
-            value = gen->getValueData();
-        } else {
-            gen->setInputData(input);
-            gen->setPolicyData(output);
-            gen->setValueData(value);
+            gen->startConverter(iterationSize, datasetDirectory, false);
         }
+        gen->setInputData(input);
+        gen->setPolicyData(output);
+        gen->setValueData(value);
 
         auto *thread = new QThread();
         auto *worker = new SelfPlayWorker(gen, i, iterationSize / threadCnt, currentModel, input, output, value);
@@ -208,6 +204,7 @@ void SelfPlay::finishIteration() {
              */
             while (alphaZeroV10Training->isRunning()) {
                 QThread::sleep(1);
+                QCoreApplication::processEvents();
             }
         }
         disconnect(alphaZeroV10Training, SIGNAL(processFinished()), this, SLOT(trainingFinished()));
