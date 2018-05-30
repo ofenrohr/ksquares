@@ -15,17 +15,23 @@
 #include <AlphaZeroMCTSNode.h>
 #include <aiBoard.h>
 #include <QtCore/QMutex>
+#include <PolicyValueData.pb.h>
 #include "ModelInfo.h"
 
 namespace AlphaDots {
     class ProtobufConnector {
     public:
+        static ProtobufConnector& getInstance();
+        ProtobufConnector(ProtobufConnector const &) = delete;
+        void operator=(ProtobufConnector const &) = delete;
+
         /**
          * Put the image data in the protobuf data class
          * @param img input image
          * @return protobuf data
          */
-        static DotsAndBoxesImage dotsAndBoxesImageToProtobuf(QImage img);
+        static DotsAndBoxesImage dotsAndBoxesImageToProtobuf(const QImage &img);
+        static void copyDataToProtobuf(DotsAndBoxesImage *pb, const QImage &img);
         static TrainingExample trainingExampleToProtobuf(QImage inp, QImage outp);
         static GameSequence gameSequenceToProtobuf(QList<QImage> seq);
         static GameSequence gameSequenceToProtobuf(QList<QImage> inputSeq, QList<QImage> targetSeq);
@@ -42,8 +48,8 @@ namespace AlphaDots {
          * Get model list.
          * @return
          */
-        static QList<ModelInfo> getModelList(bool useLocking=false);
-        static ModelInfo getModelByName(QString name);
+        QList<ModelInfo> getModelList(bool useLocking=false);
+        ModelInfo getModelByName(QString name);
 
         /**
          * Converts a pixel line position to the line index format used by ksquares
@@ -57,9 +63,27 @@ namespace AlphaDots {
 
         static std::string recvString(zmq::socket_t &socket, bool *ok);
 
+        PolicyValueData batchPredict(zmq::socket_t &socket, QImage &img);
+        void releaseBatchSample();
+
+        void setBatchSize(int size);
+
+        void setBatchPredict(bool mode);
+        bool getBatchPredict();
+
     private:
-        static QList<ModelInfo> cachedModelList;
-        static QMutex modelListMutex;
+        ProtobufConnector();
+        QList<ModelInfo> cachedModelList;
+        QMutex modelListMutex;
+        QAtomicInt batchSize;
+        QAtomicInt batchCnt;
+        DotsAndBoxesImage *firstImgInBatch;
+        QList<DotsAndBoxesImage *> requestBatch;
+        PolicyValueData *firstPredictionInBatch;
+        QList<PolicyValueData *> responseBatch;
+        QMutex batchImgMutex;
+        QAtomicInt batchPredictionState;
+        bool batchPredictMode;
     };
 }
 

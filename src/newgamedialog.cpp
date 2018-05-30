@@ -73,7 +73,7 @@ void NewGameDialog::adjustEnabledUsers(int numOfPlayers)
 }
 
 void NewGameDialog::updateModelList() {
-    QList<AlphaDots::ModelInfo> models = AlphaDots::ProtobufConnector::getModelList();
+    QList<AlphaDots::ModelInfo> models = AlphaDots::ProtobufConnector::getInstance().getModelList();
 
     aiModel->clear();
     for (auto model : models) {

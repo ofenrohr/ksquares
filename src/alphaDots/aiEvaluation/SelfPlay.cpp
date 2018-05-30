@@ -27,7 +27,7 @@ SelfPlay::SelfPlay(QString datasetDest, int threads, QString initialModelName, Q
     targetModelName = targetModel;
     threadCnt = threads;
 
-    currentModel = ProtobufConnector::getModelByName(initialModelName);
+    currentModel = ProtobufConnector::getInstance().getModelByName(initialModelName);
     iteration = -1;
     iterationSize = gamesPerIteration;
     gamesCompleted = 0;
@@ -54,6 +54,7 @@ SelfPlay::SelfPlay(QString datasetDest, int threads, QString initialModelName, Q
     alphaZeroV10Training = nullptr;
 
     assert(iterationSize % threads == 0);
+
 
     QTimer::singleShot(0, this, &SelfPlay::initObject);
 }
@@ -162,7 +163,7 @@ void SelfPlay::trainingFinished() {
 
 void SelfPlay::finishIteration() {
     if (iteration == 0) {
-        currentModel = ProtobufConnector::getModelByName(targetModelName);
+        currentModel = ProtobufConnector::getInstance().getModelByName(targetModelName);
         //currentModel.setName(currentModel.name()+tr(".")+QString::number(iteration));
     }
     currentBoardSize = availableBoardSizes[qrand() % availableBoardSizes.size()];

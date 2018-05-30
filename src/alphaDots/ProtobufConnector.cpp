@@ -4,30 +4,57 @@
 
 #include "ProtobufConnector.h"
 #include "ExternalProcess.h"
+#include "ModelManager.h"
 
 #include <QDebug>
 #include <settings.h>
-#include <AlphaDotsModel.pb.h>
-#include <DotsAndBoxesImage.pb.h>
-#include <TrainingExample.pb.h>
+#include <QtCore/QThread>
+#include <QtWidgets/QMessageBox>
 
 using namespace AlphaDots;
 
-QList<ModelInfo> ProtobufConnector::cachedModelList;
-QMutex ProtobufConnector::modelListMutex(QMutex::Recursive);
+ProtobufConnector &ProtobufConnector::getInstance() {
+    static ProtobufConnector instance;
+    return instance;
+}
 
-DotsAndBoxesImage ProtobufConnector::dotsAndBoxesImageToProtobuf(QImage img) {
+ProtobufConnector::ProtobufConnector() :
+    modelListMutex(QMutex::Recursive),
+    batchImgMutex(QMutex::NonRecursive),
+    batchSize(1),
+    batchCnt(0),
+    batchPredictionState(0),
+    batchPredictMode(false)
+{
+    cachedModelList.clear();
+}
+
+DotsAndBoxesImage ProtobufConnector::dotsAndBoxesImageToProtobuf(const QImage &img) {
     DotsAndBoxesImage ret;
 
-    ret.set_width(img.width());
-    ret.set_height(img.height());
+    copyDataToProtobuf(&ret, img);
+
+    return ret;
+}
+
+void ProtobufConnector::copyDataToProtobuf(DotsAndBoxesImage *pb, const QImage &img) {
+
+    pb->set_width(img.width());
+    pb->set_height(img.height());
+    bool sizeMatch = pb->pixels_size() == img.height()*img.width();
+    if (!sizeMatch) {
+        pb->clear_pixels();
+    }
     for (int y = 0; y < img.height(); y++) {
         for (int x = 0; x < img.width(); x++) {
-            ret.add_pixels(img.pixelColor(x,y).red());
+            if (sizeMatch) {
+                pb->set_pixels(y*img.width()+x, img.pixelColor(x, y).red());
+            } else {
+                pb->add_pixels(img.pixelColor(x, y).red());
+            }
         }
     }
 
-    return ret;
 }
 
 TrainingExample ProtobufConnector::trainingExampleToProtobuf(QImage inp, QImage outp) {
@@ -120,27 +147,18 @@ QImage ProtobufConnector::fromProtobuf(std::string msg) {
 }
 
 QList<ModelInfo> ProtobufConnector::getModelList(bool useLocking) {
-    QMutexLocker locker(&ProtobufConnector::modelListMutex);
-    //if (!useLocking) {
-    //    modelListMutex.lock();
-    //}
+    QMutexLocker locker(&modelListMutex);
     if (!cachedModelList.isEmpty()) {
-        //if (!useLocking) {
-        //    modelListMutex.unlock();
-        //}
         return cachedModelList;
     }
 
 
     QString process = Settings::pythonExecutable();//QStringLiteral("/usr/bin/python2.7");
     QStringList processArgs;
-    processArgs << Settings::alphaDotsDir() + QStringLiteral("/modelServer/modelList.py");
+    processArgs << Settings::alphaDotsDir() + QObject::tr("/modelServer/modelList.py");
     ExternalProcess modelListProc(process, processArgs);
     if (!modelListProc.startExternalProcess()) {
         qDebug() << "ERROR: failed to start " << process << processArgs;
-        //if (!useLocking) {
-        //    modelListMutex.unlock();
-        //}
         return cachedModelList;
     }
 
@@ -155,9 +173,6 @@ QList<ModelInfo> ProtobufConnector::getModelList(bool useLocking) {
         std::string response = recvString(socket, &ok);
         if (!ok) {
             qDebug() << "ERROR: failed to receive model list";
-            //if (!useLocking) {
-            //    modelListMutex.unlock();
-            //}
             return cachedModelList;
         }
         ModelList modelList;
@@ -175,25 +190,19 @@ QList<ModelInfo> ProtobufConnector::getModelList(bool useLocking) {
 
     modelListProc.stopExternalProcess();
 
-    //if (!useLocking) {
-    //    modelListMutex.unlock();
-    //}
     return cachedModelList;
 }
 
 ModelInfo ProtobufConnector::getModelByName(QString name) {
-    QMutexLocker locker(&ProtobufConnector::modelListMutex);
-    //modelListMutex.lock();
+    QMutexLocker locker(&modelListMutex);
     QList<ModelInfo> modelList = getModelList(true);
     for (auto model : modelList) {
         if (model.name() == name) {
-            modelListMutex.unlock();
             return model;
         }
     }
     qDebug() << "ERROR: failed to find model with name " << name;
     ModelInfo ret = modelList[0];
-    //modelListMutex.unlock();
     return ret;
 }
 
@@ -240,4 +249,158 @@ std::string ProtobufConnector::recvString(zmq::socket_t &socket, bool *ok) {
     }
     std::string rpl = std::string(static_cast<char*>(reply.data()), reply.size());
     return rpl;
+}
+
+PolicyValueData ProtobufConnector::batchPredict(zmq::socket_t &socket, QImage &inputimg) {
+    bool debug = ModelManager::getInstance().getDebug();
+
+    //DotsAndBoxesImage img = ProtobufConnector::dotsAndBoxesImageToProtobuf(inputimg);
+
+    // wait for previous batch to finish...
+    while (ProtobufConnector::batchPredictionState != 0) {
+        QThread::usleep(10);
+    }
+
+    batchImgMutex.lock();
+    /*
+    if (ProtobufConnector::batchCnt == 0) {
+        ProtobufConnector::firstImgInBatch = img;
+    } else {
+        // go through the linked list to the last element
+        DotsAndBoxesImage *tmp = firstImgInBatch;
+        while (tmp->has_nextimage()) {
+            tmp = tmp->mutable_nextimage();
+        }
+        // copy new element
+        auto *imgCpy = new DotsAndBoxesImage();
+        imgCpy->CopyFrom(img);
+        // append new element
+        tmp->set_allocated_nextimage(imgCpy);
+        assert(tmp->has_nextimage());
+    }
+     */
+    int myIdx = batchCnt;
+
+    copyDataToProtobuf(requestBatch[myIdx], inputimg);
+
+    // if we are the last thread to call, send/recv the data
+    if (batchCnt == batchSize-1) {
+        // print protobuf message
+        if (debug) {
+            qDebug() << "request batch size: " << batchSize;
+            bool done = false;
+            DotsAndBoxesImage *tmp;
+            tmp = firstImgInBatch;
+            while (!done) {
+                qDebug() << "w: " << tmp->width() << "h: " << tmp->height() << "pixels_size: " << tmp->pixels_size();
+
+                if (tmp->has_nextimage()) {
+                    tmp = tmp->mutable_nextimage();
+                } else {
+                    done = true;
+                }
+            }
+        }
+        // send prediction request
+        if (!ProtobufConnector::sendString(socket, firstImgInBatch->SerializeAsString())) {
+            qDebug() << "failed to send message to model server";
+            QMessageBox::critical(nullptr, QObject::tr("Connection error"), QObject::tr("failed to send message to model server!"));
+            QCoreApplication::exit(1);
+        }
+
+        // receive prediction from model server
+        bool ok = false;
+        std::string rpl = ProtobufConnector::recvString(socket, &ok);
+        if (!ok) {
+            qDebug() << "failed to receive message from model server";
+            QMessageBox::critical(nullptr, QObject::tr("Connection error"), QObject::tr("failed to receive message from model server!"));
+            QCoreApplication::exit(1);
+        }
+        //qDebug() << QString::fromStdString(rpl);
+
+        // parse prediction
+        firstPredictionInBatch->ParseFromString(rpl);
+        PolicyValueData *tmp = firstPredictionInBatch;
+        for (int i = 1; i < batchSize; i++) {
+            responseBatch[i] = tmp->mutable_nextdata();
+            assert(tmp->has_nextdata());
+            tmp = tmp->mutable_nextdata();
+        }
+
+        // print protobuf response
+        if (debug) {
+            qDebug() << "prediction: ";
+            PolicyValueData *pvd;
+            pvd = firstPredictionInBatch;
+            bool done = false;
+            while (!done) {
+                qDebug() << "v: " << pvd->value();
+
+                if (pvd->has_nextdata()) {
+                    pvd = pvd->mutable_nextdata();
+                } else {
+                    done = true;
+                }
+            }
+        }
+
+        // let other threads access the response
+        batchPredictionState = 1;
+    }
+
+    // count up after we received the request (if we're the last thread)
+    batchCnt++;
+
+    batchImgMutex.unlock();
+
+    // wait for other threads to add their sample, and get the result
+    while (batchPredictionState != 1) {
+        QThread::usleep(10);
+    }
+
+    PolicyValueData *ret = responseBatch[myIdx];
+
+    return *ret;
+}
+
+void ProtobufConnector::releaseBatchSample() {
+    if (!batchPredictMode) {
+        return;
+    }
+    QMutexLocker locker(&batchImgMutex);
+    batchCnt--;
+    if (batchCnt == 0) {
+        batchPredictionState = 0;
+    }
+
+}
+
+void ProtobufConnector::setBatchSize(int size) {
+    QMutexLocker locker(&batchImgMutex);
+    batchSize = size;
+    batchCnt = 0;
+    requestBatch.clear();
+    for (int i = 0; i < batchSize; i++) {
+        requestBatch.append(new DotsAndBoxesImage());
+        if (i > 0) {
+            requestBatch[i - 1]->set_allocated_nextimage(requestBatch[i]);
+        }
+    }
+    firstImgInBatch = requestBatch[0];
+    responseBatch.clear();
+    for (int i = 0; i < batchSize; i++) {
+        responseBatch.append(new PolicyValueData());
+        if (i > 0) {
+            responseBatch[i - 1]->set_allocated_nextdata(responseBatch[i]);
+        }
+    }
+    firstPredictionInBatch = responseBatch[0];
+}
+
+void ProtobufConnector::setBatchPredict(bool mode) {
+    batchPredictMode = mode;
+}
+
+bool ProtobufConnector::getBatchPredict() {
+    return batchPredictMode;
 }

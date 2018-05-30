@@ -47,6 +47,13 @@ namespace AlphaDots {
          */
         void stopAll();
 
+        /**
+         * Sets the debug mode
+         */
+        void setDebug(bool mode);
+
+        bool getDebug() { return debug; };
+
     private:
         ModelManager() = default;
 
@@ -72,7 +79,8 @@ namespace AlphaDots {
          */
         QString modelInfoToStr(QString modelName, int width, int height);
 
-        bool useGPU;
+        bool useGPU=false;
+        bool debug=false;
     };
 }
 

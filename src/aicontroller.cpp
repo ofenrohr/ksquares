@@ -35,7 +35,7 @@ aiController::aiController(int newPlayerId, int newMaxPlayerId, int newWidth, in
 		height(newHeight),
 		level(newLevel),
 		aiThinkTime(thinkTime),
-		alphaDotsModel(AlphaDots::ProtobufConnector::getModelByName(model))
+		alphaDotsModel(AlphaDots::ProtobufConnector::getInstance().getModelByName(model))
 {
 	//qDebug() << "aiController init: nw = " << newWidth << ", nh = " << newHeight << ", w = " << width << ", h = " << height;
 	//linesSize = aiFunctions::toLinesSize(width, height);

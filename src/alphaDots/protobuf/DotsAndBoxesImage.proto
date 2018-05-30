@@ -6,4 +6,5 @@ message DotsAndBoxesImage {
     required int32 width = 1;
     required int32 height = 2;
     repeated int32 pixels = 3;
+    optional DotsAndBoxesImage nextImage = 4;
 }

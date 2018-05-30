@@ -22,7 +22,7 @@ namespace AlphaDots {
         //==========================
 
         aiAlphaZeroMCTS(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight,
-                        int thinkTime = 5000, ModelInfo model = ProtobufConnector::getModelByName(i18n("AlphaZeroV7")));
+                        int thinkTime = 5000, ModelInfo model = ProtobufConnector::getInstance().getModelByName(i18n("AlphaZeroV7")));
 
         ~aiAlphaZeroMCTS();
 
@@ -50,7 +50,8 @@ namespace AlphaDots {
          * @param board current board state that's associated with the parentNode
          * @return true if there was no error, false otherwise
          */
-        bool predictPolicyValue(const AlphaZeroMCTSNode::Ptr &parentNode, const aiBoard::Ptr &board);
+        bool predictPolicyValue(const AlphaZeroMCTSNode::Ptr &parentNode, const aiBoard::Ptr &board,
+                                const QImage &inputImage);
 
         void applyDirichletNoiseToChildren(const AlphaZeroMCTSNode::Ptr &parentNode, double alpha);
 
@@ -95,7 +96,7 @@ namespace AlphaDots {
         // Hyperparameters
         double C_puct = 10.0;
         double dirichlet_alpha = 0.03;
-        double mcts_iterations = 50;
+        double mcts_iterations = 500;
 
         // list of original prior values
         QList<double> original_priors;

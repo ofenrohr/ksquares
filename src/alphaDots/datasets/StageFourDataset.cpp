@@ -24,7 +24,7 @@ StageFourDataset::StageFourDataset(bool gui, int w, int h, QString modelName, in
     threadCnt = threads;
     selfPlayIteration = iteration;
 
-    model = ProtobufConnector::getModelByName(modelName);
+    model = ProtobufConnector::getInstance().getModelByName(modelName);
 
     // init GSLTest
     rng = gsl_rng_alloc(gsl_rng_taus);

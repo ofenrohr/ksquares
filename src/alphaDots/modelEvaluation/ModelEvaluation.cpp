@@ -69,7 +69,7 @@ void ModelEvaluation::initObject() {
 }
 
 QList<ModelInfo> ModelEvaluation::getModelList(QString models) {
-    QList<ModelInfo> allModels = ProtobufConnector::getModelList();
+    QList<ModelInfo> allModels = ProtobufConnector::getInstance().getModelList();
     QList<ModelInfo> ret;
 
     models = models.trimmed();
@@ -105,7 +105,7 @@ QList<ModelInfo> ModelEvaluation::getModelList(QString models) {
 }
 
 void ModelEvaluation::printModelList() {
-    QList<ModelInfo> models = ProtobufConnector::getModelList();
+    QList<ModelInfo> models = ProtobufConnector::getInstance().getModelList();
     qDebug() << "================================================================================";
     qDebug() << "Available models:";
     qDebug() << "================================================================================";

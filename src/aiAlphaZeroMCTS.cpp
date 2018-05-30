@@ -222,29 +222,35 @@ AlphaZeroMCTSNode::Ptr aiAlphaZeroMCTS::selection(const AlphaZeroMCTSNode::Ptr &
 
 void aiAlphaZeroMCTS::simulation(const AlphaZeroMCTSNode::Ptr &node) {
     // fill values
-    predictPolicyValue(node, board);
+    predictPolicyValue(node, board, MLImageGenerator::generateInputImage(board));
 }
 
-bool aiAlphaZeroMCTS::predictPolicyValue(const AlphaZeroMCTSNode::Ptr &parentNode, const aiBoard::Ptr &board) {
-    // send prediction request
-    DotsAndBoxesImage img = ProtobufConnector::dotsAndBoxesImageToProtobuf(MLImageGenerator::generateInputImage(board));
-    if (!ProtobufConnector::sendString(socket, img.SerializeAsString())) {
-        qDebug() << "failed to send message to model server";
-        isTainted = true;
-        return false;
-    }
-
-    // receive prediction from model server
-    bool ok = false;
-    std::string rpl = ProtobufConnector::recvString(socket, &ok);
-    if (!ok) {
-        qDebug() << "failed to receive message from model server";
-        isTainted = true;
-        return false;
-    }
-    //qDebug() << QString::fromStdString(rpl);
+bool aiAlphaZeroMCTS::predictPolicyValue(const AlphaZeroMCTSNode::Ptr &parentNode, const aiBoard::Ptr &board,
+                                         const QImage &inputImage) {
+    QImage qimg = MLImageGenerator::generateInputImage(board);
     PolicyValueData policyValueData;
-    policyValueData.ParseFromString(rpl);
+    if (ProtobufConnector::getInstance().getBatchPredict()) {
+        policyValueData = ProtobufConnector::getInstance().batchPredict(socket, qimg);
+    } else {
+        // send prediction request
+        DotsAndBoxesImage img = ProtobufConnector::dotsAndBoxesImageToProtobuf(inputImage);
+        if (!ProtobufConnector::sendString(socket, img.SerializeAsString())) {
+            qDebug() << "failed to send message to model server";
+            isTainted = true;
+            return false;
+        }
+
+        // receive prediction from model server
+        bool ok = false;
+        std::string rpl = ProtobufConnector::recvString(socket, &ok);
+        if (!ok) {
+            qDebug() << "failed to receive message from model server";
+            isTainted = true;
+            return false;
+        }
+        //qDebug() << QString::fromStdString(rpl);
+        policyValueData.ParseFromString(rpl);
+    }
 
     // put data into mcts nodes
     //int lineCnt = policyValueData.policy_size();
@@ -255,6 +261,7 @@ bool aiAlphaZeroMCTS::predictPolicyValue(const AlphaZeroMCTSNode::Ptr &parentNod
         child->prior = policyValueData.policy(child->move);
         priorSum += child->prior;
     }
+    ProtobufConnector::getInstance().releaseBatchSample();
     // normalize
     for (const auto &child : parentNode->children) {
         child->prior /= priorSum;
