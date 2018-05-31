@@ -175,6 +175,7 @@ class aiFunctions
 		
 		/* Debugging */
 		static QString boardToString(aiBoard::Ptr board) { return boardToString(board->lines, board->linesSize, board->width, board->height, board->squareOwners); }
+        static QString boardToString(aiBoard *board) { return boardToString(board->lines, board->linesSize, board->width, board->height, board->squareOwners); }
 		static QString boardToString(bool *lines, int linesSize, int width, int height);
         static QString boardToString(bool *lines, int linesSize, int width, int height, QList<int> squareOwners);
         QString boardToString(bool *lines) const;

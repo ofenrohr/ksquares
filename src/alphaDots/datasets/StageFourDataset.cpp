@@ -14,7 +14,7 @@
 
 using namespace AlphaDots;
 
-StageFourDataset::StageFourDataset(bool gui, int w, int h, QString modelName, int thread, int threads, int iteration) {
+StageFourDataset::StageFourDataset(bool gui, int w, int h, QString modelName, int thread, int threads, bool useMCTS) {
     isGUI = gui;
     width = w;
     height = h;
@@ -22,7 +22,7 @@ StageFourDataset::StageFourDataset(bool gui, int w, int h, QString modelName, in
     sampleIdx = 0;
     threadIdx = thread;
     threadCnt = threads;
-    selfPlayIteration = iteration;
+    useMCTSai = useMCTS;
 
     model = ProtobufConnector::getInstance().getModelByName(modelName);
 
@@ -35,9 +35,6 @@ StageFourDataset::StageFourDataset(bool gui, int w, int h, QString modelName, in
     qDebug() << " |-> threads: " << threadCnt;
     qDebug() << " |-> modelName: " << modelName;
     qDebug() << " |-> model: " << model.name();
-    if (selfPlayIteration >= 0) {
-        qDebug() << " |-> iteration: " << selfPlayIteration;
-    }
 }
 
 StageFourDataset::~StageFourDataset() {
@@ -80,8 +77,9 @@ void StageFourDataset::startConverter(int samples, QString destinationDirectory,
 bool StageFourDataset::stopConverter() {
     QString timeStr = QDateTime::currentDateTime().toString(QStringLiteral("-hh:mm-dd_MM_yyyy"));
     std::string filename =
-            "/StageFour-" + model.name().toStdString() +
-            (selfPlayIteration >= 0 ? "." + std::to_string(selfPlayIteration) : "") +
+            "/StageFour-" +
+            model.name().toStdString() +
+            (useMCTSai ? "" : "-noMCTS" ) +
             "-" + std::to_string(sampleCnt) +
             "-" + std::to_string(width) + "x" + std::to_string(height) +
             timeStr.toStdString() +
@@ -119,13 +117,22 @@ Dataset StageFourDataset::generateDataset() {
     // add hard ai moves
     int linesSize = aiFunctions::toLinesSize(width, height);
     double maxMoves = linesSize - 1;
-    int movesLeft = gsl_ran_gaussian(rng, maxMoves/8.0) + maxMoves/2.0;
+    int movesLeft = gsl_ran_gaussian(rng, maxMoves/8.0) + maxMoves/2.0 - 2;
+    if (movesLeft <= 0) {
+        movesLeft = 1;
+    }
     MLDataGenerator::makeAiMoves(board, fastAi, movesLeft);
 
     int currentPlayer = board->playerId;
 
     // create mcts ai with correct player id (important for correct value calculation in mcts)
-    KSquaresAi::Ptr alphaZeroAi = KSquaresAi::Ptr(new aiAlphaZeroMCTS(currentPlayer, 1, width, height, 5000, model));// aiEasyMediumHard(0, width, height, 2));
+    KSquaresAi::Ptr alphaZeroAi;
+    if (useMCTSai) {
+        alphaZeroAi = KSquaresAi::Ptr(new aiAlphaZeroMCTS(currentPlayer, 1, width, height, 5000,
+                                                          model));// aiEasyMediumHard(0, width, height, 2));
+    } else {
+        alphaZeroAi = fastAi;
+    }
 
     // generate input image
     QImage inputImage = MLImageGenerator::generateInputImage(board);

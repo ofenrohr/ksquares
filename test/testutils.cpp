@@ -42,6 +42,7 @@ void testutils::executeAi(QList<int> testAIs, Board *board, int player, std::str
             continue;
         else
             qDebug() << "AI " << ai->getName() << " is enabled";
+        qDebug() << "current player: " << board->currentPlayer() << ", player: " << player;
         int aiLine = ai->chooseLine(board->lines(), board->squares(), board->getLineHistory());
         if (expectedLines.contains(aiLine)) {
             summary << "PASS " << qname << ": " << ai->getName() << "\n";

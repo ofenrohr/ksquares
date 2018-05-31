@@ -14,6 +14,9 @@
 
 using namespace AlphaDots;
 
+bool aiAlphaZeroMCTS::debug(false);
+
+
 aiAlphaZeroMCTS::aiAlphaZeroMCTS(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight,
                                  int thinkTime, ModelInfo model) :
         KSquaresAi(newWidth, newHeight), playerId(newPlayerId), maxPlayerId(newMaxPlayerId),
@@ -46,7 +49,7 @@ aiAlphaZeroMCTS::aiAlphaZeroMCTS(int newPlayerId, int newMaxPlayerId, int newWid
         isTainted = true;
     }
 
-    // init GSLTest
+    // init rng
     rng = gsl_rng_alloc(gsl_rng_taus);
     gsl_rng_set(rng, std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
 }
@@ -54,6 +57,9 @@ aiAlphaZeroMCTS::aiAlphaZeroMCTS(int newPlayerId, int newMaxPlayerId, int newWid
 aiAlphaZeroMCTS::~aiAlphaZeroMCTS() {
     delete[] lines;
     gsl_rng_free(rng);
+    if (!mctsRootNode.isNull()) {
+        mctsRootNode->clear();
+    }
 }
 
 int aiAlphaZeroMCTS::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners,
@@ -158,6 +164,11 @@ int aiAlphaZeroMCTS::mcts() {
             }
         }
 
+        if (isTainted) {
+            qDebug() << "aiAlphaZeroMCTS is tainted, returning invalid line on purpose";
+            return -1;
+        }
+
         finishedIterations++;
         QCoreApplication::processEvents();
     }
@@ -175,13 +186,21 @@ int aiAlphaZeroMCTS::mcts() {
         qDebug() << "ERROR: childVisitSum = 0, children.size() = " << mctsRootNode->children.size();
         return -1;
     }
-    long mostVisited = -1;
+    double bestProbability = -INFINITY;
     for (const auto &child : mctsRootNode->children) {
+        // select by highest visit count
+        /*
         double pi_a_given_s0 = (double)child->visitCnt / (double)childVisitSum;
-        if (pi_a_given_s0 > mostVisited) {
-            mostVisited = pi_a_given_s0;
+        if (pi_a_given_s0 > bestProbability) {
+            bestProbability = pi_a_given_s0;
             line = child->move;
-            child->value = pi_a_given_s0;
+            //child->value = pi_a_given_s0;
+        }
+        */
+        // select by best value
+        if (child->value > bestProbability) {
+            bestProbability = child->value;
+            line = child->move;
         }
     }
 
@@ -193,15 +212,15 @@ int aiAlphaZeroMCTS::mcts() {
     //qDebug().noquote() << "mcts node:" << mctsRootNode->toString();
     //QFile graph(i18n("/tmp/AlphaZeroMCTS.") + QString::number(finishedIterations) + i18n(".dot"));
 
-    /*
-    QFile graph(i18n("/tmp/AlphaZeroMCTS.dot"));
-    if (graph.open(QIODevice::ReadWrite | QIODevice::Truncate | QIODevice::Text)) {
-        QTextStream stream(&graph);
-        stream << "digraph {";
-        stream << mctsRootNode->toDotString();
-        stream << "}";
+    if (debug) {
+        QFile graph(i18n("/tmp/AlphaZeroMCTS.dot"));
+        if (graph.open(QIODevice::ReadWrite | QIODevice::Truncate | QIODevice::Text)) {
+            QTextStream stream(&graph);
+            stream << "digraph {";
+            stream << mctsRootNode->toDotString();
+            stream << "}";
+        }
     }
-     */
 
     return line;
 }
@@ -230,7 +249,7 @@ AlphaZeroMCTSNode::Ptr aiAlphaZeroMCTS::selection(const AlphaZeroMCTSNode::Ptr &
         visitSum += child->visitCnt;
     }
     for (int i = 0; i < node->children.size(); i++) {
-        node->children[i]->puctValue = node->children[i]->value + C_puct * node->children[i]->prior * (sqrt(visitSum) / (1.0 + (double)node->visitCnt));
+        node->children[i]->puctValue = node->children[i]->value + C_puct * (node->children[i]->prior+prior_eps) * (sqrt(visitSum) / (1.0 + (double)node->visitCnt));
         if (node->children[i]->puctValue > bestVal) {
             bestVal = node->children[i]->puctValue;
             selectedNode = node->children[i];
@@ -239,6 +258,8 @@ AlphaZeroMCTSNode::Ptr aiAlphaZeroMCTS::selection(const AlphaZeroMCTSNode::Ptr &
 
     if (selectedNode.isNull()) {
         qDebug() << "selected node is null, no child has been selected?!";
+        qDebug().noquote() << boardToString(board);
+        assert(false);
         return selectedNode;
     }
 
@@ -249,7 +270,9 @@ AlphaZeroMCTSNode::Ptr aiAlphaZeroMCTS::selection(const AlphaZeroMCTSNode::Ptr &
 
 void aiAlphaZeroMCTS::simulation(const AlphaZeroMCTSNode::Ptr &node) {
     // fill values
-    predictPolicyValue(node, board, MLImageGenerator::generateInputImage(board));
+    if (!predictPolicyValue(node, board, MLImageGenerator::generateInputImage(board))) {
+        return;
+    }
 }
 
 bool aiAlphaZeroMCTS::predictPolicyValue(const AlphaZeroMCTSNode::Ptr &parentNode, const aiBoard::Ptr &board,
@@ -296,10 +319,13 @@ bool aiAlphaZeroMCTS::predictPolicyValue(const AlphaZeroMCTSNode::Ptr &parentNod
     // put data into mcts nodes
     //int lineCnt = policyValueData.policy_size();
     double priorSum = 0; // sum up prior to normalize
-    parentNode->value = policyValueData.value();
+    parentNode->value = policyValueData.value() * (playerId == board->playerId ? 1 : -1);
     for (const auto &child : parentNode->children) {
         child->parent = parentNode;
         child->prior = policyValueData.policy(child->move);
+        if (child->prior == NAN) {
+            assert(false);
+        }
         priorSum += child->prior;
     }
     ProtobufConnector::getInstance().releaseBatchSample();

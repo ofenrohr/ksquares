@@ -6,6 +6,7 @@
 #include <QtTest/QtTest>
 #include <aifunctions.h>
 #include <alphaDots/ModelManager.h>
+#include <aiAlphaZeroMCTS.h>
 #include "alphazero.h"
 #include "testutils.h"
 
@@ -24,6 +25,7 @@ void alphazero::testAlphaZero001() {
         sGame->board()->addLine(lines[i], &nextPlayer, &boardFilled, &completedSquares);
     }
 
+    AlphaDots::aiAlphaZeroMCTS::setDebug(true);
     QList<int> testAIs;
     testAIs.append(KSquares::AI_MCTS_ALPHAZERO);
     QList<int> expectedLines;

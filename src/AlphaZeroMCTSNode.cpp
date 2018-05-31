@@ -12,6 +12,7 @@ AlphaZeroMCTSNode::AlphaZeroMCTSNode() {
     value = 0;
     prior = 0;
     move = -1;
+    puctValue = 0;
     children.clear();
 }
 
@@ -23,6 +24,7 @@ AlphaZeroMCTSNode::AlphaZeroMCTSNode(const AlphaZeroMCTSNode &node) {
     prior = node.prior;
     parent = node.parent;
     move = node.move;
+    puctValue = node.puctValue;
     children = node.children;
 }
 
@@ -45,7 +47,7 @@ QString AlphaZeroMCTSNode::toDotString() {
                QStringLiteral("\", shape=\"box\"];\n")
     );
     for (auto &child : children) {
-        if (child->visitCnt > 0) {
+        if (child->visitCnt > 0 || child->move == 14) {
             child->createUUID();
             ret.append(child->toDotString());
             ret.append(getNodeName() + QStringLiteral(" -> ") + child->getNodeName() + QStringLiteral(";\n"));

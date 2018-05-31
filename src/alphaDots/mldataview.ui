@@ -58,6 +58,11 @@
        <string>StageFour</string>
       </property>
      </item>
+     <item>
+      <property name="text">
+       <string>StageFour (no MCTS)</string>
+      </property>
+     </item>
     </widget>
    </item>
    <item row="1" column="0" colspan="3">

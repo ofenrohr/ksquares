@@ -55,6 +55,8 @@ namespace AlphaDots {
 
         void applyDirichletNoiseToChildren(const AlphaZeroMCTSNode::Ptr &parentNode, double alpha);
 
+        static void setDebug(bool mode) {debug=mode;}
+
     protected:
         int mcts();
 
@@ -94,9 +96,10 @@ namespace AlphaDots {
         gsl_rng *rng;
 
         // Hyperparameters
-        double C_puct = 10.0;
+        double C_puct = 100.0;
         double dirichlet_alpha = 0.03;
-        double mcts_iterations = 500;
+        double mcts_iterations = 1500;
+        double prior_eps = 0.1;
 
         // list of original prior values
         QList<double> original_priors;
@@ -107,6 +110,7 @@ namespace AlphaDots {
         QElapsedTimer mctsTimer;
         long mctsTimeout;
 
+        static bool debug;
     };
 }
 

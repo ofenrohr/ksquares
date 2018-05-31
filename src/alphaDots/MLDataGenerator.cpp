@@ -107,6 +107,10 @@ void MLDataGenerator::selectGenerator(int gen) {
             guiGenerator = DatasetGenerator::Ptr(new StageFourDataset(true, datasetWidth, datasetHeight, tr("AlphaZeroV7")));
             qDebug() << "selected stage four generator";
             break;
+        case 7:
+            guiGenerator = DatasetGenerator::Ptr(new StageFourDataset(true, datasetWidth, datasetHeight, tr("AlphaZeroV7"), -1,-1, false));
+            qDebug() << "selected stage four (no mcts) generator";
+            break;
         default:
             break;
     }
@@ -123,6 +127,7 @@ void MLDataGenerator::initObject() {
         case StageTwo: generatorIndex = 1; break;
         case StageThree: generatorIndex = 5; break;
         case StageFour: generatorIndex = 6; break;
+        case StageFourNoMCTS: generatorIndex = 7; break;
         default:
             QMessageBox::critical(this, tr("Error"), tr("[MLDataGenerator] Unknown dataset type"));
             generatorIndex = 0;
@@ -153,6 +158,8 @@ DatasetGenerator::Ptr MLDataGenerator::getDatasetGenerator(int thread) {
             return StageThreeDataset::Ptr(new StageThreeDataset(false, datasetWidth, datasetHeight, thread, threadCnt));
         case StageFour:
             return StageFourDataset::Ptr(new StageFourDataset(false, datasetWidth, datasetHeight, tr("AlphaZeroV7"), thread, threadCnt));
+        case StageFourNoMCTS:
+            return StageFourDataset::Ptr(new StageFourDataset(false, datasetWidth, datasetHeight, tr("AlphaZeroV7"), thread, threadCnt, false));
     }
     return DatasetGenerator::Ptr(nullptr);
 }

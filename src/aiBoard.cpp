@@ -72,6 +72,7 @@ void aiBoard::doMove(int line)
 		for (int i = 0; i < linesSize; i++)
 			lineDebug << ( lines[i] ? "1" : "0" );
 		qDebug() << "WARNING: adding an invalid line! line = " << line << ", lines = " << QString::fromStdString(lineDebug.str());
+        qDebug().noquote() << aiFunctions::boardToString(this);
 		assert(false);
 		//return;
 	}

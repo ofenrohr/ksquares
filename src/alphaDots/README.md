@@ -38,7 +38,16 @@ All dataset generators accept the following optional command line arguments:
 * `--dataset-height` Board height in boxes
 * `--threads` Number of threads
 
-![data visualization with KSquares](ksquares_show_generate.png)
+![FirstTry data generator](ksquares-show-generate-1.png)
+
+[StageOne / StageTwo data generator](ksquares-show-generate-2.png)
+
+[BasicStrategy](ksquares-show-generate-3.png)
+
+[Sequence](ksquares-show-generate-4.png)
+
+[StageThree](ksquares-show-generate-5.png)
+
 
 ### First Try
 
@@ -222,7 +231,8 @@ by training on data generated with the latest version of the network. During sel
 each version of the model will be saved separately with a `.#iteration` suffix, while
 the normal model name references the latest version.
 Every training process is logged separately. To train the next iteration of a network,
-KSquares calls [AlphaZeroV10.py](AlphaZeroV10.html) with appropriate arguments.
+KSquares calls [AlphaZeroV10.py](AlphaZeroV10.html) with appropriate arguments. Training
+is done on the CPU, because the GPU is already used to generate more data.
 
 Self-Play in KSquares can be started as follows:
 
@@ -230,15 +240,33 @@ Self-Play in KSquares can be started as follows:
 ksquares --self-play
 ```
 
+### Self-Play arguments
+
 The following optional arguments will be considered by self-play:
 
 * `--gpu` enables GPU acceleration of the data generator. Training the network will
   not use GPU acceleration, because it only takes a fraction of the overall time.
-* `--threads N` number of thread to use when generating data with the MCTS AI (StageFour dataset). Default: 4
+* `--threads N` number of thread to use when generating data with the MCTS AI 
+  (StageFour dataset). Default: 4
 * `--batch-prediction` if this flag is set, the MCTS AI threads will send their requests in batches.
   Batch size corresponds to the number of threads.
 * `--iteration-size N` number of samples to generate per iteration
-* `--initial-model` the model to start generating training data with. Default: `AlphaZeroV7`
-* `--target-model` the model to improve in self-play. Model name must be present in the `models.yaml` list in `alphaDots/modelServer/models`
+* `--initial-model` the model to start generating training data with. Default: `alphaZeroV7` 
+  (This option is untested!)
+* `--target-model` the model to improve in self-play. Model name must be present in the 
+  `models.yaml` list in `alphaDots/modelServer/models`. (This option is untested)
 * `--debug` print debug information for individual prediction requests. Settings this flag
   will slow things down considerably.
+
+### Fast Self-Play
+
+To execute fast self-play with gpu acceleration, execute the following command:
+
+```
+ksquares --self-play --gpu --batch-prediction --threads 16
+```
+
+### Screenshot
+
+![ksquares --self-play and system performance monitoring](ksquares-self-play.png)
+

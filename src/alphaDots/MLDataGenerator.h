@@ -28,7 +28,8 @@ namespace AlphaDots {
         LSTM2,
         StageTwo,
         StageThree,
-        StageFour
+        StageFour,
+        StageFourNoMCTS
     };
 
     class MLDataGenerator : public KXmlGuiWindow, public Ui::MLDataView {
