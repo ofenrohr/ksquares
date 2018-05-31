@@ -113,8 +113,7 @@ Dataset StageFourDataset::generateDataset() {
     // create board
     aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(width, height));//MLDataGenerator::generateRandomBoard(width, height, 15);
 
-    // create ais
-    KSquaresAi::Ptr alphaZeroAi = KSquaresAi::Ptr(new aiAlphaZeroMCTS(0, 1, width, height, 5000, model));// aiEasyMediumHard(0, width, height, 2));
+    // create fast ai
     KSquaresAi::Ptr fastAi = KSquaresAi::Ptr(new aiEasyMediumHard(0, width, height, 2));
 
     // add hard ai moves
@@ -124,6 +123,9 @@ Dataset StageFourDataset::generateDataset() {
     MLDataGenerator::makeAiMoves(board, fastAi, movesLeft);
 
     int currentPlayer = board->playerId;
+
+    // create mcts ai with correct player id (important for correct value calculation in mcts)
+    KSquaresAi::Ptr alphaZeroAi = KSquaresAi::Ptr(new aiAlphaZeroMCTS(currentPlayer, 1, width, height, 5000, model));// aiEasyMediumHard(0, width, height, 2));
 
     // generate input image
     QImage inputImage = MLImageGenerator::generateInputImage(board);

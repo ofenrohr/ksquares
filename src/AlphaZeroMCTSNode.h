@@ -16,6 +16,7 @@ namespace AlphaDots {
 
         AlphaZeroMCTSNode();
         AlphaZeroMCTSNode(const AlphaZeroMCTSNode &node);
+        ~AlphaZeroMCTSNode();
 
         /// times this node was visited (N)
         int visitCnt;
@@ -49,6 +50,10 @@ namespace AlphaDots {
         QString getNodeName();
         /// printable info about node and its direct children
         QString toString();
+
+
+        /// removes all children, resets values
+        void clear();
     };
 }
 

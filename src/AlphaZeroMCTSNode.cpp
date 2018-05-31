@@ -26,6 +26,10 @@ AlphaZeroMCTSNode::AlphaZeroMCTSNode(const AlphaZeroMCTSNode &node) {
     children = node.children;
 }
 
+AlphaZeroMCTSNode::~AlphaZeroMCTSNode() {
+    clear();
+}
+
 void AlphaZeroMCTSNode::createUUID() {
     if (uuid.isNull()) {
         uuid = QUuid::createUuid();
@@ -65,4 +69,17 @@ QString AlphaZeroMCTSNode::toString() {
         ret.append(QStringLiteral("\nchild value=")+QString::number(child->value)+QStringLiteral(", visitedCnt=") + QString::number(child->visitCnt));
     }
     return ret;
+}
+
+void AlphaZeroMCTSNode::clear() {
+    visitCnt = 0;
+    fullValue = 0.0;
+    value = 0.0;
+    prior = 0.0;
+    move = -1;
+    puctValue = 0;
+    parent = AlphaZeroMCTSNode::Ptr(nullptr);
+    for (const auto &child : children) {
+        child->clear();
+    }
 }

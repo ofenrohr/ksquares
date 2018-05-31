@@ -52,7 +52,9 @@ namespace AlphaDots {
          */
         void setDebug(bool mode);
 
-        bool getDebug() { return debug; };
+        bool getDebug() { return debug; }
+
+        void setLogDest(QString &dest) {logDest = dest;}
 
     private:
         ModelManager() = default;
@@ -81,6 +83,7 @@ namespace AlphaDots {
 
         bool useGPU=false;
         bool debug=false;
+        QString logDest;
     };
 }
 

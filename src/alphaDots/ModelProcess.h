@@ -25,8 +25,9 @@ namespace AlphaDots {
          * @param port The port the model server should listen on
          * @param allowGPU Disable GPU restriction by environment variables
          * @param debug Set debug flag
+         * @param logdest log file destination directory
          */
-        ModelProcess(QString model, int boxesWidth, int boxesHeight, int port, bool allowGPU, bool debug);
+        ModelProcess(QString model, int boxesWidth, int boxesHeight, int port, bool allowGPU, bool debug, QString logdest);
         ~ModelProcess();
 
         bool isRunning();

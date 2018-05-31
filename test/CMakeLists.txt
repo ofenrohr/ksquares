@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 
 find_package(GSL REQUIRED)
 
-set(CMAKE_AUTOMOC OFF)
+set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 
 # As moc files are generated in the binary dir, tell CMake
@@ -18,7 +18,11 @@ PROTOBUF_GENERATE_CPP(ProtoSrcs ProtoHeaders ${protoMessages})
 file(GLOB alphaDotsSRCS ../src/alphaDots/*.cpp)
 file(GLOB alphaDotsModelEvaluationSRCS ../src/alphaDots/modelEvaluation/*.cpp)
 file(GLOB alphaDotsDatasetsSRCS ../src/alphaDots/datasets/*.cpp)
+file(GLOB alphaDotsAiEvalSRCS ../src/alphaDots/aiEvaluation/*.cpp)
 
+message("blah")
+message(${alphaDotsAiEvalSRCS})
+message("blah")
 
 set( ksquarestest_SRCS 
         ../src/ksquaresgame.cpp
@@ -51,7 +55,8 @@ set( ksquarestest_SRCS
         ${alphaDotsSRCS}
 		${alphaDotsModelEvaluationSRCS}
 		${alphaDotsDatasetsSRCS}
-)
+		${alphaDotsAiEvalSRCS}
+        )
 
 kconfig_add_kcfg_files(ksquarestest_SRCS GENERATE_MOC ../src/settings.kcfgc)
 
@@ -97,6 +102,7 @@ add_executable(ksquarestest
 		aiboard.cpp
 		alphazero.cpp
 		GSLTest.cpp
+		SharedPointerTest.cpp
 )
 #add_test(ksquarestest ksquarestest-hardai)
 

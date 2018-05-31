@@ -8,7 +8,7 @@
 
 using namespace AlphaDots;
 
-ModelProcess::ModelProcess(QString model, int boxesWidth, int boxesHeight, int port, bool allowGPU, bool debug) :
+ModelProcess::ModelProcess(QString model, int boxesWidth, int boxesHeight, int port, bool allowGPU, bool debug, QString logdest) :
     width(boxesWidth),
     height(boxesHeight),
     modelPort(port)
@@ -26,6 +26,10 @@ ModelProcess::ModelProcess(QString model, int boxesWidth, int boxesHeight, int p
          << QString::number(height*2 + 3)
          << QStringLiteral("--port")
          << QString::number(port);
+    if (!logdest.isEmpty()) {
+        args << QStringLiteral("--logdest")
+             << logdest;
+    }
     if (debug) {
         args << QStringLiteral("--debug");
     }

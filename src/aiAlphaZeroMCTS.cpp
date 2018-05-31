@@ -29,6 +29,7 @@ aiAlphaZeroMCTS::aiAlphaZeroMCTS(int newPlayerId, int newMaxPlayerId, int newWid
     }
     mctsTimer = QElapsedTimer();
     isTainted = false;
+    mctsRootNode = AlphaZeroMCTSNode::Ptr(nullptr);
 
     // get a model server
 	modelServerPort = ModelManager::getInstance().ensureProcessRunning(model.name(), width, height);
@@ -93,7 +94,33 @@ int aiAlphaZeroMCTS::chooseLine(const QList<bool> &newLines, const QList<int> &n
 int aiAlphaZeroMCTS::mcts() {
     // init mcts
     mctsTimer.start();
-    mctsRootNode = AlphaZeroMCTSNode::Ptr(new AlphaZeroMCTSNode());
+
+    // create new root node or reuse child node from previous run
+    if (mctsRootNode.isNull()) {
+        mctsRootNode = AlphaZeroMCTSNode::Ptr(new AlphaZeroMCTSNode());
+    } else {
+        int foundChild = 0;
+        for (const auto &child : mctsRootNode->children) {
+            if (lines[child->move]) {
+                foundChild++;
+            }
+        }
+        if (foundChild == 1) {
+            qDebug() << "reusing tree";
+            for (const auto &child : mctsRootNode->children) {
+                if (lines[child->move]) {
+                    mctsRootNode = child;
+                } else {
+                    child->clear();
+                }
+            }
+        } else {
+            if (foundChild > 1) {
+                qDebug() << "WARNING: found more than one child move";
+            }
+            mctsRootNode->clear();
+        }
+    }
 
     int finishedIterations = 0;
     // fill mcts tree
@@ -227,6 +254,20 @@ void aiAlphaZeroMCTS::simulation(const AlphaZeroMCTSNode::Ptr &node) {
 
 bool aiAlphaZeroMCTS::predictPolicyValue(const AlphaZeroMCTSNode::Ptr &parentNode, const aiBoard::Ptr &board,
                                          const QImage &inputImage) {
+    // reached leaf of search tree?
+    if (board->drawnLinesCnt == board->linesSize) {
+        // score the game
+        double val = 0.0;
+        for (const auto &owner: board->squareOwners) {
+            val += owner == playerId ? 1 : -1;
+        }
+        val /= board->squareOwners.size();
+        // set score
+        parentNode->value = val;
+        return true;
+    }
+
+    // request prediction
     QImage qimg = MLImageGenerator::generateInputImage(board);
     PolicyValueData policyValueData;
     if (ProtobufConnector::getInstance().getBatchPredict()) {

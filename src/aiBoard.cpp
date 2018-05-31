@@ -23,9 +23,14 @@ aiBoard::aiBoard(Board *board)
 {
 	linesSize = board->lines().size();
 	deleteLines = true;
+	drawnLinesCnt = 0;
 	lines = new bool[linesSize];
-	for (int i = 0; i < linesSize; i++)
+	for (int i = 0; i < linesSize; i++) {
 		lines[i] = board->lines()[i];
+		if (lines[i]) {
+			drawnLinesCnt++;
+		}
+	}
 	width = board->width();
 	height = board->height();
 	squareOwners = board->squares();
@@ -38,6 +43,7 @@ aiBoard::aiBoard(int newWidth, int newHeight) {
 	width = newWidth;
 	height = newHeight;
     linesSize = aiFunctions::toLinesSize(newWidth, newHeight);
+	drawnLinesCnt = 0;
     lines = new bool[linesSize];
     for (int i = 0; i < linesSize; i++) {
         lines[i] = false;
@@ -81,6 +87,7 @@ void aiBoard::doMove(int line)
 	
 	// add the line
 	lines[line] = true;
+	drawnLinesCnt++;
 	
 	// check for completed squares
 	for (int i = 0; i < squares.size(); i++)
@@ -124,6 +131,7 @@ void aiBoard::undoMove(int line)
 	
 	// remove line
 	lines[line] = false;
+	drawnLinesCnt--;
 	
 	// check for now incomplete squares
 	for (int i = 0; i < squares.size(); i++)

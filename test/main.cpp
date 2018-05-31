@@ -5,6 +5,7 @@
 #include "aiboard.h"
 #include "alphazero.h"
 #include "GSLTest.h"
+#include "SharedPointerTest.h"
 
 int main(int argc, char *argv[])
 {
@@ -81,6 +82,12 @@ int main(int argc, char *argv[])
             printf(" EXECUTING: GSLTest\n");
             printf("~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=\n");
             status |= QTest::qExec(new GSLTest, subargc, subargv);
+        }
+        if (all || argvec[i] == "SharedPointer") {
+            printf("~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=\n");
+            printf(" EXECUTING: SharedPointer\n");
+            printf("~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=\n");
+            status |= QTest::qExec(new SharedPointerTest, subargc, subargv);
         }
     }
     return status;

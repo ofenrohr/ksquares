@@ -16,7 +16,7 @@ namespace AlphaDots {
     class SelfPlay : public KXmlGuiWindow, public Ui::SelfPlayForm {
     Q_OBJECT
     public:
-        SelfPlay(QString datasetDest, int threads, QString initialModel, QString targetModelName, int gamesPerIteration);
+        SelfPlay(QString datasetDest, int threads, QString &initialModel, QString &targetModelName, int gamesPerIteration, QString &logdest);
 
         void initObject();
 
@@ -42,6 +42,7 @@ namespace AlphaDots {
         QList<QPoint> availableBoardSizes;
         int iterationSize;
         QString targetModelName;
+        QString logdest;
 
         // current state infos
         ModelInfo currentModel;

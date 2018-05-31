@@ -17,7 +17,7 @@
 
 using namespace AlphaDots;
 
-SelfPlay::SelfPlay(QString datasetDest, int threads, QString initialModelName, QString targetModel, int gamesPerIteration) :
+SelfPlay::SelfPlay(QString datasetDest, int threads, QString &initialModelName, QString &targetModel, int gamesPerIteration, QString &logdir) :
     KXmlGuiWindow(),
     m_view(new QWidget())
 {
@@ -25,6 +25,7 @@ SelfPlay::SelfPlay(QString datasetDest, int threads, QString initialModelName, Q
 
     datasetDirectory = datasetDest;
     targetModelName = targetModel;
+    logdest = logdir;
     threadCnt = threads;
 
     currentModel = ProtobufConnector::getInstance().getModelByName(initialModelName);
@@ -193,6 +194,8 @@ void SelfPlay::finishIteration() {
             << QString::number(iteration)
             << tr("--epochs")
             << tr("10")
+            //<< tr("--logdest")
+            //<< logdest
             ;
     QString processWorkingDirectory = Settings::alphaDotsDir() + tr("/modelServer/models/alphaZero");
     if (alphaZeroV10Training == nullptr) {
@@ -213,7 +216,7 @@ void SelfPlay::finishIteration() {
         alphaZeroV10Training = new ExternalProcess(processPath, processArgs, processWorkingDirectory);
     }
     // disable gpu, training on very little data -> cpu is enough
-    alphaZeroV10Training->addEnvironmentVariable(QStringLiteral("CUDA_VISIBLE_DEVICES"), QStringLiteral("-1"));
+    alphaZeroV10Training->addEnvironmentVariable(tr("CUDA_VISIBLE_DEVICES"), tr("-1"));
     connect(alphaZeroV10Training, SIGNAL(processFinished()), this, SLOT(trainingFinished()));
     if (!alphaZeroV10Training->startExternalProcess()) {
         QMessageBox::critical(this, tr("SelfPlay error"),

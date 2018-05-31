@@ -50,6 +50,7 @@ public:
 	QList<int> squareOwners;
 	int playerId;
 	int maxPlayerId;
+	int drawnLinesCnt;
 	
 	QList<int> *hashLines;
 
@@ -70,6 +71,8 @@ inline bool operator==(const aiBoard &b1, const aiBoard &b2)
 		return false;
 	if (b1.width != b2.width)
 		return false;
+    if (b1.drawnLinesCnt != b2.drawnLinesCnt)
+		return false;
 	// WARNING: no checking for invalid values (width, linesSize < 0) or for height
 	for (int i = 0; i < b1.linesSize; i++)
 		if (b1.lines[i] != b2.lines[i])
@@ -82,6 +85,8 @@ inline bool operator==(const aiBoard::Ptr &b1, const aiBoard::Ptr &b2)
 	if (b1->linesSize != b2->linesSize)
 		return false;
 	if (b1->width != b2->width)
+		return false;
+	if (b1->drawnLinesCnt != b2->drawnLinesCnt)
 		return false;
 	// WARNING: no checking for invalid values (width, linesSize < 0) or for height
 	for (int i = 0; i < b1->linesSize; i++)
