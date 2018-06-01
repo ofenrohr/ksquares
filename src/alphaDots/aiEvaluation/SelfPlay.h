@@ -6,17 +6,20 @@
 #define KSQUARES_SELFPLAY_H
 
 #include <KXmlGui/KXmlGuiWindow>
+#include <QtCore/QMutexLocker>
+#include <QtCore/QDateTime>
 #include <alphaDots/ModelInfo.h>
 #include <alphaDots/ExternalProcess.h>
 #include <alphaDots/datasets/StageFourDataset.h>
-#include <QtCore/QMutexLocker>
+#include <alphaDots/MLDataGenerator.h>
 #include "ui_SelfPlayForm.h"
 
 namespace AlphaDots {
     class SelfPlay : public KXmlGuiWindow, public Ui::SelfPlayForm {
     Q_OBJECT
     public:
-        SelfPlay(QString datasetDest, int threads, QString &initialModel, QString &targetModelName, int gamesPerIteration, QString &logdest);
+        SelfPlay(QString datasetDest, int threads, QString &initialModel, QString &targetModelName,
+                 int gamesPerIteration, QString &logdest, int epochs, bool gpuTraining, DatasetType dataset);
 
         void initObject();
 
@@ -33,6 +36,8 @@ namespace AlphaDots {
 
         void trainingFinished();
 
+        void updateTrainingInfo();
+
     private:
         QWidget *m_view;
 
@@ -43,6 +48,7 @@ namespace AlphaDots {
         int iterationSize;
         QString targetModelName;
         QString logdest;
+        DatasetType datasetType;
 
         // current state infos
         ModelInfo currentModel;
@@ -51,6 +57,7 @@ namespace AlphaDots {
         int gamesCompleted;
         QList<bool> threadRunning;
         QList<StageFourDataset *> threadGenerators;
+        QDateTime lastInfoUpdate;
 
         // mutex lockers
         mutable QMutex recvProgressMutex;
@@ -62,7 +69,10 @@ namespace AlphaDots {
         std::vector<double> *value;
 
         // training process
+        int trainEpochs;
+        bool trainOnGPU;
         ExternalProcess *alphaZeroV10Training;
+        QDateTime trainingStartTime;
     };
 }
 

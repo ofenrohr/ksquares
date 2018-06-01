@@ -226,12 +226,22 @@ ksquarestest alphazero
 ### AlphaZero 001
 
 This tests executes AlphaZero MCTS on Berlekamp 003. It was used to debug
-the MCTS algorithm. The Monte-Carlo Tree was printed in dot-format to the 
-`/tmp` directory. It was then converted to a png image with graphviz.
+the MCTS algorithm. The Monte-Carlo Tree will be printed in dot-format to 
+`/tmp/AlphaZeroMCTS.dot`. It was then converted to [PDF](AlphaZeroMCTS.pdf) with graphviz.
+Meaning of the numbers in each node:
 
-Take a look at the 
-[example Monte-Carlo tree](AlphaZeroMCTS.png)
-to get an impression. The first number in each node is the line number that
-this node represents. All line numbers are displayed in the following image.
+* `V` is the value of the node. It represents the merit of making that move where
+  1 is a certain win and -1 is a certain loss.
+* `N` is the number of times that this node was selected in the MCTS selection step.
+* `P` is the prior asserted to that move by the neural network
+* `U` is the PUCT algorithm's value `U(s,a)` as described in the 
+  [AlphaGo Zero paper](https://deepmind.com/documents/119/agz_unformatted_nature.pdf) in the
+  methods section on page 26 in the linked document.
+
+The first number in each node is the line number that
+this node represents. All line numbers are displayed in the following image. 
 
 ![Berlekamp 003 with line numbers](berlekamp-003-debug.png)
+
+This test requires the MCTS algorithm to make a move that the underlying neural
+network would not do, because the training data didn't cover preemtive sacrifices.

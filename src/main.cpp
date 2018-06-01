@@ -81,6 +81,8 @@ int main(int argc, char **argv)
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("debug"), i18n("Print debug output")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("batch-prediction"), i18n("Enable batch prediction")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("log-dest"), i18n("Destination directory for debug and log files"), i18n("log-dest")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("gpu-training"), i18n("Use GPU for training in self-play")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("epochs"), i18n("Number of epochs in self-play training iteration"), i18n("epochs")));
 
     about.setupCommandLine(&parser);
     parser.process(app);
@@ -228,6 +230,24 @@ int main(int argc, char **argv)
         AlphaDots::ModelManager::getInstance().setLogDest(logDest);
     }
 
+    // gpu training in self-play
+    bool gpuTraining = false;
+    if (parser.isSet(i18n("gpu-training"))) {
+        gpuTraining = true;
+    }
+
+    // number of epochs in self-play training
+    int epochs = 10;
+    if (parser.isSet(i18n("epochs"))) {
+        bool ok = false;
+        int tmp = parser.value(i18n("epochs")).toInt(&ok);
+        if (ok) {
+            epochs = tmp;
+        } else {
+            QMessageBox::warning(nullptr, i18n("Self-Play error"), i18n("Invalid epochs argument"));
+        }
+    }
+
     // start things
     if (parser.isSet(i18n("demo"))) {
         KSquaresDemoWindow *demoWindow = new KSquaresDemoWindow;
@@ -273,7 +293,7 @@ int main(int argc, char **argv)
         AlphaDots::ModelEvaluation::printModelList();
         return 0;
     } else if (parser.isSet(i18n("self-play"))) {
-        AlphaDots::SelfPlay *selfPlay = new AlphaDots::SelfPlay(datasetDest, threads, initialModelName, targetModelName, iterationSize, logDest);
+        AlphaDots::SelfPlay *selfPlay = new AlphaDots::SelfPlay(datasetDest, threads, initialModelName, targetModelName, iterationSize, logDest, epochs, gpuTraining, datasetType);
         selfPlay->show();
     } else {
         KSquaresWindow *mainWindow = new KSquaresWindow;

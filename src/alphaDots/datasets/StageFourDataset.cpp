@@ -116,10 +116,13 @@ Dataset StageFourDataset::generateDataset() {
 
     // add hard ai moves
     int linesSize = aiFunctions::toLinesSize(width, height);
-    double maxMoves = linesSize - 1;
-    int movesLeft = gsl_ran_gaussian(rng, maxMoves/8.0) + maxMoves/2.0 - 2;
+    double maxMoves = linesSize - 2;
+    int movesLeft = gsl_ran_gaussian(rng, maxMoves/8.0) + maxMoves/2.0;
     if (movesLeft <= 0) {
         movesLeft = 1;
+    }
+    if (movesLeft >= linesSize) {
+        movesLeft = maxMoves;
     }
     MLDataGenerator::makeAiMoves(board, fastAi, movesLeft);
 

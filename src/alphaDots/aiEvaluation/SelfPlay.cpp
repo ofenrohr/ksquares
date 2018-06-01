@@ -12,12 +12,14 @@
 #include <settings.h>
 #include <QtWidgets/QMessageBox>
 #include <alphaDots/ModelManager.h>
+#include <QtCore/QDirIterator>
 #include "SelfPlay.h"
 #include "SelfPlayWorker.h"
 
 using namespace AlphaDots;
 
-SelfPlay::SelfPlay(QString datasetDest, int threads, QString &initialModelName, QString &targetModel, int gamesPerIteration, QString &logdir) :
+SelfPlay::SelfPlay(QString datasetDest, int threads, QString &initialModelName, QString &targetModel,
+                   int gamesPerIteration, QString &logdir, int epochs, bool gpuTraining, DatasetType dataset) :
     KXmlGuiWindow(),
     m_view(new QWidget())
 {
@@ -27,6 +29,7 @@ SelfPlay::SelfPlay(QString datasetDest, int threads, QString &initialModelName, 
     targetModelName = targetModel;
     logdest = logdir;
     threadCnt = threads;
+    datasetType = dataset;
 
     currentModel = ProtobufConnector::getInstance().getModelByName(initialModelName);
     iteration = -1;
@@ -52,6 +55,8 @@ SelfPlay::SelfPlay(QString datasetDest, int threads, QString &initialModelName, 
     output = new std::vector<uint8_t>();//imgDataSize);
     value = new std::vector<double >();//iterationSize);
 
+    trainEpochs = epochs;
+    trainOnGPU = gpuTraining;
     alphaZeroV10Training = nullptr;
 
     assert(iterationSize % threads == 0);
@@ -78,6 +83,104 @@ void SelfPlay::updateInfo() {
     progressBar->setMinimum(0);
     progressBar->setMaximum(iterationSize);
     progressBar->setValue(gamesCompleted);
+    datasetGeneratorLbl->setText(datasetType == StageFour ? tr("Stage Four") : tr("Stage Four (no MCTS)"));
+    lastInfoUpdate = QDateTime::currentDateTime();
+}
+
+void SelfPlay::updateTrainingInfo() {
+    QDir logDir(Settings::alphaDotsDir() + tr("/modelServer/models/alphaZero/logs/"));
+
+    // prepare label text with default values
+    QString epochStr, etaStr, lossStr, policyLossStr, valueLossStr;
+
+    // prepare regular expressions
+    QRegularExpression epochRegex(tr("Epoch (\\d+/\\d+)"));
+    // 4/8 [==============>...............] - ETA: 4s - loss: 2.1109 - policy_loss: 1.8616 - value_loss: 0.2096
+    QRegularExpression etaRegex(tr("ETA: (.*?) -"));
+    QRegularExpression lossRegex(tr("loss: (.*?) - policy_loss: (.*?) - value_loss: (.*?)$"));
+
+    // search log file
+    QStringList nameFilters;
+    nameFilters << tr("alphaZeroV10*");
+    auto entryList = logDir.entryList(nameFilters, QDir::Files | QDir::NoDotAndDotDot, QDir::Time);
+    if (entryList.size() > 0) {
+        // check log file
+        QString trainingLogPath = logDir.absolutePath() + tr("/") + entryList.first();
+        QFile trainingLog(trainingLogPath);
+        if (trainingLog.exists()) {
+            if (QFileInfo(trainingLog).created() >= trainingStartTime) {
+                // link to log file
+                logLinkLbl->setText(tr("<a href=\"") + trainingLogPath + tr("\">") + entryList.first() + tr("</a>"));
+                logLinkLbl->setTextFormat(Qt::RichText);
+                logLinkLbl->setTextInteractionFlags(Qt::TextBrowserInteraction);
+                logLinkLbl->setOpenExternalLinks(true);
+                // open log file
+                if (trainingLog.open(QIODevice::ReadOnly)) {
+                    // read log file
+                    QTextStream logStream(&trainingLog);
+                    QString logStr = logStream.readAll();
+
+                    // match epoch
+                    auto matchIter = epochRegex.globalMatch(logStr);
+                    while (matchIter.hasNext()) {
+                        auto match = matchIter.next();
+                        if (match.isValid()) {
+                            if (match.capturedTexts().size() == 2) {
+                                epochStr = match.captured(1);
+                                //qDebug() << "MATCH!";
+                            } else {
+                                epochStr = QString::number(match.capturedTexts().size());
+                            }
+                        }
+                    }
+
+                    // match eta
+                    auto etaIter = etaRegex.globalMatch(logStr);
+                    while (etaIter.hasNext()) {
+                        auto match = etaIter.next();
+                        if (match.isValid()) {
+                            if (match.capturedTexts().size() == 2) {
+                                etaStr = match.captured(1);
+                            }
+                        }
+                    }
+
+                    // match loss
+                    auto lossIter = lossRegex.globalMatch(logStr);
+                    while (lossIter.hasNext()) {
+                        auto match = lossIter.next();
+                        if (match.isValid()) {
+                            if (match.capturedTexts().size() == 4) {
+                                lossStr = match.captured(1);
+                                policyLossStr = match.captured(2);
+                                valueLossStr = match.captured(3);
+                            }
+                        }
+                    }
+                } else {
+                    qDebug() << "failed to open training log!";
+                }
+            } else {
+                qDebug() << "current training log doesn't exist yet";
+            }
+        } else {
+            qDebug() << "training log doesn't exist!" << entryList.first();
+        }
+    } else {
+        qDebug() << "empty entry list!";
+    }
+    epochLbl->setText(epochStr);
+    etaLbl->setText(etaStr);
+    lossLbl->setText(lossStr);
+    policyLossLbl->setText(policyLossStr);
+    valueLossLbl->setText(valueLossStr);
+    //while (it.hasNext()) {
+    //    QFile f(it.next());
+    //    f.open(QIODevice::ReadOnly);
+    //QFile trainingLog(
+    if (alphaZeroV10Training->isRunning()) {
+        QTimer::singleShot(3000, this, SLOT(updateTrainingInfo()));
+    }
 }
 
 void SelfPlay::setupIteration() {
@@ -108,12 +211,30 @@ void SelfPlay::setupIteration() {
     // start the threads
     assert(threadGenerators.empty());
     for (int i = 0; i < threadCnt; i++) {
-        StageFourDataset *gen = new StageFourDataset(false,
-                                               currentBoardSize.x(),
-                                               currentBoardSize.y(),
-                                               currentModel.name(),
-                                               i,
-                                               threadCnt);
+        StageFourDataset *gen;
+        switch (datasetType) {
+            case StageFour:
+                gen = new StageFourDataset(false,
+                                           currentBoardSize.x(),
+                                           currentBoardSize.y(),
+                                           currentModel.name(),
+                                           i,
+                                           threadCnt);
+                break;
+            case StageFourNoMCTS:
+                gen = new StageFourDataset(false,
+                                           currentBoardSize.x(),
+                                           currentBoardSize.y(),
+                                           currentModel.name(),
+                                           i,
+                                           threadCnt,
+                                           false);
+                break;
+            default:
+                QMessageBox::critical(this, tr("Self-Play error"), tr("Selected dataset generator is not supported"));
+                QCoreApplication::quit();
+        }
+
         threadGenerators.append(gen);
         if (i == 0) {
             gen->startConverter(iterationSize, datasetDirectory, false);
@@ -141,7 +262,10 @@ void SelfPlay::setupIteration() {
 void SelfPlay::recvProgress(int progress, int thread) {
     QMutexLocker locker(&recvProgressMutex);
     gamesCompleted++;
-    updateInfo();
+    if (gamesCompleted == iterationSize || lastInfoUpdate.addMSecs(100) < QDateTime::currentDateTime()) {
+        //lastInfoUpdate = QDateTime::currentDateTime();
+        updateInfo();
+    }
 }
 
 void SelfPlay::threadFinished(int thread) {
@@ -163,10 +287,6 @@ void SelfPlay::trainingFinished() {
 }
 
 void SelfPlay::finishIteration() {
-    if (iteration == 0) {
-        currentModel = ProtobufConnector::getInstance().getModelByName(targetModelName);
-        //currentModel.setName(currentModel.name()+tr(".")+QString::number(iteration));
-    }
     currentBoardSize = availableBoardSizes[qrand() % availableBoardSizes.size()];
 
     // stop model process to free up gpu
@@ -193,7 +313,11 @@ void SelfPlay::finishIteration() {
             << tr("--iteration")
             << QString::number(iteration)
             << tr("--epochs")
-            << tr("10")
+            << QString::number(trainEpochs)
+            << tr("--initmodel")
+            << Settings::alphaDotsDir() + tr("/modelServer/models/") + currentModel.path()
+            << tr("--targetmodel")
+            << Settings::alphaDotsDir() + tr("/modelServer/models/") + ProtobufConnector::getInstance().getModelByName(targetModelName).path()
             //<< tr("--logdest")
             //<< logdest
             ;
@@ -215,12 +339,20 @@ void SelfPlay::finishIteration() {
         alphaZeroV10Training->deleteLater();
         alphaZeroV10Training = new ExternalProcess(processPath, processArgs, processWorkingDirectory);
     }
-    // disable gpu, training on very little data -> cpu is enough
-    alphaZeroV10Training->addEnvironmentVariable(tr("CUDA_VISIBLE_DEVICES"), tr("-1"));
+    if (!trainOnGPU) {
+        // disable gpu, training on very little data -> cpu is enough
+        alphaZeroV10Training->addEnvironmentVariable(tr("CUDA_VISIBLE_DEVICES"), tr("-1"));
+    }
     connect(alphaZeroV10Training, SIGNAL(processFinished()), this, SLOT(trainingFinished()));
+    trainingStartTime = QDateTime::currentDateTime();
     if (!alphaZeroV10Training->startExternalProcess()) {
         QMessageBox::critical(this, tr("SelfPlay error"),
                               tr("Failed to start external process for training!"));
     }
     trainingStatusLbl->setText(tr("training..."));
+    if (iteration == 0) {
+        currentModel = ProtobufConnector::getInstance().getModelByName(targetModelName);
+        //currentModel.setName(currentModel.name()+tr(".")+QString::number(iteration));
+    }
+    QTimer::singleShot(100, this, SLOT(updateTrainingInfo()));
 }

@@ -61,8 +61,8 @@ src/aiAlphaZeroMCTS.[h|cpp]
 src/AlphaZeroMCTSNode.[h|cpp]
 ```
 
-There is a test suite called `alphazero` that tests some behaviour of the MCTS 
-algorithm.
+There is a test suite called `alphazero` that tests if the MCTS actually finds
+new smart moves that the network would not have made.
 
 ## [Tests](Tests.html)
 
@@ -81,3 +81,14 @@ list all tests in the `hardai` test suite.
 ```
 ksquarestest hardai -- -functions
 ```
+
+The test suites are:
+
+* `berlekamp`
+* `hardai`
+* `aiboard`
+* `alphazero`
+* `GSLTest`
+* `SharedPointer`
+
+For more details take a look at the [tests page](Tests.html).

@@ -47,7 +47,7 @@ QString AlphaZeroMCTSNode::toDotString() {
                QStringLiteral("\", shape=\"box\"];\n")
     );
     for (auto &child : children) {
-        if (child->visitCnt > 0 || child->move == 14) {
+        if (child->visitCnt > 0) {
             child->createUUID();
             ret.append(child->toDotString());
             ret.append(getNodeName() + QStringLiteral(" -> ") + child->getNodeName() + QStringLiteral(";\n"));

@@ -87,12 +87,13 @@ int aiAlphaZeroMCTS::chooseLine(const QList<bool> &newLines, const QList<int> &n
         {
             qDebug() << "no valid lines left!";
             turnTime = moveTimer.elapsed();
-            return 0;
+            return -1;
         }
         turnTime = moveTimer.elapsed();
         return freeLines.at(qrand() % freeLines.size());
     }
 
+    lastLine = line;
     turnTime = moveTimer.elapsed();
     return line;
 }
@@ -105,6 +106,8 @@ int aiAlphaZeroMCTS::mcts() {
     if (mctsRootNode.isNull()) {
         mctsRootNode = AlphaZeroMCTSNode::Ptr(new AlphaZeroMCTSNode());
     } else {
+        mctsRootNode->clear();
+        /*
         int foundChild = 0;
         for (const auto &child : mctsRootNode->children) {
             if (lines[child->move]) {
@@ -113,19 +116,25 @@ int aiAlphaZeroMCTS::mcts() {
         }
         if (foundChild == 1) {
             qDebug() << "reusing tree";
+            AlphaZeroMCTSNode::Ptr tmpNode(nullptr);
             for (const auto &child : mctsRootNode->children) {
-                if (lines[child->move]) {
-                    mctsRootNode = child;
+                if (lines[child->move] && lastLine == child->move) {
+                    tmpNode = child;
                 } else {
                     child->clear();
                 }
             }
+            if (!tmpNode.isNull()) {
+                mctsRootNode = tmpNode;
+            }
         } else {
             if (foundChild > 1) {
                 qDebug() << "WARNING: found more than one child move";
+                assert(false);
             }
             mctsRootNode->clear();
         }
+         */
     }
 
     int finishedIterations = 0;
@@ -134,11 +143,13 @@ int aiAlphaZeroMCTS::mcts() {
     while (finishedIterations < mcts_iterations)
     {
         // reset priors, then apply dirichlet noise
-        int i = 0;
-        for (const auto &child : mctsRootNode->children) {
-            child->prior = original_priors[i++];
+        if (finishedIterations > 0) {
+            int i = 0;
+            for (const auto &child : mctsRootNode->children) {
+                child->prior = original_priors[i++];
+            }
+            applyDirichletNoiseToChildren(mctsRootNode, dirichlet_alpha);
         }
-        applyDirichletNoiseToChildren(mctsRootNode, dirichlet_alpha);
 
         AlphaZeroMCTSNode::Ptr node = selection(mctsRootNode);
         if (node.isNull()) { // sth failed
@@ -176,7 +187,6 @@ int aiAlphaZeroMCTS::mcts() {
     //qDebug() << "MCTS iterations: " << finishedIterations;
 
     // select most promising move
-    // TODO: update
     int line = -1;
     long childVisitSum = 0;
     for (const auto &child : mctsRootNode->children) {

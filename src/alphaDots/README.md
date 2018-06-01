@@ -19,6 +19,8 @@ Clone this git repository to get Alpha Dots:
 git clone https://gitlab.informatik.uni-bremen.de/ofenrohr/alphaDots.git
 ```
 
+You might also want to install `tensorflow-gpu` in python for GPU acceleration.
+
 ## Data generators
 
 You can generate training data by running ksquares with certain command line 
@@ -164,6 +166,11 @@ Create a Stage Three dataset by running:
 ksquares --generate 1000 --dataset-generator StageThree --threads 8
 ```
 
+### Stage Four
+
+documentation TODO
+
+
 ## Model evaluation
 
 The are two options to evaluate the trained models. The first option uses the native 
@@ -251,12 +258,16 @@ The following optional arguments will be considered by self-play:
 * `--batch-prediction` if this flag is set, the MCTS AI threads will send their requests in batches.
   Batch size corresponds to the number of threads.
 * `--iteration-size N` number of samples to generate per iteration
-* `--initial-model` the model to start generating training data with. Default: `alphaZeroV7` 
+* `--initial-model` the name of the model to start generating training data with. Default: `alphaZeroV7` 
   (This option is untested!)
-* `--target-model` the model to improve in self-play. Model name must be present in the 
-  `models.yaml` list in `alphaDots/modelServer/models`. (This option is untested)
+* `--target-model` the name of the model to improve in self-play. Model name must be present in the 
+  `models.yaml` list in `alphaDots/modelServer/models`. 
 * `--debug` print debug information for individual prediction requests. Settings this flag
   will slow things down considerably.
+* `--gpu-training` enable GPU acceleration for the training python script.
+* `--dataset-generator` select the dataset generator. Supported generators are:
+    * `StageFour` the StageFour dataset generator
+    * `StageFourNoMCTS`
 
 ### Fast Self-Play
 
@@ -266,7 +277,18 @@ To execute fast self-play with gpu acceleration, execute the following command:
 ksquares --self-play --gpu --batch-prediction --threads 16
 ```
 
-### Screenshot
+### Using the self-play for training
+
+It is possible to generate data very fast without MCTS and train a network on that
+data with KSquare's self-play mode.
+
+```
+ksquares --self-play --iteration-size 10000 --threads 8 --gpu-training --dataset-generator StageFourNoMCTS --initial-model AlphaZeroV11 --target-model AlphaZeroV11 --epochs 3 
+```
+
+### Screenshots
 
 ![ksquares --self-play and system performance monitoring](ksquares-self-play.png)
 
+
+![ksquares --self-play without MCTS](ksquares-self-play-nomcts.png)

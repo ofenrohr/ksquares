@@ -22,7 +22,7 @@ namespace AlphaDots {
         //==========================
 
         aiAlphaZeroMCTS(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight,
-                        int thinkTime = 5000, ModelInfo model = ProtobufConnector::getInstance().getModelByName(i18n("AlphaZeroV7")));
+                        int thinkTime = 5000, ModelInfo model = ProtobufConnector::getInstance().getModelByName(i18n("AlphaZeroV11")));
 
         ~aiAlphaZeroMCTS();
 
@@ -86,6 +86,8 @@ namespace AlphaDots {
         AlphaZeroMCTSNode::Ptr mctsRootNode;
         /// initial board
         aiBoard::Ptr board;
+        /// last returned line
+        int lastLine;
 
         // model server
         int modelServerPort;
@@ -96,10 +98,10 @@ namespace AlphaDots {
         gsl_rng *rng;
 
         // Hyperparameters
-        double C_puct = 100.0;
+        double C_puct = 10.0;
         double dirichlet_alpha = 0.03;
-        double mcts_iterations = 1500;
-        double prior_eps = 0.1;
+        double mcts_iterations = 50;//1500;
+        double prior_eps = 0.001;
 
         // list of original prior values
         QList<double> original_priors;
