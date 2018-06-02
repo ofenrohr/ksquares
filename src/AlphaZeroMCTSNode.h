@@ -46,6 +46,7 @@ namespace AlphaDots {
         void createUUID();
         /// export data as dot graph
         QString toDotString();
+        void saveAsDot(QString &path);
         /// printable node id
         QString getNodeName();
         /// printable info about node and its direct children

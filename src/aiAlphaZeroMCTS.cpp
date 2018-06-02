@@ -106,11 +106,10 @@ int aiAlphaZeroMCTS::mcts() {
     if (mctsRootNode.isNull()) {
         mctsRootNode = AlphaZeroMCTSNode::Ptr(new AlphaZeroMCTSNode());
     } else {
-        mctsRootNode->clear();
-        /*
+        //mctsRootNode->clear();
         int foundChild = 0;
         for (const auto &child : mctsRootNode->children) {
-            if (lines[child->move]) {
+            if (lines[child->move] && lastLine == child->move) {
                 foundChild++;
             }
         }
@@ -126,6 +125,7 @@ int aiAlphaZeroMCTS::mcts() {
             }
             if (!tmpNode.isNull()) {
                 mctsRootNode = tmpNode;
+                mctsRootNode->parent = AlphaZeroMCTSNode::Ptr(nullptr);
             }
         } else {
             if (foundChild > 1) {
@@ -134,7 +134,6 @@ int aiAlphaZeroMCTS::mcts() {
             }
             mctsRootNode->clear();
         }
-         */
     }
 
     int finishedIterations = 0;
@@ -223,13 +222,8 @@ int aiAlphaZeroMCTS::mcts() {
     //QFile graph(i18n("/tmp/AlphaZeroMCTS.") + QString::number(finishedIterations) + i18n(".dot"));
 
     if (debug) {
-        QFile graph(i18n("/tmp/AlphaZeroMCTS.dot"));
-        if (graph.open(QIODevice::ReadWrite | QIODevice::Truncate | QIODevice::Text)) {
-            QTextStream stream(&graph);
-            stream << "digraph {";
-            stream << mctsRootNode->toDotString();
-            stream << "}";
-        }
+        QString path = QObject::tr("/tmp/AlphaZeroMCTS.dot");
+        mctsRootNode->saveAsDot(path);
     }
 
     return line;
@@ -263,6 +257,10 @@ AlphaZeroMCTSNode::Ptr aiAlphaZeroMCTS::selection(const AlphaZeroMCTSNode::Ptr &
         if (node->children[i]->puctValue > bestVal) {
             bestVal = node->children[i]->puctValue;
             selectedNode = node->children[i];
+            if (node->children[i]->move < 0 || node->children[i]->move >= linesSize) {
+                qDebug() << "invalid move in child node!";
+                assert(false);
+            }
         }
     }
 

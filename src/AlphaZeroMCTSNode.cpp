@@ -2,6 +2,8 @@
 // Created by ofenrohr on 14.04.18.
 //
 
+#include <QtCore/QTextStream>
+#include <QtCore/QFile>
 #include "AlphaZeroMCTSNode.h"
 
 using namespace AlphaDots;
@@ -83,5 +85,16 @@ void AlphaZeroMCTSNode::clear() {
     parent = AlphaZeroMCTSNode::Ptr(nullptr);
     for (const auto &child : children) {
         child->clear();
+    }
+    children.clear();
+}
+
+void AlphaZeroMCTSNode::saveAsDot(QString &path) {
+    QFile graph(path);
+    if (graph.open(QIODevice::ReadWrite | QIODevice::Truncate | QIODevice::Text)) {
+        QTextStream stream(&graph);
+        stream << "digraph {";
+        stream << toDotString();
+        stream << "}";
     }
 }

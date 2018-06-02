@@ -10,7 +10,7 @@ AlphaDots uses KSquares for
 
 ## Setup
 
-Please make sure to corectly configure AlphaDots in KSquares by entering the
+Please make sure to correctly configure AlphaDots in KSquares by entering the
 Alpha Dots directory in KSquares -> Settings -> Configure KSquares -> Computer Player.
 
 Clone this git repository to get Alpha Dots:
@@ -277,18 +277,22 @@ To execute fast self-play with gpu acceleration, execute the following command:
 ksquares --self-play --gpu --batch-prediction --threads 16
 ```
 
-### Using the self-play for training
+### Using the self-play mode for training
 
-It is possible to generate data very fast without MCTS and train a network on that
-data with KSquare's self-play mode.
+It is possible to generate data very fast with the StageFourNoMCTS dataset 
+generator and train a network on that data with KSquare's self-play mode.
+StageFourNoMCTS data is generated purely with the Hard AI. So there is no
+improvement loop, just data generation and training with this setup.
 
 ```
 ksquares --self-play --iteration-size 10000 --threads 8 --gpu-training --dataset-generator StageFourNoMCTS --initial-model AlphaZeroV11 --target-model AlphaZeroV11 --epochs 3 
 ```
 
+AlphaZeroV11 was trained for 38 iterations with a iteration size of 10,000
+after it was created with the [IPython Notebook](AlphaZeroV11.html).
+
 ### Screenshots
 
-![ksquares --self-play and system performance monitoring](ksquares-self-play.png)
-
+[ksquares --self-play and system performance monitoring](ksquares-self-play.png)
 
 ![ksquares --self-play without MCTS](ksquares-self-play-nomcts.png)

@@ -118,6 +118,8 @@ void aiBoard::undoMove(int line)
 		for (int i = 0; i < linesSize; i++)
 			lineDebug << ( lines[i] ? "1" : "0" );
 		qDebug() << "WARNING: removing an invalid line! line = " << line << ", linesSize = " << linesSize << ", lines = " << QString::fromStdString(lineDebug.str());
+		qDebug().noquote() << aiFunctions::boardToString(this);
+        assert(false);
 		//return;
 	}
 	
