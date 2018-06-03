@@ -188,7 +188,7 @@ QList<ModelInfo> ProtobufConnector::getModelList(bool useLocking) {
         qDebug() << "ERROR receiving list: " << err.num() << err.what();
     }
 
-    modelListProc.stopExternalProcess();
+    modelListProc.stopExternalProcess(false, false);
 
     return cachedModelList;
 }

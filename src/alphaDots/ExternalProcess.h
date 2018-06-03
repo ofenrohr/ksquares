@@ -26,7 +26,7 @@ public:
      * @return true on success, false otherwise
      */
     bool startExternalProcess();
-    bool stopExternalProcess();
+    bool stopExternalProcess(bool terminate = true, bool kill = true);
 
     bool isRunning() { return processRunning; }
 

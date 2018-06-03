@@ -198,19 +198,19 @@ int aiAlphaZeroMCTS::mcts() {
     double bestProbability = -INFINITY;
     for (const auto &child : mctsRootNode->children) {
         // select by highest visit count
-        /*
         double pi_a_given_s0 = (double)child->visitCnt / (double)childVisitSum;
         if (pi_a_given_s0 > bestProbability) {
             bestProbability = pi_a_given_s0;
             line = child->move;
             //child->value = pi_a_given_s0;
         }
-        */
         // select by best value
+        /*
         if (child->value > bestProbability) {
             bestProbability = child->value;
             line = child->move;
         }
+         */
     }
 
     // debug stuff

@@ -74,7 +74,7 @@ bool ExternalProcess::startExternalProcess() {
     return true;
 }
 
-bool ExternalProcess::stopExternalProcess() {
+bool ExternalProcess::stopExternalProcess(bool terminate, bool kill) {
 	if (process != nullptr)
 	{
 		qDebug() << "stopExternalProcess " << processExecutablePath << processArguments;
@@ -82,8 +82,12 @@ bool ExternalProcess::stopExternalProcess() {
 		if (process->state() != QProcess::NotRunning)
 		{
 			//qDebug() << "trying to kill process";
-			process->terminate();
-			process->kill();
+			if (terminate) {
+				process->terminate();
+			}
+			if (kill) {
+				process->kill();
+			}
 			// don't wait for it
 			if (process->waitForFinished()) {
 				qDebug() << "killed process";

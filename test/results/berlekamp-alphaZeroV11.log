@@ -1,0 +1,592 @@
+/home/ofenrohr/arbeit/master/code/ksquares/cmake-build-debug/test/ksquarestest berlekamp
+~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=
+ EXECUTING: berlekamp
+~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=
+********* Start testing of berlekamp *********
+Config: Using QtTest library 5.11.0, Qt 5.11.0 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 8.1.0)
+PASS   : berlekamp::initTestCase()
+QDEBUG : berlekamp::testBerlekamp001() Game Values Resetting
+QDEBUG : berlekamp::testBerlekamp001() Creating Game with 2 player(s)
+QDEBUG : berlekamp::testBerlekamp001() Game Starting
+QDEBUG : berlekamp::testBerlekamp001() starting process:  /usr/bin/python2.7 (/home/ofenrohr/arbeit/master/code/alphaDots/modelServer/modelList.py)
+QDEBUG : berlekamp::testBerlekamp001() process state:  "Starting"
+QDEBUG : berlekamp::testBerlekamp001() process state:  "Running"
+QWARN  : berlekamp::testBerlekamp001() QObject::startTimer: Timers can only be used with threads started with QThread
+QDEBUG : berlekamp::testBerlekamp001() stopExternalProcess  "/usr/bin/python2.7" ("/home/ofenrohr/arbeit/master/code/alphaDots/modelServer/modelList.py")
+QDEBUG : berlekamp::testBerlekamp001() stdout:  ascii
+binding tcp socket to 127.0.0.1:13452
+
+QDEBUG : berlekamp::testBerlekamp001() ****************************************************************
+QDEBUG : berlekamp::testBerlekamp001() ***                    PROCESS   ERROR                       ***
+QDEBUG : berlekamp::testBerlekamp001() ****************************************************************
+QDEBUG : berlekamp::testBerlekamp001() process error:  "The process crashed some time after starting successfully."
+QDEBUG : berlekamp::testBerlekamp001() process state:  "NotRunning"
+QDEBUG : berlekamp::testBerlekamp001() processFinished!
+QDEBUG : berlekamp::testBerlekamp001() exit code:  15
+QDEBUG : berlekamp::testBerlekamp001() exit status:  crash
+QDEBUG : berlekamp::testBerlekamp001() killed process
+QDEBUG : berlekamp::testBerlekamp001() stopExternalProcess  "/usr/bin/python2.7" ("/home/ofenrohr/arbeit/master/code/alphaDots/modelServer/modelList.py")
+QDEBUG : berlekamp::testBerlekamp001() starting new ModelProcess on port  "12354"
+QDEBUG : berlekamp::testBerlekamp001() starting ModelProcess( "AlphaZeroV11" , 3 , 3 , 12354 )
+QDEBUG : berlekamp::testBerlekamp001() starting process:  /usr/bin/python2.7 (/home/ofenrohr/arbeit/master/code/alphaDots/modelServer/modelServer.py, --model, AlphaZeroV11, --width, 9, --height, 9, --port, 12354)
+QDEBUG : berlekamp::testBerlekamp001() process state:  "Starting"
+QDEBUG : berlekamp::testBerlekamp001() process state:  "Running"
+QWARN  : berlekamp::testBerlekamp001() QObject::startTimer: Timers can only be used with threads started with QThread
+QWARN  : berlekamp::testBerlekamp001() QObject::startTimer: Timers can only be used with threads started with QThread
+QDEBUG : berlekamp::testBerlekamp001() AI  "alphazeromcts"  is enabled
+QDEBUG : berlekamp::testBerlekamp001() Summary for berlekamp-01:
+input board:
++--+--+  +
+|
++  +--+--+
+|  |
++  +  +  +
+   |     |
++  +--+  +
+
+
+expected output:
++  +  +  +
+
++  +  +  +
+
++  +  +--+
+
++  +  +  +
+
+
+FAIL berlekamp-01: alphazeromcts, expected: 16, returned: 2:
+
++  +  +--+
+
++  +  +  +
+
++  +  +  +
+
++  +  +  +
+
+
+
+
+QDEBUG : berlekamp::testBerlekamp001() summary written to:  "test-berlekamp-01.log"
+PASS   : berlekamp::testBerlekamp001()
+QDEBUG : berlekamp::testBerlekamp002() Game Values Resetting
+QDEBUG : berlekamp::testBerlekamp002() Creating Game with 2 player(s)
+QDEBUG : berlekamp::testBerlekamp002() Game Starting
+QDEBUG : berlekamp::testBerlekamp002() AI  "alphazeromcts"  is enabled
+QDEBUG : berlekamp::testBerlekamp002() Summary for berlekamp-02:
+input board:
++--+--+--+
+   |     |
++  +  +  +
+|  |  |  |
++  +  +  +
+   |  |  |
++  +  +  +
+
+
+expected output:
++  +  +  +
+
++  +  +  +
+
++  +  +  +
+|
++--+  +  +
+
+
+PASS berlekamp-02: alphazeromcts
+
+QDEBUG : berlekamp::testBerlekamp002() summary written to:  "test-berlekamp-02.log"
+PASS   : berlekamp::testBerlekamp002()
+QDEBUG : berlekamp::testBerlekamp003() Game Values Resetting
+QDEBUG : berlekamp::testBerlekamp003() Creating Game with 2 player(s)
+QDEBUG : berlekamp::testBerlekamp003() Game Starting
+QDEBUG : berlekamp::testBerlekamp003() AI  "alphazeromcts"  is enabled
+QDEBUG : berlekamp::testBerlekamp003() Summary for berlekamp-03:
+input board:
++--+--+--+
+   |     |
++  +  +  +
+|  |  |  |
++  +  +  +
+   |  |
++  +  +  +
+
+
+expected output:
++  +  +  +
+
++--+  +  +
+
++  +  +  +
+
++  +  +  +
+
+
+PASS berlekamp-03: alphazeromcts
+
+QDEBUG : berlekamp::testBerlekamp003() summary written to:  "test-berlekamp-03.log"
+PASS   : berlekamp::testBerlekamp003()
+QDEBUG : berlekamp::testBerlekamp004() Game Values Resetting
+QDEBUG : berlekamp::testBerlekamp004() Creating Game with 2 player(s)
+QDEBUG : berlekamp::testBerlekamp004() Game Starting
+QDEBUG : berlekamp::testBerlekamp004() AI  "alphazeromcts"  is enabled
+QDEBUG : berlekamp::testBerlekamp004() Summary for berlekamp-04:
+input board:
++--+--+--+
+|
++  +--+--+
+   |     |
++  +  +  +
+   |     |
++--+  +  +
+
+
+expected output:
++  +  +  +
+
++  +  +  +
+      |
++  +  +  +
+
++  +--+--+
+
+
+PASS berlekamp-04: alphazeromcts
+
+QDEBUG : berlekamp::testBerlekamp004() summary written to:  "test-berlekamp-04.log"
+PASS   : berlekamp::testBerlekamp004()
+QDEBUG : berlekamp::testBerlekamp005() Game Values Resetting
+QDEBUG : berlekamp::testBerlekamp005() Creating Game with 2 player(s)
+QDEBUG : berlekamp::testBerlekamp005() Game Starting
+QDEBUG : berlekamp::testBerlekamp005() AI  "alphazeromcts"  is enabled
+QDEBUG : berlekamp::testBerlekamp005() Summary for berlekamp-05:
+input board:
++  +--+--+
+|     |
++--+--+  +
+|        |
++  +--+--+
+|
++--+  +  +
+
+
+expected output:
++--+  +  +
+
++  +  +  +
+
++  +  +  +
+
++  +  +  +
+
+
+PASS berlekamp-05: alphazeromcts
+
+QDEBUG : berlekamp::testBerlekamp005() summary written to:  "test-berlekamp-05.log"
+PASS   : berlekamp::testBerlekamp005()
+QDEBUG : berlekamp::testBerlekamp006() Game Values Resetting
+QDEBUG : berlekamp::testBerlekamp006() Creating Game with 2 player(s)
+QDEBUG : berlekamp::testBerlekamp006() Game Starting
+QDEBUG : berlekamp::testBerlekamp006() AI  "alphazeromcts"  is enabled
+QDEBUG : berlekamp::testBerlekamp006() Summary for berlekamp-06:
+input board:
++  +  +  +
+   |  |
++  +  +--+
+   |
++  +--+--+
+|
++--+  +  +
+
+
+expected output:
++  +  +  +
+
++--+  +  +
+|
++  +  +  +
+      |
++  +--+  +
+
+
+FAIL berlekamp-06: alphazeromcts, expected: 7,10,19,22, returned: 23:
+
++  +  +  +
+
++  +  +  +
+
++  +  +  +
+
++  +  +--+
+
+
+
+
+QDEBUG : berlekamp::testBerlekamp006() summary written to:  "test-berlekamp-06.log"
+PASS   : berlekamp::testBerlekamp006()
+QDEBUG : berlekamp::testBerlekamp007() Game Values Resetting
+QDEBUG : berlekamp::testBerlekamp007() Creating Game with 2 player(s)
+QDEBUG : berlekamp::testBerlekamp007() Game Starting
+QDEBUG : berlekamp::testBerlekamp007() AI  "alphazeromcts"  is enabled
+QDEBUG : berlekamp::testBerlekamp007() Summary for berlekamp-07:
+input board:
++--+  +  +
+|     |  |
++  +--+  +
+|     |  |
++  +  +  +
+      |
++  +  +  +
+
+
+expected output:
++  +  +  +
+
++  +  +--+
+
++  +  +  +
+
++  +  +  +
+
+
+FAIL berlekamp-07: alphazeromcts, expected: 9, returned: 23:
+
++  +  +  +
+
++  +  +  +
+
++  +  +  +
+
++  +  +--+
+
+
+
+
+QDEBUG : berlekamp::testBerlekamp007() summary written to:  "test-berlekamp-07.log"
+PASS   : berlekamp::testBerlekamp007()
+QDEBUG : berlekamp::testBerlekamp008() Game Values Resetting
+QDEBUG : berlekamp::testBerlekamp008() Creating Game with 2 player(s)
+QDEBUG : berlekamp::testBerlekamp008() Game Starting
+QDEBUG : berlekamp::testBerlekamp008() starting new ModelProcess on port  "12355"
+QDEBUG : berlekamp::testBerlekamp008() starting ModelProcess( "AlphaZeroV11" , 5 , 3 , 12355 )
+QDEBUG : berlekamp::testBerlekamp008() starting process:  /usr/bin/python2.7 (/home/ofenrohr/arbeit/master/code/alphaDots/modelServer/modelServer.py, --model, AlphaZeroV11, --width, 13, --height, 9, --port, 12355)
+QDEBUG : berlekamp::testBerlekamp008() process state:  "Starting"
+QDEBUG : berlekamp::testBerlekamp008() process state:  "Running"
+QWARN  : berlekamp::testBerlekamp008() QObject::startTimer: Timers can only be used with threads started with QThread
+QWARN  : berlekamp::testBerlekamp008() QObject::startTimer: Timers can only be used with threads started with QThread
+QDEBUG : berlekamp::testBerlekamp008() AI  "alphazeromcts"  is enabled
+QDEBUG : berlekamp::testBerlekamp008() Summary for berlekamp-08:
+input board:
++  +  +  +--+--+
+|  |  |  |     |
++  +  +  +  +  +
+|  |  |  |  |  |
++--+  +  +  +  +
+|  |  |  |  |  |
++--+  +  +  +  +
+
+
+expected output:
++--+  +  +  +  +
+
++  +  +  +  +  +
+
++  +  +  +  +  +
+
++  +  +  +  +  +
+
+
+PASS berlekamp-08: alphazeromcts
+
+QDEBUG : berlekamp::testBerlekamp008() summary written to:  "test-berlekamp-08.log"
+PASS   : berlekamp::testBerlekamp008()
+QDEBUG : berlekamp::testBerlekamp009() Game Values Resetting
+QDEBUG : berlekamp::testBerlekamp009() Creating Game with 2 player(s)
+QDEBUG : berlekamp::testBerlekamp009() Game Starting
+QDEBUG : berlekamp::testBerlekamp009() AI  "alphazeromcts"  is enabled
+QDEBUG : berlekamp::testBerlekamp009() Summary for berlekamp-09:
+input board:
++  +  +  +--+--+
+|  |  |        |
++  +  +--+--+  +
+|  |  |        |
++--+  +  +--+--+
+|  |  |
++--+  +--+--+--+
+
+
+expected output:
++--+  +  +  +  +
+
++  +  +  +  +  +
+
++  +  +  +  +  +
+
++  +  +  +  +  +
+
+
+PASS berlekamp-09: alphazeromcts
+
+QDEBUG : berlekamp::testBerlekamp009() summary written to:  "test-berlekamp-09.log"
+PASS   : berlekamp::testBerlekamp009()
+QDEBUG : berlekamp::testBerlekamp010() Game Values Resetting
+QDEBUG : berlekamp::testBerlekamp010() Creating Game with 2 player(s)
+QDEBUG : berlekamp::testBerlekamp010() Game Starting
+QDEBUG : berlekamp::testBerlekamp010() AI  "alphazeromcts"  is enabled
+QDEBUG : berlekamp::testBerlekamp010() Summary for berlekamp-10:
+input board:
++  +  +  +--+--+
+|  |  |        |
++  +  +--+--+  +
+|  |  |        |
++--+  +  +--+--+
+|  |  |
++--+  +--+--+  +
+
+
+expected output:
++  +  +  +  +  +
+
++--+  +  +  +  +
+
++  +  +  +  +  +
+
++  +  +  +  +  +
+
+
+FAIL berlekamp-10: alphazeromcts, expected: 11, returned: 2:
+
++  +  +--+  +  +
+
++  +  +  +  +  +
+
++  +  +  +  +  +
+
++  +  +  +  +  +
+
+
+
+
+QDEBUG : berlekamp::testBerlekamp010() summary written to:  "test-berlekamp-10.log"
+PASS   : berlekamp::testBerlekamp010()
+QDEBUG : berlekamp::testBerlekamp011() Game Values Resetting
+QDEBUG : berlekamp::testBerlekamp011() Creating Game with 2 player(s)
+QDEBUG : berlekamp::testBerlekamp011() Game Starting
+QDEBUG : berlekamp::testBerlekamp011() starting new ModelProcess on port  "12356"
+QDEBUG : berlekamp::testBerlekamp011() starting ModelProcess( "AlphaZeroV11" , 5 , 5 , 12356 )
+QDEBUG : berlekamp::testBerlekamp011() starting process:  /usr/bin/python2.7 (/home/ofenrohr/arbeit/master/code/alphaDots/modelServer/modelServer.py, --model, AlphaZeroV11, --width, 13, --height, 13, --port, 12356)
+QDEBUG : berlekamp::testBerlekamp011() process state:  "Starting"
+QDEBUG : berlekamp::testBerlekamp011() process state:  "Running"
+QWARN  : berlekamp::testBerlekamp011() QObject::startTimer: Timers can only be used with threads started with QThread
+QWARN  : berlekamp::testBerlekamp011() QObject::startTimer: Timers can only be used with threads started with QThread
+QDEBUG : berlekamp::testBerlekamp011() AI  "alphazeromcts"  is enabled
+QDEBUG : berlekamp::testBerlekamp011() Summary for berlekamp-11:
+input board:
++--+--+  +--+  +
+   |        |
++  +  +--+  +--+
+|  |
++  +--+--+--+--+
+|        |
++--+--+  +  +--+
+|        |
++  +--+--+--+--+
+|              |
++--+--+--+--+  +
+
+
+expected output:
++  +  +--+  +  +
+
++  +  +  +  +  +
+            |  |
++  +  +  +  +  +
+
++  +  +  +  +  +
+
++  +  +  +  +  +
+
++  +  +  +  +  +
+
+
+PASS berlekamp-11: alphazeromcts
+
+QDEBUG : berlekamp::testBerlekamp011() summary written to:  "test-berlekamp-11.log"
+PASS   : berlekamp::testBerlekamp011()
+QDEBUG : berlekamp::testBerlekamp012() Game Values Resetting
+QDEBUG : berlekamp::testBerlekamp012() Creating Game with 2 player(s)
+QDEBUG : berlekamp::testBerlekamp012() Game Starting
+QDEBUG : berlekamp::testBerlekamp012() AI  "alphazeromcts"  is enabled
+QDEBUG : berlekamp::testBerlekamp012() Summary for berlekamp-12:
+input board:
++--+--+--+--+--+
+         |
++--+  +  +  +  +
+|     |  |
++  +--+  +--+--+
+   |     |     |
++--+  +--+  +  +
+   |        |  |
++  +  +--+--+  +
+   |  |        |
++  +  +  +--+--+
+
+
+expected output:
++  +  +  +  +  +
+
++  +  +  +  +--+
+
++  +  +  +  +  +
+
++  +  +  +  +  +
+
++  +  +  +  +  +
+
++  +  +  +  +  +
+
+
+FAIL berlekamp-12: alphazeromcts, expected: 15, returned: 49:
+
++  +  +  +  +  +
+
++  +  +  +  +  +
+
++  +  +  +  +  +
+
++  +  +  +  +  +
+
++  +  +  +  +  +
+|
++  +  +  +  +  +
+
+
+
+
+QDEBUG : berlekamp::testBerlekamp012() summary written to:  "test-berlekamp-12.log"
+PASS   : berlekamp::testBerlekamp012()
+QDEBUG : berlekamp::testBerlekamp013() Game Values Resetting
+QDEBUG : berlekamp::testBerlekamp013() Creating Game with 2 player(s)
+QDEBUG : berlekamp::testBerlekamp013() Game Starting
+QDEBUG : berlekamp::testBerlekamp013() AI  "alphazeromcts"  is enabled
+QDEBUG : berlekamp::testBerlekamp013() Summary for berlekamp-13:
+input board:
++--+  +--+  +  +
+      |     |
++--+  +  +--+  +
+      |
++--+--+--+--+--+
+   |           |
++  +  +--+--+  +
+   |     |
++--+--+  +  +  +
+         |     |
++  +  +  +  +  +
+
+
+expected output:
++  +  +  +  +  +
+
++  +  +  +  +  +
+   |
++  +  +  +  +  +
+
++  +  +  +  +  +
+
++  +  +  +  +  +
+
++  +  +  +  +  +
+
+
+FAIL berlekamp-13: alphazeromcts, expected: 17, returned: 57:
+
++  +  +  +  +  +
+
++  +  +  +  +  +
+
++  +  +  +  +  +
+
++  +  +  +  +  +
+
++  +  +  +  +  +
+
++  +  +--+  +  +
+
+
+
+
+QDEBUG : berlekamp::testBerlekamp013() summary written to:  "test-berlekamp-13.log"
+PASS   : berlekamp::testBerlekamp013()
+PASS   : berlekamp::cleanupTestCase()
+Totals: 15 passed, 0 failed, 0 skipped, 0 blacklisted, 355590ms
+********* Finished testing of berlekamp *********
+~ModelProcess
+stopExternalProcess  "/usr/bin/python2.7" ("/home/ofenrohr/arbeit/master/code/alphaDots/modelServer/modelServer.py", "--model", "AlphaZeroV11", "--width", "13", "--height", "9", "--port", "12355")
+stdout:  ascii
+
+stderr:  Using TensorFlow backend.
+2018-06-02 13:53:55.989027: I tensorflow/core/platform/cpu_feature_guard.cc:140] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+2018-06-02 13:53:55.992989: E tensorflow/stream_executor/cuda/cuda_driver.cc:406] failed call to cuInit: CUDA_ERROR_NO_DEVICE
+2018-06-02 13:53:55.993031: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:158] retrieving CUDA diagnostic information for host: nergal
+2018-06-02 13:53:55.993036: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:165] hostname: nergal
+2018-06-02 13:53:55.993067: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:189] libcuda reported version is: 396.24.0
+2018-06-02 13:53:55.993096: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:193] kernel reported version is: 396.24.0
+2018-06-02 13:53:55.993101: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:300] kernel version seems to match DSO: 396.24.0
+
+****************************************************************
+***                    PROCESS   ERROR                       ***
+****************************************************************
+process error:  "The process crashed some time after starting successfully."
+process state:  "NotRunning"
+processFinished!
+exit code:  15
+exit status:  crash
+killed process
+~ModelProcess
+stopExternalProcess  "/usr/bin/python2.7" ("/home/ofenrohr/arbeit/master/code/alphaDots/modelServer/modelServer.py", "--model", "AlphaZeroV11", "--width", "9", "--height", "9", "--port", "12354")
+stdout:  ascii
+
+stderr:  Using TensorFlow backend.
+2018-06-02 13:51:19.893553: I tensorflow/core/platform/cpu_feature_guard.cc:140] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+2018-06-02 13:51:19.899749: E tensorflow/stream_executor/cuda/cuda_driver.cc:406] failed call to cuInit: CUDA_ERROR_NO_DEVICE
+2018-06-02 13:51:19.899801: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:158] retrieving CUDA diagnostic information for host: nergal
+2018-06-02 13:51:19.899808: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:165] hostname: nergal
+2018-06-02 13:51:19.899863: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:189] libcuda reported version is: 396.24.0
+2018-06-02 13:51:19.899911: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:193] kernel reported version is: 396.24.0
+2018-06-02 13:51:19.899920: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:300] kernel version seems to match DSO: 396.24.0
+
+****************************************************************
+***                    PROCESS   ERROR                       ***
+****************************************************************
+process error:  "The process crashed some time after starting successfully."
+process state:  "NotRunning"
+processFinished!
+exit code:  15
+exit status:  crash
+killed process
+~ModelProcess
+stopExternalProcess  "/usr/bin/python2.7" ("/home/ofenrohr/arbeit/master/code/alphaDots/modelServer/modelServer.py", "--model", "AlphaZeroV11", "--width", "13", "--height", "13", "--port", "12356")
+stdout:  ascii
+
+stderr:  Using TensorFlow backend.
+2018-06-02 13:55:23.691328: I tensorflow/core/platform/cpu_feature_guard.cc:140] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+2018-06-02 13:55:23.695133: E tensorflow/stream_executor/cuda/cuda_driver.cc:406] failed call to cuInit: CUDA_ERROR_NO_DEVICE
+2018-06-02 13:55:23.695160: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:158] retrieving CUDA diagnostic information for host: nergal
+2018-06-02 13:55:23.695165: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:165] hostname: nergal
+2018-06-02 13:55:23.695194: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:189] libcuda reported version is: 396.24.0
+2018-06-02 13:55:23.695220: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:193] kernel reported version is: 396.24.0
+2018-06-02 13:55:23.695225: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:300] kernel version seems to match DSO: 396.24.0
+
+****************************************************************
+***                    PROCESS   ERROR                       ***
+****************************************************************
+process error:  "The process crashed some time after starting successfully."
+process state:  "NotRunning"
+processFinished!
+exit code:  15
+exit status:  crash
+killed process
+
+Process finished with exit code 0

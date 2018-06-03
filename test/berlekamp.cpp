@@ -1,10 +1,13 @@
 #include "berlekamp.h"
 
 const int berlekamp::testAIs[] = {
+        /*
     KSquares::AILevel::AI_EASY,
     KSquares::AILevel::AI_MEDIUM,
     KSquares::AILevel::AI_HARD,
     KSquares::AILevel::AI_CONVNET
+         */
+        KSquares::AILevel ::AI_MCTS_ALPHAZERO
 };
 
 
