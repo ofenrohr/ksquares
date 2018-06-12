@@ -11,7 +11,7 @@
 
 #include <cmath>
 #include <algorithm>
-#include <kdebug.h>
+#include <QDebug>
 #include <QMap>
 
 LineSorter::LineSorter(int width, int height, int linesSize) : w(width), h(height), ls(linesSize)

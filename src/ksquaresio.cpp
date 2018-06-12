@@ -15,9 +15,9 @@
 #include <QTextStream>
 #include <QStringList>
 #include <QList>
+#include <QDebug>
 
 // kde
-#include <kdebug.h>
 #include <kmessagebox.h>
 
 bool KSquaresIO::loadGame(QString filename, KSquaresGame *sGame, QList<int> *lines)
