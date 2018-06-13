@@ -245,3 +245,27 @@ this node represents. All line numbers are displayed in the following image.
 
 This test requires the MCTS algorithm to make a move that the underlying neural
 network would not do, because the training data didn't cover preemtive sacrifices.
+
+## GSLTest
+
+These tests try out methods from the [GNU Scientific Library](https://www.gnu.org/software/gsl/).
+
+### GSLTest 001
+
+This test tries to use the 
+[dirichlet noise](https://www.gnu.org/software/gsl/manual/html_node/The-Dirichlet-Distribution.html) 
+method, that is used in KSquare's version of AlphaZero MCTS.
+
+### GSLTest 002
+
+This test uses GSL's gaussian distribution to repeatedly calculate the number of
+moves left in a sample game. The result is put into a histogram. This was later used
+in the StageFour dataset.
+
+### GSLTest 003
+
+This test is almost identical to the GSLTest 002, but generates 1.000.000 samples
+and produces output that is suitable for plotting with gnuplot.
+
+![moves left plot for 1.000.000 samples](movesLeftDist.png)
+

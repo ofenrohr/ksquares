@@ -166,10 +166,47 @@ Create a Stage Three dataset by running:
 ksquares --generate 1000 --dataset-generator StageThree --threads 8
 ```
 
-### Stage Four
+### Stage Four / Stage Four (no MCTS)
 
-documentation TODO
+This dataset generator comes in two flavors: with and without AlphaZero MCTS.
+The version with MCTS uses KSquare's Hard AI and AlphaZero MCTS to generate data. 
+As a result, it is possible to use this dataset generator to implement a simplified
+self-play loop. 
 
+Data is generated as follows: 
+
+* First, a game is played by KSquare's Hard AI until a certain number of moves 
+  are left. This state is used as input data. 
+* Afterwards, the corresponding output data (i.e. the next move) is calculated 
+  by AlphaZero MCTS, which uses a configurable neural network. If the dataset
+  generator is configured without MCTS, KSquare's Hard AI will be used instead.
+* Finally, the game is played to its end by KSquare's Hard AI, so that the
+  game's value can be calculated.
+
+In summary the Stage Four dataset generator uses AlphaZero MCTS for exactly one
+move to minimize computational cost while still providing means to improve upon
+the neural network.
+
+The number of moves that are left before the AlphaZero MCTS calculates its move
+is determined randomly according to a gaussian normal distribution. The 
+distribution is scaled according to the number of lines so that most samples are
+in the middle of the game. The following figure shows a histogram for 1.000.000
+samples on a 3 x 3 board, which has 24 lines:
+
+![Histogram of moves left on a 3x3 board for 1.000.000 samples](movesLeftDist.png)
+
+The value is calculated as follows:
+
+```
+value = (OwnBoxes - EnemyBoxes) / TotalBoxes
+```
+
+Create a Stage Four dataset with one of the following commands:
+
+```
+ksquares --generate 10 --dataset-generator StageFour --threads 8 --gpu
+ksquares --generate 1000 --dataset-generator StageFourNoMCTS --threads 8
+```
 
 ## Model evaluation
 
@@ -258,8 +295,7 @@ The following optional arguments will be considered by self-play:
 * `--batch-prediction` if this flag is set, the MCTS AI threads will send their requests in batches.
   Batch size corresponds to the number of threads.
 * `--iteration-size N` number of samples to generate per iteration
-* `--initial-model` the name of the model to start generating training data with. Default: `alphaZeroV7` 
-  (This option is untested!)
+* `--initial-model` the name of the model to start generating training data with. Default: `alphaZeroV7`
 * `--target-model` the name of the model to improve in self-play. Model name must be present in the 
   `models.yaml` list in `alphaDots/modelServer/models`. 
 * `--debug` print debug information for individual prediction requests. Settings this flag
@@ -268,6 +304,7 @@ The following optional arguments will be considered by self-play:
 * `--dataset-generator` select the dataset generator. Supported generators are:
     * `StageFour` the StageFour dataset generator
     * `StageFourNoMCTS`
+* `--epochs` number of epochs in training.
 
 ### Fast Self-Play
 

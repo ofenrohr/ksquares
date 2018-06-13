@@ -53,3 +53,32 @@ void GSLTest::testGSL002() {
     gsl_rng_free(rng);
 }
 
+void GSLTest::testGSL003() {
+    auto rng = gsl_rng_alloc(gsl_rng_taus);
+    gsl_rng_set(rng, std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+
+    int binsCnt = 24; // 3x3 boxes
+    std::vector<int> bins;
+    bins.reserve(binsCnt);
+    for (int i = 0; i < binsCnt; i++) {
+        bins[i] = 0;
+    }
+    for (int i = 0; i < 1000000; i++) {
+        int movesLeft = gsl_ran_gaussian(rng, ((double)binsCnt)/8.0) + binsCnt/2;
+        if (movesLeft < 0) {
+            printf("lower cutoff\n");
+            movesLeft = 0;
+        }
+        if (movesLeft >= binsCnt) {
+            printf("upper cutoff\n");
+            movesLeft = binsCnt-1;
+        }
+        bins[movesLeft]++;
+    }
+    for (int i = 0; i < binsCnt; i++) {
+        printf("%d %d\n", i, bins[i]);
+    }
+    printf("\n");
+    gsl_rng_free(rng);
+}
+

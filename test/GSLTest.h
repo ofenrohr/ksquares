@@ -16,6 +16,7 @@ class GSLTest: public QObject {
 private slots:
     void testGSL001();
     void testGSL002();
+    void testGSL003();
 };
 
 #endif //KSQUARES_GSL_H
