@@ -10,6 +10,7 @@
 #include <settings.h>
 #include <QtCore/QThread>
 #include <QtWidgets/QMessageBox>
+#include <QtCore/QDir>
 
 using namespace AlphaDots;
 
@@ -152,6 +153,10 @@ QList<ModelInfo> ProtobufConnector::getModelList(bool useLocking) {
         return cachedModelList;
     }
 
+    QDir dir(Settings::alphaDotsDir());
+    if (!dir.exists()) {
+        return cachedModelList;
+    }
 
     QString process = Settings::pythonExecutable();//QStringLiteral("/usr/bin/python2.7");
     QStringList processArgs;
@@ -202,8 +207,10 @@ ModelInfo ProtobufConnector::getModelByName(QString name) {
         }
     }
     qDebug() << "ERROR: failed to find model with name " << name;
-    ModelInfo ret = modelList[0];
-    return ret;
+    if (!modelList.empty()) {
+        return modelList[0];
+    }
+    return ModelInfo();
 }
 
 int ProtobufConnector::pointToLineIndex(QPoint linePoint, int width) {

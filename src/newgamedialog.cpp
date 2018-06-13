@@ -15,6 +15,9 @@
 #include <QVBoxLayout>
 #include <alphaDots/ProtobufConnector.h>
 #include <alphaDots/ModelInfo.h>
+#include <settings.h>
+#include <QtCore/QDir>
+#include <QtWidgets/QMessageBox>
 
 NewGameDialog::NewGameDialog(QWidget *parent) : QDialog(parent)
 {
@@ -73,6 +76,12 @@ void NewGameDialog::adjustEnabledUsers(int numOfPlayers)
 }
 
 void NewGameDialog::updateModelList() {
+    QDir dir(Settings::alphaDotsDir());
+    if (!dir.exists()) {
+        QMessageBox::warning(this, tr("AlphaDots not configured"), tr("Please configure alpha dots in Settings -> Computer player"));
+        aiModel->clear();
+        return;
+    }
     QList<AlphaDots::ModelInfo> models = AlphaDots::ProtobufConnector::getInstance().getModelList();
 
     aiModel->clear();
