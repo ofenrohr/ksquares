@@ -289,6 +289,8 @@ void SelfPlay::threadFinished(int thread) {
         finishIteration();
         if (iteration < iterationCnt) {
             setupIteration();
+        } else {
+            qDebug() << "last iteration done... waiting for training to finish...";
         }
     }
 }
