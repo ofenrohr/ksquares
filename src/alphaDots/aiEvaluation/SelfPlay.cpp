@@ -19,7 +19,8 @@
 using namespace AlphaDots;
 
 SelfPlay::SelfPlay(QString datasetDest, int threads, QString &initialModelName, QString &targetModel,
-                   int gamesPerIteration, QString &logdir, int epochs, bool gpuTraining, DatasetType dataset) :
+                   int iterations, int gamesPerIteration, QString &logdir, int epochs, bool gpuTraining,
+                   DatasetType dataset) :
     KXmlGuiWindow(),
     m_view(new QWidget())
 {
@@ -33,6 +34,7 @@ SelfPlay::SelfPlay(QString datasetDest, int threads, QString &initialModelName, 
 
     currentModel = ProtobufConnector::getInstance().getModelByName(initialModelName);
     iteration = -1;
+    iterationCnt = iterations;
     iterationSize = gamesPerIteration;
     gamesCompleted = 0;
 
@@ -180,6 +182,10 @@ void SelfPlay::updateTrainingInfo() {
     //QFile trainingLog(
     if (alphaZeroV10Training->isRunning()) {
         QTimer::singleShot(3000, this, SLOT(updateTrainingInfo()));
+    } else {
+        if (iteration >= iterationCnt) {
+            QCoreApplication::exit(0);
+        }
     }
 }
 
@@ -262,7 +268,10 @@ void SelfPlay::setupIteration() {
 void SelfPlay::recvProgress(int progress, int thread) {
     QMutexLocker locker(&recvProgressMutex);
     gamesCompleted++;
-    if (gamesCompleted == iterationSize || lastInfoUpdate.addMSecs(100) < QDateTime::currentDateTime()) {
+    if (gamesCompleted == iterationSize ||
+        lastInfoUpdate.addMSecs(100) < QDateTime::currentDateTime() ||
+        gamesCompleted % threadCnt == 0
+    ) {
         //lastInfoUpdate = QDateTime::currentDateTime();
         updateInfo();
     }
@@ -278,7 +287,9 @@ void SelfPlay::threadFinished(int thread) {
     }
     if (done) {
         finishIteration();
-        setupIteration();
+        if (iteration < iterationCnt) {
+            setupIteration();
+        }
     }
 }
 

@@ -19,7 +19,8 @@ namespace AlphaDots {
     Q_OBJECT
     public:
         SelfPlay(QString datasetDest, int threads, QString &initialModel, QString &targetModelName,
-                 int gamesPerIteration, QString &logdest, int epochs, bool gpuTraining, DatasetType dataset);
+                 int iterations, int gamesPerIteration, QString &logdest, int epochs, bool gpuTraining,
+                 DatasetType dataset);
 
         void initObject();
 
@@ -45,6 +46,7 @@ namespace AlphaDots {
         QString datasetDirectory;
         int threadCnt;
         QList<QPoint> availableBoardSizes;
+        int iterationCnt;
         int iterationSize;
         QString targetModelName;
         QString logdest;

@@ -294,6 +294,7 @@ The following optional arguments will be considered by self-play:
   (StageFour dataset). Default: 4
 * `--batch-prediction` if this flag is set, the MCTS AI threads will send their requests in batches.
   Batch size corresponds to the number of threads.
+* `--iterations N` number of self-play iterations to run. Default: 50
 * `--iteration-size N` number of samples to generate per iteration
 * `--initial-model` the name of the model to start generating training data with. Default: `alphaZeroV7`
 * `--target-model` the name of the model to improve in self-play. Model name must be present in the 
@@ -303,7 +304,7 @@ The following optional arguments will be considered by self-play:
 * `--gpu-training` enable GPU acceleration for the training python script.
 * `--dataset-generator` select the dataset generator. Supported generators are:
     * `StageFour` the StageFour dataset generator
-    * `StageFourNoMCTS`
+    * `StageFourNoMCTS` the StageFour dataset generator Hard AI instead of MCTS
 * `--epochs` number of epochs in training.
 
 ### Fast Self-Play
