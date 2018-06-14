@@ -33,7 +33,7 @@ ModelProcess::ModelProcess(QString model, int boxesWidth, int boxesHeight, int p
     if (debug) {
         args << QStringLiteral("--debug");
     }
-    modelServer = new ExternalProcess(QStringLiteral("/usr/bin/python2.7"), args);
+    modelServer = new ExternalProcess(Settings::pythonExecutable(), args);
     if (!allowGPU) {
         modelServer->addEnvironmentVariable(QStringLiteral("CUDA_VISIBLE_DEVICES"), QStringLiteral("-1"));
     }

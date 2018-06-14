@@ -81,7 +81,7 @@ void SequenceDataset::startConverter(int samples, QString destinationDirectory) 
          << QStringLiteral("--y-size")
          << QString::number(heightImg);
     if (!isGUI) {
-        converter = new ExternalProcess(QStringLiteral("/usr/bin/python2.7"), args);
+        converter = new ExternalProcess(Settings::pythonExecutable(), args);
         converter->startExternalProcess();
     }
 }

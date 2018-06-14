@@ -114,6 +114,8 @@ class aiController : public QObject
 		long lastTurnTime;
 		/// name of alphaDots model
 		AlphaDots::ModelInfo alphaDotsModel;
+		/// alphaDots active?
+		bool alphaDotsActive;
 };
 
 // see http://qt-project.org/doc/qt-4.8/qthread.html#details

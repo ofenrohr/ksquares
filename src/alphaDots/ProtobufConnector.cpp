@@ -230,10 +230,12 @@ bool ProtobufConnector::sendString(zmq::socket_t &socket, std::string msg) {
     try {
         if (!socket.send(request)) {
             qDebug() << "ERROR: failed to send message via zmq" << errno;
+            QMessageBox::critical(nullptr, QObject::tr("zmq error"), QObject::tr("failed to send message with zmq"));
         }
     } catch (zmq::error_t &ex) {
         qDebug() << "zmq send error: " << ex.num();
         qDebug() << "msg: " << ex.what();
+        QMessageBox::critical(nullptr, QObject::tr("zmq error"), QObject::tr("failed to send message with zmq"));
         return false;
     }
     return true;
@@ -246,11 +248,13 @@ std::string ProtobufConnector::recvString(zmq::socket_t &socket, bool *ok) {
         if (!socket.recv(&reply)) {
             qDebug() << "ERROR: failed to recv message via zmq" << errno;
             *ok = false;
+            QMessageBox::critical(nullptr, QObject::tr("zmq error"), QObject::tr("failed to recv message with zmq"));
             return "error";
         }
     } catch (zmq::error_t &ex) {
         qDebug() << "zmq recv error: " << ex.num();
         qDebug() << "msg: " << ex.what();
+        QMessageBox::critical(nullptr, QObject::tr("zmq error"), QObject::tr("failed to recv message with zmq"));
         *ok = false;
         return "error";
     }

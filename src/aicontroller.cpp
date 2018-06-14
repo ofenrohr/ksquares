@@ -27,6 +27,8 @@
 
 #include <QSet>
 #include <alphaDots/ProtobufConnector.h>
+#include <QtWidgets/QMessageBox>
+#include <QtCore/QCoreApplication>
 
 aiController::aiController(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel, int thinkTime, QString model) :
 		playerId(newPlayerId),
@@ -34,8 +36,7 @@ aiController::aiController(int newPlayerId, int newMaxPlayerId, int newWidth, in
 		width(newWidth),
 		height(newHeight),
 		level(newLevel),
-		aiThinkTime(thinkTime),
-		alphaDotsModel(AlphaDots::ProtobufConnector::getInstance().getModelByName(model))
+		aiThinkTime(thinkTime)
 {
 	//qDebug() << "aiController init: nw = " << newWidth << ", nh = " << newHeight << ", w = " << width << ", h = " << height;
 	//linesSize = aiFunctions::toLinesSize(width, height);
@@ -43,6 +44,12 @@ aiController::aiController(int newPlayerId, int newMaxPlayerId, int newWidth, in
 	srand( (unsigned)time( NULL ) );
 	//qDebug() << "AI: Starting AI level" << level;
 	lastTurnTime = -2;
+	if (!model.isEmpty()) {
+		alphaDotsModel = AlphaDots::ProtobufConnector::getInstance().getModelByName(model);
+		alphaDotsActive = true;
+	} else {
+		alphaDotsActive = false;
+	}
 }
 
 aiController::~aiController()
@@ -154,14 +161,27 @@ KSquaresAi::Ptr aiController::getAi()
 				ai = KSquaresAi::Ptr(new aiDabbleNative(playerId, maxPlayerId, width, height, level, aiThinkTime));
 		break;
         case KSquares::AI_CONVNET:
+			if (!alphaDotsActive) {
+				QMessageBox::critical(nullptr, tr("AlphaDots missing"), tr("Can't execute AI without alphaDots"));
+				QCoreApplication::exit(1);
+			}
 			if (ai.isNull())
 				ai = KSquaresAi::Ptr(new aiConvNet(playerId, maxPlayerId, width, height, level, aiThinkTime, alphaDotsModel));
 		break;
 		case KSquares::AI_MCTS_CONVNET:
+
+			if (!alphaDotsActive) {
+				QMessageBox::critical(nullptr, tr("AlphaDots missing"), tr("Can't execute AI without alphaDots"));
+				QCoreApplication::exit(1);
+			}
 			if (ai.isNull())
 				ai = KSquaresAi::Ptr(new aiMCTS(playerId, maxPlayerId, width, height, KSquares::AI_CONVNET, aiThinkTime));
 		break;
 		case KSquares::AI_MCTS_ALPHAZERO:
+			if (!alphaDotsActive) {
+				QMessageBox::critical(nullptr, tr("AlphaDots missing"), tr("Can't execute AI without alphaDots"));
+				QCoreApplication::exit(1);
+			}
 			if (ai.isNull())
 				ai = KSquaresAi::Ptr(new AlphaDots::aiAlphaZeroMCTS(playerId, maxPlayerId, width, height, aiThinkTime));
 		break;
