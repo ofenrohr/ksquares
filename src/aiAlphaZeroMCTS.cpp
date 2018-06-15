@@ -15,7 +15,10 @@
 using namespace AlphaDots;
 
 bool aiAlphaZeroMCTS::debug(false);
-
+double aiAlphaZeroMCTS::C_puct = 10.0; // overwritten in main.cpp
+double aiAlphaZeroMCTS::dirichlet_alpha = 0.03; // overwritten in main.cpp
+int aiAlphaZeroMCTS::mcts_iterations = 1500; // overwritten in main.cpp
+double aiAlphaZeroMCTS::prior_eps = 0;//0.001;
 
 aiAlphaZeroMCTS::aiAlphaZeroMCTS(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight,
                                  int thinkTime, ModelInfo model) :

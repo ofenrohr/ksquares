@@ -40,6 +40,10 @@ namespace AlphaDots {
         // StageFourDataset specific stuff:
         QString getDatasetPath() {return datasetPath;}
 
+        // hyperparameters
+        static double sigmaScale;// = 0.2;
+        static double meanScale;// = 0.6;
+
     protected:
         int width;
         int height;
@@ -59,7 +63,6 @@ namespace AlphaDots {
         ModelInfo model;
         gsl_rng *rng;
         QString datasetPath;
-        int selfPlayIteration;
         bool createdData;
         bool useMCTSai;
     };

@@ -14,6 +14,9 @@
 
 using namespace AlphaDots;
 
+double StageFourDataset::sigmaScale = 0.125; // overwritten in main.cpp
+double StageFourDataset::meanScale = 0.5; // overwritten in main.cpp
+
 StageFourDataset::StageFourDataset(bool gui, int w, int h, QString modelName, int thread, int threads, bool useMCTS) {
     isGUI = gui;
     width = w;
@@ -79,9 +82,15 @@ bool StageFourDataset::stopConverter() {
     std::string filename =
             "/StageFour-" +
             model.name().toStdString() +
-            (useMCTSai ? "" : "-noMCTS" ) +
+            (useMCTSai ?
+                "-it" + std::to_string(aiAlphaZeroMCTS::mcts_iterations) +
+                "-dir" + std::to_string(aiAlphaZeroMCTS::dirichlet_alpha) +
+                "-c:" + std::to_string(aiAlphaZeroMCTS::C_puct)
+            : "-noMCTS" ) +
             "-" + std::to_string(sampleCnt) +
             "-" + std::to_string(width) + "x" + std::to_string(height) +
+            "-sig" + std::to_string(sigmaScale) +
+            "-mean" + std::to_string(meanScale) +
             timeStr.toStdString() +
             ".npz";
     //std::string filename = "/StageThree.npz";
@@ -117,13 +126,18 @@ Dataset StageFourDataset::generateDataset() {
     // add hard ai moves
     int linesSize = aiFunctions::toLinesSize(width, height);
     double maxMoves = linesSize - 2;
-    int movesLeft = gsl_ran_gaussian(rng, maxMoves/8.0) + maxMoves/2.0;
-    if (movesLeft <= 0) {
-        movesLeft = 1;
-    }
-    if (movesLeft >= linesSize) {
-        movesLeft = maxMoves;
-    }
+    bool redo;
+    int movesLeft;
+    do {
+        redo = false;
+        movesLeft = gsl_ran_gaussian(rng, (double) maxMoves * sigmaScale) + (double) maxMoves * meanScale;
+        if (movesLeft <= 0) {
+            redo = true;
+        }
+        if (movesLeft >= maxMoves) {
+            redo = true;
+        }
+    } while (redo);
     MLDataGenerator::makeAiMoves(board, fastAi, movesLeft);
 
     int currentPlayer = board->playerId;

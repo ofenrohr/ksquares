@@ -20,7 +20,7 @@ using namespace AlphaDots;
 
 SelfPlay::SelfPlay(QString datasetDest, int threads, QString &initialModelName, QString &targetModel,
                    int iterations, int gamesPerIteration, QString &logdir, int epochs, bool gpuTraining,
-                   DatasetType dataset, bool doUpload) :
+                   DatasetType dataset, bool doUpload, QList<QPoint> boardSizes) :
     KXmlGuiWindow(),
     m_view(new QWidget())
 {
@@ -39,15 +39,7 @@ SelfPlay::SelfPlay(QString datasetDest, int threads, QString &initialModelName, 
     iterationSize = gamesPerIteration;
     gamesCompleted = 0;
 
-    availableBoardSizes.clear();
-    availableBoardSizes.append(QPoint(4,3));
-    availableBoardSizes.append(QPoint(5,4));
-    availableBoardSizes.append(QPoint(6,5));
-    availableBoardSizes.append(QPoint(7,5));
-    availableBoardSizes.append(QPoint(8,8));
-    availableBoardSizes.append(QPoint(14,7));
-    availableBoardSizes.append(QPoint(14,14));
-    availableBoardSizes.append(QPoint(10,9));
+    availableBoardSizes = boardSizes;
 
     currentBoardSize = availableBoardSizes[0];
 
@@ -82,6 +74,17 @@ void SelfPlay::initObject() {
 void SelfPlay::updateInfo() {
     currentModelLabel->setText(currentModel.name());
     boardSizeLabel->setText(tr("%1 x %2").arg(currentBoardSize.x()).arg(currentBoardSize.y()));
+    QString prettySizes;
+    bool first = true;
+    for (QPoint p : availableBoardSizes) {
+        if (first) {
+            first = false;
+        } else {
+            prettySizes.append(tr(", "));
+        }
+        prettySizes.append(QString::number(p.x()) + tr("x") + QString::number(p.y()));
+    }
+    availableBoardSizesLbl->setText(prettySizes);
     iterationLabel->setText(QString::number(iteration));
     progressBar->setMinimum(0);
     progressBar->setMaximum(iterationSize);
@@ -104,7 +107,7 @@ void SelfPlay::updateTrainingInfo() {
 
     // search log file
     QStringList nameFilters;
-    nameFilters << tr("alphaZeroV10*");
+    nameFilters << trainingLogBasename + tr("*");
     auto entryList = logDir.entryList(nameFilters, QDir::Files | QDir::NoDotAndDotDot, QDir::Time);
     if (entryList.size() > 0) {
         // check log file
@@ -371,5 +374,7 @@ void SelfPlay::finishIteration() {
         currentModel = ProtobufConnector::getInstance().getModelByName(targetModelName);
         //currentModel.setName(currentModel.name()+tr(".")+QString::number(iteration));
     }
+    QFileInfo fi(ProtobufConnector::getInstance().getModelByName(targetModelName).path());
+    trainingLogBasename = fi.baseName();
     QTimer::singleShot(100, this, SLOT(updateTrainingInfo()));
 }

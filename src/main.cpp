@@ -85,6 +85,12 @@ int main(int argc, char **argv)
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("gpu-training"), i18n("Use GPU for training in self-play")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("epochs"), i18n("Number of epochs in self-play training iteration"), i18n("epochs")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("upload"), i18n("Upload results of self-play (used in docker image)")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("hp-sigma-scale"), i18n("Hyperparameter: StageFour sigma scale for moves left, default: 0.125"), i18n("hp-sigma-scale")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("hp-mean-scale"), i18n("Hyperparameter: StageFour mean scale for moves left, default: 0.5"), i18n("hp-mean-scale")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("hp-mcts-iterations"), i18n("Hyperparameter: Number of iterations in AlphaZero MCTS, default: 1500"), i18n("hp-mcts-iterations")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("hp-mcts-cpuct"), i18n("Hyperparameter: C_puct in AlphaZero MCTS, default: 10"), i18n("hp-mcts-cpuct")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("hp-mcts-dirichlet-alpha"), i18n("Hyperparameter: dirichlet alpha in AlphaZero MCTS, default: 0.03"), i18n("hp-mcts-dirichlet-alpha")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("board-sizes"), i18n("Board sizes available in self-play mode. Format AxB,CxD e.g. 5x4,4x4. Minimum: 2, Maximum 20"), i18n("board-sizes")));
 
     about.setupCommandLine(&parser);
     parser.process(app);
@@ -266,6 +272,105 @@ int main(int argc, char **argv)
     bool upload = false;
     if (parser.isSet(i18n("upload"))) {
         upload = true;
+    }
+
+    // hp-sigma-scale - hyperparameter for movesLeft distribution (see test/GSLTest.cpp)
+    double hpSigmaScale = 0.125;
+    if (parser.isSet(i18n("hp-sigma-scale"))) {
+        bool ok = false;
+        double tmp = parser.value(i18n("hp-sigma-scale")).toDouble(&ok);
+        if (ok) {
+            hpSigmaScale = tmp;
+        } else {
+            QMessageBox::warning(nullptr, i18n("Self-Play error"), i18n("Invalid hp-sigma-scale argument"));
+        }
+    }
+    AlphaDots::StageFourDataset::sigmaScale = hpSigmaScale;
+
+    // hp-mean-scale - hyperparameter for movesLeft distribution (see test/GSLTest.cpp)
+    double hpMeanScale = 0.5;
+    if (parser.isSet(i18n("hp-mean-scale"))) {
+        bool ok = false;
+        double tmp = parser.value(i18n("hp-mean-scale")).toDouble(&ok);
+        if (ok) {
+            hpMeanScale = tmp;
+        } else {
+            QMessageBox::warning(nullptr, i18n("Self-Play error"), i18n("Invalid hp-mean-scale argument"));
+        }
+    }
+    AlphaDots::StageFourDataset::meanScale = hpMeanScale;
+
+    // hp-mcts-iterations - hyperparameter for alphazero mcts
+    int hpMCTSIterations = 1500;
+    if (parser.isSet(i18n("hp-mcts-iterations"))) {
+        bool ok = false;
+        int tmp = parser.value(i18n("hp-mcts-iterations")).toInt(&ok);
+        if (ok) {
+            hpMCTSIterations = tmp;
+        } else {
+            QMessageBox::warning(nullptr, i18n("Self-Play error"), i18n("Invalid hp-mcts-iterations argument"));
+        }
+    }
+    AlphaDots::aiAlphaZeroMCTS::mcts_iterations = hpMCTSIterations;
+
+    // hp-mcts-cpuct - hyperparameter for alphazero mcts
+    double hpMCTSCpuct = 10;
+    if (parser.isSet(i18n("hp-mcts-cpuct"))) {
+        bool ok = false;
+        double tmp = parser.value(i18n("hp-mcts-cpuct")).toDouble(&ok);
+        if (ok) {
+            hpMCTSCpuct = tmp;
+        } else {
+            QMessageBox::warning(nullptr, i18n("Self-Play error"), i18n("Invalid hp-mcts-cpuct argument"));
+        }
+    }
+    AlphaDots::aiAlphaZeroMCTS::C_puct = hpMCTSCpuct;
+
+    // hp-mcts-dirichlet-alpha - hyperparameter for alphazero mcts
+    double hpMCTSDirichletAlpha = 0.03;
+    if (parser.isSet(i18n("hp-mcts-dirichlet-alpha"))) {
+        bool ok = false;
+        double tmp = parser.value(i18n("hp-mcts-dirichlet-alpha")).toDouble(&ok);
+        if (ok) {
+            hpMCTSDirichletAlpha = tmp;
+        } else {
+            QMessageBox::warning(nullptr, i18n("Self-Play error"), i18n("Invalid hp-mcts-dirichlet-alpha argument"));
+        }
+    }
+    AlphaDots::aiAlphaZeroMCTS::dirichlet_alpha = hpMCTSDirichletAlpha;
+
+    // board sizes
+    QList<QPoint> boardSizes;
+    boardSizes << QPoint(4,3) << QPoint(5,4) << QPoint(6,5) << QPoint(7,5) << QPoint(8,8) << QPoint(14,7) <<
+                  QPoint(14,14) << QPoint(10,9);
+    if (parser.isSet(i18n("board-sizes"))) {
+        bool ok = true;
+        QList<QPoint> tmp;
+        for (QString boardSize : parser.value(i18n("board-sizes")).split(i18n(","))) {
+            QStringList xy = boardSize.split(i18n("x"));
+            if (xy.size() != 2) {
+                ok = false;
+                break;
+            }
+            int x = xy.value(0).toInt(&ok);
+            if (!ok) {
+                break;
+            }
+            int y = xy.value(1).toInt(&ok);
+            if (!ok) {
+                break;
+            }
+            if (x < 2 || x > 20 || y < 2 || y > 20) {
+                ok = false;
+                break;
+            }
+            tmp << QPoint(x,y);
+        }
+        if (!ok) {
+            QMessageBox::warning(nullptr, i18n("Self-Play error"), i18n("Invalid board-sizes argument"));
+        } else {
+            boardSizes = tmp;
+        }
     }
 
     // start things

@@ -17,6 +17,8 @@ private slots:
     void testGSL001();
     void testGSL002();
     void testGSL003();
+    void testGSL004();
+    void testGSL005();
 };
 
 #endif //KSQUARES_GSL_H

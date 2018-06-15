@@ -20,7 +20,7 @@ namespace AlphaDots {
     public:
         SelfPlay(QString datasetDest, int threads, QString &initialModel, QString &targetModelName,
                  int iterations, int gamesPerIteration, QString &logdest, int epochs, bool gpuTraining,
-                 DatasetType dataset, bool doUpload);
+                 DatasetType dataset, bool doUpload, QList<QPoint> boardSizes);
 
         void initObject();
 
@@ -76,6 +76,7 @@ namespace AlphaDots {
         bool trainOnGPU;
         ExternalProcess *alphaZeroV10Training;
         QDateTime trainingStartTime;
+        QString trainingLogBasename;
     };
 }
 

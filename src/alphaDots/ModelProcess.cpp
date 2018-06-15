@@ -58,5 +58,5 @@ int ModelProcess::port() {
 }
 
 void ModelProcess::stop() {
-    modelServer->stopExternalProcess();
+    modelServer->stopExternalProcess(true, false);
 }

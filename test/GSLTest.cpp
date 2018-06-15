@@ -2,6 +2,8 @@
 #include <chrono>
 #include <gsl/gsl_randist.h>
 #include <vector>
+#include <iostream>
+#include <fstream>
 
 #include "GSLTest.h"
 
@@ -82,3 +84,74 @@ void GSLTest::testGSL003() {
     gsl_rng_free(rng);
 }
 
+
+void GSLTest::testGSL004() {
+    auto rng = gsl_rng_alloc(gsl_rng_taus);
+    gsl_rng_set(rng, std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+
+    int binsCnt = 24; // 3x3 boxes
+    std::vector<int> bins;
+    bins.reserve(binsCnt);
+    for (int i = 0; i < binsCnt; i++) {
+        bins[i] = 0;
+    }
+    double sigmaScale = 1.0/5.0;
+    double meanScale = 0.6;
+    for (int i = 0; i < 1000000; i++) {
+        bool redo;
+        int movesLeft;
+        do {
+            redo = false;
+            movesLeft = gsl_ran_gaussian(rng, (double) binsCnt * sigmaScale) + (double) binsCnt * meanScale;
+            if (movesLeft <= 0) {
+                redo = true;
+            }
+            if (movesLeft >= binsCnt) {
+                redo = true;
+            }
+        } while (redo);
+        bins[movesLeft]++;
+    }
+    for (int i = 0; i < binsCnt; i++) {
+        printf("%d %d\n", i, bins[i]);
+    }
+    printf("\n");
+    gsl_rng_free(rng);
+}
+
+
+void GSLTest::testGSL005() {
+    auto rng = gsl_rng_alloc(gsl_rng_taus);
+    gsl_rng_set(rng, std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+
+    int binsCnt = 220; // 10x10 boxes
+    std::vector<int> bins;
+    bins.reserve(binsCnt);
+    for (int i = 0; i < binsCnt; i++) {
+        bins[i] = 0;
+    }
+    double sigmaScale = 1.0/5.0;
+    double meanScale = 0.6;
+    for (int i = 0; i < 1000000; i++) {
+        bool redo;
+        int movesLeft;
+        do {
+            redo = false;
+            movesLeft = gsl_ran_gaussian(rng, (double) binsCnt * sigmaScale) + (double) binsCnt * meanScale;
+            if (movesLeft <= 0) {
+                redo = true;
+            }
+            if (movesLeft >= binsCnt) {
+                redo = true;
+            }
+        } while (redo);
+        bins[movesLeft]++;
+    }
+    std::ofstream file;
+    file.open("results/movesLeftDist3.txt");
+    for (int i = 0; i < binsCnt; i++) {
+        file << i << " " << bins[i] << std::endl;
+    }
+    file.close();
+    gsl_rng_free(rng);
+}

@@ -57,6 +57,12 @@ namespace AlphaDots {
 
         static void setDebug(bool mode) {debug=mode;}
 
+        // Hyperparameters
+        static double C_puct;// = 10.0;
+        static double dirichlet_alpha;// = 0.03;
+        static int mcts_iterations;// = 1500;
+        static double prior_eps;// = 0;//0.001;
+
     protected:
         int mcts();
 
@@ -96,12 +102,6 @@ namespace AlphaDots {
 
         // GSLTest random number generator
         gsl_rng *rng;
-
-        // Hyperparameters
-        double C_puct = 10.0;
-        double dirichlet_alpha = 0.03;
-        double mcts_iterations = 1500;
-        double prior_eps = 0;//0.001;
 
         // list of original prior values
         QList<double> original_priors;
