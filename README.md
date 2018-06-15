@@ -64,6 +64,14 @@ src/AlphaZeroMCTSNode.[h|cpp]
 There is a test suite called `alphazero` that tests if the MCTS actually finds
 new smart moves that the network would not have made.
 
+This AI offers the following hyperparameters:
+
+* `--hp-mcts-iterations` number of MCTS iterations. The default value is 1500
+* `--hp-mcts-cpuct` the C_puct value which controls exploration vs. 
+  exploitation. The default value is 10.0
+* `--hp-mcts-dirichlet-alpha` the alpha parameter for the dirichlet noise that
+  is applied to the children of the MCTS root node. Default: 0.03
+
 ## [Tests](Tests.html)
 
 You can run various test suites with `CMAKE_BUILD_DIR/test/ksquarestest`. Call

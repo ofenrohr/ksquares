@@ -208,6 +208,17 @@ ksquares --generate 10 --dataset-generator StageFour --threads 8 --gpu
 ksquares --generate 1000 --dataset-generator StageFourNoMCTS --threads 8
 ```
 
+The StageFour dataset generator offers two hyperparameters:
+
+* `--hp-sigma-scale` scales the variance of the moves left distribution. 
+  The default is set to 0.125. Lower values result in more samples close to
+  the mean value, while higher values result in more evenly distributed 
+  distribution.
+* `--hp-mean-scale` moves the mean value of the moves left distribution.
+  The default is set to 0.5, so that the most examples are in the middle.
+  
+![Histogram of moves with hp-sigma-scale = 0.2 and hp-mean-scale = 0.6](movesLeftDist2.png)
+
 ## Model evaluation
 
 The are two options to evaluate the trained models. The first option uses the native 
@@ -247,16 +258,16 @@ Both evaluation modes support the following optional arguments:
 
 All games are played on a 5x5 board. The 5x5 board size is reserved for evaluation. No model was ever trained on any dataset with 5x5 boards.
 
-Model|Games|Wins vs. Easyin 100 games|Wins vs. Mediumin 100 games|Wins vs. Hardin 100 games|Errors|Ends with Double Dealing|Preemtive Sacrifices
----|---|---|---|---|---|---|---
-FirstTry|300|1|0|0|0|0|0
-StageOne 3x3|300|58|27|6|0|0|0
-StageOne 5x5|300|0|1|0|0|0|0
-BasicStrategy|300|55|27|7|0|0|0
-AlphaZeroV1|300|82|80|35|0|0|0
-AlphaZeroV3|300|79|94|50|0|0|0
-AlphaZeroV5|300|90|75|45|0|0|0
-AlphaZeroV7|300|96|80|46|0|0|0
+Model|Games|Wins vs. Easyin 100 games|Wins vs. Mediumin 100 games|Wins vs. Hardin 100 games|Errors|
+---|---|---|---|---|---
+FirstTry|300|1|0|0|0
+StageOne 3x3|300|58|27|6|0
+StageOne 5x5|300|0|1|0|0
+BasicStrategy|300|55|27|7|0
+AlphaZeroV1|300|82|80|35|0
+AlphaZeroV3|300|79|94|50|0
+AlphaZeroV5|300|90|75|45|0
+AlphaZeroV7|300|96|80|46|0
 
 ### Screenshot
 ![slow model evaluation with KSquares](ksquares_model_evaluation.png)
@@ -306,6 +317,12 @@ The following optional arguments will be considered by self-play:
     * `StageFour` the StageFour dataset generator
     * `StageFourNoMCTS` the StageFour dataset generator Hard AI instead of MCTS
 * `--epochs` number of epochs in training.
+* `--board-sizes` sets the board sizes in boxes on which the self-play mode will operate.
+  Default value: 4x3,5x4,6x5,7x5,8x8,14x7,14x14,10x9.
+  Board lengths must be at least 2 and at most 20.
+
+Please be aware that the self-play mode honors hyperparameters for the StageFour
+dataset generator and the AlphaZero MCTS AI.
 
 ### Fast Self-Play
 
