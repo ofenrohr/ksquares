@@ -20,7 +20,7 @@ namespace AlphaDots {
     public:
         SelfPlay(QString datasetDest, int threads, QString &initialModel, QString &targetModelName,
                  int iterations, int gamesPerIteration, QString &logdest, int epochs, bool gpuTraining,
-                 DatasetType dataset);
+                 DatasetType dataset, bool doUpload);
 
         void initObject();
 
@@ -51,6 +51,7 @@ namespace AlphaDots {
         QString targetModelName;
         QString logdest;
         DatasetType datasetType;
+        bool upload;
 
         // current state infos
         ModelInfo currentModel;

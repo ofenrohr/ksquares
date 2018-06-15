@@ -135,7 +135,8 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 	}
     else if (modelInfo.type() == QStringLiteral("PolicyValue")) {
 		aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(lines, linesSize, width, height, newSquareOwners, playerId, maxPlayerId));
-		DotsAndBoxesImage img = ProtobufConnector::dotsAndBoxesImageToProtobuf(MLImageGenerator::generateInputImage(board));
+		QImage inputImg = MLImageGenerator::generateInputImage(board);
+		DotsAndBoxesImage img = ProtobufConnector::dotsAndBoxesImageToProtobuf(inputImg);
 		ProtobufConnector::sendString(socket, img.SerializeAsString());
 	} else {
 		qDebug() << "ERROR: unknown model type!";

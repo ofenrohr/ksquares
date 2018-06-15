@@ -20,7 +20,7 @@ using namespace AlphaDots;
 
 SelfPlay::SelfPlay(QString datasetDest, int threads, QString &initialModelName, QString &targetModel,
                    int iterations, int gamesPerIteration, QString &logdir, int epochs, bool gpuTraining,
-                   DatasetType dataset) :
+                   DatasetType dataset, bool doUpload) :
     KXmlGuiWindow(),
     m_view(new QWidget())
 {
@@ -31,6 +31,7 @@ SelfPlay::SelfPlay(QString datasetDest, int threads, QString &initialModelName, 
     logdest = logdir;
     threadCnt = threads;
     datasetType = dataset;
+    upload = doUpload;
 
     currentModel = ProtobufConnector::getInstance().getModelByName(initialModelName);
     iteration = -1;
@@ -334,6 +335,9 @@ void SelfPlay::finishIteration() {
             //<< tr("--logdest")
             //<< logdest
             ;
+    if (upload) {
+        processArgs << tr("--upload");
+    }
     QString processWorkingDirectory = Settings::alphaDotsDir() + tr("/modelServer/models/alphaZero");
     if (alphaZeroV10Training == nullptr) {
         alphaZeroV10Training = new ExternalProcess(processPath, processArgs, processWorkingDirectory);

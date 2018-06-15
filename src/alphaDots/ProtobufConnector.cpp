@@ -47,10 +47,13 @@ void ProtobufConnector::copyDataToProtobuf(DotsAndBoxesImage *pb, const QImage &
         pb->clear_pixels();
     }
     assert(img.format() == QImage::Format_ARGB32);
+    //const uchar *bits = img.bits();
+    int i = 0;
     for (int y = 0; y < img.height(); y++) {
         //const uchar *scanline = img.constScanLine(y);
         for (int x = 0; x < img.width(); x++) {
             //QRgb *pixel = (QRgb*) scanline[x];
+            //const QRgb *pixel = (const QRgb*) bits[i++];
             if (sizeMatch) {
                 //pb->set_pixels(y*img.width()+x, qRed(*pixel));
                 pb->set_pixels(y*img.width()+x, img.pixelColor(x, y).red());
