@@ -421,7 +421,7 @@ int main(int argc, char **argv)
         if (!parser.isSet(i18n("dataset-generator"))) {
             datasetType = AlphaDots::StageFour;
         }
-        AlphaDots::SelfPlay *selfPlay = new AlphaDots::SelfPlay(datasetDest, threads, initialModelName, targetModelName, iterationCnt, iterationSize, logDest, epochs, gpuTraining, datasetType, upload);
+        AlphaDots::SelfPlay *selfPlay = new AlphaDots::SelfPlay(datasetDest, threads, initialModelName, targetModelName, iterationCnt, iterationSize, logDest, epochs, gpuTraining, datasetType, upload, boardSizes);
         selfPlay->show();
     } else {
         KSquaresWindow *mainWindow = new KSquaresWindow;
