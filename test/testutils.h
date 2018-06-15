@@ -11,6 +11,7 @@
 class testutils {
 public:
     static void executeAi(QList<int> testAIs, Board *board, int player, std::string name, QList<int> expectedLines);
+    static void executeAi(QList<KSquaresAi::Ptr> testAIs, Board *board, int player, std::string name, QList<int> expectedLines);
 };
 
 

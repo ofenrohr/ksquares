@@ -10,7 +10,6 @@
 #include "alphaDots/MLDataGenerator.h"
 #include "alphaDots/MLImageGenerator.h"
 #include "alphaDots/ModelManager.h"
-#include <PolicyValueData.pb.h>
 #include <cmath>
 
 using namespace AlphaDots;
@@ -105,27 +104,35 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 	if (modelInfo.type() == QStringLiteral("DirectInference") ||
         modelInfo.type() == QStringLiteral("DirectInferenceCategorical")) {
 		aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(lines, linesSize, width, height, newSquareOwners, playerId, maxPlayerId));
-		DotsAndBoxesImage img = ProtobufConnector::dotsAndBoxesImageToProtobuf(MLImageGenerator::generateInputImage(board));
+		QImage *qimg = MLImageGenerator::generateInputImage(board);
+		DotsAndBoxesImage img = ProtobufConnector::dotsAndBoxesImageToProtobuf(qimg);
+		delete qimg;
 		ProtobufConnector::sendString(socket, img.SerializeAsString());
 	}
     else if (modelInfo.type() == QStringLiteral("Sequence") ||
              modelInfo.type() == QStringLiteral("SequenceCategorical")) {
 		//qDebug() << "sequence model";
 		aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(width, height));
-		QList<QImage> imageSeq;
+		QList<QImage*> imageSeq;
 		imageSeq.append(MLImageGenerator::generateInputImage(board));
 		for (Board::Move move : lineHistory) {
 			board->doMove(move.line);
 			imageSeq.append(MLImageGenerator::generateInputImage(board));
 		}
 		GameSequence seq = ProtobufConnector::gameSequenceToProtobuf(imageSeq);
-        std::vector<std::string> errors;
-        seq.FindInitializationErrors(&errors);
-        foreach (std::string err, errors) {
-            qDebug() << "GameSequence protobuf error: " << QString::fromStdString(err);
-        }
-		if (errors.size() > 0) {
-			qDebug() << "imageSeq: " << imageSeq;
+		for (QImage* qimg : imageSeq) {
+			delete qimg;
+		}
+		imageSeq.clear();
+        if (!seq.IsInitialized()) {
+			std::vector<std::string> errors;
+			seq.FindInitializationErrors(&errors);
+					foreach (std::string err, errors) {
+					qDebug() << "GameSequence protobuf error: " << QString::fromStdString(err);
+				}
+			if (errors.size() > 0) {
+				qDebug() << "imageSeq: " << imageSeq;
+			}
 		}
 		if (!ProtobufConnector::sendString(socket, seq.SerializeAsString())) {
             qDebug() << "ProtobufConnector::sendString failed!";
@@ -135,9 +142,11 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 	}
     else if (modelInfo.type() == QStringLiteral("PolicyValue")) {
 		aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(lines, linesSize, width, height, newSquareOwners, playerId, maxPlayerId));
-		QImage inputImg = MLImageGenerator::generateInputImage(board);
-		DotsAndBoxesImage img = ProtobufConnector::dotsAndBoxesImageToProtobuf(inputImg);
-		ProtobufConnector::sendString(socket, img.SerializeAsString());
+		QImage *inputImg = MLImageGenerator::generateInputImage(board);
+		//pbimg = ProtobufConnector::dotsAndBoxesImageToProtobuf(inputImg);
+		ProtobufConnector::copyDataToProtobuf(&pbimg, inputImg);
+		delete inputImg;
+		ProtobufConnector::sendString(socket, pbimg.SerializeAsString());
 	} else {
 		qDebug() << "ERROR: unknown model type!";
         qDebug() << modelInfo.type();
@@ -172,15 +181,15 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
         delete[] lines;
 		return ret;
 	} else {
-		QImage prediction = ProtobufConnector::fromProtobuf(rpl);
+		QImage *prediction = ProtobufConnector::fromProtobuf(rpl);
 
 		QList<QPoint> bestPoints;
 		int bestVal = -1;
 		QPoint linePoint;
 		std::stringstream pred;
-		for (int y = 0; y < prediction.height(); y++) {
-			for (int x = 0; x < prediction.width(); x++) {
-				int c = prediction.pixelColor(x, y).red();
+		for (int y = 0; y < prediction->height(); y++) {
+			for (int x = 0; x < prediction->width(); x++) {
+				int c = prediction->pixelColor(x, y).red();
 				pred << c << " ";
 				if (c < 10)
 					pred << " ";
@@ -193,7 +202,7 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 				if (x % 2 == 0 && y % 2 == 1) {
 					invalidPoint = false;
 				}
-				if (x == 0 || y == 0 || x == prediction.width() - 1 || y == prediction.height() - 1) {
+				if (x == 0 || y == 0 || x == prediction->width() - 1 || y == prediction->height() - 1) {
 					invalidPoint = true;
 				}
 				if (lines[ProtobufConnector::pointToLineIndex(QPoint(x, y), width)]) {
@@ -220,6 +229,7 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 			//qDebug() << "selected point: " << linePoint;
 		}
 
+        delete prediction;
 
 		int ret = ProtobufConnector::pointToLineIndex(linePoint, width);
 

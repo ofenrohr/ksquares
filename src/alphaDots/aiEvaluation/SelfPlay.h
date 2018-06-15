@@ -61,6 +61,7 @@ namespace AlphaDots {
         QList<bool> threadRunning;
         QList<StageFourDataset *> threadGenerators;
         QDateTime lastInfoUpdate;
+        QString trainingLogBasename;
 
         // mutex lockers
         mutable QMutex recvProgressMutex;

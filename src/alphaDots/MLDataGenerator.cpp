@@ -285,8 +285,12 @@ void MLDataGenerator::generateGUIexample() {
         KSquaresAi::Ptr ai = KSquaresAi::Ptr(new aiEasyMediumHard(0, datasetWidth, datasetHeight, 2));
         makeAiMoves(board, ai, displayFrame);
 
-        inputImage = MLImageGenerator::generateInputImage(board);
-        outputImage = MLImageGenerator::generateOutputImage(board, ai);
+        QImage *tmp = MLImageGenerator::generateInputImage(board);
+        inputImage = tmp->copy();
+        delete tmp;
+        tmp = MLImageGenerator::generateOutputImage(board, ai);
+        outputImage = tmp->copy();
+        delete tmp;
     }
 
 

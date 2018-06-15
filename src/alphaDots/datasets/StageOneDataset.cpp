@@ -74,11 +74,15 @@ Dataset StageOneDataset::generateDataset() {
     }
 
     // generate images
-    QImage inputImage = MLImageGenerator::generateInputImage(board);
-    QImage outputImage = MLImageGenerator::generateOutputImage(board, ai);
+    QImage *inputImage = MLImageGenerator::generateInputImage(board);
+    QImage *outputImage = MLImageGenerator::generateOutputImage(board, ai);
 
     if (isGUI) {
-        return Dataset(inputImage, outputImage, board);
+        QImage tmpInp = inputImage->copy();
+        delete inputImage;
+        QImage tmpOut = outputImage->copy();
+        delete outputImage;
+        return Dataset(tmpInp, tmpOut, board);
     }
 
     // send it to the python dataset converter
@@ -97,5 +101,9 @@ Dataset StageOneDataset::generateDataset() {
     //qDebug() << ".";
     sampleIdx++;
 
-    return Dataset(inputImage, outputImage, board);
+    QImage tmpInp = inputImage->copy();
+    delete inputImage;
+    QImage tmpOut = outputImage->copy();
+    delete outputImage;
+    return Dataset(tmpInp, tmpOut, board);
 }

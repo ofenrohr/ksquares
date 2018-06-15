@@ -26,6 +26,7 @@ SequenceDataset::~SequenceDataset() {
 Dataset SequenceDataset::generateDataset() {
     getSocket();
     QList<QImage> seqData;
+    QList<QImage*> seqDataP;
     KSquaresAi::Ptr ai = KSquaresAi::Ptr(new aiEasyMediumHard(0, width, height, 2));
     Board board(2, width, height);
     aiBoard::Ptr aiboard(new aiBoard(&board));
@@ -38,12 +39,19 @@ Dataset SequenceDataset::generateDataset() {
         QList<int> completedSquares;
         board.addLine(line, &nextPlayer, &boardFilled, &completedSquares);
         aiboard->doMove(line);
-        seqData.append(MLImageGenerator::generateInputImage(aiboard));
+        QImage *tmp = MLImageGenerator::generateInputImage(aiboard);
+        seqData.append(tmp->copy());
+        seqDataP.append(tmp);
     }
+
+    GameSequence gameSequence = ProtobufConnector::gameSequenceToProtobuf(seqDataP);
+    for (QImage *tmp : seqDataP) {
+        delete tmp;
+    }
+    seqDataP.clear();
 
     if (!isGUI) {
         // send it to the python dataset converter
-        GameSequence gameSequence = ProtobufConnector::gameSequenceToProtobuf(seqData);
         if (!ProtobufConnector::sendString(*socket, gameSequence.SerializeAsString())) {
             qDebug() << "sending data failed!";
             return Dataset();

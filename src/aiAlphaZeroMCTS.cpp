@@ -214,13 +214,6 @@ int aiAlphaZeroMCTS::mcts() {
     }
 
     // debug stuff
-    /*
-    #!/usr/bin/bash
-    for file in /tmp/AlphaZeroMCTS.*.dot; do; dot -Tpng $file -o $(basename $file .dot).png; done
-     */
-    //qDebug().noquote() << "mcts node:" << mctsRootNode->toString();
-    //QFile graph(i18n("/tmp/AlphaZeroMCTS.") + QString::number(finishedIterations) + i18n(".dot"));
-
     if (debug) {
         QString path = QObject::tr("/tmp/AlphaZeroMCTS.dot");
         mctsRootNode->saveAsDot(path);
@@ -278,13 +271,13 @@ AlphaZeroMCTSNode::Ptr aiAlphaZeroMCTS::selection(const AlphaZeroMCTSNode::Ptr &
 
 void aiAlphaZeroMCTS::simulation(const AlphaZeroMCTSNode::Ptr &node) {
     // fill values
-    if (!predictPolicyValue(node, board, MLImageGenerator::generateInputImage(board))) {
-        return;
-    }
+    QImage *img = MLImageGenerator::generateInputImage(board);
+    predictPolicyValue(node, board, img);
+    delete img;
 }
 
 bool aiAlphaZeroMCTS::predictPolicyValue(const AlphaZeroMCTSNode::Ptr &parentNode, const aiBoard::Ptr &board,
-                                         const QImage &inputImage) {
+                                         const QImage *inputImage) {
     // reached leaf of search tree?
     if (board->drawnLinesCnt == board->linesSize) {
         // score the game
@@ -299,14 +292,16 @@ bool aiAlphaZeroMCTS::predictPolicyValue(const AlphaZeroMCTSNode::Ptr &parentNod
     }
 
     // request prediction
-    QImage qimg = MLImageGenerator::generateInputImage(board);
     PolicyValueData policyValueData;
     if (ProtobufConnector::getInstance().getBatchPredict()) {
+        QImage *qimg = MLImageGenerator::generateInputImage(board);
         policyValueData = ProtobufConnector::getInstance().batchPredict(socket, qimg);
+        delete qimg;
     } else {
         // send prediction request
-        DotsAndBoxesImage img = ProtobufConnector::dotsAndBoxesImageToProtobuf(inputImage);
-        if (!ProtobufConnector::sendString(socket, img.SerializeAsString())) {
+        //img = ProtobufConnector::dotsAndBoxesImageToProtobuf(inputImage);
+        ProtobufConnector::copyDataToProtobuf(&pbimg, inputImage);
+        if (!ProtobufConnector::sendString(socket, pbimg.SerializeAsString())) {
             qDebug() << "failed to send message to model server";
             isTainted = true;
             return false;
@@ -326,12 +321,12 @@ bool aiAlphaZeroMCTS::predictPolicyValue(const AlphaZeroMCTSNode::Ptr &parentNod
 
     // put data into mcts nodes
     //int lineCnt = policyValueData.policy_size();
-    double priorSum = 0; // sum up prior to normalize
+    double priorSum = prior_eps; // sum up prior to normalize, set to prior_eps to avoid NaN by division with 0
     parentNode->value = policyValueData.value() * (playerId == board->playerId ? 1 : -1);
     for (const auto &child : parentNode->children) {
         child->parent = parentNode;
         child->prior = policyValueData.policy(child->move);
-        if (child->prior == NAN) {
+        if (child->prior == NAN || child->prior == INFINITY) {
             assert(false);
         }
         priorSum += child->prior;

@@ -30,25 +30,25 @@ namespace AlphaDots {
          * @param img input image
          * @return protobuf data
          */
-        static DotsAndBoxesImage dotsAndBoxesImageToProtobuf(const QImage &img);
-        static void copyDataToProtobuf(DotsAndBoxesImage *pb, const QImage &img);
-        static TrainingExample trainingExampleToProtobuf(QImage inp, QImage outp);
-        static GameSequence gameSequenceToProtobuf(QList<QImage> seq);
-        static GameSequence gameSequenceToProtobuf(QList<QImage> inputSeq, QList<QImage> targetSeq);
+        static DotsAndBoxesImage dotsAndBoxesImageToProtobuf(const QImage *img);
+        static void copyDataToProtobuf(DotsAndBoxesImage *pb, const QImage *img);
+        static TrainingExample trainingExampleToProtobuf(QImage *inp, QImage *outp);
+        static GameSequence gameSequenceToProtobuf(QList<QImage*> seq);
+        static GameSequence gameSequenceToProtobuf(QList<QImage*> inputSeq, QList<QImage*> targetSeq);
 
         /**
          * Put the protobuf image data back in a QImage
          * @param msg protobuf data
          * @return image data
          */
-        static QImage fromProtobuf(std::string msg);
+        static QImage* fromProtobuf(std::string msg);
 
 
         /**
          * Get model list.
          * @return
          */
-        QList<ModelInfo> getModelList(bool useLocking=false);
+        QList<ModelInfo> getModelList();
         ModelInfo getModelByName(QString name);
 
         /**
@@ -63,7 +63,7 @@ namespace AlphaDots {
 
         static std::string recvString(zmq::socket_t &socket, bool *ok);
 
-        PolicyValueData batchPredict(zmq::socket_t &socket, QImage &img);
+        PolicyValueData batchPredict(zmq::socket_t &socket, QImage *img);
         void releaseBatchSample();
 
         void setBatchSize(int size);

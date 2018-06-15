@@ -19,13 +19,13 @@
 namespace AlphaDots {
     class MLImageGenerator {
 
-        static void drawBackgroundAndDots(QImage &img, bool drawDots = true);
+        static void drawBackgroundAndDots(QImage *img, bool drawDots = true);
 
-        static void drawLineAt(QImage &img, int lineIdx, int w, int h);
+        static void drawLineAt(QImage *img, int lineIdx, int w, int h);
 
-        static void drawLines(QImage &img, QSharedPointer<aiBoard> board);
+        static void drawLines(QImage *img, QSharedPointer<aiBoard> board);
 
-        static void drawBoxes(QImage &img, QSharedPointer<aiBoard> board);
+        static void drawBoxes(QImage *img, QSharedPointer<aiBoard> board);
 
     public:
         /**
@@ -35,11 +35,11 @@ namespace AlphaDots {
          */
         static int boxesToImgSize(int boxes);
 
-        static QImage generateInputImage(QSharedPointer<aiBoard> board);
+        static QImage* generateInputImage(QSharedPointer<aiBoard> board);
 
-        static QImage generateOutputImage(QSharedPointer<aiBoard> board, QSharedPointer<KSquaresAi> ai, int *line=nullptr);
+        static QImage* generateOutputImage(QSharedPointer<aiBoard> board, QSharedPointer<KSquaresAi> ai, int *line=nullptr);
 
-        static QImage generateOutputImage(QSharedPointer<aiBoard> board, QList<int> lines, bool drawDots = false);
+        static QImage* generateOutputImage(QSharedPointer<aiBoard> board, QList<int> lines, bool drawDots = false);
 
         /**
          * Define colors to use in images

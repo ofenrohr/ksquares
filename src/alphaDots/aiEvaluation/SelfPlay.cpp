@@ -104,7 +104,7 @@ void SelfPlay::updateTrainingInfo() {
 
     // search log file
     QStringList nameFilters;
-    nameFilters << tr("alphaZeroV10*");
+    nameFilters << trainingLogBasename + tr("*");
     auto entryList = logDir.entryList(nameFilters, QDir::Files | QDir::NoDotAndDotDot, QDir::Time);
     if (entryList.size() > 0) {
         // check log file
@@ -371,5 +371,7 @@ void SelfPlay::finishIteration() {
         currentModel = ProtobufConnector::getInstance().getModelByName(targetModelName);
         //currentModel.setName(currentModel.name()+tr(".")+QString::number(iteration));
     }
+    QFileInfo fi(ProtobufConnector::getInstance().getModelByName(targetModelName).path());
+    trainingLogBasename = fi.baseName();
     QTimer::singleShot(100, this, SLOT(updateTrainingInfo()));
 }

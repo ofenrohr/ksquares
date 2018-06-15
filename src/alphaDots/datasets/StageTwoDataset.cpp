@@ -88,11 +88,15 @@ Dataset StageTwoDataset::generateDataset() {
     }
 
     // generate images
-    QImage inputImage = MLImageGenerator::generateInputImage(board);
-    QImage outputImage = MLImageGenerator::generateOutputImage(board, ai);
+    QImage *inputImage = MLImageGenerator::generateInputImage(board);
+    QImage *outputImage = MLImageGenerator::generateOutputImage(board, ai);
 
     if (isGUI) {
-        return Dataset(inputImage, outputImage, board);
+        QImage tmpInp = inputImage->copy();
+        delete inputImage;
+        QImage tmpOut = outputImage->copy();
+        delete outputImage;
+        return Dataset(tmpInp, tmpOut, board);
     }
 
     // add to data
@@ -103,8 +107,8 @@ Dataset StageTwoDataset::generateDataset() {
         //qDebug() << "sampleStart: " << sampleStart;
         for (int y = 0; y < heightImg; y++) {
             for (int x = 0; x < widthImg; x++) {
-                input->at(sampleStart + y * widthImg + x) = (uint8_t) inputImage.pixelColor(x,y).red();
-                (*output)[sampleStart + y * widthImg + x] = (uint8_t) outputImage.pixelColor(x,y).red();
+                input->at(sampleStart + y * widthImg + x) = (uint8_t) inputImage->pixelColor(x,y).red();
+                (*output)[sampleStart + y * widthImg + x] = (uint8_t) outputImage->pixelColor(x,y).red();
             }
         }
     };
@@ -112,5 +116,9 @@ Dataset StageTwoDataset::generateDataset() {
     //qDebug() << ".";
     sampleIdx++;
 
-    return Dataset(inputImage, outputImage, board);
+    QImage tmpInp = inputImage->copy();
+    delete inputImage;
+    QImage tmpOut = outputImage->copy();
+    delete outputImage;
+    return Dataset(tmpInp, tmpOut, board);
 }

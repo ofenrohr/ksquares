@@ -26,8 +26,8 @@ Dataset TrainingSequenceDataset::generateDataset() {
     //qDebug() << "Training Sequence Dataset";
     getSocket();
     // create data
-    QList<QImage> inputSeqData;
-    QList<QImage> targetSeqData;
+    QList<QImage*> inputSeqData;
+    QList<QImage*> targetSeqData;
     KSquaresAi::Ptr ai = KSquaresAi::Ptr(new aiEasyMediumHard(0, width, height, 2));
     Board board(2, width, height);
     aiBoard::Ptr aiboard(new aiBoard(&board));
@@ -44,7 +44,7 @@ Dataset TrainingSequenceDataset::generateDataset() {
         QList<int> targetLines;
         targetLines.clear();
         targetLines.append(line);
-        QImage targetImg = MLImageGenerator::generateOutputImage(aiboard, targetLines, false);
+        QImage *targetImg = MLImageGenerator::generateOutputImage(aiboard, targetLines, false);
         targetSeqData.append(targetImg);
     }
 
@@ -66,7 +66,19 @@ Dataset TrainingSequenceDataset::generateDataset() {
         sampleIdx++;
     }
 
-    return Dataset(inputSeqData, targetSeqData, aiboard);
+    QList<QImage> tmpInpSeq;
+    QList<QImage> tmpOutSeq;
+    for (QImage *tmp : inputSeqData) {
+        tmpInpSeq.append(tmp->copy());
+        delete tmp;
+    }
+    for (QImage *tmp : targetSeqData) {
+        tmpOutSeq.append(tmp->copy());
+        delete tmp;
+    }
+    inputSeqData.clear();
+    targetSeqData.clear();
+    return Dataset(tmpInpSeq, tmpOutSeq, aiboard);
     //return ret;
 }
 

@@ -8,6 +8,16 @@
 #include "testutils.h"
 
 void testutils::executeAi(QList<int> testAIs, Board *board, int player, std::string name, QList<int> expectedLines) {
+    QList<KSquaresAi::Ptr> ais;
+    for (int i : testAIs) {
+        aiController aic(player, 1, board->width(), board->height(), i);
+        KSquaresAi::Ptr ai = aic.getAi();
+        ais.append(ai);
+    }
+    executeAi(ais, board, player, name, expectedLines);
+}
+
+void testutils::executeAi(QList<KSquaresAi::Ptr> testAIs, Board *board, int player, std::string name, QList<int> expectedLines) {
     // open the file
     QString qname = QString::fromStdString(name);
     std::string filename = "test-" + name + ".log";
@@ -35,9 +45,7 @@ void testutils::executeAi(QList<int> testAIs, Board *board, int player, std::str
     summary << "expected output:" << aiFunctions::linelistToString(expectedLines, aiFunctions::toLinesSize(board->width(), board->height()), board->width(), board->height()) << "\n\n";
 
     //for (int i = 0; i <= 2; i++) {
-    for (int i : testAIs) {
-        aiController aic(player, 1, board->width(), board->height(), i);
-        KSquaresAi::Ptr ai = aic.getAi();
+    for (KSquaresAi::Ptr ai: testAIs) {
         if (!ai->enabled())
             continue;
         else

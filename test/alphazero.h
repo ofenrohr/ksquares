@@ -12,6 +12,8 @@ class alphazero : public QObject {
 Q_OBJECT
 private slots:
     void testAlphaZero001();
+    void testAlphaZero002();
+    void testAlphaZero003();
 };
 
 
