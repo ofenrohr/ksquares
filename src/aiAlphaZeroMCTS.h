@@ -51,7 +51,7 @@ namespace AlphaDots {
          * @return true if there was no error, false otherwise
          */
         bool predictPolicyValue(const AlphaZeroMCTSNode::Ptr &parentNode, const aiBoard::Ptr &board,
-                                const QImage *inputImage);
+                                const QImage &inputImage);
 
         void applyDirichletNoiseToChildren(const AlphaZeroMCTSNode::Ptr &parentNode, double alpha);
 
@@ -88,8 +88,6 @@ namespace AlphaDots {
         aiBoard::Ptr board;
         /// last returned line
         int lastLine;
-        /// reusable protobuf message
-        DotsAndBoxesImage pbimg;
 
         // model server
         int modelServerPort;

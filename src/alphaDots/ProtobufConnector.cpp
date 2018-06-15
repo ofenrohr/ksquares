@@ -30,7 +30,7 @@ ProtobufConnector::ProtobufConnector() :
     cachedModelList.clear();
 }
 
-DotsAndBoxesImage ProtobufConnector::dotsAndBoxesImageToProtobuf(const QImage *img) {
+DotsAndBoxesImage ProtobufConnector::dotsAndBoxesImageToProtobuf(const QImage &img) {
     DotsAndBoxesImage ret;
 
     copyDataToProtobuf(&ret, img);
@@ -38,55 +38,59 @@ DotsAndBoxesImage ProtobufConnector::dotsAndBoxesImageToProtobuf(const QImage *i
     return ret;
 }
 
-void ProtobufConnector::copyDataToProtobuf(DotsAndBoxesImage *pb, const QImage *img) {
-    pb->set_width(img->width());
-    pb->set_height(img->height());
-    bool sizeMatch = pb->pixels_size() == img->height() * img->width();
+void ProtobufConnector::copyDataToProtobuf(DotsAndBoxesImage *pb, const QImage &img) {
+
+    pb->set_width(img.width());
+    pb->set_height(img.height());
+    bool sizeMatch = pb->pixels_size() == img.height()*img.width();
     if (!sizeMatch) {
         pb->clear_pixels();
     }
-    assert(img->format() == QImage::Format_ARGB32);
-    for (int y = 0; y < img->height(); y++) {
-        QRgb *scanline = (QRgb *) img->scanLine(y);
-        for (int x = 0; x < img->width(); x++) {
-            QRgb pixel = (QRgb) scanline[x];
+    assert(img.format() == QImage::Format_ARGB32);
+    //const uchar *bits = img.bits();
+    int i = 0;
+    for (int y = 0; y < img.height(); y++) {
+        //const uchar *scanline = img.constScanLine(y);
+        for (int x = 0; x < img.width(); x++) {
+            //QRgb *pixel = (QRgb*) scanline[x];
             //const QRgb *pixel = (const QRgb*) bits[i++];
             if (sizeMatch) {
-                pb->set_pixels(y*img->width()+x, qRed(pixel));
-                //pb->set_pixels(y*img->width()+x, img->pixelColor(x, y).red());
+                //pb->set_pixels(y*img.width()+x, qRed(*pixel));
+                pb->set_pixels(y*img.width()+x, img.pixelColor(x, y).red());
             } else {
-                pb->add_pixels(qRed(pixel));//img.pixelColor(x, y).red());
-                //pb->add_pixels(img->pixelColor(x, y).red());
+                //pb->add_pixels(qRed(*pixel));//img.pixelColor(x, y).red());
+                pb->add_pixels(img.pixelColor(x, y).red());
             }
         }
     }
+
 }
 
-TrainingExample ProtobufConnector::trainingExampleToProtobuf(QImage *inp, QImage *outp) {
+TrainingExample ProtobufConnector::trainingExampleToProtobuf(QImage inp, QImage outp) {
     TrainingExample ret;
 
-    ret.set_width(inp->width());
-    ret.set_height(inp->height());
+    ret.set_width(inp.width());
+    ret.set_height(inp.height());
 
-    for (int y = 0; y < inp->height(); y++) {
-        for (int x = 0; x < inp->width(); x++) {
-            ret.add_input(inp->pixelColor(x,y).red());
-            ret.add_output(outp->pixelColor(x,y).red());
+    for (int y = 0; y < inp.height(); y++) {
+        for (int x = 0; x < inp.width(); x++) {
+            ret.add_input(inp.pixelColor(x,y).red());
+            ret.add_output(outp.pixelColor(x,y).red());
         }
     }
 
     return ret;
 }
 
-GameSequence ProtobufConnector::gameSequenceToProtobuf(QList<QImage*> seq) {
+GameSequence ProtobufConnector::gameSequenceToProtobuf(QList<QImage> seq) {
     GameSequence ret;
 
     if (seq.count() <= 0) {
         return ret;
     }
 
-    int w = seq[0]->width();
-    int h = seq[0]->height();
+    int w = seq[0].width();
+    int h = seq[0].height();
 
     ret.set_width(w);
     ret.set_height(h);
@@ -97,28 +101,28 @@ GameSequence ProtobufConnector::gameSequenceToProtobuf(QList<QImage*> seq) {
         frame->set_height(h);
         for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
-                frame->add_input(seq[i]->pixelColor(x, y).red());
+                frame->add_input(seq[i].pixelColor(x, y).red());
             }
         }
     }
     return ret;
 }
 
-GameSequence ProtobufConnector::gameSequenceToProtobuf(QList<QImage*> inputSeq, QList<QImage*> targetSeq) {
+GameSequence ProtobufConnector::gameSequenceToProtobuf(QList<QImage> inputSeq, QList<QImage> targetSeq) {
     GameSequence ret;
 
     if (inputSeq.count() != targetSeq.count() ||
         inputSeq.count() <= 0 ||
         targetSeq.count() <= 0 ||
-        inputSeq[0]->width() != targetSeq[0]->width() ||
-        inputSeq[0]->height() != targetSeq[0]->height()
+        inputSeq[0].width() != targetSeq[0].width() ||
+        inputSeq[0].height() != targetSeq[0].height()
     ) {
         qDebug() << "WARNING: invalid data!";
         return ret;
     }
 
-    int w = inputSeq[0]->width();
-    int h = inputSeq[0]->height();
+    int w = inputSeq[0].width();
+    int h = inputSeq[0].height();
 
     ret.set_width(w);
     ret.set_height(h);
@@ -129,8 +133,8 @@ GameSequence ProtobufConnector::gameSequenceToProtobuf(QList<QImage*> inputSeq, 
         frame->set_height(h);
         for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
-                frame->add_input(inputSeq[i]->pixelColor(x, y).red());
-                frame->add_output(targetSeq[i]->pixelColor(x, y).red());
+                frame->add_input(inputSeq[i].pixelColor(x, y).red());
+                frame->add_output(targetSeq[i].pixelColor(x, y).red());
             }
         }
     }
@@ -138,20 +142,20 @@ GameSequence ProtobufConnector::gameSequenceToProtobuf(QList<QImage*> inputSeq, 
     return ret;
 }
 
-QImage *ProtobufConnector::fromProtobuf(std::string msg) {
+QImage ProtobufConnector::fromProtobuf(std::string msg) {
     DotsAndBoxesImage img;
     img.ParseFromString(msg);
-    QImage *ret = new QImage(img.width(), img.height(), QImage::Format_ARGB32);
+    QImage ret(img.width(), img.height(), QImage::Format_ARGB32);
     for (int i = 0; i < img.width() * img.height(); i++) {
         int c = img.pixels().Get(i);
         int x = i % img.width();
         int y = i / img.width();
-        ret->setPixel(x, y, qRgb(c,c,c));
+        ret.setPixel(x, y, qRgb(c,c,c));
     }
     return ret;
 }
 
-QList<ModelInfo> ProtobufConnector::getModelList() {
+QList<ModelInfo> ProtobufConnector::getModelList(bool useLocking) {
     QMutexLocker locker(&modelListMutex);
     if (!cachedModelList.isEmpty()) {
         return cachedModelList;
@@ -204,7 +208,7 @@ QList<ModelInfo> ProtobufConnector::getModelList() {
 
 ModelInfo ProtobufConnector::getModelByName(QString name) {
     QMutexLocker locker(&modelListMutex);
-    QList<ModelInfo> modelList = getModelList();
+    QList<ModelInfo> modelList = getModelList(true);
     for (auto model : modelList) {
         if (model.name() == name) {
             return model;
@@ -266,8 +270,10 @@ std::string ProtobufConnector::recvString(zmq::socket_t &socket, bool *ok) {
     return rpl;
 }
 
-PolicyValueData ProtobufConnector::batchPredict(zmq::socket_t &socket, QImage *inputimg) {
+PolicyValueData ProtobufConnector::batchPredict(zmq::socket_t &socket, QImage &inputimg) {
     bool debug = ModelManager::getInstance().getDebug();
+
+    //DotsAndBoxesImage img = ProtobufConnector::dotsAndBoxesImageToProtobuf(inputimg);
 
     // wait for previous batch to finish...
     while (ProtobufConnector::batchPredictionState != 0) {
@@ -275,6 +281,23 @@ PolicyValueData ProtobufConnector::batchPredict(zmq::socket_t &socket, QImage *i
     }
 
     batchImgMutex.lock();
+    /*
+    if (ProtobufConnector::batchCnt == 0) {
+        ProtobufConnector::firstImgInBatch = img;
+    } else {
+        // go through the linked list to the last element
+        DotsAndBoxesImage *tmp = firstImgInBatch;
+        while (tmp->has_nextimage()) {
+            tmp = tmp->mutable_nextimage();
+        }
+        // copy new element
+        auto *imgCpy = new DotsAndBoxesImage();
+        imgCpy->CopyFrom(img);
+        // append new element
+        tmp->set_allocated_nextimage(imgCpy);
+        assert(tmp->has_nextimage());
+    }
+     */
     int myIdx = batchCnt;
 
     copyDataToProtobuf(requestBatch[myIdx], inputimg);

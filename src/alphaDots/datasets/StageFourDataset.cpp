@@ -138,10 +138,10 @@ Dataset StageFourDataset::generateDataset() {
     }
 
     // generate input image
-    QImage *inputImage = MLImageGenerator::generateInputImage(board);
+    QImage inputImage = MLImageGenerator::generateInputImage(board);
     // output image is generated with AlphaZero MCTS
     int alphaZeroLine = -1;
-    QImage *outputImage = MLImageGenerator::generateOutputImage(board, alphaZeroAi, &alphaZeroLine);
+    QImage outputImage = MLImageGenerator::generateOutputImage(board, alphaZeroAi, &alphaZeroLine);
     board->doMove(alphaZeroLine);
 
     // calculate value
@@ -162,11 +162,7 @@ Dataset StageFourDataset::generateDataset() {
         for (const auto &l: extraLines) {
             board->undoMove(l);
         }
-        QImage tmpInputImg = inputImage->copy();
-        delete inputImage;
-        QImage tmpOutputImg = outputImage->copy();
-        delete outputImage;
-        return Dataset(tmpInputImg, tmpOutputImg, val, board);
+        return Dataset(inputImage, outputImage, val, board);
     }
 
     // add to data
@@ -178,8 +174,8 @@ Dataset StageFourDataset::generateDataset() {
         //qDebug() << "sampleStart: " << sampleStart;
         for (int y = 0; y < heightImg; y++) {
             for (int x = 0; x < widthImg; x++) {
-                input->at(sampleStart + y * widthImg + x) = (uint8_t) inputImage->pixelColor(x,y).red();
-                (*policy)[sampleStart + y * widthImg + x] = (uint8_t) outputImage->pixelColor(x,y).red();
+                input->at(sampleStart + y * widthImg + x) = (uint8_t) inputImage.pixelColor(x,y).red();
+                (*policy)[sampleStart + y * widthImg + x] = (uint8_t) outputImage.pixelColor(x,y).red();
                 (*value)[valueSampleStart] = val;
             }
         }
@@ -190,9 +186,5 @@ Dataset StageFourDataset::generateDataset() {
     //qDebug() << ".";
     sampleIdx++;
 
-    QImage tmpInputImg = inputImage->copy();
-    delete inputImage;
-    QImage tmpOutputImg = outputImage->copy();
-    delete outputImage;
-    return Dataset(tmpInputImg, tmpOutputImg, val, board);
+    return Dataset(inputImage, outputImage, val, board);
 }

@@ -49,9 +49,6 @@ class aiConvNet : public KSquaresAi {
 
         zmq::context_t context;//(1);
         zmq::socket_t socket;//(context, ZMQ_REQ);
-
-		/// reuse protobuf message
-		AlphaDots::DotsAndBoxesImage pbimg;
 };
 
 

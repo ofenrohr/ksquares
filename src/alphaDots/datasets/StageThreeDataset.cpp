@@ -104,8 +104,8 @@ Dataset StageThreeDataset::generateDataset() {
     int currentPlayer = 1 - board->playerId;
 
     // generate images
-    QImage *inputImage = MLImageGenerator::generateInputImage(board);
-    QImage *outputImage = MLImageGenerator::generateOutputImage(board, ai);
+    QImage inputImage = MLImageGenerator::generateInputImage(board);
+    QImage outputImage = MLImageGenerator::generateOutputImage(board, ai);
 
     // calculate value
     double val = 0;
@@ -126,11 +126,7 @@ Dataset StageThreeDataset::generateDataset() {
         for (const auto &line : extraLines) {
             board->undoMove(line);
         }
-        QImage tmpInputImg = inputImage->copy();
-        delete inputImage;
-        QImage tmpOutputImg = outputImage->copy();
-        delete outputImage;
-        return Dataset(tmpInputImg, tmpOutputImg, val, board);
+        return Dataset(inputImage, outputImage, val, board);
     }
 
     // add to data
@@ -142,8 +138,8 @@ Dataset StageThreeDataset::generateDataset() {
         //qDebug() << "sampleStart: " << sampleStart;
         for (int y = 0; y < heightImg; y++) {
             for (int x = 0; x < widthImg; x++) {
-                input->at(sampleStart + y * widthImg + x) = (uint8_t) inputImage->pixelColor(x,y).red();
-                (*policy)[sampleStart + y * widthImg + x] = (uint8_t) outputImage->pixelColor(x,y).red();
+                input->at(sampleStart + y * widthImg + x) = (uint8_t) inputImage.pixelColor(x,y).red();
+                (*policy)[sampleStart + y * widthImg + x] = (uint8_t) outputImage.pixelColor(x,y).red();
                 (*value)[valueSampleStart] = val;
             }
         }
@@ -154,9 +150,5 @@ Dataset StageThreeDataset::generateDataset() {
     //qDebug() << ".";
     sampleIdx++;
 
-    QImage tmpInputImg = inputImage->copy();
-    delete inputImage;
-    QImage tmpOutputImg = outputImage->copy();
-    delete outputImage;
-    return Dataset(tmpInputImg, tmpOutputImg, val, board);
+    return Dataset(inputImage, outputImage, val, board);
 }

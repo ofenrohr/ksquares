@@ -26,12 +26,8 @@ Dataset FirstTryDataset::generateDataset() {
     MLDataGenerator::makeAiMoves(board, ai, 20);
 
     // generate images
-    QImage *inputImageP = MLImageGenerator::generateInputImage(board);
-    QImage inputImage = inputImageP->copy();
-    delete inputImageP;
-    QImage *outputImageP = MLImageGenerator::generateOutputImage(board, ai);
-    QImage outputImage = outputImageP->copy();
-    delete outputImageP;
+    QImage inputImage = MLImageGenerator::generateInputImage(board);
+    QImage outputImage = MLImageGenerator::generateOutputImage(board, ai);
 
     // save boards
     QUuid id = QUuid::createUuid();

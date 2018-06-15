@@ -72,10 +72,10 @@ Dataset BasicStrategyDataset::generateDataset() {
     }
 
     // generate images
-    QImage *inputImage = MLImageGenerator::generateInputImage(board);
+    QImage inputImage = MLImageGenerator::generateInputImage(board);
 
     QList<int> safeLines = ai->safeMoves(board->linesSize, board->lines);
-    QImage *outputImage;
+    QImage outputImage;
     if (safeLines.count() > 0 && !capture) {
         outputImage = MLImageGenerator::generateOutputImage(board, safeLines);
     } else {
@@ -83,11 +83,7 @@ Dataset BasicStrategyDataset::generateDataset() {
     }
 
     if (isGUI) {
-        QImage tmpInputImg = inputImage->copy();
-        delete inputImage;
-        QImage tmpOutputImg = outputImage->copy();
-        delete outputImage;
-        return Dataset(tmpInputImg, tmpOutputImg, board);
+        return Dataset(inputImage, outputImage, board);
     }
 
     // send it to the python dataset converter
@@ -106,10 +102,6 @@ Dataset BasicStrategyDataset::generateDataset() {
     //qDebug() << ".";
     sampleIdx++;
 
-    QImage tmpInputImg = inputImage->copy();
-    delete inputImage;
-    QImage tmpOutputImg = outputImage->copy();
-    delete outputImage;
-    return Dataset(tmpInputImg, tmpOutputImg, board);
+    return Dataset(inputImage, outputImage, board);
 }
 
