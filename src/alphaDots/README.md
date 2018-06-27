@@ -40,7 +40,7 @@ All dataset generators accept the following optional command line arguments:
 * `--dataset-height` Board height in boxes
 * `--threads` Number of threads
 
-![FirstTry data generator](ksquares-show-generate-1.png)
+![*FirstTry data generator*](ksquares-show-generate-1.png)
 
 [StageOne / StageTwo data generator](ksquares-show-generate-2.png)
 
@@ -71,9 +71,9 @@ ksquares --generate 1000 --dataset-generator firstTry --dataset-dest firstTryDat
 ../alphaDots/datasetConverter/convert.py --dataset-dir firstTryDataset --output-file firstTry.npz --debug
 ```
 
-![input image](input.png)
+![*input image*](input.png)
 
-![output image](output.png)
+![*output image*](output.png)
 
 ### Stage One
 
@@ -103,9 +103,9 @@ viable lines in one target image.
 ksquares --generate 1000 --dataset-generator basicStrategy --dataset-width 7 --dataset-height 5
 ```
 
-![Basic Strategy input image](basicStrategy_input.png)
+![*Basic Strategy input image*](basicStrategy_input.png)
 
-![Basic Strategy output image](basicStrategy_output.png)
+![*Basic Strategy output image*](basicStrategy_output.png)
 
 
 ### [Sequence](SequenceData.html)
@@ -127,7 +127,7 @@ This dataset is made of full Dots and Boxes games, played by two Hard AIs.
 ksquares --generate 1000 --dataset-generator LSTM
 ```
 
-![sequence data](test2.gif)
+![*sequence data*](test2.gif)
 
 ### Training Sequence
 
@@ -150,7 +150,9 @@ ksquares --generate 1000 --dataset-generator StageTwo --threads 8
 
 ### Stage Three
 
-Data is generated like in Stage Two and additionally offers a value output for
+Data is generated like in Stage Two but the policy is not saved as an image but as a
+vector of lines.
+StageThree additionally offers a value output for
 models like AlphaZeroV6 and up. The value is designed to approximate the chance 
 of winning the game where 1 means winning and -1 means losing the game. It is
 calculated by playing the game to its end and then evaluating the number of 
@@ -193,7 +195,7 @@ distribution is scaled according to the number of lines so that most samples are
 in the middle of the game. The following figure shows a histogram for 1.000.000
 samples on a 3 x 3 board, which has 24 lines:
 
-![Histogram of moves left on a 3x3 board for 1.000.000 samples](movesLeftDist.png)
+![*Histogram of moves left on a 3x3 board for 1.000.000 samples*](movesLeftDist.png)
 
 The value is calculated as follows:
 
@@ -204,7 +206,7 @@ value = (OwnBoxes - EnemyBoxes) / TotalBoxes
 Create a Stage Four dataset with one of the following commands:
 
 ```
-ksquares --generate 10 --dataset-generator StageFour --threads 8 --gpu
+ksquares --generate 16 --dataset-generator StageFour --threads 8 --gpu
 ksquares --generate 1000 --dataset-generator StageFourNoMCTS --threads 8
 ```
 
@@ -217,7 +219,7 @@ The StageFour dataset generator offers two hyperparameters:
 * `--hp-mean-scale` moves the mean value of the moves left distribution.
   The default is set to 0.5, so that the most examples are in the middle.
   
-![Histogram of moves with hp-sigma-scale = 0.2 and hp-mean-scale = 0.6](movesLeftDist2.png)
+![*Histogram of moves left with hp-sigma-scale = 0.2 and hp-mean-scale = 0.6*](movesLeftDist2.png)
 
 ## Model evaluation
 
@@ -270,7 +272,7 @@ AlphaZeroV5|300|90|75|45|0
 AlphaZeroV7|300|96|80|46|0
 
 ### Screenshot
-![slow model evaluation with KSquares](ksquares_model_evaluation.png)
+![*slow model evaluation with KSquares*](ksquares_model_evaluation.png)
 
 ## Self-Play
 
@@ -350,4 +352,4 @@ after it was created with the [IPython Notebook](AlphaZeroV11.html).
 
 [ksquares --self-play and system performance monitoring](ksquares-self-play.png)
 
-![ksquares --self-play without MCTS](ksquares-self-play-nomcts.png)
+![*ksquares --self-play without MCTS*](ksquares-self-play-nomcts.png)

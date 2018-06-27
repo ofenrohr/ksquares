@@ -183,7 +183,7 @@ KSquaresAi::Ptr aiController::getAi()
 				QCoreApplication::exit(1);
 			}
 			if (ai.isNull())
-				ai = KSquaresAi::Ptr(new AlphaDots::aiAlphaZeroMCTS(playerId, maxPlayerId, width, height, aiThinkTime));
+				ai = KSquaresAi::Ptr(new AlphaDots::aiAlphaZeroMCTS(playerId, maxPlayerId, width, height, aiThinkTime, alphaDotsModel));
 		break;
 	}
 	return ai;

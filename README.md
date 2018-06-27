@@ -1,7 +1,7 @@
 # KSquares
 KSquares is an implementation of the game [squares](http://en.wikipedia.org/wiki/Dots_and_Boxes)
 
-![KSquares screenshot](ksquares.png)
+![*KSquares screenshot*](ksquares.png)
 
 ## AI opponents
 
