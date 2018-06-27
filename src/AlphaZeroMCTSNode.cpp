@@ -97,4 +97,6 @@ void AlphaZeroMCTSNode::saveAsDot(QString &path) {
         stream << toDotString();
         stream << "}";
     }
+    graph.flush();
+    graph.close();
 }

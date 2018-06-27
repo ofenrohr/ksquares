@@ -225,8 +225,24 @@ int aiAlphaZeroMCTS::mcts() {
     //QFile graph(i18n("/tmp/AlphaZeroMCTS.") + QString::number(finishedIterations) + i18n(".dot"));
 
     if (debug) {
-        QString path = QObject::tr("/tmp/AlphaZeroMCTS.dot");
+        // write monte carlo tree to file
+        QString id = QString::number(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+        QString path = QObject::tr("/tmp/AlphaZeroMCTS") +
+                id +
+                QObject::tr(".dot");
         mctsRootNode->saveAsDot(path);
+
+        // write board to file
+        QString path2 = QObject::tr("/tmp/AlphaZeroMCTS") +
+                       id +
+                       QObject::tr(".txt");
+        QFile boardTxt(path2);
+        if (boardTxt.open(QIODevice::ReadWrite | QIODevice::Truncate | QIODevice::Text)) {
+            QTextStream stream(&boardTxt);
+            stream << boardToString(board);
+        }
+        boardTxt.flush();
+        boardTxt.close();
     }
 
     return line;
