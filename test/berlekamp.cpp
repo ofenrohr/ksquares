@@ -7,7 +7,7 @@ const int berlekamp::testAIs[] = {
     KSquares::AILevel::AI_HARD,
     KSquares::AILevel::AI_CONVNET
          */
-        KSquares::AILevel ::AI_MCTS_ALPHAZERO
+        KSquares::AILevel::AI_MCTS_ALPHAZERO
 };
 
 
@@ -19,32 +19,24 @@ void berlekamp::executeAi(Board *board, int player, QString name, QList<int> exp
         qDebug() << "error: Can't open file";
         return;
     }
-
     QString summaryStr;
     QTextStream summary(&summaryStr);
-
     summary << "Summary for " << name << ": \n";
     summary << "input board:" << board->toString() << "\n\n";
-
-    /*
-    Board tmp(board->getNumOfPlayers(), board->width(), board->height());
-    for (const auto &line : expectedLines) {
-        bool next, filled;
-        QList<int> completed;
-        tmp.addLine(line, &next, &filled, &completed);
-    }
-     */
     summary << "expected output:" << aiFunctions::linelistToString(expectedLines, aiFunctions::toLinesSize(board->width(), board->height()), board->width(), board->height()) << "\n\n";
 
-    //for (int i = 0; i <= 2; i++) {
     for (int i : testAIs) {
         aiController aic(player, 1, board->width(), board->height(), i);
         KSquaresAi::Ptr ai = aic.getAi();
-        if (!ai->enabled())
+        if (!ai->enabled()) {
             continue;
-        else
+        } else {
             qDebug() << "AI " << ai->getName() << " is enabled";
+        }
+        // execute ai
         int aiLine = ai->chooseLine(board->lines(), board->squares(), board->getLineHistory());
+
+        // log results
         if (expectedLines.contains(aiLine)) {
             summary << "PASS " << name << ": " << ai->getName() << "\n";
         } else {

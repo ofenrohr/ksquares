@@ -65,3 +65,88 @@ void alphazero::testAlphaZero003() {
 
     QVERIFY(c == NAN);
 }
+
+// execute all berlekamp tests
+void alphazero::testAlphaZero004() {
+    QList<QString> allNames;
+    QList<QString> boardPaths;
+    QList<QList<int>> allExpectedLines;
+
+    for (int i = 1; i <= 13; i++) {
+        boardPaths << tr(TESTBOARDPATH) + tr("/berlekamp-3.") + QString::number(i) + tr(".dbl");
+        allNames << tr("berlekamp-") + QString::number(i);
+    }
+
+    allExpectedLines << (QList<int>() << 16);
+    allExpectedLines << (QList<int>() << 17 << 21);
+    allExpectedLines << (QList<int>() << 7);
+    allExpectedLines << (QList<int>() << 12 << 22 << 23);
+    allExpectedLines << (QList<int>() << 0);
+    allExpectedLines << (QList<int>() << 7 << 10 << 19 << 22);
+    allExpectedLines << (QList<int>() << 9);
+    allExpectedLines << (QList<int>() << 0);
+    allExpectedLines << (QList<int>() << 0);
+    allExpectedLines << (QList<int>() << 11);
+    allExpectedLines << (QList<int>() << 2 << 20 << 21);
+    allExpectedLines << (QList<int>() << 15);
+    allExpectedLines << (QList<int>() << 17);
+
+    qDebug() << allNames.size() << allNames;
+    qDebug() << boardPaths.size() << boardPaths;
+    qDebug() << allExpectedLines.size() << allExpectedLines;
+    QVERIFY(boardPaths.size() == allExpectedLines.size());
+    QVERIFY(allExpectedLines.size() == allNames.size());
+
+    QString path = tr("alphazero-berlekamp.csv");
+    QFile resultFile(path);
+    QVERIFY(resultFile.open(QIODevice::ReadWrite | QIODevice::Truncate | QIODevice::Text));
+    QTextStream stream(&resultFile);
+
+    bool first = true;
+    for (const QString &name : allNames) {
+        if (first) {
+            first = false;
+        } else {
+            stream << tr(",");
+        }
+        stream << name;
+    }
+	stream << "\n";
+
+    first = true;
+    for (int testIdx = 0; testIdx < 13; testIdx++) {
+        // prepare test run
+        QString boardPath = boardPaths[testIdx];
+        QList<int> expectedLines = allExpectedLines[testIdx];
+        QString name = allNames[testIdx];
+
+        // load board
+        QList<int> lines;
+        QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+        QVERIFY(KSquaresIO::loadGame(boardPath, sGame.data(), &lines));
+        for (int line : lines) {
+            bool nextPlayer, boardFilled;
+            QList<int> completedSquares;
+            sGame->board()->addLine(line, &nextPlayer, &boardFilled, &completedSquares);
+        }
+
+        // execute ai
+        aiController aic(sGame->board()->currentPlayer(), 1, sGame->board()->width(), sGame->board()->height(),
+                         KSquares::AI_MCTS_ALPHAZERO, 5000, tr("AlphaZeroV12_INIT"));
+        int aiLine = aic.chooseLine(sGame->board()->lines(), sGame->board()->squares(), sGame->board()->getLineHistory());
+
+        // log result
+        if (first) {
+            first = false;
+        } else {
+            stream << tr(",");
+        }
+        stream << (expectedLines.contains(aiLine) ? "PASS" : "FAIL");
+        stream.flush();
+        resultFile.flush();
+
+        qDebug() << name << " -> " << (expectedLines.contains(aiLine) ? "PASS" : "FAIL");
+    }
+
+    resultFile.close();
+}
