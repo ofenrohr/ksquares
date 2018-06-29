@@ -97,7 +97,18 @@ void alphazero::testAlphaZero004() {
     QVERIFY(boardPaths.size() == allExpectedLines.size());
     QVERIFY(allExpectedLines.size() == allNames.size());
 
-    QString path = tr("alphazero-berlekamp.csv");
+    AlphaDots::aiAlphaZeroMCTS::setDebug(true);
+    AlphaDots::ModelManager::getInstance().allowGPU(true);
+
+    // try different hyperparameters
+    AlphaDots::aiAlphaZeroMCTS::C_puct = 4;
+
+    // prepare result table
+    QString modelName = tr("AlphaZeroV12_INIT");
+    QString id = QString::number(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+    QString C = QString::number(AlphaDots::aiAlphaZeroMCTS::C_puct, 'g', 1);
+    QString dir = QString::number(AlphaDots::aiAlphaZeroMCTS::dirichlet_alpha, 'g', 2);
+    QString path = tr("alphazero-") + modelName + tr("-C_") + C + tr("-dir_") + dir + tr("-berlekamp-") + id + tr(".csv");
     QFile resultFile(path);
     QVERIFY(resultFile.open(QIODevice::ReadWrite | QIODevice::Truncate | QIODevice::Text));
     QTextStream stream(&resultFile);
@@ -113,8 +124,9 @@ void alphazero::testAlphaZero004() {
     }
 	stream << "\n";
 
+    // run berlekamp tests
     first = true;
-    for (int testIdx = 0; testIdx < 13; testIdx++) {
+    for (int testIdx = 0; testIdx < allNames.size(); testIdx++) {
         // prepare test run
         QString boardPath = boardPaths[testIdx];
         QList<int> expectedLines = allExpectedLines[testIdx];
@@ -132,7 +144,7 @@ void alphazero::testAlphaZero004() {
 
         // execute ai
         aiController aic(sGame->board()->currentPlayer(), 1, sGame->board()->width(), sGame->board()->height(),
-                         KSquares::AI_MCTS_ALPHAZERO, 5000, tr("AlphaZeroV12_INIT"));
+                         KSquares::AI_MCTS_ALPHAZERO, 5000, modelName);
         int aiLine = aic.chooseLine(sGame->board()->lines(), sGame->board()->squares(), sGame->board()->getLineHistory());
 
         // log result
@@ -146,6 +158,11 @@ void alphazero::testAlphaZero004() {
         resultFile.flush();
 
         qDebug() << name << " -> " << (expectedLines.contains(aiLine) ? "PASS" : "FAIL");
+        qDebug() << "expected lines: " << expectedLines;
+        qDebug() << "chosen line: " << aiLine;
+
+        // stop process
+        AlphaDots::ModelManager::getInstance().stopAll();
     }
 
     resultFile.close();
