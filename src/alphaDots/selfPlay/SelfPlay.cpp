@@ -20,7 +20,7 @@ using namespace AlphaDots;
 
 SelfPlay::SelfPlay(QString datasetDest, int threads, QString &initialModelName, QString &targetModel,
                    int iterations, int gamesPerIteration, QString &logdir, int epochs, bool gpuTraining,
-                   DatasetType dataset, bool doUpload, QList<QPoint> boardSizes) :
+                   DatasetType dataset, bool doUpload, QList<QPoint> boardSizes, bool waitForTrainingToFinish) :
     KXmlGuiWindow(),
     m_view(new QWidget())
 {
@@ -32,6 +32,7 @@ SelfPlay::SelfPlay(QString datasetDest, int threads, QString &initialModelName, 
     threadCnt = threads;
     datasetType = dataset;
     upload = doUpload;
+    waitForTraining = waitForTrainingToFinish;
 
     currentModel = ProtobufConnector::getInstance().getModelByName(initialModelName);
     iteration = -1;
@@ -194,6 +195,16 @@ void SelfPlay::updateTrainingInfo() {
 }
 
 void SelfPlay::setupIteration() {
+    // wait for training to finish? TODO
+    if (waitForTraining && iteration >= 0) {
+        if (alphaZeroV10Training != nullptr) {
+            if (alphaZeroV10Training->isRunning()) {
+                QTimer::singleShot(1000, this, SLOT(setupIteration()));
+                return;
+            }
+        }
+    }
+
     iteration++;
     gamesCompleted = 0;
 
@@ -243,6 +254,7 @@ void SelfPlay::setupIteration() {
             default:
                 QMessageBox::critical(this, tr("Self-Play error"), tr("Selected dataset generator is not supported"));
                 QCoreApplication::quit();
+                return;
         }
 
         threadGenerators.append(gen);
@@ -377,4 +389,5 @@ void SelfPlay::finishIteration() {
     QFileInfo fi(ProtobufConnector::getInstance().getModelByName(targetModelName).path());
     trainingLogBasename = fi.baseName();
     QTimer::singleShot(100, this, SLOT(updateTrainingInfo()));
+
 }

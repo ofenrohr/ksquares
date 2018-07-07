@@ -18,7 +18,7 @@ PROTOBUF_GENERATE_CPP(ProtoSrcs ProtoHeaders ${protoMessages})
 file(GLOB alphaDotsSRCS ../src/alphaDots/*.cpp)
 file(GLOB alphaDotsModelEvaluationSRCS ../src/alphaDots/modelEvaluation/*.cpp)
 file(GLOB alphaDotsDatasetsSRCS ../src/alphaDots/datasets/*.cpp)
-file(GLOB alphaDotsAiEvalSRCS ../src/alphaDots/aiEvaluation/*.cpp)
+file(GLOB alphaDotsAiEvalSRCS ../src/alphaDots/selfPlay/*.cpp)
 
 message("blah")
 message(${alphaDotsAiEvalSRCS})

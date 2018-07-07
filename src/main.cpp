@@ -18,7 +18,7 @@
 #include <KDBusService>
 #include <QtWidgets/QMessageBox>
 #include <alphaDots/ModelManager.h>
-#include <alphaDots/aiEvaluation/SelfPlay.h>
+#include <alphaDots/selfPlay/SelfPlay.h>
 #include <alphaDots/ProtobufConnector.h>
 
 #include "ksquareswindow.h"
@@ -32,7 +32,7 @@
 static const char description[] =
     I18N_NOOP("Take it in turns to draw lines.\nIf you complete a squares, you get another go.");
 
-static const char version[] = "0.6";
+static const char version[] = "0.7";
 
 int main(int argc, char **argv)
 {
@@ -45,10 +45,10 @@ int main(int argc, char **argv)
     migrate.migrate();
     KLocalizedString::setApplicationDomain("ksquares");
     KAboutData about(i18n("ksquares"), i18n("KSquares"), QLatin1Literal(version), i18n(description),
-                     KAboutLicense::GPL, i18n("(C) 2006-2007 Matt Williams"));
-    about.addAuthor(i18n("Matt Williams"), i18n("Original creator and maintainer"), i18n("matt@milliams.com"), i18n("http://milliams.com"));
+                     KAboutLicense::GPL, i18n("(C) 2006-2018 Matt Williams, Tom Vincent Peters"));
+    about.addAuthor(i18n("Matt Williams"), i18n("Original creator"), i18n("matt@milliams.com"), i18n("http://milliams.com"));
     about.addCredit(i18n("Fela Winkelmolen"), i18n("Many patches and bugfixes"));
-    about.addCredit(i18n("Tom Vincent Peters"), i18n("Hard AI"));
+    about.addCredit(i18n("Tom Vincent Peters"), i18n("Various AIs, current maintainer"));
     about.setHomepage(i18n("http://games.kde.org/ksquares"));
 
     QCommandLineParser parser;
@@ -92,10 +92,18 @@ int main(int argc, char **argv)
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("hp-mcts-cpuct"), i18n("Hyperparameter: C_puct in AlphaZero MCTS, default: 10"), i18n("hp-mcts-cpuct")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("hp-mcts-dirichlet-alpha"), i18n("Hyperparameter: dirichlet alpha in AlphaZero MCTS, default: 0.03"), i18n("hp-mcts-dirichlet-alpha")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("board-sizes"), i18n("Board sizes available in self-play mode. Format AxB,CxD e.g. 5x4,4x4. Minimum: 2, Maximum 20"), i18n("board-sizes")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("wait-for-training"), i18n("Do not generate new training data while training is running.")));
 
     about.setupCommandLine(&parser);
     parser.process(app);
     about.processCommandLine(&parser);
+
+    if (parser.unknownOptionNames().size() > 0) {
+        QMessageBox::critical(nullptr, i18n("Error"), i18n("unkown command line arguments!"));
+        qDebug() << "ERROR: unkown command line arguments: " << parser.unknownOptionNames();
+        return 1;
+    }
+
     KDBusService service;
 
     app.setWindowIcon(QIcon::fromTheme(i18n("ksquares")));
@@ -379,6 +387,12 @@ int main(int argc, char **argv)
         }
     }
 
+    // wait for training to finish?
+    bool waitForTraining = false;
+    if (parser.isSet(i18n("wait-for-training"))) {
+        waitForTraining = true;
+    }
+
     // start things
     if (parser.isSet(i18n("demo"))) {
         KSquaresDemoWindow *demoWindow = new KSquaresDemoWindow;
@@ -427,7 +441,7 @@ int main(int argc, char **argv)
         if (!parser.isSet(i18n("dataset-generator"))) {
             datasetType = AlphaDots::StageFour;
         }
-        AlphaDots::SelfPlay *selfPlay = new AlphaDots::SelfPlay(datasetDest, threads, initialModelName, targetModelName, iterationCnt, iterationSize, logDest, epochs, gpuTraining, datasetType, upload, boardSizes);
+        AlphaDots::SelfPlay *selfPlay = new AlphaDots::SelfPlay(datasetDest, threads, initialModelName, targetModelName, iterationCnt, iterationSize, logDest, epochs, gpuTraining, datasetType, upload, boardSizes, waitForTraining);
         selfPlay->show();
     } else {
         KSquaresWindow *mainWindow = new KSquaresWindow;

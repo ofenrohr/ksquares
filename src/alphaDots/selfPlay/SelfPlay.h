@@ -20,15 +20,11 @@ namespace AlphaDots {
     public:
         SelfPlay(QString datasetDest, int threads, QString &initialModel, QString &targetModelName,
                  int iterations, int gamesPerIteration, QString &logdest, int epochs, bool gpuTraining,
-                 DatasetType dataset, bool doUpload, QList<QPoint> boardSizes);
+                 DatasetType dataset, bool doUpload, QList<QPoint> boardSizes, bool waitForTrainingToFinish);
 
         void initObject();
 
         void updateInfo();
-
-        void setupIteration();
-
-        void finishIteration();
 
     public slots:
         void recvProgress(int progress, int thread);
@@ -38,6 +34,10 @@ namespace AlphaDots {
         void trainingFinished();
 
         void updateTrainingInfo();
+
+        void setupIteration();
+
+        void finishIteration();
 
     private:
         QWidget *m_view;
@@ -52,6 +52,7 @@ namespace AlphaDots {
         QString logdest;
         DatasetType datasetType;
         bool upload;
+        bool waitForTraining;
 
         // current state infos
         ModelInfo currentModel;

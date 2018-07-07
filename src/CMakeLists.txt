@@ -65,8 +65,8 @@ set(ksquares_SRCS
 		AlphaZeroMCTSNode.cpp
 		alphaDots/datasets/StageThreeDataset.cpp
 		alphaDots/MLImageGenerator.cpp
-		alphaDots/aiEvaluation/SelfPlay.cpp
-		alphaDots/aiEvaluation/SelfPlayWorker.cpp
+		alphaDots/selfPlay/SelfPlay.cpp
+		alphaDots/selfPlay/SelfPlayWorker.cpp
 		alphaDots/datasets/StageFourDataset.cpp
         alphaDots/ProtobufBatch.cpp alphaDots/ProtobufBatch.h)
 
@@ -86,7 +86,7 @@ ki18n_wrap_ui(ksquares_SRCS
 		prefs_display.ui
 		alphaDots/mldataview.ui
 		alphaDots/modelEvaluation/ModelEvaluation.ui
-        alphaDots/aiEvaluation/SelfPlayForm.ui
+        alphaDots/selfPlay/SelfPlayForm.ui
 )
 
 kconfig_add_kcfg_files(ksquares_SRCS GENERATE_MOC settings.kcfgc)
