@@ -104,7 +104,7 @@ void alphazero::testAlphaZero004() {
     AlphaDots::aiAlphaZeroMCTS::C_puct = 4;
 
     // prepare result table
-    QString modelName = tr("AlphaZeroV12_SP");
+    QString modelName = tr("AlphaZeroV13_SP");
     QString id = QString::number(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
     QString C = QString::number(AlphaDots::aiAlphaZeroMCTS::C_puct, 'g', 1);
     QString dir = QString::number(AlphaDots::aiAlphaZeroMCTS::dirichlet_alpha, 'g', 2);

@@ -182,8 +182,9 @@ Data is generated as follows:
 * Afterwards, the corresponding output data (i.e. the next move) is calculated 
   by AlphaZero MCTS, which uses a configurable neural network. If the dataset
   generator is configured without MCTS, KSquare's Hard AI will be used instead.
-* Finally, the game is played to its end by KSquare's Hard AI, so that the
+* (no MCTS) Finally, the game is played to its end by KSquare's Hard AI, so that the
   game's value can be calculated.
+* (with MCTS) The value is taken from the selected child in the Monte-Carlo tree.
 
 In summary the Stage Four dataset generator uses AlphaZero MCTS for exactly one
 move to minimize computational cost while still providing means to improve upon
@@ -197,11 +198,13 @@ samples on a 3 x 3 board, which has 24 lines:
 
 ![*Histogram of moves left on a 3x3 board for 1.000.000 samples*](movesLeftDist.png)
 
-The value is calculated as follows:
+The value from the selected child node is used. In case of not using MCTS, the 
+value is calculated as follows:
 
 ```
 value = (OwnBoxes - EnemyBoxes) / TotalBoxes
 ```
+
 
 Create a Stage Four dataset with one of the following commands:
 
