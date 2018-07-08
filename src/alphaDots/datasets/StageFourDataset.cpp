@@ -144,9 +144,11 @@ Dataset StageFourDataset::generateDataset() {
 
     // create mcts ai with correct player id (important for correct value calculation in mcts)
     KSquaresAi::Ptr alphaZeroAi;
+    aiAlphaZeroMCTS::Ptr realAlphaZeroAi;
     if (useMCTSai) {
-        alphaZeroAi = KSquaresAi::Ptr(new aiAlphaZeroMCTS(currentPlayer, 1, width, height, 5000,
+        realAlphaZeroAi = aiAlphaZeroMCTS::Ptr(new aiAlphaZeroMCTS(currentPlayer, 1, width, height, 5000,
                                                           model));// aiEasyMediumHard(0, width, height, 2));
+        alphaZeroAi = realAlphaZeroAi;
     } else {
         alphaZeroAi = fastAi;
     }
@@ -160,22 +162,29 @@ Dataset StageFourDataset::generateDataset() {
 
     // calculate value
     double val = 0;
-    QList<int> extraLines;
-    for (int i = 1; i < movesLeft; i++) {
-        int line = fastAi->chooseLine(board->linesAsList(), board->squareOwners, QList<Board::Move_t>());
-        board->doMove(line);
-        extraLines.prepend(line);
-    }
-    for (const auto &owner: board->squareOwners) {
-        val += owner == currentPlayer ? 1 : -1;
-    }
-    val /= board->squareOwners.size();
-
-    // return gui dataset
-    if (isGUI) {
+    if (useMCTSai) {
+        val = realAlphaZeroAi->lineValue();
+    } else {
+        QList<int> extraLines;
+        // finish game with hard ai
+        for (int i = 1; i < movesLeft; i++) {
+            int line = fastAi->chooseLine(board->linesAsList(), board->squareOwners, QList<Board::Move_t>());
+            board->doMove(line);
+            extraLines.prepend(line);
+        }
+        // calculate value
+        for (const auto &owner: board->squareOwners) {
+            val += owner == currentPlayer ? 1 : -1;
+        }
+        val /= board->squareOwners.size();
+        // undo extra moves
         for (const auto &l: extraLines) {
             board->undoMove(l);
         }
+    }
+
+    // return gui dataset
+    if (isGUI) {
         return Dataset(inputImage, outputImage, val, board);
     }
 

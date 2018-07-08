@@ -208,6 +208,7 @@ int aiAlphaZeroMCTS::mcts() {
         if (pi_a_given_s0 > bestProbability) {
             bestProbability = pi_a_given_s0;
             line = child->move;
+            lineVal = child->value;
             //child->value = pi_a_given_s0;
         }
         // select by best value

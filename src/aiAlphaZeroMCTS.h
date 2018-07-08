@@ -17,6 +17,7 @@
 namespace AlphaDots {
     class aiAlphaZeroMCTS : public KSquaresAi {
     public:
+        typedef QSharedPointer<aiAlphaZeroMCTS> Ptr;
         //==========================
         // KSquaresAi interface stuff
         //==========================
@@ -57,6 +58,12 @@ namespace AlphaDots {
 
         static void setDebug(bool mode) {debug=mode;}
 
+        /**
+         * Returns the value of the line chosen with mcts().
+         * @return mcts node value of the chosen line.
+         */
+        double lineValue() {return lineVal;}
+
         // Hyperparameters
         static double C_puct;// = 10.0;
         static double dirichlet_alpha;// = 0.03;
@@ -94,6 +101,8 @@ namespace AlphaDots {
         aiBoard::Ptr board;
         /// last returned line
         int lastLine;
+        /// last line value
+        double lineVal;
 
         // model server
         int modelServerPort;
