@@ -270,31 +270,12 @@ std::string ProtobufConnector::recvString(zmq::socket_t &socket, bool *ok) {
 PolicyValueData ProtobufConnector::batchPredict(zmq::socket_t &socket, QImage &inputimg) {
     bool debug = ModelManager::getInstance().getDebug();
 
-    //DotsAndBoxesImage img = ProtobufConnector::dotsAndBoxesImageToProtobuf(inputimg);
-
     // wait for previous batch to finish...
     while (ProtobufConnector::batchPredictionState != 0) {
         QThread::usleep(10);
     }
 
     batchImgMutex.lock();
-    /*
-    if (ProtobufConnector::batchCnt == 0) {
-        ProtobufConnector::firstImgInBatch = img;
-    } else {
-        // go through the linked list to the last element
-        DotsAndBoxesImage *tmp = firstImgInBatch;
-        while (tmp->has_nextimage()) {
-            tmp = tmp->mutable_nextimage();
-        }
-        // copy new element
-        auto *imgCpy = new DotsAndBoxesImage();
-        imgCpy->CopyFrom(img);
-        // append new element
-        tmp->set_allocated_nextimage(imgCpy);
-        assert(tmp->has_nextimage());
-    }
-     */
     int myIdx = batchCnt;
 
     copyDataToProtobuf(requestBatch[myIdx], inputimg);

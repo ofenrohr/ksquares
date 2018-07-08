@@ -7,6 +7,7 @@
 
 #include <cmath>
 #include <chrono>
+#include <QFile>
 #include <alphaDots/ProtobufConnector.h>
 #include <PolicyValueData.pb.h>
 #include <alphaDots/ModelManager.h>
