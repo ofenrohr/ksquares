@@ -104,7 +104,7 @@ void alphazero::testAlphaZero004() {
     AlphaDots::aiAlphaZeroMCTS::C_puct = 4;
 
     // prepare result table
-    QString modelName = tr("AlphaZeroV13_SP");
+    QString modelName = tr("AlphaZeroV13");
     QString id = QString::number(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
     QString C = QString::number(AlphaDots::aiAlphaZeroMCTS::C_puct, 'g', 1);
     QString dir = QString::number(AlphaDots::aiAlphaZeroMCTS::dirichlet_alpha, 'g', 2);
@@ -123,6 +123,95 @@ void alphazero::testAlphaZero004() {
         stream << name;
     }
 	stream << "\n";
+
+    // run berlekamp tests
+    first = true;
+    for (int testIdx = 0; testIdx < allNames.size(); testIdx++) {
+        // prepare test run
+        QString boardPath = boardPaths[testIdx];
+        QList<int> expectedLines = allExpectedLines[testIdx];
+        QString name = allNames[testIdx];
+
+        // load board
+        QList<int> lines;
+        QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+        QVERIFY(KSquaresIO::loadGame(boardPath, sGame.data(), &lines));
+        for (int line : lines) {
+            bool nextPlayer, boardFilled;
+            QList<int> completedSquares;
+            sGame->board()->addLine(line, &nextPlayer, &boardFilled, &completedSquares);
+        }
+
+        // execute ai
+        aiController aic(sGame->board()->currentPlayer(), 1, sGame->board()->width(), sGame->board()->height(),
+                         KSquares::AI_MCTS_ALPHAZERO, 5000, modelName);
+        int aiLine = aic.chooseLine(sGame->board()->lines(), sGame->board()->squares(), sGame->board()->getLineHistory());
+
+        // log result
+        if (first) {
+            first = false;
+        } else {
+            stream << tr(",");
+        }
+        stream << (expectedLines.contains(aiLine) ? "PASS" : "FAIL");
+        stream.flush();
+        resultFile.flush();
+
+        qDebug() << name << " -> " << (expectedLines.contains(aiLine) ? "PASS" : "FAIL");
+        qDebug() << "expected lines: " << expectedLines;
+        qDebug() << "chosen line: " << aiLine;
+
+        // stop process
+        AlphaDots::ModelManager::getInstance().stopAll();
+    }
+
+    resultFile.close();
+}
+
+
+// execute custom mcts debug test
+void alphazero::testAlphaZero005() {
+    QList<QString> allNames;
+    QList<QString> boardPaths;
+    QList<QList<int>> allExpectedLines;
+
+    boardPaths << tr(TESTBOARDPATH) + tr("/3x3-mcts-debug-1.dbl");
+    allNames << tr("mcts-debug-1");
+
+    allExpectedLines << (QList<int>() << 2 << 6);
+
+    qDebug() << allNames.size() << allNames;
+    qDebug() << boardPaths.size() << boardPaths;
+    qDebug() << allExpectedLines.size() << allExpectedLines;
+    QVERIFY(boardPaths.size() == allExpectedLines.size());
+    QVERIFY(allExpectedLines.size() == allNames.size());
+
+    AlphaDots::aiAlphaZeroMCTS::setDebug(true);
+    AlphaDots::ModelManager::getInstance().allowGPU(true);
+
+    // try different hyperparameters
+    AlphaDots::aiAlphaZeroMCTS::C_puct = 4;
+
+    // prepare result table
+    QString modelName = tr("AlphaZeroV13");
+    QString id = QString::number(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+    QString C = QString::number(AlphaDots::aiAlphaZeroMCTS::C_puct, 'g', 1);
+    QString dir = QString::number(AlphaDots::aiAlphaZeroMCTS::dirichlet_alpha, 'g', 2);
+    QString path = tr("alphazero-") + modelName + tr("-C_") + C + tr("-dir_") + dir + tr("-berlekamp-") + id + tr(".csv");
+    QFile resultFile(path);
+    QVERIFY(resultFile.open(QIODevice::ReadWrite | QIODevice::Truncate | QIODevice::Text));
+    QTextStream stream(&resultFile);
+
+    bool first = true;
+    for (const QString &name : allNames) {
+        if (first) {
+            first = false;
+        } else {
+            stream << tr(",");
+        }
+        stream << name;
+    }
+    stream << "\n";
 
     // run berlekamp tests
     first = true;
