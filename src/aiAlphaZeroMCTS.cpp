@@ -19,7 +19,6 @@ bool aiAlphaZeroMCTS::debug(false);
 double aiAlphaZeroMCTS::C_puct = 10.0; // overwritten in main.cpp
 double aiAlphaZeroMCTS::dirichlet_alpha = 0.03; // overwritten in main.cpp
 int aiAlphaZeroMCTS::mcts_iterations = 1500; // overwritten in main.cpp
-double aiAlphaZeroMCTS::prior_eps = 0;//0.001;
 
 aiAlphaZeroMCTS::aiAlphaZeroMCTS(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight,
                                  int thinkTime, ModelInfo model) :
@@ -161,7 +160,7 @@ int aiAlphaZeroMCTS::mcts() {
             qDebug() << "WARNING: MCTS selection step failed";
             break;
         }
-        simulation(node);
+        predictPolicyValue(node);
         if (node.isNull()) { // sth failed
             qDebug() << "WARNING: MCTS simulation step failed";
             break;
@@ -275,8 +274,11 @@ AlphaZeroMCTSNode::Ptr aiAlphaZeroMCTS::selection(const AlphaZeroMCTSNode::Ptr &
     for (const auto &child : node->children) {
         visitSum += child->visitCnt;
     }
+    double visitSumSqrt = sqrt(visitSum);
+    double invert = board->playerId == playerId ? 1 : -1;
     for (int i = 0; i < node->children.size(); i++) {
-        node->children[i]->puctValue = node->children[i]->value + C_puct * (node->children[i]->prior+prior_eps) * (sqrt(visitSum) / (1.0 + (double)node->visitCnt));
+        node->children[i]->puctValue = node->children[i]->value + C_puct * node->children[i]->prior * (visitSumSqrt / (1.0 + (double)node->visitCnt));
+        node->children[i]->puctValue *= invert;
         if (node->children[i]->puctValue > bestVal) {
             bestVal = node->children[i]->puctValue;
             selectedNode = node->children[i];
@@ -299,15 +301,9 @@ AlphaZeroMCTSNode::Ptr aiAlphaZeroMCTS::selection(const AlphaZeroMCTSNode::Ptr &
     return selection(selectedNode);
 }
 
-void aiAlphaZeroMCTS::simulation(const AlphaZeroMCTSNode::Ptr &node) {
-    // fill values
-    if (!predictPolicyValue(node, board, MLImageGenerator::generateInputImage(board))) {
-        return;
-    }
-}
 
-bool aiAlphaZeroMCTS::predictPolicyValue(const AlphaZeroMCTSNode::Ptr &parentNode, const aiBoard::Ptr &board,
-                                         const QImage &inputImage) {
+bool aiAlphaZeroMCTS::predictPolicyValue(const AlphaZeroMCTSNode::Ptr &node) {
+
     // reached leaf of search tree?
     if (board->drawnLinesCnt == board->linesSize) {
         // score the game
@@ -317,7 +313,8 @@ bool aiAlphaZeroMCTS::predictPolicyValue(const AlphaZeroMCTSNode::Ptr &parentNod
         }
         val /= board->squareOwners.size();
         // set score
-        parentNode->value = val;
+        node->value = val;
+        node->leaf = true;
         return true;
     }
 
@@ -328,7 +325,7 @@ bool aiAlphaZeroMCTS::predictPolicyValue(const AlphaZeroMCTSNode::Ptr &parentNod
         policyValueData = ProtobufConnector::getInstance().batchPredict(socket, qimg);
     } else {
         // send prediction request
-        DotsAndBoxesImage img = ProtobufConnector::dotsAndBoxesImageToProtobuf(inputImage);
+        DotsAndBoxesImage img = ProtobufConnector::dotsAndBoxesImageToProtobuf(qimg);
         if (!ProtobufConnector::sendString(socket, img.SerializeAsString())) {
             qDebug() << "failed to send message to model server";
             isTainted = true;
@@ -350,9 +347,9 @@ bool aiAlphaZeroMCTS::predictPolicyValue(const AlphaZeroMCTSNode::Ptr &parentNod
     // put data into mcts nodes
     //int lineCnt = policyValueData.policy_size();
     double priorSum = 0; // sum up prior to normalize
-    parentNode->value = policyValueData.value() * (playerId == board->playerId ? 1 : -1);
-    for (const auto &child : parentNode->children) {
-        child->parent = parentNode;
+    node->value = policyValueData.value() * (playerId == board->playerId ? 1 : -1);
+    for (const auto &child : node->children) {
+        child->parent = node;
         child->prior = policyValueData.policy(child->move);
         if (child->prior == NAN) {
             assert(false);
@@ -361,7 +358,7 @@ bool aiAlphaZeroMCTS::predictPolicyValue(const AlphaZeroMCTSNode::Ptr &parentNod
     }
     ProtobufConnector::getInstance().releaseBatchSample();
     // normalize
-    for (const auto &child : parentNode->children) {
+    for (const auto &child : node->children) {
         child->prior /= priorSum;
     }
 
@@ -378,7 +375,10 @@ void aiAlphaZeroMCTS::backpropagation(const AlphaZeroMCTSNode::Ptr &node) {
         //qDebug() << "backup " << tmpNode->move;
         tmpNode = tmpNode->parent;
     }
+    // update the root node
     tmpNode->visitCnt++;
+    tmpNode->fullValue += node->value;
+    tmpNode->value = (double)tmpNode->fullValue / (double)tmpNode->visitCnt;
 }
 
 void aiAlphaZeroMCTS::applyDirichletNoiseToChildren(const AlphaZeroMCTSNode::Ptr &parentNode, double alphaValue) {

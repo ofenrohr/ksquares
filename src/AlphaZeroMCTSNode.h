@@ -31,6 +31,7 @@ namespace AlphaDots {
 
         /// debug data
         double puctValue;
+        bool leaf;
 
 
         /// Parent node

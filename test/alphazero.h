@@ -7,15 +7,21 @@
 
 
 #include <QtCore/QObject>
+#include <QtCore/QString>
 
 class alphazero : public QObject {
 Q_OBJECT
+private:
+    void runTest(KSquares::AILevel ai, QString testName, QString modelName, QList<QString> allNames, QList<QString> boardPaths, QList<QList<int>> allExpectedLines, bool gpu);
 private slots:
     void testAlphaZero001();
     void testAlphaZero002();
     void testAlphaZero003();
     void testAlphaZero004();
     void testAlphaZero005();
+    void testAlphaZero006();
+    void testAlphaZero007();
+    void testAlphaZero008();
 };
 
 

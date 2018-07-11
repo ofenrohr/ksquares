@@ -47,12 +47,10 @@ namespace AlphaDots {
          * Send a board to the python model server and write the result to the parentNode and its children.
          * The parentNode's prior will be set to the predicted value and the child nodes' value is set to the
          * predicted policy probabilities.
-         * @param parentNode parent AlphaZero MCTS Node
-         * @param board current board state that's associated with the parentNode
+         * @param node parent AlphaZero MCTS Node
          * @return true if there was no error, false otherwise
          */
-        bool predictPolicyValue(const AlphaZeroMCTSNode::Ptr &parentNode, const aiBoard::Ptr &board,
-                                const QImage &inputImage);
+        bool predictPolicyValue(const AlphaZeroMCTSNode::Ptr &node);
 
         void applyDirichletNoiseToChildren(const AlphaZeroMCTSNode::Ptr &parentNode, double alpha);
 
@@ -68,14 +66,11 @@ namespace AlphaDots {
         static double C_puct;// = 10.0;
         static double dirichlet_alpha;// = 0.03;
         static int mcts_iterations;// = 1500;
-        static double prior_eps;// = 0;//0.001;
 
     protected:
         int mcts();
 
         AlphaZeroMCTSNode::Ptr selection(const AlphaZeroMCTSNode::Ptr &node);
-
-        void simulation(const AlphaZeroMCTSNode::Ptr &node);
 
         void backpropagation(const AlphaZeroMCTSNode::Ptr &node);
 

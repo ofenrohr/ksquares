@@ -15,6 +15,7 @@ AlphaZeroMCTSNode::AlphaZeroMCTSNode() {
     prior = 0;
     move = -1;
     puctValue = 0;
+    leaf = false;
     children.clear();
 }
 
@@ -27,6 +28,7 @@ AlphaZeroMCTSNode::AlphaZeroMCTSNode(const AlphaZeroMCTSNode &node) {
     parent = node.parent;
     move = node.move;
     puctValue = node.puctValue;
+    leaf = node.leaf;
     children = node.children;
 }
 
@@ -46,7 +48,7 @@ QString AlphaZeroMCTSNode::toDotString() {
     ret.append(getNodeName() + QStringLiteral(" [label=\"")+QString::number(move)+QStringLiteral(", V: ") +
                QString::number(value, 'f', 3) + QStringLiteral(", N: ") + QString::number(visitCnt) +
                QStringLiteral(", P: ") + QString::number(prior, 'f', 2) + QStringLiteral(", U: ") + QString::number(puctValue, 'f', 3) +
-               QStringLiteral("\", shape=\"box\"];\n")
+               QStringLiteral("\", shape=\"") + ( leaf ? QStringLiteral("ellipse") : QStringLiteral("box") ) + QStringLiteral("\"];\n")
     );
     for (auto &child : children) {
         if (child->visitCnt > 0) {
