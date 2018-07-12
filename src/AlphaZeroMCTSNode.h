@@ -32,6 +32,7 @@ namespace AlphaDots {
         /// debug data
         double puctValue;
         bool leaf;
+        bool ownMove;
 
 
         /// Parent node

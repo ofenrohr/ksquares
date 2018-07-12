@@ -277,8 +277,10 @@ AlphaZeroMCTSNode::Ptr aiAlphaZeroMCTS::selection(const AlphaZeroMCTSNode::Ptr &
     double visitSumSqrt = sqrt(visitSum);
     double invert = board->playerId == playerId ? 1 : -1;
     for (int i = 0; i < node->children.size(); i++) {
-        node->children[i]->puctValue = node->children[i]->value + C_puct * node->children[i]->prior * (visitSumSqrt / (1.0 + (double)node->visitCnt));
-        node->children[i]->puctValue *= invert;
+        // the value depends on the side to play, while the prior is always positive
+        // we have to negate the value if it's the opponent's turn
+        node->children[i]->puctValue = node->children[i]->value * invert + C_puct * node->children[i]->prior * (visitSumSqrt / (1.0 + (double)node->visitCnt));
+        node->children[i]->ownMove = board->playerId == playerId;
         if (node->children[i]->puctValue > bestVal) {
             bestVal = node->children[i]->puctValue;
             selectedNode = node->children[i];
@@ -305,7 +307,8 @@ AlphaZeroMCTSNode::Ptr aiAlphaZeroMCTS::selection(const AlphaZeroMCTSNode::Ptr &
 bool aiAlphaZeroMCTS::predictPolicyValue(const AlphaZeroMCTSNode::Ptr &node) {
 
     // reached leaf of search tree?
-    if (board->drawnLinesCnt == board->linesSize) {
+    //if (board->drawnLinesCnt == board->linesSize) {
+    if (node->children.empty()) {
         // score the game
         double val = 0.0;
         for (const auto &owner: board->squareOwners) {

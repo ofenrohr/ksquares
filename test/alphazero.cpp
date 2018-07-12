@@ -216,6 +216,7 @@ void alphazero::testAlphaZero006() {
 
     runTest(KSquares::AI_CONVNET, tr("mcts-debug"), tr("AlphaZeroV13"), allNames, boardPaths, allExpectedLines, false);
     runTest(KSquares::AI_CONVNET, tr("mcts-debug"), tr("AlphaZeroV13_SP"), allNames, boardPaths, allExpectedLines, false);
+    runTest(KSquares::AI_CONVNET, tr("mcts-debug"), tr("AlphaZeroV13_SP2"), allNames, boardPaths, allExpectedLines, false);
 }
 
 // execute custom mcts debug test
@@ -241,7 +242,7 @@ void alphazero::testAlphaZero007() {
 
 // execute all berlekamp tests
 void alphazero::testAlphaZero008() {
-    QString modelName = tr("AlphaZeroV13_SP");
+    QString modelName = tr("AlphaZeroV13_SP2");
     QList<QString> allNames;
     QList<QString> boardPaths;
     QList<QList<int>> allExpectedLines;
@@ -268,4 +269,19 @@ void alphazero::testAlphaZero008() {
     AlphaDots::ModelManager::getInstance().setDebug(false);
     AlphaDots::ModelManager::getInstance().allowGPU(true);
     runTest(KSquares::AI_MCTS_ALPHAZERO, tr("berlekamp"), modelName, allNames, boardPaths, allExpectedLines, true);
+}
+
+void alphazero::testAlphaZero009() {
+    QList<QString> allNames;
+    QList<QString> boardPaths;
+    QList<QList<int>> allExpectedLines;
+
+    boardPaths << tr(TESTBOARDPATH) + tr("/2x2-test.dbl");
+    allNames << tr("2x2-test");
+    allExpectedLines << (QList<int>() << 7 << 8 << 10 << 11);
+
+    AlphaDots::ModelManager::getInstance().setDebug(false);
+    runTest(KSquares::AI_MCTS_ALPHAZERO, tr("mcts-debug"), tr("AlphaZeroV13"), allNames, boardPaths, allExpectedLines, true);
+    runTest(KSquares::AI_MCTS_ALPHAZERO, tr("mcts-debug"), tr("AlphaZeroV13_SP"), allNames, boardPaths, allExpectedLines, true);
+    runTest(KSquares::AI_MCTS_ALPHAZERO, tr("mcts-debug"), tr("AlphaZeroV13_SP2"), allNames, boardPaths, allExpectedLines, true);
 }

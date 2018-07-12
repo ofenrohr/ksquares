@@ -48,7 +48,8 @@ QString AlphaZeroMCTSNode::toDotString() {
     ret.append(getNodeName() + QStringLiteral(" [label=\"")+QString::number(move)+QStringLiteral(", V: ") +
                QString::number(value, 'f', 3) + QStringLiteral(", N: ") + QString::number(visitCnt) +
                QStringLiteral(", P: ") + QString::number(prior, 'f', 2) + QStringLiteral(", U: ") + QString::number(puctValue, 'f', 3) +
-               QStringLiteral("\", shape=\"") + ( leaf ? QStringLiteral("ellipse") : QStringLiteral("box") ) + QStringLiteral("\"];\n")
+               QStringLiteral("\", shape=\"") + ( leaf ? QStringLiteral("ellipse") : QStringLiteral("box") ) + QStringLiteral("\"") +
+               (!ownMove ? QStringLiteral(", fillcolor=yellow, style=filled") : QStringLiteral("") ) + QStringLiteral("];\n")
     );
     for (auto &child : children) {
         if (child->visitCnt > 0) {
