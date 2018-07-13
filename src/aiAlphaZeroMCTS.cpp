@@ -372,7 +372,8 @@ void aiAlphaZeroMCTS::backpropagation(const AlphaZeroMCTSNode::Ptr &node) {
     AlphaZeroMCTSNode::Ptr tmpNode = node;//AlphaZeroMCTSNode::Ptr(new AlphaZeroMCTSNode(*node.data()));
     while (!tmpNode->parent.isNull()) {
         tmpNode->visitCnt++;
-        tmpNode->fullValue += node->value;
+        double invert = board->playerId == playerId ? 1 : -1;
+        tmpNode->fullValue += node->value * invert;
         tmpNode->value = (double)tmpNode->fullValue / (double)tmpNode->visitCnt;
         board->undoMove(tmpNode->move);
         //qDebug() << "backup " << tmpNode->move;
@@ -380,7 +381,7 @@ void aiAlphaZeroMCTS::backpropagation(const AlphaZeroMCTSNode::Ptr &node) {
     }
     // update the root node
     tmpNode->visitCnt++;
-    tmpNode->fullValue += node->value;
+    tmpNode->fullValue += node->value * (board->playerId == playerId ? 1 : -1);
     tmpNode->value = (double)tmpNode->fullValue / (double)tmpNode->visitCnt;
 }
 
