@@ -6,6 +6,7 @@
 #include "aiConvNet.h"
 
 #include <cmath>
+#include <algorithm>
 #include <chrono>
 #include <QFile>
 #include <alphaDots/ProtobufConnector.h>
@@ -72,14 +73,26 @@ int aiAlphaZeroMCTS::chooseLine(const QList<bool> &newLines, const QList<int> &n
 
     if (newLines.size() != linesSize) {
         qCritical() << "something went terribly wrong: newLines.size() != linesSize";
+        return -1;
     }
+
+    if (!currentMoveSequence.empty()) {
+        return currentMoveSequence.takeFirst();
+    }
+
     for (int i = 0; i < linesSize; i++) {
         lines[i] = newLines[i];
     }
     squareOwners = newSquareOwners;
     // do the ai stuff:
     board = aiBoard::Ptr(new aiBoard(lines, linesSize, width, height, squareOwners, playerId, maxPlayerId));
-    int line = mcts();
+    currentMoveSequence = mcts();
+    if (currentMoveSequence.empty()) {
+        qCritical() << "ERROR: mcts returned empty move sequence!";
+        return -1;
+    }
+    lastMoveSequence = currentMoveSequence;
+    int line = currentMoveSequence.takeFirst();
 
     if (line < 0 || line >= linesSize)
     {
@@ -96,14 +109,13 @@ int aiAlphaZeroMCTS::chooseLine(const QList<bool> &newLines, const QList<int> &n
         return freeLines.at(qrand() % freeLines.size());
     }
 
-    lastLine = line;
     turnTime = moveTimer.elapsed();
     qDebug() << "elapsed time for Alpha Zero MCTS: " << turnTime;
 
     return line;
 }
 
-int aiAlphaZeroMCTS::mcts() {
+QList<int> aiAlphaZeroMCTS::mcts() {
     // init mcts
     mctsTimer.start();
 
@@ -111,7 +123,10 @@ int aiAlphaZeroMCTS::mcts() {
     if (mctsRootNode.isNull()) {
         mctsRootNode = AlphaZeroMCTSNode::Ptr(new AlphaZeroMCTSNode());
     } else {
-        //mctsRootNode->clear();
+        mctsRootNode->clear();
+
+        // TODO: add reuse tree for move list
+        /*
         int foundChild = 0;
         for (const auto &child : mctsRootNode->children) {
             if (lines[child->move] && lastLine == child->move) {
@@ -139,6 +154,7 @@ int aiAlphaZeroMCTS::mcts() {
             }
             mctsRootNode->clear();
         }
+         */
     }
 
     int finishedIterations = 0;
@@ -146,6 +162,8 @@ int aiAlphaZeroMCTS::mcts() {
     //while (!mctsTimer.hasExpired(mctsTimeout))
     while (finishedIterations < mcts_iterations)
     {
+        assert(playerId == board->playerId);
+
         // reset priors, then apply dirichlet noise
         if (finishedIterations > 0) {
             int i = 0;
@@ -181,7 +199,7 @@ int aiAlphaZeroMCTS::mcts() {
 
         if (isTainted) {
             qDebug() << "aiAlphaZeroMCTS is tainted, returning invalid line on purpose";
-            return -1;
+            return QList<int>();
         }
 
         finishedIterations++;
@@ -191,14 +209,14 @@ int aiAlphaZeroMCTS::mcts() {
     //qDebug() << "MCTS iterations: " << finishedIterations;
 
     // select most promising move
-    int line = -1;
+    QList<int> returnSequence;
     long childVisitSum = 0;
     for (const auto &child : mctsRootNode->children) {
         childVisitSum += child->visitCnt;
     }
     if (childVisitSum == 0) {
         qDebug() << "ERROR: childVisitSum = 0, children.size() = " << mctsRootNode->children.size();
-        return -1;
+        return QList<int>();
     }
     double bestProbability = -INFINITY;
     for (const auto &child : mctsRootNode->children) {
@@ -206,8 +224,7 @@ int aiAlphaZeroMCTS::mcts() {
         double pi_a_given_s0 = (double)child->visitCnt / (double)childVisitSum;
         if (pi_a_given_s0 > bestProbability) {
             bestProbability = pi_a_given_s0;
-            line = child->move;
-            lineVal = child->value;
+            returnSequence = child->moves;
             //child->value = pi_a_given_s0;
         }
         // select by best value
@@ -218,6 +235,7 @@ int aiAlphaZeroMCTS::mcts() {
         }
          */
     }
+    lineVal = mctsRootNode->value;
 
     // debug stuff
     /*
@@ -248,13 +266,22 @@ int aiAlphaZeroMCTS::mcts() {
         boardTxt.close();
     }
 
-    return line;
+    return returnSequence;
 }
 
 AlphaZeroMCTSNode::Ptr aiAlphaZeroMCTS::selection(const AlphaZeroMCTSNode::Ptr &node) {
     if (node->children.isEmpty()) // reached leaf of mcts tree
     {
+        //node->ownMove = board->playerId == playerId;
         // create children
+        KSquares::BoardAnalysis analysis = BoardAnalysisFunctions::analyseBoard(board);
+        QSharedPointer<QList<QList<int>>> moveSequences = analysis.moveSequences;
+        for (int i = 0; i < moveSequences->size(); i++) {
+            AlphaZeroMCTSNode::Ptr child = AlphaZeroMCTSNode::Ptr(new AlphaZeroMCTSNode());
+            child->moves = moveSequences->at(i);
+            node->children.append(child);
+        }
+        /*
         for (int i = 0; i < board->linesSize; i++) {
             if (!board->lines[i]) {
                 AlphaZeroMCTSNode::Ptr child = AlphaZeroMCTSNode::Ptr(new AlphaZeroMCTSNode());
@@ -264,6 +291,7 @@ AlphaZeroMCTSNode::Ptr aiAlphaZeroMCTS::selection(const AlphaZeroMCTSNode::Ptr &
                 node->children.append(child);
             }
         }
+         */
         return node;
     }
 
@@ -275,19 +303,22 @@ AlphaZeroMCTSNode::Ptr aiAlphaZeroMCTS::selection(const AlphaZeroMCTSNode::Ptr &
         visitSum += child->visitCnt;
     }
     double visitSumSqrt = sqrt(visitSum);
-    double invert = board->playerId == playerId ? 1 : -1;
+    //double invert = board->playerId == playerId ? 1 : -1;
     for (int i = 0; i < node->children.size(); i++) {
         // the value depends on the side to play, while the prior is always positive
         // we have to negate the value if it's the opponent's turn
-        node->children[i]->puctValue = node->children[i]->value * invert + C_puct * node->children[i]->prior * (visitSumSqrt / (1.0 + (double)node->visitCnt));
-        node->children[i]->ownMove = board->playerId == playerId;
+        node->children[i]->puctValue = node->children[i]->value + C_puct * node->children[i]->prior * (visitSumSqrt / (1.0 + (double)node->visitCnt));
+        node->children[i]->ownMove = board->playerId == playerId; //!node->ownMove;
+        assert(node->ownMove != node->children[i]->ownMove);
         if (node->children[i]->puctValue > bestVal) {
             bestVal = node->children[i]->puctValue;
             selectedNode = node->children[i];
+            /*
             if (node->children[i]->move < 0 || node->children[i]->move >= linesSize) {
                 qDebug() << "invalid move in child node!";
                 assert(false);
             }
+             */
         }
     }
 
@@ -298,7 +329,11 @@ AlphaZeroMCTSNode::Ptr aiAlphaZeroMCTS::selection(const AlphaZeroMCTSNode::Ptr &
         return selectedNode;
     }
 
-    board->doMove(selectedNode->move);
+    int currentPlayer = board->playerId;
+    for (int i = 0; i < selectedNode->moves.size(); i++) {
+        board->doMove(selectedNode->moves[i]);
+    }
+    assert(currentPlayer != board->playerId || board->drawnLinesCnt == board->linesSize);
 
     return selection(selectedNode);
 }
@@ -312,7 +347,7 @@ bool aiAlphaZeroMCTS::predictPolicyValue(const AlphaZeroMCTSNode::Ptr &node) {
         // score the game
         double val = 0.0;
         for (const auto &owner: board->squareOwners) {
-            val += owner == playerId ? 1 : -1;
+            val += owner != board->playerId ? 1 : -1; // != because the player doesn't change on game over
         }
         val /= board->squareOwners.size();
         // set score
@@ -353,7 +388,14 @@ bool aiAlphaZeroMCTS::predictPolicyValue(const AlphaZeroMCTSNode::Ptr &node) {
     node->value = policyValueData.value() * (playerId == board->playerId ? 1 : -1);
     for (const auto &child : node->children) {
         child->parent = node;
-        child->prior = policyValueData.policy(child->move);
+        // average over all moves in sequence to get prior
+        // TODO: or use the maximum? long chains might have low average?
+        child->prior = 0;
+        for (int i = 0; i < child->moves.size(); i++) {
+            child->prior += policyValueData.policy(child->moves[i]);
+            //child->prior = std::max(child->prior, policyValueData.policy(child->moves[i]));
+        }
+        child->prior /= (double) child->moves.size();
         if (child->prior == NAN) {
             assert(false);
         }
@@ -375,7 +417,12 @@ void aiAlphaZeroMCTS::backpropagation(const AlphaZeroMCTSNode::Ptr &node) {
         double invert = board->playerId == playerId ? 1 : -1;
         tmpNode->fullValue += node->value * invert;
         tmpNode->value = (double)tmpNode->fullValue / (double)tmpNode->visitCnt;
-        board->undoMove(tmpNode->move);
+        //int currentPlayer = board->playerId;
+        //for (int i = 0; i < tmpNode->moves.size(); i++) {
+        for (int i = tmpNode->moves.size()-1; i >= 0; i--) {
+            board->undoMove(tmpNode->moves[i]);
+        }
+        //assert(board->playerId != currentPlayer);
         //qDebug() << "backup " << tmpNode->move;
         tmpNode = tmpNode->parent;
     }

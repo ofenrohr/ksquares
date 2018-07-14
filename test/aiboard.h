@@ -17,6 +17,7 @@ Q_OBJECT
 private slots:
     void testAiBoard001();
     void testAiBoard002();
+    void testAiBoard003();
 };
 
 

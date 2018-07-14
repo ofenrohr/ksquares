@@ -14,8 +14,15 @@
 #include <sstream>
 #include <assert.h>
 
-aiBoard::aiBoard(bool *newLines, int newLinesSize, int newWidth, int newHeight, const QList<int> newSquareOwners, int newPlayerId, int newMaxPlayerId, QList<int> *newHashLines) : lines(newLines), linesSize(newLinesSize), width(newWidth), height(newHeight), squareOwners(newSquareOwners), playerId(newPlayerId), maxPlayerId(newMaxPlayerId), hashLines(newHashLines)
+aiBoard::aiBoard(bool *newLines, int newLinesSize, int newWidth, int newHeight, const QList<int> newSquareOwners,
+				 int newPlayerId, int newMaxPlayerId, QList<int> *newHashLines) :
+		lines(newLines), linesSize(newLinesSize), width(newWidth), height(newHeight), squareOwners(newSquareOwners),
+		playerId(newPlayerId), maxPlayerId(newMaxPlayerId), hashLines(newHashLines)
 {
+    drawnLinesCnt = 0;
+	for (int i = 0; i < linesSize; i++) {
+		if (lines[i]) drawnLinesCnt++;
+	}
 	deleteLines = false;
 }
 

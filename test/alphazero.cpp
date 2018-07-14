@@ -180,7 +180,7 @@ void alphazero::testAlphaZero004() {
 
     AlphaDots::ModelManager::getInstance().setDebug(false);
     AlphaDots::ModelManager::getInstance().allowGPU(true);
-    //AlphaDots::aiAlphaZeroMCTS::mcts_iterations = 00;
+    //AlphaDots::aiAlphaZeroMCTS::C_puct = 400;
     runTest(KSquares::AI_MCTS_ALPHAZERO, tr("berlekamp"), modelName, allNames, boardPaths, allExpectedLines, true);
 }
 
@@ -299,8 +299,8 @@ void alphazero::testAlphaZero010() {
     // extra verbose debugging
     AlphaDots::ModelManager::getInstance().setDebug(true);
 
-    runTest(KSquares::AI_CONVNET, tr("mcts-debug"), tr("AlphaZeroV14"), allNames, boardPaths, allExpectedLines, false);
-    runTest(KSquares::AI_CONVNET, tr("mcts-debug"), tr("AlphaZeroV14_SP"), allNames, boardPaths, allExpectedLines, false);
+    //runTest(KSquares::AI_CONVNET, tr("mcts-debug"), tr("AlphaZeroV14"), allNames, boardPaths, allExpectedLines, false);
+    //runTest(KSquares::AI_CONVNET, tr("mcts-debug"), tr("AlphaZeroV14_SP"), allNames, boardPaths, allExpectedLines, false);
 
     // disable extra verbose debugging
     AlphaDots::ModelManager::getInstance().setDebug(false);
@@ -354,5 +354,6 @@ void alphazero::testAlphaZero012() {
 
     AlphaDots::ModelManager::getInstance().setDebug(false);
     AlphaDots::ModelManager::getInstance().allowGPU(true);
+    AlphaDots::aiAlphaZeroMCTS::C_puct = 20;
     runTest(KSquares::AI_MCTS_ALPHAZERO, tr("berlekamp"), modelName, allNames, boardPaths, allExpectedLines, true);
 }

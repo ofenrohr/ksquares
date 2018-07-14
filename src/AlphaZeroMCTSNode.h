@@ -27,7 +27,7 @@ namespace AlphaDots {
         /// prior probability (P) of this node according to the policy network
         double prior;
         /// lines drawn to get from parent node to this one
-        int move;
+        QList<int> moves;
 
         /// debug data
         double puctValue;

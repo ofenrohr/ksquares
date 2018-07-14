@@ -68,7 +68,7 @@ namespace AlphaDots {
         static int mcts_iterations;// = 1500;
 
     protected:
-        int mcts();
+        QList<int> mcts();
 
         AlphaZeroMCTSNode::Ptr selection(const AlphaZeroMCTSNode::Ptr &node);
 
@@ -95,7 +95,11 @@ namespace AlphaDots {
         /// initial board
         aiBoard::Ptr board;
         /// last returned line
-        int lastLine;
+        //int lastLine;
+        /// last returned move sequence
+        QList<int> lastMoveSequence;
+        /// current move sequence that is shortened with each call to chooseLine
+        QList<int> currentMoveSequence;
         /// last line value
         double lineVal;
 
