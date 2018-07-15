@@ -354,6 +354,5 @@ void alphazero::testAlphaZero012() {
 
     AlphaDots::ModelManager::getInstance().setDebug(false);
     AlphaDots::ModelManager::getInstance().allowGPU(true);
-    AlphaDots::aiAlphaZeroMCTS::C_puct = 20;
     runTest(KSquares::AI_MCTS_ALPHAZERO, tr("berlekamp"), modelName, allNames, boardPaths, allExpectedLines, true);
 }

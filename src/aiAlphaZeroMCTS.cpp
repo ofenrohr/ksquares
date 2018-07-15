@@ -123,29 +123,41 @@ QList<int> aiAlphaZeroMCTS::mcts() {
     if (mctsRootNode.isNull()) {
         mctsRootNode = AlphaZeroMCTSNode::Ptr(new AlphaZeroMCTSNode());
     } else {
-        mctsRootNode->clear();
+        //mctsRootNode->clear();
 
-        // TODO: add reuse tree for move list
-        /*
         int foundChild = 0;
-        for (const auto &child : mctsRootNode->children) {
-            if (lines[child->move] && lastLine == child->move) {
-                foundChild++;
+        int childIdx = -1;
+        for (int i = 0; i < mctsRootNode->children.size(); i++) {
+            const auto &child = mctsRootNode->children[i];
+            if (lastMoveSequence == child->moves) {
+                bool movesDone = true;
+                for (int move : child->moves) {
+                    if (!lines[move]) {
+                        movesDone = false;
+                    }
+                }
+                if (movesDone) {
+                    foundChild++;
+                    childIdx = i;
+                }
             }
         }
         if (foundChild == 1) {
             qDebug() << "reusing tree";
             AlphaZeroMCTSNode::Ptr tmpNode(nullptr);
-            for (const auto &child : mctsRootNode->children) {
-                if (lines[child->move] && lastLine == child->move) {
-                    tmpNode = child;
+            for (int i = 0; i < mctsRootNode->children.size(); i++) {
+                if (childIdx == i) {
+                    tmpNode = mctsRootNode->children[i];
                 } else {
-                    child->clear();
+                    mctsRootNode->children[i]->clear();
                 }
             }
             if (!tmpNode.isNull()) {
                 mctsRootNode = tmpNode;
                 mctsRootNode->parent = AlphaZeroMCTSNode::Ptr(nullptr);
+            } else {
+                assert(false);
+                mctsRootNode->clear();
             }
         } else {
             if (foundChild > 1) {
@@ -154,7 +166,6 @@ QList<int> aiAlphaZeroMCTS::mcts() {
             }
             mctsRootNode->clear();
         }
-         */
     }
 
     int finishedIterations = 0;
@@ -162,7 +173,7 @@ QList<int> aiAlphaZeroMCTS::mcts() {
     //while (!mctsTimer.hasExpired(mctsTimeout))
     while (finishedIterations < mcts_iterations)
     {
-        assert(playerId == board->playerId);
+        //assert(playerId == board->playerId);
 
         // reset priors, then apply dirichlet noise
         if (finishedIterations > 0) {
@@ -235,7 +246,7 @@ QList<int> aiAlphaZeroMCTS::mcts() {
         }
          */
     }
-    lineVal = mctsRootNode->value;
+    lineVal = -mctsRootNode->value;
 
     // debug stuff
     /*
@@ -272,26 +283,15 @@ QList<int> aiAlphaZeroMCTS::mcts() {
 AlphaZeroMCTSNode::Ptr aiAlphaZeroMCTS::selection(const AlphaZeroMCTSNode::Ptr &node) {
     if (node->children.isEmpty()) // reached leaf of mcts tree
     {
-        //node->ownMove = board->playerId == playerId;
         // create children
         KSquares::BoardAnalysis analysis = BoardAnalysisFunctions::analyseBoard(board);
         QSharedPointer<QList<QList<int>>> moveSequences = analysis.moveSequences;
         for (int i = 0; i < moveSequences->size(); i++) {
             AlphaZeroMCTSNode::Ptr child = AlphaZeroMCTSNode::Ptr(new AlphaZeroMCTSNode());
             child->moves = moveSequences->at(i);
+            child->ownMove = board->playerId == playerId;
             node->children.append(child);
         }
-        /*
-        for (int i = 0; i < board->linesSize; i++) {
-            if (!board->lines[i]) {
-                AlphaZeroMCTSNode::Ptr child = AlphaZeroMCTSNode::Ptr(new AlphaZeroMCTSNode());
-                child->move = i;
-                child->visitCnt = 0;
-                child->fullValue = child->value = child->prior = 0.0;
-                node->children.append(child);
-            }
-        }
-         */
         return node;
     }
 
@@ -303,22 +303,13 @@ AlphaZeroMCTSNode::Ptr aiAlphaZeroMCTS::selection(const AlphaZeroMCTSNode::Ptr &
         visitSum += child->visitCnt;
     }
     double visitSumSqrt = sqrt(visitSum);
-    //double invert = board->playerId == playerId ? 1 : -1;
     for (int i = 0; i < node->children.size(); i++) {
-        // the value depends on the side to play, while the prior is always positive
-        // we have to negate the value if it's the opponent's turn
-        node->children[i]->puctValue = node->children[i]->value + C_puct * node->children[i]->prior * (visitSumSqrt / (1.0 + (double)node->visitCnt));
-        node->children[i]->ownMove = board->playerId == playerId; //!node->ownMove;
-        assert(node->ownMove != node->children[i]->ownMove);
+        node->children[i]->puctValue = node->children[i]->value +
+                                       C_puct * node->children[i]->prior * (visitSumSqrt / (1.0 + (double)node->visitCnt));
+        //assert(node->ownMove != node->children[i]->ownMove);
         if (node->children[i]->puctValue > bestVal) {
             bestVal = node->children[i]->puctValue;
             selectedNode = node->children[i];
-            /*
-            if (node->children[i]->move < 0 || node->children[i]->move >= linesSize) {
-                qDebug() << "invalid move in child node!";
-                assert(false);
-            }
-             */
         }
     }
 
@@ -333,7 +324,7 @@ AlphaZeroMCTSNode::Ptr aiAlphaZeroMCTS::selection(const AlphaZeroMCTSNode::Ptr &
     for (int i = 0; i < selectedNode->moves.size(); i++) {
         board->doMove(selectedNode->moves[i]);
     }
-    assert(currentPlayer != board->playerId || board->drawnLinesCnt == board->linesSize);
+    //assert(currentPlayer != board->playerId || board->drawnLinesCnt == board->linesSize);
 
     return selection(selectedNode);
 }
