@@ -324,16 +324,19 @@ QSharedPointer<QList<QList<int> > > BoardAnalysisFunctions::getMoveSequences(aiB
 		//moveSequences->append(moveSequence);
 		chainSacrificeSequences.append(moveSequence);
 	}
-	// add half and hard hearted handouts for short chains
+	// add (half and) hard hearted handouts for short chains
+	// half hearted handouts are a bad idea -> not adding those
 	for (int i = 0; i < analysis.openShortChains.size(); i++)
 	{
 		if (analysis.chainsAfterCapture[analysis.openShortChains[i]].squares.size() != 2)
 			continue;
+        /*
 		QList<int> halfHeartedSequence;
 		halfHeartedSequence.append(baseMoveSequence);
 		halfHeartedSequence.append(analysis.chainsAfterCapture[analysis.openShortChains[i]].lines[0]);
 		//moveSequences->append(halfHeartedSequence);
 		chainSacrificeSequences.prepend(halfHeartedSequence);
+         */
 		QList<int> hardHeartedSequence;
 		hardHeartedSequence.append(baseMoveSequence);
 		hardHeartedSequence.append(analysis.chainsAfterCapture[analysis.openShortChains[i]].lines[1]);

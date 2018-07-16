@@ -20,6 +20,7 @@ bool aiAlphaZeroMCTS::debug(false);
 double aiAlphaZeroMCTS::C_puct = 4.0; // overwritten in main.cpp
 double aiAlphaZeroMCTS::dirichlet_alpha = 0.03; // overwritten in main.cpp
 int aiAlphaZeroMCTS::mcts_iterations = 1500; // overwritten in main.cpp
+bool aiAlphaZeroMCTS::use_move_sequences = true; // overwritten in main.cpp
 
 aiAlphaZeroMCTS::aiAlphaZeroMCTS(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight,
                                  int thinkTime, ModelInfo model) :
@@ -284,13 +285,24 @@ AlphaZeroMCTSNode::Ptr aiAlphaZeroMCTS::selection(const AlphaZeroMCTSNode::Ptr &
     if (node->children.isEmpty()) // reached leaf of mcts tree
     {
         // create children
-        KSquares::BoardAnalysis analysis = BoardAnalysisFunctions::analyseBoard(board);
-        QSharedPointer<QList<QList<int>>> moveSequences = analysis.moveSequences;
-        for (int i = 0; i < moveSequences->size(); i++) {
-            AlphaZeroMCTSNode::Ptr child = AlphaZeroMCTSNode::Ptr(new AlphaZeroMCTSNode());
-            child->moves = moveSequences->at(i);
-            child->ownMove = board->playerId == playerId;
-            node->children.append(child);
+        if (use_move_sequences) {
+            KSquares::BoardAnalysis analysis = BoardAnalysisFunctions::analyseBoard(board);
+            QSharedPointer<QList<QList<int>>> moveSequences = analysis.moveSequences;
+            for (const auto &i : *moveSequences) {
+                AlphaZeroMCTSNode::Ptr child = AlphaZeroMCTSNode::Ptr(new AlphaZeroMCTSNode());
+                child->moves = i;
+                child->ownMove = board->playerId == playerId;
+                node->children.append(child);
+            }
+        } else {
+            for (int i = 0; i < linesSize; i++) {
+                if (!lines[i]) {
+                    AlphaZeroMCTSNode::Ptr child = AlphaZeroMCTSNode::Ptr(new AlphaZeroMCTSNode());
+                    child->moves = QList<int>() << i;
+                    child->ownMove = board->playerId == playerId;
+                    node->children.append(child);
+                }
+            }
         }
         return node;
     }
@@ -376,7 +388,10 @@ bool aiAlphaZeroMCTS::predictPolicyValue(const AlphaZeroMCTSNode::Ptr &node) {
     // put data into mcts nodes
     //int lineCnt = policyValueData.policy_size();
     double priorSum = 0; // sum up prior to normalize
-    node->value = policyValueData.value() * (node->ownMove ? 1 : -1);
+    node->value = policyValueData.value() * (board->playerId == playerId ? 1 : -1);
+    if (node != mctsRootNode) {
+        assert(node->ownMove != (board->playerId == playerId));
+    }
     for (const auto &child : node->children) {
         child->parent = node;
         // average over all moves in sequence to get prior

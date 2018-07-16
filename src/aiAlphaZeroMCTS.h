@@ -66,6 +66,7 @@ namespace AlphaDots {
         static double C_puct;// = 10.0;
         static double dirichlet_alpha;// = 0.03;
         static int mcts_iterations;// = 1500;
+        static bool use_move_sequences;
 
     protected:
         QList<int> mcts();

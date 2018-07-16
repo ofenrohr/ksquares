@@ -26,6 +26,7 @@ private slots:
     void testAlphaZero010();
     void testAlphaZero011();
     void testAlphaZero012();
+    void testAlphaZero013();
 };
 
 

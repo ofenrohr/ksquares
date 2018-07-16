@@ -356,3 +356,24 @@ void alphazero::testAlphaZero012() {
     AlphaDots::ModelManager::getInstance().allowGPU(true);
     runTest(KSquares::AI_MCTS_ALPHAZERO, tr("berlekamp"), modelName, allNames, boardPaths, allExpectedLines, true);
 }
+
+
+// execute all berlekamp tests
+void alphazero::testAlphaZero013() {
+    QString modelName = tr("AlphaZeroV14");
+    QList<QString> allNames;
+    QList<QString> boardPaths;
+    QList<QList<int>> allExpectedLines;
+
+    boardPaths << tr(TESTBOARDPATH) + tr("/berlekamp-3.3.dbl");
+    allNames << tr("berlekamp-3");
+
+    allExpectedLines << (QList<int>() << 7);
+
+    AlphaDots::aiAlphaZeroMCTS::use_move_sequences = true;
+    AlphaDots::aiAlphaZeroMCTS::C_puct = 1;
+
+    AlphaDots::ModelManager::getInstance().setDebug(false);
+    AlphaDots::ModelManager::getInstance().allowGPU(false);
+    runTest(KSquares::AI_MCTS_ALPHAZERO, tr("berlekamp"), modelName, allNames, boardPaths, allExpectedLines, true);
+}

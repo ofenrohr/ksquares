@@ -91,6 +91,7 @@ int main(int argc, char **argv)
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("hp-mcts-iterations"), i18n("Hyperparameter: Number of iterations in AlphaZero MCTS, default: 1500"), i18n("hp-mcts-iterations")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("hp-mcts-cpuct"), i18n("Hyperparameter: C_puct in AlphaZero MCTS, default: 10"), i18n("hp-mcts-cpuct")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("hp-mcts-dirichlet-alpha"), i18n("Hyperparameter: dirichlet alpha in AlphaZero MCTS, default: 0.03"), i18n("hp-mcts-dirichlet-alpha")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("hp-no-move-sequences"), i18n("Hyperparameter: set this flag to not use move sequences in AlphaZero MCTS")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("board-sizes"), i18n("Board sizes available in self-play mode. Format AxB,CxD e.g. 5x4,4x4. Minimum: 2, Maximum 20"), i18n("board-sizes")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("wait-for-training"), i18n("Do not generate new training data while training is running.")));
 
@@ -352,6 +353,11 @@ int main(int argc, char **argv)
         }
     }
     AlphaDots::aiAlphaZeroMCTS::dirichlet_alpha = hpMCTSDirichletAlpha;
+
+    // hp-no-move-sequences - hyperparameter for alphazero mcts
+    if (parser.isSet(i18n("hp-no-move-sequences"))) {
+        AlphaDots::aiAlphaZeroMCTS::use_move_sequences = false;
+    }
 
     // board sizes
     QList<QPoint> boardSizes;
