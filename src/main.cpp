@@ -328,7 +328,7 @@ int main(int argc, char **argv)
     AlphaDots::aiAlphaZeroMCTS::mcts_iterations = hpMCTSIterations;
 
     // hp-mcts-cpuct - hyperparameter for alphazero mcts
-    double hpMCTSCpuct = 10;
+    double hpMCTSCpuct = 4;
     if (parser.isSet(i18n("hp-mcts-cpuct"))) {
         bool ok = false;
         double tmp = parser.value(i18n("hp-mcts-cpuct")).toDouble(&ok);

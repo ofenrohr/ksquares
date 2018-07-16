@@ -17,7 +17,7 @@
 using namespace AlphaDots;
 
 bool aiAlphaZeroMCTS::debug(false);
-double aiAlphaZeroMCTS::C_puct = 10.0; // overwritten in main.cpp
+double aiAlphaZeroMCTS::C_puct = 4.0; // overwritten in main.cpp
 double aiAlphaZeroMCTS::dirichlet_alpha = 0.03; // overwritten in main.cpp
 int aiAlphaZeroMCTS::mcts_iterations = 1500; // overwritten in main.cpp
 
@@ -338,7 +338,7 @@ bool aiAlphaZeroMCTS::predictPolicyValue(const AlphaZeroMCTSNode::Ptr &node) {
         // score the game
         double val = 0.0;
         for (const auto &owner: board->squareOwners) {
-            val += owner != board->playerId ? 1 : -1; // != because the player doesn't change on game over
+            val += owner == playerId ? 1 : -1;
         }
         val /= board->squareOwners.size();
         // set score
@@ -376,11 +376,12 @@ bool aiAlphaZeroMCTS::predictPolicyValue(const AlphaZeroMCTSNode::Ptr &node) {
     // put data into mcts nodes
     //int lineCnt = policyValueData.policy_size();
     double priorSum = 0; // sum up prior to normalize
-    node->value = policyValueData.value() * (playerId == board->playerId ? 1 : -1);
+    node->value = policyValueData.value() * (node->ownMove ? 1 : -1);
     for (const auto &child : node->children) {
         child->parent = node;
         // average over all moves in sequence to get prior
         // TODO: or use the maximum? long chains might have low average?
+        // TODO: what about sets of equal lines? move sequences only return one representative line for each set!
         child->prior = 0;
         for (int i = 0; i < child->moves.size(); i++) {
             child->prior += policyValueData.policy(child->moves[i]);
@@ -402,14 +403,14 @@ bool aiAlphaZeroMCTS::predictPolicyValue(const AlphaZeroMCTSNode::Ptr &node) {
 }
 
 void aiAlphaZeroMCTS::backpropagation(const AlphaZeroMCTSNode::Ptr &node) {
+    double backupValue = node->value;
     AlphaZeroMCTSNode::Ptr tmpNode = node;//AlphaZeroMCTSNode::Ptr(new AlphaZeroMCTSNode(*node.data()));
     while (!tmpNode->parent.isNull()) {
         tmpNode->visitCnt++;
-        double invert = board->playerId == playerId ? 1 : -1;
-        tmpNode->fullValue += node->value * invert;
+        double invert = tmpNode->ownMove ? 1 : -1;
+        tmpNode->fullValue += backupValue * invert;
         tmpNode->value = (double)tmpNode->fullValue / (double)tmpNode->visitCnt;
         //int currentPlayer = board->playerId;
-        //for (int i = 0; i < tmpNode->moves.size(); i++) {
         for (int i = tmpNode->moves.size()-1; i >= 0; i--) {
             board->undoMove(tmpNode->moves[i]);
         }
@@ -419,7 +420,7 @@ void aiAlphaZeroMCTS::backpropagation(const AlphaZeroMCTSNode::Ptr &node) {
     }
     // update the root node
     tmpNode->visitCnt++;
-    tmpNode->fullValue += node->value * (board->playerId == playerId ? 1 : -1);
+    tmpNode->fullValue += node->value * (tmpNode->ownMove ? 1 : -1);
     tmpNode->value = (double)tmpNode->fullValue / (double)tmpNode->visitCnt;
 }
 
