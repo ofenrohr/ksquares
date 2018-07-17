@@ -154,7 +154,7 @@ void alphazero::runTest(KSquares::AILevel ai, QString testName, QString modelNam
 
 // execute all berlekamp tests
 void alphazero::testAlphaZero004() {
-    QString modelName = tr("AlphaZeroV13");
+    QString modelName = tr("AlphaZeroV12_INIT");
     QList<QString> allNames;
     QList<QString> boardPaths;
     QList<QList<int>> allExpectedLines;

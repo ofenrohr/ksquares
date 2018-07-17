@@ -174,8 +174,6 @@ QList<int> aiAlphaZeroMCTS::mcts() {
     //while (!mctsTimer.hasExpired(mctsTimeout))
     while (finishedIterations < mcts_iterations)
     {
-        //assert(playerId == board->playerId);
-
         // reset priors, then apply dirichlet noise
         if (finishedIterations > 0) {
             int i = 0;
@@ -318,7 +316,6 @@ AlphaZeroMCTSNode::Ptr aiAlphaZeroMCTS::selection(const AlphaZeroMCTSNode::Ptr &
     for (int i = 0; i < node->children.size(); i++) {
         node->children[i]->puctValue = node->children[i]->value +
                                        C_puct * node->children[i]->prior * (visitSumSqrt / (1.0 + (double)node->visitCnt));
-        //assert(node->ownMove != node->children[i]->ownMove);
         if (node->children[i]->puctValue > bestVal) {
             bestVal = node->children[i]->puctValue;
             selectedNode = node->children[i];
@@ -336,7 +333,6 @@ AlphaZeroMCTSNode::Ptr aiAlphaZeroMCTS::selection(const AlphaZeroMCTSNode::Ptr &
     for (int i = 0; i < selectedNode->moves.size(); i++) {
         board->doMove(selectedNode->moves[i]);
     }
-    //assert(currentPlayer != board->playerId || board->drawnLinesCnt == board->linesSize);
 
     return selection(selectedNode);
 }
@@ -389,9 +385,6 @@ bool aiAlphaZeroMCTS::predictPolicyValue(const AlphaZeroMCTSNode::Ptr &node) {
     //int lineCnt = policyValueData.policy_size();
     double priorSum = 0; // sum up prior to normalize
     node->value = policyValueData.value() * (board->playerId == playerId ? 1 : -1);
-    if (node != mctsRootNode) {
-        assert(node->ownMove != (board->playerId == playerId));
-    }
     for (const auto &child : node->children) {
         child->parent = node;
         // average over all moves in sequence to get prior
@@ -429,7 +422,6 @@ void aiAlphaZeroMCTS::backpropagation(const AlphaZeroMCTSNode::Ptr &node) {
         for (int i = tmpNode->moves.size()-1; i >= 0; i--) {
             board->undoMove(tmpNode->moves[i]);
         }
-        //assert(board->playerId != currentPlayer);
         //qDebug() << "backup " << tmpNode->move;
         tmpNode = tmpNode->parent;
     }
