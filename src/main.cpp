@@ -360,13 +360,14 @@ int main(int argc, char **argv)
     }
 
     // board sizes
+    QPoint evaluationBoardSize(5,5);
     QList<QPoint> boardSizes;
     boardSizes << QPoint(4,3) << QPoint(5,4) << QPoint(6,5) << QPoint(7,5) << QPoint(8,8) << QPoint(14,7) <<
                   QPoint(14,14) << QPoint(10,9);
     if (parser.isSet(i18n("board-sizes"))) {
         bool ok = true;
         QList<QPoint> tmp;
-        for (QString boardSize : parser.value(i18n("board-sizes")).split(i18n(","))) {
+        for (const QString &boardSize : parser.value(i18n("board-sizes")).split(i18n(","))) {
             QStringList xy = boardSize.split(i18n("x"));
             if (xy.size() != 2) {
                 ok = false;
@@ -386,10 +387,11 @@ int main(int argc, char **argv)
             }
             tmp << QPoint(x,y);
         }
-        if (!ok) {
+        if (!ok || boardSizes.empty()) {
             QMessageBox::warning(nullptr, i18n("Self-Play error"), i18n("Invalid board-sizes argument"));
         } else {
             boardSizes = tmp;
+            evaluationBoardSize = boardSizes[0];
         }
     }
 
@@ -435,10 +437,10 @@ int main(int argc, char **argv)
         AlphaDots::MLDataGenerator *dataGenerator = new AlphaDots::MLDataGenerator(datasetType, boardWidth, boardHeight);
         dataGenerator->show();
     } else if (parser.isSet(i18n("model-evaluation"))) {
-        AlphaDots::ModelEvaluation *modelEvaluation = new AlphaDots::ModelEvaluation(parser.value(i18n("models")), false, threads, gamesPerAi_slow);
+        AlphaDots::ModelEvaluation *modelEvaluation = new AlphaDots::ModelEvaluation(parser.value(i18n("models")), false, threads, gamesPerAi_slow, evaluationBoardSize);
         modelEvaluation->show();
     } else if (parser.isSet(i18n("fast-model-evaluation"))) {
-        AlphaDots::ModelEvaluation *modelEvaluation = new AlphaDots::ModelEvaluation(parser.value(i18n("models")), true, threads, gamesPerAi_fast);
+        AlphaDots::ModelEvaluation *modelEvaluation = new AlphaDots::ModelEvaluation(parser.value(i18n("models")), true, threads, gamesPerAi_fast, evaluationBoardSize);
         modelEvaluation->show();
     } else if (parser.isSet(i18n("model-list"))) {
         AlphaDots::ModelEvaluation::printModelList();

@@ -28,6 +28,8 @@ namespace AlphaDots {
         double prior;
         /// lines drawn to get from parent node to this one
         QList<int> moves;
+        /// partial value -> (own squares - enemy squares) / all captured squares
+        double partialValue;
 
         /// debug data
         double puctValue;

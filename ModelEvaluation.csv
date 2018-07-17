@@ -1,0 +1,9 @@
+,Games,Wins vs. Easyin 100 games,Wins vs. Mediumin 100 games,Wins vs. Hardin 100 games,Errors,Ends with Double Dealing,Preemtive Sacrifices
+FirstTry,300,1,0,0,0,0,0
+StageOne 3x3,300,58,27,6,0,0,0
+StageOne 5x5,300,0,1,0,0,0,0
+BasicStrategy,300,55,27,7,0,0,0
+AlphaZeroV1,300,82,80,35,0,0,0
+AlphaZeroV3,300,79,94,50,0,0,0
+AlphaZeroV5,300,90,75,45,0,0,0
+AlphaZeroV7,300,96,80,46,0,0,0

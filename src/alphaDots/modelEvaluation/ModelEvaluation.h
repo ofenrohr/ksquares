@@ -24,7 +24,7 @@ namespace AlphaDots {
          * @param models Empty string to evaluate all available models.
          * @param fast Run fast multi-threaded evaluation
          */
-        explicit ModelEvaluation(QString models, bool fast=false, int threadCnt=4, int games=10);
+        explicit ModelEvaluation(QString models, bool fast=false, int threadCnt=4, int games=10, QPoint boardSize=QPoint(5,5));
 
 		~ModelEvaluation() override;
 
@@ -64,7 +64,7 @@ namespace AlphaDots {
 
         QList<int> lineLog;
 
-		void createTestSetups();
+		void createTestSetups(QPoint boardSize);
 		/**
 		 * Loads a slow GUI test setup.
 		 * @param setup

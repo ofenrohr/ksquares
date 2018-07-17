@@ -370,8 +370,7 @@ void alphazero::testAlphaZero013() {
 
     allExpectedLines << (QList<int>() << 7);
 
-    AlphaDots::aiAlphaZeroMCTS::use_move_sequences = true;
-    AlphaDots::aiAlphaZeroMCTS::C_puct = 1;
+    //AlphaDots::aiAlphaZeroMCTS::use_move_sequences = false;
 
     AlphaDots::ModelManager::getInstance().setDebug(false);
     AlphaDots::ModelManager::getInstance().allowGPU(false);

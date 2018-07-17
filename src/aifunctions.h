@@ -160,7 +160,7 @@ class aiFunctions
 		 */
 		static QList<int> getFreeLines(bool *lines, int linesSize);
 		/**
-		 * TODO
+		 * Creates a map that contains the scores of all players.
 		 * @return index = player id, value = number of squares
 		 */
 		static QMap<int, int> getScoreMap(QList<int> &squareOwners);

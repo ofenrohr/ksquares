@@ -14,7 +14,8 @@
 
 using namespace AlphaDots;
 
-ModelEvaluation::ModelEvaluation(QString models, bool fast, int threadCnt, int games) : KXmlGuiWindow(), m_view(new QWidget()) {
+ModelEvaluation::ModelEvaluation(QString models, bool fast, int threadCnt, int games, QPoint boardSize) :
+        KXmlGuiWindow(), m_view(new QWidget()) {
     qDebug() << "ModelEvaluation" << models << fast;
     modelList = getModelList(models);
     fastEvaluation = fast;
@@ -27,7 +28,7 @@ ModelEvaluation::ModelEvaluation(QString models, bool fast, int threadCnt, int g
     qRegisterMetaType<QVector<int> >("QVector<int>");
     connect(sGame, SIGNAL(gameOver(QVector<KSquaresPlayer>)), this, SLOT(gameOver(QVector<KSquaresPlayer>)));
     connect(sGame, SIGNAL(takeTurnSig(KSquaresPlayer*)), this, SLOT(playerTakeTurn(KSquaresPlayer*)));
-    createTestSetups();
+    createTestSetups(boardSize);
     resultModel = new TestResultModel(this, &modelList, gamesPerAi);
 
     QTimer::singleShot(0, this, &ModelEvaluation::initObject);
@@ -119,9 +120,9 @@ void ModelEvaluation::printModelList() {
     QMessageBox::information(nullptr, tr("KSquares - model list"), modelsStr);
 }
 
-void ModelEvaluation::createTestSetups() {
-    int testBoardWidth = 5;
-    int testBoardHeight = 5;
+void ModelEvaluation::createTestSetups(QPoint boardSize) {
+    int testBoardWidth = boardSize.x();
+    int testBoardHeight = boardSize.y();
     int timeout = 5000;
 
     testSetups.clear();
@@ -200,8 +201,10 @@ void ModelEvaluation::loadTestSetup(const AITestSetup &setup) {
 
     // update info label
     infoLbl->setText(tr("<br/><br/><b>Current game</b><br/>\n") +
+                     tr("Board size: ") + QString::number(width) + tr(" x ") + QString::number(height) + tr("<br />") +
                      aiName(setup.aiLevelP1) + tr(" (<span style=\"color: red; background-color: white\">red</span>) vs. ") + aiName(setup.aiLevelP2) +
-                     tr(" (<span style=\"color: blue; background-color: white\">blue</span>)<br/><br/>\n\n<b>Games left</b><br/>\n") + QString::number(testSetups.size()));
+                     tr(" (<span style=\"color: blue; background-color: white\">blue</span>)<br/><br/>\n\n<b>Games left</b><br/>\n") + QString::number(testSetups.size())
+    );
 
     // start game
 	sGame->start();
@@ -282,7 +285,7 @@ void ModelEvaluation::gameOver(const QVector<KSquaresPlayer> &playerList) {
 }
 
 void ModelEvaluation::nextGame() {
-    if (testSetups.size() > 0) {
+    if (!testSetups.empty()) {
         loadTestSetup(testSetups.takeFirst());
     } else {
         qDebug() << "done";

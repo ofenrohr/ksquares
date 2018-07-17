@@ -14,10 +14,28 @@ AlphaZeroMCTSNode::AlphaZeroMCTSNode() {
     value = 0;
     prior = 0;
     moves.clear();
+    partialValue = 0.0;
     puctValue = 0;
     leaf = false;
     ownMove = false;
     children.clear();
+}
+
+void AlphaZeroMCTSNode::clear() {
+    visitCnt = 0;
+    fullValue = 0.0;
+    value = 0.0;
+    prior = 0.0;
+    moves.clear();
+    partialValue = 0.0;
+    puctValue = 0;
+    parent = AlphaZeroMCTSNode::Ptr(nullptr);
+    for (const auto &child : children) {
+        child->clear();
+    }
+    children.clear();
+    ownMove = false;
+    leaf = false;
 }
 
 AlphaZeroMCTSNode::AlphaZeroMCTSNode(const AlphaZeroMCTSNode &node) {
@@ -28,6 +46,7 @@ AlphaZeroMCTSNode::AlphaZeroMCTSNode(const AlphaZeroMCTSNode &node) {
     prior = node.prior;
     parent = node.parent;
     moves = node.moves;
+    partialValue = node.partialValue;
     puctValue = node.puctValue;
     leaf = node.leaf;
     ownMove = node.ownMove;
@@ -86,22 +105,6 @@ QString AlphaZeroMCTSNode::toString() {
         ret.append(QStringLiteral("\nchild value=")+QString::number(child->value)+QStringLiteral(", visitedCnt=") + QString::number(child->visitCnt));
     }
     return ret;
-}
-
-void AlphaZeroMCTSNode::clear() {
-    visitCnt = 0;
-    fullValue = 0.0;
-    value = 0.0;
-    prior = 0.0;
-    moves.clear();
-    puctValue = 0;
-    parent = AlphaZeroMCTSNode::Ptr(nullptr);
-    for (const auto &child : children) {
-        child->clear();
-    }
-    children.clear();
-    ownMove = false;
-    leaf = false;
 }
 
 void AlphaZeroMCTSNode::saveAsDot(QString &path) {

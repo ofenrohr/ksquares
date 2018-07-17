@@ -314,8 +314,14 @@ AlphaZeroMCTSNode::Ptr aiAlphaZeroMCTS::selection(const AlphaZeroMCTSNode::Ptr &
     }
     double visitSumSqrt = sqrt(visitSum);
     for (int i = 0; i < node->children.size(); i++) {
+        /*
+        if (std::isnan(node->children[i]->partialValue)) {
+            assert(false);
+        }
+         */
         node->children[i]->puctValue = node->children[i]->value +
-                                       C_puct * node->children[i]->prior * (visitSumSqrt / (1.0 + (double)node->visitCnt));
+                                       C_puct * node->children[i]->prior * (visitSumSqrt / (1.0 + (double)node->visitCnt)) +
+                                       node->children[i]->partialValue * 0.3;
         if (node->children[i]->puctValue > bestVal) {
             bestVal = node->children[i]->puctValue;
             selectedNode = node->children[i];
@@ -383,8 +389,20 @@ bool aiAlphaZeroMCTS::predictPolicyValue(const AlphaZeroMCTSNode::Ptr &node) {
 
     // put data into mcts nodes
     //int lineCnt = policyValueData.policy_size();
-    double priorSum = 0; // sum up prior to normalize
     node->value = policyValueData.value() * (board->playerId == playerId ? 1 : -1);
+
+    // calculate partial value (score so far)
+    QMap<int, int> scoreMap = getScoreMap(board->squareOwners);
+    node->partialValue = (double)(scoreMap[playerId] - scoreMap[1-playerId]) / (1 + (double)(scoreMap[0] + scoreMap[1]));
+    /*
+    if (std::isnan(node->partialValue)) {
+        qDebug() << scoreMap << scoreMap.keys() << scoreMap.values();
+        assert(false);
+    }
+     */
+
+    // add prior to node's children
+    double priorSum = 0; // sum up prior to normalize
     for (const auto &child : node->children) {
         child->parent = node;
         // average over all moves in sequence to get prior
