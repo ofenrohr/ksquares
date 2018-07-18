@@ -314,14 +314,8 @@ AlphaZeroMCTSNode::Ptr aiAlphaZeroMCTS::selection(const AlphaZeroMCTSNode::Ptr &
     }
     double visitSumSqrt = sqrt(visitSum);
     for (int i = 0; i < node->children.size(); i++) {
-        /*
-        if (std::isnan(node->children[i]->partialValue)) {
-            assert(false);
-        }
-         */
         node->children[i]->puctValue = node->children[i]->value +
-                                       C_puct * node->children[i]->prior * (visitSumSqrt / (1.0 + (double)node->visitCnt)) +
-                                       node->children[i]->partialValue * 0.3;
+                                       C_puct * node->children[i]->prior * (visitSumSqrt / (1.0 + (double)node->children[i]->visitCnt));
         if (node->children[i]->puctValue > bestVal) {
             bestVal = node->children[i]->puctValue;
             selectedNode = node->children[i];
@@ -335,7 +329,6 @@ AlphaZeroMCTSNode::Ptr aiAlphaZeroMCTS::selection(const AlphaZeroMCTSNode::Ptr &
         return selectedNode;
     }
 
-    int currentPlayer = board->playerId;
     for (int i = 0; i < selectedNode->moves.size(); i++) {
         board->doMove(selectedNode->moves[i]);
     }
@@ -391,15 +384,21 @@ bool aiAlphaZeroMCTS::predictPolicyValue(const AlphaZeroMCTSNode::Ptr &node) {
     //int lineCnt = policyValueData.policy_size();
     node->value = policyValueData.value() * (board->playerId == playerId ? 1 : -1);
 
-    // calculate partial value (score so far)
-    QMap<int, int> scoreMap = getScoreMap(board->squareOwners);
-    node->partialValue = (double)(scoreMap[playerId] - scoreMap[1-playerId]) / (1 + (double)(scoreMap[0] + scoreMap[1]));
+    // calculate partial score from perspective of current player
     /*
-    if (std::isnan(node->partialValue)) {
-        qDebug() << scoreMap << scoreMap.keys() << scoreMap.values();
-        assert(false);
+    if (use_move_sequences) {
+        QMap<int, int> scoreMap = getScoreMap(board->squareOwners);
+        node->partialScore = (double) (std::max(1, scoreMap[board->playerId]) - std::max(1, scoreMap[1 - board->playerId])) * 0.1;
+        if (std::isnan(node->partialScore)) {
+            qDebug() << scoreMap << scoreMap.keys() << scoreMap.values();
+            assert(false);
+        }
+    } else {
+        node->partialScore = 0;
     }
-     */
+
+    node->value += node->partialScore;
+    */
 
     // add prior to node's children
     double priorSum = 0; // sum up prior to normalize

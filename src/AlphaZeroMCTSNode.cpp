@@ -14,7 +14,7 @@ AlphaZeroMCTSNode::AlphaZeroMCTSNode() {
     value = 0;
     prior = 0;
     moves.clear();
-    partialValue = 0.0;
+    partialScore = 0.0;
     puctValue = 0;
     leaf = false;
     ownMove = false;
@@ -27,7 +27,7 @@ void AlphaZeroMCTSNode::clear() {
     value = 0.0;
     prior = 0.0;
     moves.clear();
-    partialValue = 0.0;
+    partialScore = 0.0;
     puctValue = 0;
     parent = AlphaZeroMCTSNode::Ptr(nullptr);
     for (const auto &child : children) {
@@ -46,7 +46,7 @@ AlphaZeroMCTSNode::AlphaZeroMCTSNode(const AlphaZeroMCTSNode &node) {
     prior = node.prior;
     parent = node.parent;
     moves = node.moves;
-    partialValue = node.partialValue;
+    partialScore = node.partialScore;
     puctValue = node.puctValue;
     leaf = node.leaf;
     ownMove = node.ownMove;
@@ -77,6 +77,7 @@ QString AlphaZeroMCTSNode::toDotString() {
     ret.append(getNodeName() + QStringLiteral(" [label=\"")+moveList+QStringLiteral(", V: ") +
                QString::number(value, 'f', 3) + QStringLiteral(", N: ") + QString::number(visitCnt) +
                QStringLiteral(", P: ") + QString::number(prior, 'f', 2) + QStringLiteral(", U: ") + QString::number(puctValue, 'f', 3) +
+               QStringLiteral(", S: ") + QString::number(partialScore, 'f', 3) +
                QStringLiteral("\", shape=\"") + ( leaf ? QStringLiteral("ellipse") : QStringLiteral("box") ) + QStringLiteral("\"") +
                (!ownMove ? QStringLiteral(", fillcolor=yellow, style=filled") : QStringLiteral("") ) + QStringLiteral("];\n")
     );

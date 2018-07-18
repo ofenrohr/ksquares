@@ -29,7 +29,7 @@ namespace AlphaDots {
         /// lines drawn to get from parent node to this one
         QList<int> moves;
         /// partial value -> (own squares - enemy squares) / all captured squares
-        double partialValue;
+        double partialScore;
 
         /// debug data
         double puctValue;

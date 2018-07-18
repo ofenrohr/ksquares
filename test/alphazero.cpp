@@ -373,6 +373,24 @@ void alphazero::testAlphaZero013() {
     //AlphaDots::aiAlphaZeroMCTS::use_move_sequences = false;
 
     AlphaDots::ModelManager::getInstance().setDebug(false);
-    AlphaDots::ModelManager::getInstance().allowGPU(false);
+    AlphaDots::ModelManager::getInstance().allowGPU(true);
     runTest(KSquares::AI_MCTS_ALPHAZERO, tr("berlekamp"), modelName, allNames, boardPaths, allExpectedLines, true);
+}
+
+void alphazero::testAlphaZero014() {
+    QString modelName = tr("AlphaZeroV14");
+    QList<QString> allNames;
+    QList<QString> boardPaths;
+    QList<QList<int>> allExpectedLines;
+
+    boardPaths << tr(TESTBOARDPATH) + tr("/5x5-early-preemtive-sacrifice.dbl");
+    allNames << tr("early-preemtive-sacrifice");
+
+    allExpectedLines << (QList<int>() << 43);
+
+    //AlphaDots::aiAlphaZeroMCTS::use_move_sequences = false;
+
+    AlphaDots::ModelManager::getInstance().setDebug(false);
+    AlphaDots::ModelManager::getInstance().allowGPU(true);
+    runTest(KSquares::AI_MCTS_ALPHAZERO, tr("early-preemtive-sacrifice"), modelName, allNames, boardPaths, allExpectedLines, true);
 }

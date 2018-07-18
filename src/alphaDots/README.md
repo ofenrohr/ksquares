@@ -184,7 +184,7 @@ Data is generated as follows:
   generator is configured without MCTS, KSquare's Hard AI will be used instead.
 * (no MCTS) Finally, the game is played to its end by KSquare's Hard AI, so that the
   game's value can be calculated.
-* (with MCTS) The value is taken from the selected child in the Monte-Carlo tree.
+* (with MCTS) The value is taken from the root node in the Monte-Carlo tree.
 
 In summary the Stage Four dataset generator uses AlphaZero MCTS for exactly one
 move to minimize computational cost while still providing means to improve upon
