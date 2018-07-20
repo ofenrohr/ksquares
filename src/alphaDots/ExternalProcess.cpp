@@ -21,6 +21,7 @@ ExternalProcess::~ExternalProcess() {
     if (!stopExternalProcess(true, false, false)) {
         qDebug() << "failed to stop process";
     }
+	process->deleteLater();
 	QCoreApplication::processEvents();
 }
 
@@ -111,7 +112,7 @@ bool ExternalProcess::stopExternalProcess(bool terminate, bool kill, bool wait) 
 		disconnect(process, SIGNAL(readyReadStandardError()), this, SLOT(processReadyReadStandardError()));
 		disconnect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(processReadyReadStandardOutput()));
 
-		process->deleteLater();
+		//process->deleteLater();
 
 		QCoreApplication::processEvents();
 	}

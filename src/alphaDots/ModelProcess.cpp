@@ -46,7 +46,8 @@ ModelProcess::ModelProcess(QString model, int boxesWidth, int boxesHeight, int p
 
 ModelProcess::~ModelProcess() {
     qDebug() << "~ModelProcess";
-    delete(modelServer);
+    //delete(modelServer);
+    modelServer->deleteLater();
 }
 
 bool ModelProcess::isRunning() {

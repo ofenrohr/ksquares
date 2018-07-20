@@ -162,7 +162,7 @@ KSquaresAi::Ptr aiController::getAi()
 		break;
         case KSquares::AI_CONVNET:
 			if (!alphaDotsActive) {
-				QMessageBox::critical(nullptr, tr("AlphaDots missing"), tr("Can't execute AI without alphaDots"));
+				QMessageBox::critical(nullptr, QObject::tr("AlphaDots missing"), QObject::tr("Can't execute AI without alphaDots"));
 				QCoreApplication::exit(1);
 			}
 			if (ai.isNull())
@@ -171,7 +171,7 @@ KSquaresAi::Ptr aiController::getAi()
 		case KSquares::AI_MCTS_CONVNET:
 
 			if (!alphaDotsActive) {
-				QMessageBox::critical(nullptr, tr("AlphaDots missing"), tr("Can't execute AI without alphaDots"));
+				QMessageBox::critical(nullptr, QObject::tr("AlphaDots missing"), QObject::tr("Can't execute AI without alphaDots"));
 				QCoreApplication::exit(1);
 			}
 			if (ai.isNull())
@@ -179,7 +179,7 @@ KSquaresAi::Ptr aiController::getAi()
 		break;
 		case KSquares::AI_MCTS_ALPHAZERO:
 			if (!alphaDotsActive) {
-				QMessageBox::critical(nullptr, tr("AlphaDots missing"), tr("Can't execute AI without alphaDots"));
+				QMessageBox::critical(nullptr, QObject::tr("AlphaDots missing"), QObject::tr("Can't execute AI without alphaDots"));
 				QCoreApplication::exit(1);
 			}
 			if (ai.isNull())

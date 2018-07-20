@@ -86,6 +86,5 @@ void FastModelEvaluationWorker::process() {
 
         resultModel->addResult(result);
         //qDebug() << "saved result";
-
     } while (true);
 }

@@ -53,6 +53,7 @@ class KSquaresAi : public aiFunctions, public BoardAnalysisFunctions
 
 class aiController : public QObject
 {
+    Q_OBJECT
 	public:
 		typedef QSharedPointer<aiController> Ptr;
 		

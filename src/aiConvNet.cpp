@@ -32,7 +32,7 @@ aiConvNet::aiConvNet(int newPlayerId, int newMaxPlayerId, int newWidth, int newH
 
 	//qDebug() << "aiConvNet";
 
-	port = ModelManager::getInstance().ensureProcessRunning(model.name(), width, height);
+	port = ModelManager::getInstance().ensureProcessRunning(modelInfo.name(), width, height);
 	if (port < 0) {
 		qDebug() << "ensureProcessRunning failed!";
 		isTainted = true;
@@ -75,6 +75,7 @@ aiConvNet::aiConvNet(int newPlayerId, int newMaxPlayerId, int newWidth, int newH
 aiConvNet::~aiConvNet() {
 	//modelServer->stopExternalProcess();
 	//delete modelServer;
+	ModelManager::getInstance().freeClaimOnProcess(modelInfo.name(), width, height);
 }
 
 int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners,
@@ -130,6 +131,7 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 		if (!ProtobufConnector::sendString(socket, seq.SerializeAsString())) {
             qDebug() << "ProtobufConnector::sendString failed!";
             isTainted = true;
+			delete[] lines;
 			return -1;
         }
 	}
@@ -148,6 +150,7 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 	bool ok;
 	std::string rpl = ProtobufConnector::recvString(socket, &ok);
 	if (!ok) {
+		delete[] lines;
 		return -1;
 	}
 
