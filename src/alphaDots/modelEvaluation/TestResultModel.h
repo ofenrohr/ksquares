@@ -55,6 +55,13 @@ namespace AlphaDots {
         void addResult(AITestResult result);
 
         /**
+         * Exports the data as markdown table.
+         * @param includeMoveHistories include the move histories in the table?
+         * @return QString of the data in markdown format
+         */
+        QString dataToString(bool includeMoveHistories);
+
+        /**
          * Save data
          * @param dest destination file path
          */
@@ -66,12 +73,20 @@ namespace AlphaDots {
          * @return name of ai/model
          */
         QString aiIndexToName(int aiIndex);
+
+        /**
+         * Returns the line histories of all games
+         * @return line histories of all games.
+         */
+        QList<QString> getHistories() { return gameHistories; }
+
     private:
         QList<ModelInfo> *modelList;
 
         QList<AITestResult> results;
         QList<QList<int>> rows;
-        QList<QString> histories;
+        QList<QString> modelHistories;
+        QList<QString> gameHistories;
         int gamesPerAiCnt;
 
         mutable QMutex rowsMutex;

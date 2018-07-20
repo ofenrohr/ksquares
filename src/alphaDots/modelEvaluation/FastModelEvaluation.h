@@ -20,9 +20,16 @@ namespace AlphaDots {
         ~FastModelEvaluation();
 
         void startEvaluation(QList<AITestSetup> *testSetups, TestResultModel *resultModel);
+
+    public slots:
+        void threadFinished(int threadID);
+    signals:
+        void evaluationFinished();
+
     private:
         AITestSetupManager *setupManager;
         int threadCnt;
+        int threadsRunning;
     };
 }
 

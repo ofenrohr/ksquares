@@ -15,14 +15,14 @@ TestResultModel::TestResultModel(QObject *parent, QList<ModelInfo> *models, int 
         gamesPerAiCnt(gamesPerAi)
 {
     rows.reserve(modelList->size());
-    histories.reserve(modelList->size());
+    modelHistories.reserve(modelList->size());
     for (int i = 0; i < modelList->size(); i++) {
         QList<int> columns;
         for (int j = 0; j < columnCount(); j++) {
             columns.append(0);
         }
         rows.append(columns);
-        histories.append(tr(""));
+        modelHistories.append(tr(""));
     }
 }
 
@@ -93,53 +93,78 @@ void TestResultModel::addResult(AITestResult result) {
         rows[modelAi - 3][4]++; // inc error counter
     }
     // add line history
-    histories[modelAi - 3] += tr("[");
-    histories[modelAi - 3] += aiIndexToName(result.setup.aiLevelP1) + tr(" vs ") + aiIndexToName(result.setup.aiLevelP2) + tr(" on ");
-    histories[modelAi - 3] += QString::number(result.setup.boardSize.x()) + tr("x") + QString::number(result.setup.boardSize.y());
-    histories[modelAi - 3] += tr("|");
+    QString hist = tr("|");
+    hist += aiIndexToName(result.setup.aiLevelP1) + tr(" vs ") + aiIndexToName(result.setup.aiLevelP2) + tr(" | ");
+    hist += QString::number(result.scoreP1) + tr(":") + QString::number(result.scoreP2) + tr(" | ");
+    hist += QString::number(result.setup.boardSize.x()) + tr("x") + QString::number(result.setup.boardSize.y());
+    hist += tr(" | ");
+
     for (int i = 0; i < result.moves.size(); i++) {
         if (i != 0) {
-            histories[modelAi - 3] += tr("|");
+            hist += tr(",");
         }
-        histories[modelAi - 3] += QString::number(result.moves[i]);
+        hist += QString::number(result.moves[i]);
     }
-    histories[modelAi - 3] += tr("]");
+    hist += tr("|");
+
+    gameHistories.append(hist);
+    modelHistories[modelAi - 3] += hist;
+
     // update gui
     emit(dataChanged(createIndex(0,0),createIndex(rowCount(), columnCount())));
 }
 
-void TestResultModel::saveData(QString dest) {
+QString TestResultModel::dataToString(bool includeHistory) {
     QString output;
+    int cols = columnCount() + (includeHistory ? 2 : 1);
     for (int y = 0; y < rowCount() + 1; y++) {
-        for (int x = 0; x < columnCount() + 2; x++) { // +1 for column 'move history'
+        for (int x = 0; x < cols; x++) { // +1 for column 'move history'
+            // add cell input
             QString cell;
             if (y == 0) {
                 // columns that contain normal results
-                // (first column is used for model names, last column for game histories)
-                if (x != 0 && x < columnCount() + 1) {
-                    cell = headerData(x-1, Qt::Horizontal, Qt::DisplayRole).toString();
-                    output.append(tr(","));
+                // (first column is used for model names, last column for game modelHistories)
+                if (x == 0) {
+                    cell = tr("|Model");
                 }
-                if (x == columnCount() + 1) {
-                    cell = tr("Move histories");
-                    output.append(tr(","));
+                if (x != 0) {
+                    if (includeHistory && x == cols - 1) {
+                        cell = tr("Move modelHistories");
+                        output.append(tr("|"));
+                    } else {
+                        cell = headerData(x - 1, Qt::Horizontal, Qt::DisplayRole).toString();
+                        output.append(tr("|"));
+                    }
                 }
             } else {
                 if (x == 0) {
                     cell = headerData(y-1, Qt::Vertical, Qt::DisplayRole).toString();
                 }
-                else if (x == columnCount() + 1) {
-                    cell = histories[y-1];
-                    output.append(tr(","));
+                else if (includeHistory && x == columnCount() + 1) {
+                    cell = modelHistories[y-1];
+                    output.append(tr("|"));
                 } else {
                     cell = data(createIndex(y - 1, x - 1), Qt::DisplayRole).toString();
-                    output.append(tr(","));
+                    output.append(tr("|"));
                 }
             }
+            // add the cell
             output.append(cell.replace(tr("\n"), tr("")));
+            // add separator row after header
+            if (y == 0 && x == cols - 1) {
+                output.append(tr("|\n"));
+                for (int i = 0; i < cols; i++) {
+                    output.append(tr("|---"));
+                }
+            }
         }
-        output.append(tr("\n"));
+        output.append(tr("|\n"));
     }
+    return output;
+}
+
+void TestResultModel::saveData(QString dest) {
+    QString output = dataToString(true);
     QFile outputFile(dest);
     if (!outputFile.open(QIODevice::ReadWrite)) {
         qDebug() << "failed to open output file!";

@@ -3,7 +3,36 @@
 
 #find_package(QJSON REQUIRED)
 
-set(CMAKE_AUTOUIC ON)
+# http://xit0.org/2013/04/cmake-use-git-branch-and-commit-details-in-project/
+# Get the current working branch
+execute_process(
+    COMMAND git rev-parse --abbrev-ref HEAD
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_BRANCH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+# Get the latest commit hash of the working branch
+execute_process(
+    COMMAND git log -1 --format=%H
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_COMMIT_HASH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+# Get git status info
+execute_process(
+    COMMAND git status --porcelain -uno
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_STATUS
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+string(REPLACE "\n" "\\n" GIT_STATUS "${GIT_STATUS}")
+
+# provide git info with definitions
+add_definitions(-DGIT_COMMIT_HASH="${GIT_COMMIT_HASH}")
+add_definitions(-DGIT_BRANCH="${GIT_BRANCH}")
+add_definitions(-DGIT_STATUS="${GIT_STATUS}")
 
 set(ksquares_SRCS
         main.cpp

@@ -273,6 +273,8 @@ AlphaZeroV1|300|82|80|35|0
 AlphaZeroV3|300|79|94|50|0
 AlphaZeroV5|300|90|75|45|0
 AlphaZeroV7|300|96|80|46|0
+AlphaZeroV14|300|43|39|12|0
+AlphaZeroV14_MCTS|300|93|84|60|0
 
 ### Screenshot
 ![*slow model evaluation with KSquares*](ksquares_model_evaluation.png)

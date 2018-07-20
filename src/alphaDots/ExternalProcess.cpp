@@ -13,10 +13,12 @@ ExternalProcess::ExternalProcess(QString processPath, QStringList arguments, QSt
 	processArguments = arguments;
 	processWorkingDirectory = workingDirectory;
 	process = nullptr;
+	captureStdErr = false;
+	captureStdOut = false;
 }
 
 ExternalProcess::~ExternalProcess() {
-    if (!stopExternalProcess()) {
+    if (!stopExternalProcess(true, false, false)) {
         qDebug() << "failed to stop process";
     }
 	QCoreApplication::processEvents();
@@ -34,6 +36,8 @@ bool ExternalProcess::startExternalProcess() {
 			return false;
 		}
 	}
+	stdOut = tr("");
+	stdErr = tr("");
 	//converterArguments << converterExecutable << QStringLiteral("--zmq") << QString::number(samples) << QStringLiteral("--output-file") << datasetPath;
 	process = new QProcess();
 	QProcessEnvironment env = process->processEnvironment();
@@ -74,7 +78,7 @@ bool ExternalProcess::startExternalProcess() {
     return true;
 }
 
-bool ExternalProcess::stopExternalProcess(bool terminate, bool kill) {
+bool ExternalProcess::stopExternalProcess(bool terminate, bool kill, bool wait) {
 	if (process != nullptr)
 	{
 		qDebug() << "stopExternalProcess " << processExecutablePath << processArguments;
@@ -89,11 +93,13 @@ bool ExternalProcess::stopExternalProcess(bool terminate, bool kill) {
 				process->kill();
 			}
 			// wait for it
-			if (process->waitForFinished()) {
-				qDebug() << "killed process";
-			} else {
-				qDebug() << "killing process failed!";
-				return false;
+			if (wait) {
+				if (process->waitForFinished()) {
+					qDebug() << "killed process";
+				} else {
+					qDebug() << "killing process failed!";
+					return false;
+				}
 			}
 		}
 
@@ -172,12 +178,18 @@ void ExternalProcess::processReadyReadStandardError() {
 	process->setReadChannel(QProcess::StandardError);
 	QByteArray outputData = process->readAll();
 	qDebug() << "stderr: " << outputData.toStdString().c_str();
+	if (captureStdErr) {
+		stdErr.append(QString::fromStdString(outputData.toStdString()));
+	}
 }
 
 void ExternalProcess::processReadyReadStandardOutput() {
 	process->setReadChannel(QProcess::StandardOutput);
 	QByteArray outputData = process->readAll();
 	qDebug() << "stdout: " << outputData.toStdString().c_str();
+	if (captureStdOut) {
+		stdOut.append(QString::fromStdString(outputData.toStdString()));
+	}
 }
 
 void ExternalProcess::processEvents() {
@@ -185,4 +197,17 @@ void ExternalProcess::processEvents() {
 	if (processRunning) {
         QTimer::singleShot(1000, this, &ExternalProcess::processEvents);
 	}
+}
+
+void ExternalProcess::setStdCapture(bool captureOut, bool captureErr) {
+	captureStdErr = captureErr;
+	captureStdOut = captureOut;
+}
+
+QString ExternalProcess::getStdErr() {
+	return stdErr;
+}
+
+QString ExternalProcess::getStdOut() {
+	return stdOut;
 }

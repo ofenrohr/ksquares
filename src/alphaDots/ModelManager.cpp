@@ -50,9 +50,9 @@ void ModelManager::allowGPU(bool allowGPU) {
     useGPU = allowGPU;
 }
 
-void ModelManager::stopAll() {
+void ModelManager::stopAll(bool wait) {
     for (const auto &process : processMap) {
-        process->stop();
+        process->stop(wait);
     }
     processMap.clear();
 }

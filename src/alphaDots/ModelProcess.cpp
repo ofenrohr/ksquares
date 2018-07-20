@@ -57,6 +57,6 @@ int ModelProcess::port() {
     return modelPort;
 }
 
-void ModelProcess::stop() {
-    modelServer->stopExternalProcess(true, false);
+void ModelProcess::stop(bool wait) {
+    modelServer->stopExternalProcess(true, false, wait);
 }

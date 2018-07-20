@@ -26,11 +26,16 @@ public:
      * @return true on success, false otherwise
      */
     bool startExternalProcess();
-    bool stopExternalProcess(bool terminate = true, bool kill = true);
+    bool stopExternalProcess(bool terminate = true, bool kill = true, bool wait = true);
 
     bool isRunning() { return processRunning; }
 
     void addEnvironmentVariable(QString name, QString value);
+
+    void setStdCapture(bool captureOut, bool captureErr);
+
+    QString getStdErr();
+    QString getStdOut();
 
 public slots:
     void processError(QProcess::ProcessError error);
@@ -51,6 +56,10 @@ protected:
     QProcess *process;
     bool processRunning;
     QList<QPair<QString, QString>> envVars;
+    bool captureStdOut;
+    QString stdOut;
+    bool captureStdErr;
+    QString stdErr;
 };
 
 

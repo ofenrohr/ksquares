@@ -11,6 +11,8 @@
 #include <alphaDots/ProtobufConnector.h>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMessageBox>
+#include <QtCore/QDateTime>
+#include <alphaDots/ModelManager.h>
 
 using namespace AlphaDots;
 
@@ -22,6 +24,7 @@ ModelEvaluation::ModelEvaluation(QString models, bool fast, int threadCnt, int g
     threads = threadCnt;
     gamesPerAi = games;
     fastEvaluationHandler = nullptr;
+    evaluationRunning = false;
     sGame = new KSquaresGame();
     thread = nullptr;
     qRegisterMetaType<QVector<KSquaresPlayer> >("QVector<KSquaresPlayer>");
@@ -31,11 +34,18 @@ ModelEvaluation::ModelEvaluation(QString models, bool fast, int threadCnt, int g
     createTestSetups(boardSize);
     resultModel = new TestResultModel(this, &modelList, gamesPerAi);
 
+    if (gamesPerAi % 2 != 0) {
+        QMessageBox::critical(this, tr("ModelEvaluation error"), tr("ERROR: games per AI must be multiple of 2"));
+        QCoreApplication::exit(1);
+    }
+
     QTimer::singleShot(0, this, &ModelEvaluation::initObject);
 }
 
 ModelEvaluation::~ModelEvaluation() {
-    delete m_view;
+    AlphaDots::ModelManager::getInstance().stopAll(false);
+    //delete m_view;
+    m_view->deleteLater();
     //delete resultModel;
 }
 
@@ -53,6 +63,9 @@ void ModelEvaluation::initObject() {
     m_scene = new GameBoardScene(5, 5, true);
     gameView->setScene(m_scene);
 
+    startTime = QDateTime::currentDateTime();
+    evaluationRunning = true;
+
     if (!fastEvaluation) {
         nextGame();
     } else {
@@ -65,6 +78,7 @@ void ModelEvaluation::initObject() {
             return;
         }
         fastEvaluationHandler = new FastModelEvaluation(threads);
+        connect(fastEvaluationHandler, SIGNAL(evaluationFinished()), this, SLOT(evaluationFinished()));
         fastEvaluationHandler->startEvaluation(&testSetups, resultModel);
     }
 }
@@ -289,6 +303,7 @@ void ModelEvaluation::nextGame() {
         loadTestSetup(testSetups.takeFirst());
     } else {
         qDebug() << "done";
+        evaluationFinished();
     }
 }
 
@@ -305,7 +320,91 @@ QString ModelEvaluation::aiName(int level) {
     }
 }
 
+void ModelEvaluation::evaluationFinished() {
+    qDebug() << "evaluation finished!";
+    evaluationRunning = false;
+    endTime = QDateTime::currentDateTime();
+    ModelManager::getInstance().stopAll(true);
+}
+
 void ModelEvaluation::saveResultsAs() {
-    QString dest = QFileDialog::getSaveFileName(this, QObject::tr("Save results as"), QObject::tr("ModelEvaluation.csv"), QObject::tr("Comma-separated values (*.csv)"));
-    resultModel->saveData(dest);
+    QString datetime = QDateTime::currentDateTime().toString(QObject::tr("yyyy-MM-dd_hh-mm-ss"));
+    QString dest = QFileDialog::getSaveFileName(this, QObject::tr("Save results as"), QObject::tr("ModelEvaluationReport-") + datetime + QObject::tr(".md"), QObject::tr("Markdown file (*.md)"));
+
+    QFile outputFile(dest);
+    if (!outputFile.open(QIODevice::ReadWrite)) {
+        qDebug() << "failed to open output file!";
+        return;
+    }
+
+    // do a lot of stuff to generate a nice grid table...
+    //ExternalProcess git(tr("/usr/bin/git"), QStringList() << "log" << "-1" << "--format=%H"
+    // find out maximum line width
+    int maxWidth = 72;
+    // cmd line args
+    QStringList allArgs = QCoreApplication::arguments();
+    allArgs.removeFirst();
+    QString cmdArgs = allArgs.join(QLatin1Char(' '));
+    if (cmdArgs.length() > maxWidth) {
+        maxWidth = cmdArgs.length();
+    }
+    // git status cmd width
+    QList<QString> gitStatusLines = tr(GIT_STATUS).split(tr("\n"));
+    for (QString l : gitStatusLines) {
+        if (l.length() > maxWidth) {
+            maxWidth = l.length();
+        }
+    }
+    // generate git status table entry
+    QString gitStatus;
+    bool first = true;
+    for (QString l : gitStatusLines) {
+        if (first) {
+            first = false;
+        } else {
+            gitStatus.append(tr("|                 |"));
+        }
+        gitStatus.append(tr("%1\\ |\n").arg(l, -maxWidth + 2));
+    }
+    // generate markdown file
+    QTextStream outputStream(&outputFile);
+    outputStream << "# Model evaluation report\n";
+    outputStream << "This is an automatically generated report for the model evaluation with KSquares.\n\n";
+    outputStream << "## Configuration\n\n\n";
+    outputStream << "+-----------------+" << tr("%1").arg(tr(""), maxWidth, QLatin1Char('-')) << "+\n";
+    outputStream << "|Command line args|" << tr("%1").arg(cmdArgs, -maxWidth) << "|\n";
+    outputStream << "+-----------------+" << tr("%1").arg(tr(""), maxWidth, QLatin1Char('-')) << "+\n";
+    outputStream << "|Current time     |" << tr("%1").arg(QDateTime::currentDateTime().toString(QObject::tr("dd.MM.yyyy hh:mm:ss")), -maxWidth) << "|\n";
+    outputStream << "+-----------------+" << tr("%1").arg(tr(""), maxWidth, QLatin1Char('-')) << "+\n";
+    outputStream << "|Start time       |" << tr("%1").arg(startTime.toString(QObject::tr("dd.MM.yyyy hh:mm:ss")), -maxWidth) << "|\n";
+    outputStream << "+-----------------+" << tr("%1").arg(tr(""), maxWidth, QLatin1Char('-')) << "+\n";
+    if (evaluationRunning) {
+        outputStream << "|End time         |" << tr("%1").arg(tr("Evaluation is still running"), -maxWidth) << "|\n";
+    } else {
+        outputStream << "|End time         |" << tr("%1").arg(endTime.toString(QObject::tr("dd.MM.yyyy hh:mm:ss")), -maxWidth) << "|\n";
+    }
+    outputStream << "+-----------------+" << tr("%1").arg(tr(""), maxWidth, QLatin1Char('-')) << "+\n";
+    outputStream << "|GIT branch       |" << tr("%1").arg(tr(GIT_BRANCH), -maxWidth) << "|\n";
+    outputStream << "+-----------------+" << tr("%1").arg(tr(""), maxWidth, QLatin1Char('-')) << "+\n";
+    outputStream << "|GIT commit       |" << tr("%1").arg(tr(GIT_COMMIT_HASH), -maxWidth) << "|\n";
+    outputStream << "+-----------------+" << tr("%1").arg(tr(""), maxWidth, QLatin1Char('-')) << "+\n";
+    outputStream << "|GIT status       |" << gitStatus;
+    outputStream << "+-----------------+" << tr("%1").arg(tr(""), maxWidth, QLatin1Char('-')) << "+\n";
+    outputStream << "|Threads          |" << tr("%1").arg(QString::number(threads), -maxWidth) << "|\n";
+    outputStream << "+-----------------+" << tr("%1").arg(tr(""), maxWidth, QLatin1Char('-')) << "+\n";
+    outputStream << "\n";
+
+    outputStream << "## Results\n\n";
+    outputStream << resultModel->dataToString(false);
+    outputStream << "\n";
+
+    outputStream << "## Game histories\n\n";
+    outputStream << "|Match|Result|Board|Lines|\n";
+    outputStream << "|---|---|---|---|\n";
+
+    for (const QString &history : resultModel->getHistories()) {
+        outputStream << history;
+        outputStream << "\n";
+    }
+    outputStream << "\n\n";
 }

@@ -45,7 +45,7 @@ namespace AlphaDots {
         /**
          * Stops all running model processes
          */
-        void stopAll();
+        void stopAll(bool wait = true);
 
         /**
          * Sets the debug mode

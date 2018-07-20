@@ -9,9 +9,11 @@
 
 using namespace AlphaDots;
 
-FastModelEvaluationWorker::FastModelEvaluationWorker(AITestSetupManager *testSetupManager, TestResultModel *testResultModel) :
+FastModelEvaluationWorker::FastModelEvaluationWorker(AITestSetupManager *testSetupManager,
+                                                     TestResultModel *testResultModel, int thread) :
     setupManager(testSetupManager),
-    resultModel(testResultModel)
+    resultModel(testResultModel),
+    threadID(thread)
 {
     qDebug() << "[FastModelEvaluationWorker] init";
 }
@@ -28,6 +30,7 @@ void FastModelEvaluationWorker::process() {
         bool ok = false;
         AITestSetup setup = setupManager->popSetup(&ok);
         if (!ok) {
+            emit(finished(threadID));
             return;
         }
 

@@ -47,7 +47,8 @@ KSquares::BoardAnalysis BoardAnalysisFunctions::analyseBoard(aiBoard::Ptr board)
 		// capture everything that can be captured
 		if (analysis.chains[i].ownChain)
 			for (int j = 0; j < analysis.chains[i].lines.size(); j++)
-				board->doMove(analysis.chains[i].lines[j]);
+				if (!board->lines[analysis.chains[i].lines[j]]) // some chains are contained in other chains
+                    board->doMove(analysis.chains[i].lines[j]);
 	}
 	
 	//qDebug() << "board after capture " << aiFunctions::boardToString(board);
@@ -121,7 +122,8 @@ KSquares::BoardAnalysis BoardAnalysisFunctions::analyseBoard(aiBoard::Ptr board)
 		if (!analysis.chains[i].ownChain)
 			continue;
 		for (int j = analysis.chains[i].lines.size()-1; j >= 0; j--)
-			board->undoMove(analysis.chains[i].lines[j]);
+			if (board->lines[analysis.chains[i].lines[j]]) // some chains are contained in other chains...
+                board->undoMove(analysis.chains[i].lines[j]);
 	}
 	
 	analysis.moveSequences = getMoveSequences(board, analysis);

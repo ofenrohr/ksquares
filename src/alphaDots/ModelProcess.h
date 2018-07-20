@@ -32,7 +32,7 @@ namespace AlphaDots {
 
         bool isRunning();
         int port();
-        void stop();
+        void stop(bool wait = true);
     private:
         ExternalProcess *modelServer;
         int width;

@@ -10,6 +10,7 @@
 #include <gameboardscene.h>
 #include <ksquaresgame.h>
 #include <aicontroller.h>
+#include <QtCore/QDateTime>
 
 #include "TestResultModel.h"
 #include "FastModelEvaluation.h"
@@ -37,6 +38,7 @@ namespace AlphaDots {
 		void aiChoseLine(const int &line);
 		void nextGame();
 		void saveResultsAs();
+		void evaluationFinished();
 
 	private slots:
 		void aiChooseLine();
@@ -44,6 +46,10 @@ namespace AlphaDots {
 		void gameOver(const QVector<KSquaresPlayer> & /*playerList*/);
 
     private:
+        QDateTime startTime;
+		QDateTime endTime;
+		bool evaluationRunning;
+
 		QList<AITestSetup> testSetups;
         AITestSetup currentSetup;
 
