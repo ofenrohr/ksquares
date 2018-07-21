@@ -108,7 +108,7 @@ void SelfPlay::updateTrainingInfo() {
 
     // search log file
     QStringList nameFilters;
-    nameFilters << trainingLogBasename + tr("*");
+    nameFilters << trainingLogBasename + tr("*log");
     auto entryList = logDir.entryList(nameFilters, QDir::Files | QDir::NoDotAndDotDot, QDir::Time);
     if (entryList.size() > 0) {
         // check log file
@@ -347,6 +347,8 @@ void SelfPlay::finishIteration() {
             << Settings::alphaDotsDir() + tr("/modelServer/models/") + currentModel.path()
             << tr("--targetmodel")
             << Settings::alphaDotsDir() + tr("/modelServer/models/") + ProtobufConnector::getInstance().getModelByName(targetModelName).path()
+            << tr("--itermodeldest")
+            << datasetDirectory
             //<< tr("--logdest")
             //<< logdest
             ;

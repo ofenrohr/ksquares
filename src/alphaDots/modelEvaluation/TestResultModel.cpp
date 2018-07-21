@@ -101,7 +101,7 @@ void TestResultModel::addResult(AITestResult result) {
 
     for (int i = 0; i < result.moves.size(); i++) {
         if (i != 0) {
-            hist += tr(",");
+            hist += tr(", ");
         }
         hist += QString::number(result.moves[i]);
     }

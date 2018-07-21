@@ -276,6 +276,10 @@ AlphaZeroV7|300|96|80|46|0
 AlphaZeroV14|300|43|39|12|0
 AlphaZeroV14_MCTS|300|93|84|60|0
 
+The button `Save results as` will create an extensive report in markdown format. Here is an 
+[example model evaluation report](ModelEvaluationReport.html) that was rendered from the 
+markdown file.
+
 ### Screenshot
 ![*slow model evaluation with KSquares*](ksquares_model_evaluation.png)
 
