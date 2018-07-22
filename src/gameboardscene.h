@@ -77,6 +77,8 @@ public slots:
         acceptEvents = false;
     }
 
+    void updateDebugLines();
+
 protected:
     /**
      * Given a single location in the scene, gives the two nearest QGraphicsEllipseItem

@@ -400,7 +400,7 @@ void ModelEvaluation::saveResultsAs() {
 
     outputStream << "## Game histories\n\n";
     outputStream << "|Match|Result|Board|Lines|\n";
-    outputStream << "|---|---|---|---|\n";
+    outputStream << "|--------|---|---|---------------------------------|\n";
 
     for (const QString &history : resultModel->getHistories()) {
         outputStream << history;

@@ -26,6 +26,7 @@
 #include <KStandardGameAction>
 #include <settings.h>
 #include <QtWidgets/QFileDialog>
+#include <QtWidgets/QMessageBox>
 // TODO: update file dialog includes
 //#include <KStatusBar>
 //#include <KAction>
@@ -373,11 +374,21 @@ void KSquaresWindow::saveGameAs()
     QFileDialog dialog(this);
     dialog.setFileMode(QFileDialog::AnyFile);
     dialog.showExtension(true);
+    dialog.setConfirmOverwrite(true);
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
     dialog.setNameFilter(tr("Dabble savegames (*.dbl);;KSquares savegames (*.ksq);;LaTeX Picture (*.tex);;LaTeX Strings and Coins Picture (*.sc.tex)"));
     if (!dialog.exec()) {
         return;
     }
+    qDebug() << "selected filter: " << dialog.selectedNameFilter();
     savegamePath = dialog.selectedFiles().at(0);
+    if (!savegamePath.endsWith(tr(".dbl")) &&
+        !savegamePath.endsWith(tr(".ksq")) &&
+        !savegamePath.endsWith(tr(".tex")) &&
+        !savegamePath.endsWith(tr(".sc.tex"))) {
+        QMessageBox::critical(this, tr("Error"), tr("Please select a save game file name with a known extension (.dbl, .ksq, .tex, .sc.tex)"));
+        return;
+    }
 	if (!savegamePath.isEmpty())
 	{
 		saveGame();
@@ -455,8 +466,9 @@ void KSquaresWindow::optionsPreferences()
 	dialog->addPage(aiSettingsDialog, i18n("Computer Player"), QStringLiteral("games-difficult"));
 
     connect(dialog, &KConfigDialog::settingsChanged, m_view, &GameBoardView::setBoardSize);
+    connect(dialog, &KConfigDialog::settingsChanged, m_scene, &GameBoardScene::updateDebugLines);
     // TODO this doesn't seem right?! there should be no need to explicitly capture changed states in the configuration page
-    connect(ui_prefs_display.kcfg_DisplayLineNumbers, SIGNAL(stateChanged(int)), this, SLOT(updateLineNumberDisplaySetting(int)));
+    //connect(ui_prefs_display.kcfg_DisplayLineNumbers, SIGNAL(stateChanged(int)), this, SLOT(updateLineNumberDisplaySetting(int)));
     dialog->show();
 }
 

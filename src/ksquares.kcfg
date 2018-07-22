@@ -29,11 +29,6 @@ http://www.kde.org/standards/kcfg/1.0/kcfg.xsd" >
 			<label>Quick start the game</label>
 			<default>0</default>
 		</entry>
-		<entry name="DisplayLineNumbers" type="Int">
-			<label>Show internal line numbers for debugging</label>
-			<whatsthis>Show internal line numbers for debugging</whatsthis>
-			<default>0</default>
-		</entry>
 	</group>
 	<group name="AI">
 		<entry name="PlayerOneAi" type="Int">
@@ -55,6 +50,16 @@ http://www.kde.org/standards/kcfg/1.0/kcfg.xsd" >
 			<label>Difficulty Player Four</label>
 			<whatsthis>How difficult the AI should be for player four</whatsthis>
 			<default>0</default>
+		</entry>
+		<entry name="AiConvNetModels" type="StringList">
+		    <label>ConvNet AI AlphaDots models</label>
+		    <whatsthis>AlphaDots models for the ConvNet AI for each player</whatsthis>
+		    <default>AlphaZeroV14,AlphaZeroV14,AlphaZeroV14,AlphaZeroV14</default>
+		</entry>
+		<entry name="AiMCTSAlphaZeroModels" type="StringList">
+		    <label>MCTS AlphaZero AI AlphaDots models</label>
+		    <whatsthis>AlphaDots models for the MCTS AlphaZero AI for each player</whatsthis>
+		    <default>AlphaZeroV14_MCTS,AlphaZeroV14_MCTS,AlphaZeroV14_MCTS,AlphaZeroV14_MCTS</default>
 		</entry>
 		<entry name="AiThinkTime" type="Int">
 			<label>Time for AI</label>
@@ -97,6 +102,11 @@ http://www.kde.org/standards/kcfg/1.0/kcfg.xsd" >
 			<label>Highlight Color</label>
 			<whatsthis></whatsthis>
 			<default>220,100,100</default>
+		</entry>
+		<entry name="DisplayLineNumbers" type="Bool">
+			<label>Show line numbers</label>
+			<whatsthis>Show line numbers to make debugging easier</whatsthis>
+			<default>false</default>
 		</entry>
 	</group>
 </kcfg>

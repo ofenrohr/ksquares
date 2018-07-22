@@ -3,36 +3,7 @@
 
 #find_package(QJSON REQUIRED)
 
-# http://xit0.org/2013/04/cmake-use-git-branch-and-commit-details-in-project/
-# Get the current working branch
-execute_process(
-    COMMAND git rev-parse --abbrev-ref HEAD
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    OUTPUT_VARIABLE GIT_BRANCH
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
 
-# Get the latest commit hash of the working branch
-execute_process(
-    COMMAND git log -1 --format=%H
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    OUTPUT_VARIABLE GIT_COMMIT_HASH
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-
-# Get git status info
-execute_process(
-    COMMAND git status --porcelain -uno
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    OUTPUT_VARIABLE GIT_STATUS
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-string(REPLACE "\n" "\\n" GIT_STATUS "${GIT_STATUS}")
-
-# provide git info with definitions
-add_definitions(-DGIT_COMMIT_HASH="${GIT_COMMIT_HASH}")
-add_definitions(-DGIT_BRANCH="${GIT_BRANCH}")
-add_definitions(-DGIT_STATUS="${GIT_STATUS}")
 
 set(ksquares_SRCS
         main.cpp
@@ -97,7 +68,7 @@ set(ksquares_SRCS
 		alphaDots/selfPlay/SelfPlay.cpp
 		alphaDots/selfPlay/SelfPlayWorker.cpp
 		alphaDots/datasets/StageFourDataset.cpp
-        alphaDots/ProtobufBatch.cpp alphaDots/ProtobufBatch.h)
+        alphaDots/ProtobufBatch.cpp alphaDots/ProtobufBatch.h MCTSAlphaZeroAISettingsDialog.cpp MCTSAlphaZeroAISettingsDialog.h aiLevelList.h ConvNetAISettingsDialog.cpp ConvNetAISettingsDialog.h AlphaDotsHelper.cpp AlphaDotsHelper.h)
 
 file(GLOB protoMessages alphaDots/protobuf/*.proto)
 PROTOBUF_GENERATE_CPP(ProtoSrcs ProtoHeaders ${protoMessages})
@@ -116,6 +87,8 @@ ki18n_wrap_ui(ksquares_SRCS
 		alphaDots/mldataview.ui
 		alphaDots/modelEvaluation/ModelEvaluation.ui
         alphaDots/selfPlay/SelfPlayForm.ui
+		convnetaisettings.ui
+		mctsalphazeroaisettings.ui
 )
 
 kconfig_add_kcfg_files(ksquares_SRCS GENERATE_MOC settings.kcfgc)
@@ -152,7 +125,7 @@ include_directories( ${CMAKE_CURRENT_BINARY_DIR}/generated/ )
 install(PROGRAMS org.kde.ksquares.desktop  DESTINATION  ${KDE_INSTALL_APPDIR})
 install(FILES org.kde.ksquares.appdata.xml DESTINATION  ${KDE_INSTALL_METAINFODIR})
 install(FILES ksquares.kcfg  DESTINATION  ${KDE_INSTALL_KCFGDIR})
-install(FILES ksquaresui.rc  DESTINATION  ${KDE_INSTALL_KXMLGUI5DIR}/ksquares)
+install(FILES ksquaresui.rc  DESTINATION  ${KXMLGUI_INSTALL_DIR}/ksquares)
 
 ecm_install_icons(ICONS
     128-apps-ksquares.png

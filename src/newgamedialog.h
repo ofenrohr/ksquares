@@ -11,8 +11,8 @@
 #define NEWGAMEDIALOG_H
 
 #include "ui_newgamewidget.h"
-
 #include <QDialog>
+#include <alphaDots/ModelInfo.h>
 
 class NewGameDialog : public QDialog, public Ui::NewGameWidget
 {
@@ -23,6 +23,14 @@ public:
 public slots:
     void adjustEnabledUsers(int);
     void updateModelList();
+    void playerOneAiConfigSlot();
+    void playerTwoAiConfigSlot();
+    void playerThreeAiConfigSlot();
+    void playerFourAiConfigSlot();
+
+private:
+    void aiConfigDialog(int player, int ai);
+    QList<AlphaDots::ModelInfo> getModels(int ai);
 };
 
 #endif // NEWGAMEDIALOG_H

@@ -10,6 +10,7 @@
 #include "gameboardscene.h"
 
 #include "highlightanimation.h"
+#include "settings.h"
 
 #include <math.h>
 
@@ -304,4 +305,8 @@ void GameBoardScene::setDebugLineDisplay(bool debugLines) {
     for (QGraphicsTextItem *i : lineNumbers) {
         i->setVisible(displayLineNumbers);
     }
+}
+
+void GameBoardScene::updateDebugLines() {
+    setDebugLineDisplay(Settings::displayLineNumbers());
 }
