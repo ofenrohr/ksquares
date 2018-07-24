@@ -178,15 +178,45 @@ void KSquaresWindow::gameReset()
     //reset visible board
 	resetBoard(Settings::boardWidth(), Settings::boardHeight());
 
-	// create ai
+    // check settings
+    if (Settings::aiConvNetModels().size() != 4) {
+        qDebug() << "WARNING: aiConvNetModels does not have four entries! resetting...";
+        QString defaultModel = tr("AlphaZeroV14");
+        Settings::setAiConvNetModels(QStringList() << defaultModel << defaultModel << defaultModel << defaultModel);
+        Settings::self()->save();
+    }
+    if (Settings::aiMCTSAlphaZeroModels().size() != 4) {
+        qDebug() << "WARNING: aiMCTSAlphaZeroModels does not have four entries! resetting...";
+        QString defaultModel = tr("AlphaZeroV14_MCTS");
+        Settings::setAiMCTSAlphaZeroModels(QStringList() << defaultModel << defaultModel << defaultModel << defaultModel);
+        Settings::self()->save();
+    }
+
+    // create AIs
 	ais.clear();
 	for (int i = 0; i < Settings::numOfPlayers(); i++)
 	{
 		int aiLevel = getAiLevel(i);
-		// TODO: don't create ai for human players
-		ais.append(aiController::Ptr(
-                new aiController(i, playerList.size()-1, Settings::boardWidth(), Settings::boardHeight(), aiLevel,
-                                 Settings::aiThinkTime()*1000, Settings::alphaDotsModel())));
+        QString alphaDotsModel;
+        if (aiLevel == KSquares::AI_CONVNET) {
+            alphaDotsModel = Settings::aiConvNetModels()[i];
+        }
+        if (aiLevel == KSquares::AI_MCTS_ALPHAZERO) {
+            alphaDotsModel = Settings::aiMCTSAlphaZeroModels()[i];
+        }
+        // create ai
+        aiController::Ptr aic(nullptr);
+        qDebug() << "human: " << Settings::humanList()[i];
+        if (Settings::humanList()[i] != 2) {
+            aic = aiController::Ptr(new aiController(i, playerList.size() - 1, Settings::boardWidth(),
+                                                     Settings::boardHeight(), aiLevel, Settings::aiThinkTime() * 1000,
+                                                     alphaDotsModel));
+        } else {
+            aic = aiController::Ptr(new aiController(i, playerList.size() - 1, Settings::boardWidth(),
+                                                     Settings::boardHeight(), KSquares::AI_EASY,
+                                                     Settings::aiThinkTime() * 1000));
+        }
+		ais.append(aic);
 	}
 
     //start game etc.

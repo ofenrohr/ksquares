@@ -12,6 +12,7 @@
 #include "MCTSAlphaZeroAISettingsDialog.h"
 #include "ConvNetAISettingsDialog.h"
 #include "AlphaDotsHelper.h"
+#include "aiAlphaZeroMCTS.h"
 #include <QDebug>
 #include <KConfigGroup>
 #include <QDialogButtonBox>
@@ -43,12 +44,6 @@ NewGameDialog::NewGameDialog(QWidget *parent) : QDialog(parent)
     mainLayout->addWidget(buttonBox);
     setWindowTitle(tr("New Game"));
     connect(spinNumOfPlayers, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &NewGameDialog::adjustEnabledUsers);
-    /*
-    connect(playerOneAiConfig, static_cast<void (QToolButton::*)(QAction*)>(&QToolButton::triggered), this, &NewGameDialog::playerOneAiConfigSlot);
-    connect(playerTwoAiConfig, static_cast<void (QToolButton::*)(QAction*)>(&QToolButton::triggered), this, &NewGameDialog::playerTwoAiConfigSlot);
-    connect(playerThreeAiConfig, static_cast<void (QToolButton::*)(QAction*)>(&QToolButton::triggered), this, &NewGameDialog::playerThreeAiConfigSlot);
-    connect(playerFourAiConfig, static_cast<void (QToolButton::*)(QAction*)>(&QToolButton::triggered), this, &NewGameDialog::playerFourAiConfigSlot);
-     */
     connect(playerOneAiConfig, SIGNAL(clicked()), this, SLOT(playerOneAiConfigSlot()));
     connect(playerTwoAiConfig, SIGNAL(clicked()), this, SLOT(playerTwoAiConfigSlot()));
     connect(playerThreeAiConfig, SIGNAL(clicked()), this, SLOT(playerThreeAiConfigSlot()));
@@ -146,33 +141,39 @@ void NewGameDialog::playerFourAiConfigSlot() {
 }
 
 void NewGameDialog::aiConfigDialog(int player, int ai) {
+    // only convnet and alphazero get special settings.
+    if (ai != KSquares::AI_CONVNET && ai != KSquares::AI_MCTS_ALPHAZERO) {
+        QMessageBox::information(this, tr("No special settings"), tr("There are no special settings for this AI"));
+        return;
+    }
+
+    // get the model list for ai
+    QList<AlphaDots::ModelInfo> models = getModels(ai);
+
+    // check if there are models
+    if (models.empty()) {
+        QMessageBox::warning(this, tr("AlphaDots Error"),
+                             tr("There are no models. Check your AlphaDots installation"));
+    }
+
     switch (ai) {
         case KSquares::AI_CONVNET: {
             auto *convnetDialog = new ConvNetAISettingsDialog();
 
-            QList<AlphaDots::ModelInfo> models = getModels(ai);
-
-            // check if there are models
-            if (models.empty()) {
-                QMessageBox::warning(this, tr("AlphaDots Error"),
-                                     tr("There are no models for the ConvNet AI. Check your AlphaDots installation"));
-                convnetDialog->deleteLater();
-                break;
-            }
-
-            QString initiallySelectedModel = Settings::aiConvNetModels()[player];
+            convnetDialog->setWindowTitle(tr("ConvNet AI Settings"));
 
             // fill model list
             convnetDialog->aiModel->clear();
             for (const auto &model : models) {
                 convnetDialog->aiModel->addItem(model.name());
-                if (model.name() == initiallySelectedModel) {
-                    convnetDialog->aiModel->setCurrentText(model.name());
-                }
             }
 
+            // preselect configured model
+            QString initiallySelectedModel = Settings::aiConvNetModels()[player];
+            convnetDialog->aiModel->setCurrentText(initiallySelectedModel);
+
             // execute the dialog
-            if (!convnetDialog->exec() == QDialog::Accepted) {
+            if (convnetDialog->exec() == QDialog::Rejected) {
                 convnetDialog->deleteLater();
                 break;
             }
@@ -196,7 +197,47 @@ void NewGameDialog::aiConfigDialog(int player, int ai) {
         }
         case KSquares::AI_MCTS_ALPHAZERO: {
             auto *alphazeroDialog = new MCTSAlphaZeroAISettingsDialog();
-            alphazeroDialog->exec();
+
+            alphazeroDialog->setWindowTitle(tr("MCTS Alpha Zero AI Settings"));
+
+            // fill model list
+            alphazeroDialog->aiModel->clear();
+            for (const auto &model : models) {
+                alphazeroDialog->aiModel->addItem(model.name());
+            }
+
+            // preselect configured model
+            QString initiallySelectedModel = Settings::aiMCTSAlphaZeroModels()[player];
+            alphazeroDialog->aiModel->setCurrentText(initiallySelectedModel);
+
+            // set the AlphaZero hyperparameters
+            alphazeroDialog->mctsIterations->setValue(AlphaDots::aiAlphaZeroMCTS::mcts_iterations);
+            alphazeroDialog->cPUCT->setValue(AlphaDots::aiAlphaZeroMCTS::C_puct);
+            alphazeroDialog->dirichletNoise->setValue(AlphaDots::aiAlphaZeroMCTS::dirichlet_alpha);
+
+            // execute the dialog
+            if (alphazeroDialog->exec() == QDialog::Rejected) {
+                alphazeroDialog->deleteLater();
+                break;
+            }
+
+            // store dialog result
+            QString selectedModel = alphazeroDialog->aiModel->currentText();
+            QStringList mctsModels = Settings::aiMCTSAlphaZeroModels();
+            if (mctsModels.length() != 4) {
+                qDebug() << "Setting aiMCTSAlphaZeroModels does not have 4 entries. Resetting...";
+                mctsModels.clear();
+                mctsModels.append(selectedModel);
+            }
+            mctsModels[player] = selectedModel;
+            Settings::setAiMCTSAlphaZeroModels(mctsModels);
+            AlphaDots::aiAlphaZeroMCTS::mcts_iterations = alphazeroDialog->mctsIterations->value();
+            AlphaDots::aiAlphaZeroMCTS::C_puct = alphazeroDialog->cPUCT->value();
+            AlphaDots::aiAlphaZeroMCTS::dirichlet_alpha = alphazeroDialog->dirichletNoise->value();
+
+            // save settings
+            Settings::self()->save();
+
             alphazeroDialog->deleteLater();
             break;
         }
