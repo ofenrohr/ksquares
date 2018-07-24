@@ -71,6 +71,10 @@ This AI offers the following hyperparameters:
   exploitation. The default value is 10.0
 * `--hp-mcts-dirichlet-alpha` the alpha parameter for the dirichlet noise that
   is applied to the children of the MCTS root node. Default: 0.03
+  
+You can also set the hyperparameters in the GUI:
+
+![AI MCTS AlphaZero configuration dialog](ksquares-ai-config.png)
 
 ## [Tests](Tests.html)
 

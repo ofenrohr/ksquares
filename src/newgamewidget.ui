@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>482</width>
-    <height>521</height>
+    <height>480</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -568,7 +568,8 @@ p, li { white-space: pre-wrap; }
          <string>...</string>
         </property>
         <property name="icon">
-         <iconset theme="configure"/>
+         <iconset theme="configure">
+          <normaloff>.</normaloff>.</iconset>
         </property>
        </widget>
       </item>
@@ -581,7 +582,8 @@ p, li { white-space: pre-wrap; }
          <string>...</string>
         </property>
         <property name="icon">
-         <iconset theme="configure"/>
+         <iconset theme="configure">
+          <normaloff>.</normaloff>.</iconset>
         </property>
        </widget>
       </item>
@@ -594,7 +596,8 @@ p, li { white-space: pre-wrap; }
          <string>...</string>
         </property>
         <property name="icon">
-         <iconset theme="configure"/>
+         <iconset theme="configure">
+          <normaloff>.</normaloff>.</iconset>
         </property>
        </widget>
       </item>
@@ -619,7 +622,8 @@ p, li { white-space: pre-wrap; }
          <string>...</string>
         </property>
         <property name="icon">
-         <iconset theme="configure"/>
+         <iconset theme="configure">
+          <normaloff>.</normaloff>.</iconset>
         </property>
        </widget>
       </item>
@@ -784,27 +788,6 @@ p, li { white-space: pre-wrap; }
        <widget class="QLabel" name="aiThinkTimeLabel">
         <property name="text">
          <string>max. AI think time</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QComboBox" name="aiModel">
-        <item>
-         <property name="text">
-          <string>A</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>B</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>AlphaDots model</string>
         </property>
        </widget>
       </item>

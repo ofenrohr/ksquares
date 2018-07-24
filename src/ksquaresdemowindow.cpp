@@ -26,6 +26,7 @@
 
 //classes
 #include "gameboardview.h"
+#include "aiControllerWorker.h"
 
 KSquaresDemoWindow::KSquaresDemoWindow() : KXmlGuiWindow(), m_view(new GameBoardView(this)), m_scene(0)
 {

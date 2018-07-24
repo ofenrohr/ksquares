@@ -36,6 +36,7 @@
 //classes
 #include "gameboardview.h"
 #include "ksquaresio.h"
+#include "aiControllerWorker.h"
 
 KSquaresTestWindow::KSquaresTestWindow(bool doFullTest) : KXmlGuiWindow(), m_view(new GameBoardView(this)), m_scene(0)
 {

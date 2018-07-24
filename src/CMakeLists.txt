@@ -68,7 +68,7 @@ set(ksquares_SRCS
 		alphaDots/selfPlay/SelfPlay.cpp
 		alphaDots/selfPlay/SelfPlayWorker.cpp
 		alphaDots/datasets/StageFourDataset.cpp
-        alphaDots/ProtobufBatch.cpp alphaDots/ProtobufBatch.h MCTSAlphaZeroAISettingsDialog.cpp MCTSAlphaZeroAISettingsDialog.h aiLevelList.h ConvNetAISettingsDialog.cpp ConvNetAISettingsDialog.h AlphaDotsHelper.cpp AlphaDotsHelper.h)
+        alphaDots/ProtobufBatch.cpp alphaDots/ProtobufBatch.h MCTSAlphaZeroAISettingsDialog.cpp MCTSAlphaZeroAISettingsDialog.h aiLevelList.h ConvNetAISettingsDialog.cpp ConvNetAISettingsDialog.h AlphaDotsHelper.cpp AlphaDotsHelper.h aiControllerWorker.cpp aiControllerWorker.h KSquaresAI.h)
 
 file(GLOB protoMessages alphaDots/protobuf/*.proto)
 PROTOBUF_GENERATE_CPP(ProtoSrcs ProtoHeaders ${protoMessages})

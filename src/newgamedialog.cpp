@@ -50,8 +50,6 @@ NewGameDialog::NewGameDialog(QWidget *parent) : QDialog(parent)
     connect(playerFourAiConfig, SIGNAL(clicked()), this, SLOT(playerFourAiConfigSlot()));
 
     adjustEnabledUsers(spinNumOfPlayers->value());
-
-    updateModelList();
 }
 
 void NewGameDialog::adjustEnabledUsers(int numOfPlayers)
@@ -84,21 +82,6 @@ void NewGameDialog::adjustEnabledUsers(int numOfPlayers)
     case 2:
     default:
         break;
-    }
-}
-
-void NewGameDialog::updateModelList() {
-    if (!AlphaDotsHelper::alphaDotsConfigurationOK()) {
-        QMessageBox::warning(this, tr("AlphaDots not configured"), tr("Please configure AlphaDots in Settings -> Computer player"));
-        aiModel->clear();
-        return;
-    }
-    QList<AlphaDots::ModelInfo> models = AlphaDots::ProtobufConnector::getInstance().getModelList();
-
-    aiModel->clear();
-    for (auto model : models) {
-        qDebug() << "model " << model.name();
-        aiModel->addItem(model.name());
     }
 }
 

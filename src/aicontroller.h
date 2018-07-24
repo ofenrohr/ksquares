@@ -20,37 +20,11 @@
 #include "boardAnalysis.h"
 #include "board.h"
 
+#include "KSquaresAI.h"
+
 /**
- * TODO: move this comment to aiEasyMediumHard and write correct comment.
- * @short AI Controller for KSquares
- *
- * When playing a game of squares there are a number of stages the game goes through:
- * @li The random line placement stage. Where players are just placing lines while trying to not complete the third side of any squares
- * @li Next players will try to only draw the third side of a square if it will only give the opponent the minimum amount of points
- * @li The more advanced player will, at the end of a large run of squares leave a small area at the end, forcing the opponent to take only that small section, leaving another large area open to him.
- * @li The even more advanced player will fight for control over the game. This means that he will count the chains forming in the last phase of the "random line" game phase and thus make sure that he will be the one who gets the first long chain. This works like a Nim game somehow.
- * Currently, the first three points are implemented.
- *
- * @author Matt Williams <matt@milliams.com>
- * @author Tom Vincent Peters <kde@vincent-peters.de>
+ * Class that is used to create and call all AIs available in KSquares.
  */
-
-class KSquaresAi : public aiFunctions, public BoardAnalysisFunctions
-{
-	public:
-		typedef QSharedPointer<KSquaresAi> Ptr;
-		KSquaresAi(int w, int h) : aiFunctions(w, h) {}
-		virtual ~KSquaresAi() {}
-		// call constructor with width, height, playerId, aiLevel
-		//virtual ~KSquaresAi() = 0; 
-		virtual int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory) = 0;
-		virtual QString getName() = 0;
-		virtual bool enabled() { qDebug() << "KSquaresAI -> enabled"; return true; }
-		virtual bool tainted() { return false; } // used for error signaling with external ai
-		virtual long lastMoveTime() { return -3; } // time used to calculate move
-		virtual int crashCount() { return 0; } // times the ai crashed and could be recovered
-};
-
 class aiController : public QObject
 {
     Q_OBJECT
@@ -119,45 +93,5 @@ class aiController : public QObject
 		bool alphaDotsActive;
 };
 
-// see http://qt-project.org/doc/qt-4.8/qthread.html#details
-class aiControllerWorker : public QObject
-{
-	Q_OBJECT
-	QThread workerThread;
-	aiController::Ptr aicontroller;
-	QList<bool> lines;
-	QList<int> squares;
-	QList<Board::Move> lineHistory;
-	
-	public:
-		aiControllerWorker(aiController::Ptr aic, const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &newLineHistory)
-		{
-			qDebug() << "aiControllerWorker constr";
-			aicontroller = aic;
-			lines = newLines;
-			squares = newSquareOwners;
-			lineHistory = newLineHistory;
-		}
-		
-		~aiControllerWorker()
-		{
-			qDebug() << "aiControllerWorker destructor";
-		}
-
-	public slots:
-		void process()
-		//void chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners)
-		{
-			qDebug() << "aiControllerWorker process...";
-			int line = aicontroller->chooseLine(lines, squares, lineHistory);
-			emit lineChosen(line);
-			emit finished();
-			qDebug() << "aiControllerWorker done...";
-		}
-
-	signals:
-		void lineChosen(const int &result);
-		void finished();
-};
 
 #endif // KSQUARES_H

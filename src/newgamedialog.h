@@ -22,7 +22,6 @@ public:
 
 public slots:
     void adjustEnabledUsers(int);
-    void updateModelList();
     void playerOneAiConfigSlot();
     void playerTwoAiConfigSlot();
     void playerThreeAiConfigSlot();

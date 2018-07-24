@@ -13,6 +13,7 @@
 #include <QtWidgets/QMessageBox>
 #include <QtCore/QDateTime>
 #include <alphaDots/ModelManager.h>
+#include <aiControllerWorker.h>
 
 using namespace AlphaDots;
 

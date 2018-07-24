@@ -42,6 +42,7 @@
 //ui
 #include "newgamedialog.h"
 #include "scoresdialog.h"
+#include "aiControllerWorker.h"
 
 KSquaresWindow::KSquaresWindow() : KXmlGuiWindow(), m_view(new GameBoardView(this)), m_scene(0)
 {
@@ -130,7 +131,6 @@ void KSquaresWindow::gameNew()
         dialog.quickStartCheck->setCheckState(Qt::Unchecked);
     }
     dialog.aiThinkTime->setValue(Settings::aiThinkTime());
-    dialog.aiModel->setCurrentText(Settings::alphaDotsModel());
 
     //run dialog
     dialog.exec();
@@ -162,7 +162,6 @@ void KSquaresWindow::gameNew()
     Settings::setBoardWidth(dialog.spinWidth->value());
     Settings::setQuickStart(dialog.quickStartCheck->checkState());
     Settings::setAiThinkTime(dialog.aiThinkTime->value());
-    Settings::setAlphaDotsModel(dialog.aiModel->currentText());
     Settings::self()->save();
 
     gameReset();
