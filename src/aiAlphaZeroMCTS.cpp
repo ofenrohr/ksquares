@@ -90,6 +90,8 @@ int aiAlphaZeroMCTS::chooseLine(const QList<bool> &newLines, const QList<int> &n
     currentMoveSequence = mcts();
     if (currentMoveSequence.empty()) {
         qCritical() << "ERROR: mcts returned empty move sequence!";
+        turnTime = moveTimer.elapsed();
+        isTainted = true;
         return -1;
     }
     lastMoveSequence = currentMoveSequence;
@@ -104,6 +106,7 @@ int aiAlphaZeroMCTS::chooseLine(const QList<bool> &newLines, const QList<int> &n
         {
             qDebug() << "no valid lines left!";
             turnTime = moveTimer.elapsed();
+            isTainted = true;
             return -1;
         }
         turnTime = moveTimer.elapsed();

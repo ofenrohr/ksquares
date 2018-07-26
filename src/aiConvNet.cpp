@@ -139,7 +139,12 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 		aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(lines, linesSize, width, height, newSquareOwners, playerId, maxPlayerId));
 		QImage inputImg = MLImageGenerator::generateInputImage(board);
 		DotsAndBoxesImage img = ProtobufConnector::dotsAndBoxesImageToProtobuf(inputImg);
-		ProtobufConnector::sendString(socket, img.SerializeAsString());
+		if (!ProtobufConnector::sendString(socket, img.SerializeAsString())) {
+			qDebug() << "failed to send request!";
+			isTainted = true;
+			delete[] lines;
+			return -1;
+		}
 	} else {
 		qDebug() << "ERROR: unknown model type!";
         qDebug() << modelInfo.type();
