@@ -18,10 +18,11 @@ ExternalProcess::ExternalProcess(QString processPath, QStringList arguments, QSt
 }
 
 ExternalProcess::~ExternalProcess() {
+    qDebug() << "~ExternalProcess";
     if (!stopExternalProcess(true, false, false)) {
         qDebug() << "failed to stop process";
     }
-	process->deleteLater();
+	//process->deleteLater();
 	QCoreApplication::processEvents();
 }
 
@@ -106,15 +107,17 @@ bool ExternalProcess::stopExternalProcess(bool terminate, bool kill, bool wait) 
 
         QCoreApplication::processEvents();
 
+		/*
 		disconnect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(processError(QProcess::ProcessError)));
 		disconnect(process, SIGNAL(stateChanged(QProcess::ProcessState)), this, SLOT(processStateChanged(QProcess::ProcessState)));
 		disconnect(process, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(processFinished(int, QProcess::ExitStatus)));
 		disconnect(process, SIGNAL(readyReadStandardError()), this, SLOT(processReadyReadStandardError()));
 		disconnect(process, SIGNAL(readyReadStandardOutput()), this, SLOT(processReadyReadStandardOutput()));
 
-		//process->deleteLater();
+		process->deleteLater();
 
 		QCoreApplication::processEvents();
+		 */
 	}
 	processRunning = false;
     return true;
@@ -211,4 +214,14 @@ QString ExternalProcess::getStdErr() {
 
 QString ExternalProcess::getStdOut() {
 	return stdOut;
+}
+
+void ExternalProcess::stopProcessTerm() {
+    qDebug() << "stopProcessTerm";
+	stopExternalProcess(true, false, true);
+}
+
+void ExternalProcess::stopProcessKill() {
+	qDebug() << "stopProcessKill";
+	stopExternalProcess(true, true, true);
 }

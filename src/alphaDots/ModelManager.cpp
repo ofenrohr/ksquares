@@ -3,6 +3,7 @@
 //
 
 #include <QtCore/QCoreApplication>
+#include <QtCore/QThread>
 #include "ModelManager.h"
 
 #ifdef Q_OS_WIN
@@ -12,7 +13,7 @@
 using namespace AlphaDots;
 
 int ModelManager::ensureProcessRunning(const QString modelName, int width, int height) {
-    ModelProcess::Ptr process = getProcess(modelName, width, height);
+    ModelProcess *process = getProcess(modelName, width, height);
     if (!process->isRunning()) {
         qDebug() << "failed to start ModelProcess" << QString::number(process->port());
         return -1;
@@ -20,7 +21,7 @@ int ModelManager::ensureProcessRunning(const QString modelName, int width, int h
     return process->port();
 }
 
-ModelProcess::Ptr ModelManager::getProcess(const QString modelName, int width, int height) {
+ModelProcess *ModelManager::getProcess(const QString modelName, int width, int height) {
     QMutexLocker locker(&getProcessMutex);
     QString modelKey = modelInfoToStr(modelName, width, height);
     if (!processMap.contains(modelKey)) {
@@ -30,7 +31,7 @@ ModelProcess::Ptr ModelManager::getProcess(const QString modelName, int width, i
                 locker.unlock();
                 qDebug() << "waiting for other ModelProcess to finish...";
                 QCoreApplication::processEvents();
-                sleep(1000);
+                QThread::msleep(1000);
                 locker.relock();
             }
         }
@@ -40,8 +41,7 @@ ModelProcess::Ptr ModelManager::getProcess(const QString modelName, int width, i
         } else {
             // start the process
             qDebug() << "starting new ModelProcess on port " << QString::number(port);
-            ModelProcess::Ptr process = ModelProcess::Ptr(
-                    new ModelProcess(modelName, width, height, port, useGPU, debug, logDest));
+            ModelProcess *process = new ModelProcess(modelName, width, height, port, useGPU, debug, logDest, modelKey);
             processMap[modelKey] = process;
             processClaims[modelKey] = 1;
             port++;
@@ -58,9 +58,8 @@ void ModelManager::freeClaimOnProcess(QString modelName, int width, int height) 
     processClaims[modelKey] -= 1;
     if (processClaims[modelKey] == 0 && maxConcurrentProcesses > 0) {
         qDebug() << "Releasing ModelProcess...";
-        processMap[modelKey]->stop(true);
-        oldProcesses.append(processMap[modelKey]);
-        processMap.remove(modelKey);
+        connect(processMap[modelKey], SIGNAL(processFinishedSignal(QString)), this, SLOT(processFinished(QString)));
+        processMap[modelKey]->stop(false);
     }
 }
 
@@ -100,4 +99,11 @@ void ModelManager::setDebug(bool mode) {
 
 void ModelManager::setMaximumConcurrentProcesses(int max) {
     maxConcurrentProcesses = max;
+}
+
+void ModelManager::processFinished(QString modelKey) {
+    //oldProcesses.append(processMap[modelKey]);
+    disconnect(processMap[modelKey], SIGNAL(processFinishedSignal(QString)), this, SLOT(processFinished(QString)));
+    //processMap[modelKey]->deleteLater();
+    processMap.remove(modelKey);
 }

@@ -236,6 +236,7 @@ bool ProtobufConnector::sendString(zmq::socket_t &socket, std::string msg) {
         if (!socket.send(request)) {
             qDebug() << "ERROR: failed to send message via zmq" << errno;
             //QMessageBox::critical(nullptr, QObject::tr("zmq error"), QObject::tr("failed to send message with zmq"));
+            return false;
         }
     } catch (zmq::error_t &ex) {
         qDebug() << "zmq send error: " << ex.num();

@@ -31,8 +31,8 @@ void FastModelEvaluation::startEvaluation(QList<AITestSetup> *testSetups, TestRe
         connect(thread, SIGNAL(started()), worker, SLOT(process()));
         connect(worker, SIGNAL(finished(int)), this, SLOT(threadFinished(int)));
         connect(worker, SIGNAL(finished(int)), thread, SLOT(quit()));
-        connect(worker, SIGNAL(finished(int)), worker, SLOT(deleteLater()));
-        connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
+        //connect(worker, SIGNAL(finished(int)), worker, SLOT(deleteLater()));
+        //connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
         thread->start();
     }
 }

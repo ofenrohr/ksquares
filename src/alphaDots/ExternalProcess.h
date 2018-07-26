@@ -21,11 +21,20 @@ public:
 
     ExternalProcess(QString processPath, QStringList arguments, QString workingDirectory = tr("./"));
     ~ExternalProcess();
+
     /**
-     * Launch the dataset converter.
+     * Launch the external process
      * @return true on success, false otherwise
      */
     bool startExternalProcess();
+
+    /**
+     * Stop the external process
+     * @param terminate Send SIGTERM with QProcess::terminate() ?
+     * @param kill Send SIGKILL with QProcess:kill() ?
+     * @param wait use QProcess::waitForFinished() ?
+     * @return true if process was stopped successfully
+     */
     bool stopExternalProcess(bool terminate = true, bool kill = true, bool wait = true);
 
     bool isRunning() { return processRunning; }
@@ -45,6 +54,9 @@ public slots:
     void processReadyReadStandardOutput();
 
     void processEvents();
+
+    void stopProcessTerm();
+    void stopProcessKill();
 
 signals:
     void processFinished();

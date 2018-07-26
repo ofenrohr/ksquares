@@ -45,6 +45,7 @@ void FastModelEvaluationWorker::process() {
 
         //qDebug() << "board info: " << board.lines().size() << ":" << board.lines();
 
+        bool error = false;
         bool nextPlayer = false;
         bool boardFilled = false;
         QList<int> completedSquares;
@@ -63,6 +64,8 @@ void FastModelEvaluationWorker::process() {
             if (!board.addLine(line, &nextPlayer, &boardFilled, &completedSquares)) {
                 qDebug() << "ERROR: failed to add line" << line;
                 qDebug().nospace().noquote() << board.toString();
+                error = true;
+                break;
             }
         }
         //qDebug() << "finished game";
@@ -70,10 +73,12 @@ void FastModelEvaluationWorker::process() {
         // save result
         AITestResult result;
         result.setup = setup;
+        result.nameP1 = aic0->getAi()->getName();
+        result.nameP2 = aic1->getAi()->getName();
         result.scoreP1 = board.squares().count(0);
         result.scoreP2 = board.squares().count(1);
-        result.taintedP1 = aic0->getAi()->tainted();
-        result.taintedP2 = aic1->getAi()->tainted();
+        result.taintedP1 = aic0->getAi()->tainted() || error;
+        result.taintedP2 = aic1->getAi()->tainted() || error;
         result.crashesP1 = aic0->getAi()->crashCount();
         result.crashesP2 = aic1->getAi()->crashCount();
         QList<int> moves;

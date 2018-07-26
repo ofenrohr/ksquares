@@ -93,7 +93,9 @@ QList<int> aiController::autoFill(int safeMovesLeft, int width, int height)
 int aiController::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory)
 {
 	KSquaresAi::Ptr ai = getAi();
-	
+    lastTurnTime = ai->lastMoveTime();
+    return ai->chooseLine(newLines, newSquareOwners, lineHistory);
+    /*
 	int retryCnt = 0;
 	while (retryCnt < 3)
 	{
@@ -109,6 +111,7 @@ int aiController::chooseLine(const QList<bool> &newLines, const QList<int> &newS
 			return line;
 		}
 	}
+     */
 	return -1;
 }
 

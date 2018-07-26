@@ -13,9 +13,10 @@ namespace AlphaDots {
     /**
      * Holds all data about a ExternalProcess that runs a alpha dots model
      */
-    class ModelProcess {
+    class ModelProcess : public QObject {
+        Q_OBJECT
     public:
-        typedef QSharedPointer<ModelProcess> Ptr;
+        //typedef QSharedPointer<ModelProcess> Ptr;
 
         /**
          * Create a model server process for a given model configuration
@@ -27,17 +28,26 @@ namespace AlphaDots {
          * @param debug Set debug flag
          * @param logdest log file destination directory
          */
-        ModelProcess(QString model, int boxesWidth, int boxesHeight, int port, bool allowGPU, bool debug, QString logdest);
+        ModelProcess(QString model, int boxesWidth, int boxesHeight, int port, bool allowGPU, bool debug, QString logdest, QString modelKey);
         ~ModelProcess();
 
         bool isRunning();
         int port();
         void stop(bool wait = true);
+
+    public slots:
+        void processFinishedSlot();
+
+    signals:
+        void processFinishedSignal(QString modelKey);
+
+
     private:
         ExternalProcess *modelServer;
         int width;
         int height;
         int modelPort;
+        QString processKey;
     };
 }
 

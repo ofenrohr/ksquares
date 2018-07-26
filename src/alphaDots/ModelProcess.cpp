@@ -5,13 +5,15 @@
 #include "ModelProcess.h"
 #include <qdebug.h>
 #include <settings.h>
+#include <QtCore/QTimer>
 
 using namespace AlphaDots;
 
-ModelProcess::ModelProcess(QString model, int boxesWidth, int boxesHeight, int port, bool allowGPU, bool debug, QString logdest) :
+ModelProcess::ModelProcess(QString model, int boxesWidth, int boxesHeight, int port, bool allowGPU, bool debug, QString logdest, QString modelKey) :
     width(boxesWidth),
     height(boxesHeight),
-    modelPort(port)
+    modelPort(port),
+    processKey(modelKey)
 {
     qDebug() << "starting ModelProcess(" << model << "," << width << "," << height << "," << modelPort << ")";
 
@@ -47,7 +49,7 @@ ModelProcess::ModelProcess(QString model, int boxesWidth, int boxesHeight, int p
 ModelProcess::~ModelProcess() {
     qDebug() << "~ModelProcess";
     //delete(modelServer);
-    modelServer->deleteLater();
+    //modelServer->deleteLater();
 }
 
 bool ModelProcess::isRunning() {
@@ -59,5 +61,25 @@ int ModelProcess::port() {
 }
 
 void ModelProcess::stop(bool wait) {
-    modelServer->stopExternalProcess(true, false, wait);
+    connect(modelServer, SIGNAL(processFinished()), this, SLOT(processFinishedSlot()));
+    //modelServer->stopProcessTerm();
+    QTimer::singleShot(0, modelServer, SLOT(stopProcessTerm()));
+    /*
+    //connect(modelServer, SIGNAL(processFinished()), this, SLOT(processFinished()));
+    QTimer::singleShot(0, modelServer, SLOT(stopProcessTerm()));
+    //modelServer->stopExternalProcess(true, false, wait);
+    QCoreApplication::processEvents();
+    while (isRunning() && wait) {
+        int ms = 500;
+        struct timespec ts = {ms / 1000, (ms % 1000) * 1000 * 1000};
+        nanosleep(&ts, NULL);
+        QCoreApplication::processEvents();
+        qDebug() << "waiting for process to stop...";
+    }
+     */
+}
+
+void ModelProcess::processFinishedSlot() {
+    disconnect(modelServer, SIGNAL(processFinished()), this, SLOT(processFinishedSlot()));
+    emit processFinishedSignal(processKey);
 }

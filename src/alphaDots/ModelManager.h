@@ -16,7 +16,8 @@ namespace AlphaDots {
     /**
      * Handles alpha dots models. Starts python processes as required.
      */
-    class ModelManager {
+    class ModelManager : public QObject {
+        Q_OBJECT
     public:
         static ModelManager& getInstance() {
             static ModelManager instance;
@@ -71,12 +72,15 @@ namespace AlphaDots {
          */
         void setMaximumConcurrentProcesses(int max);
 
+    public slots:
+        void processFinished(QString processKey);
+
     private:
         ModelManager() = default;
 
-        QMap<QString, ModelProcess::Ptr> processMap;
+        QMap<QString, ModelProcess*> processMap;
         QMap<QString, int> processClaims;
-        QList<ModelProcess::Ptr> oldProcesses;
+        //QList<ModelProcess*> oldProcesses;
         int port = 12354;
         QMutex getProcessMutex;
 
@@ -89,7 +93,7 @@ namespace AlphaDots {
          * @param height
          * @return
          */
-        ModelProcess::Ptr getProcess(QString modelName, int width, int height);
+        ModelProcess* getProcess(QString modelName, int width, int height);
 
         /**
          * Convert the model configuration data to a string which will be used as the key in processMap

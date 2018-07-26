@@ -92,6 +92,7 @@ void TestResultModel::addResult(AITestResult result) {
     if (result.taintedP1 || result.taintedP2) {
         rows[modelAi - 3][4]++; // inc error counter
     }
+    rows[modelAi - 3][4] += result.crashesP1 + result.crashesP2;
     // add line history
     QString hist = tr("|");
     hist += aiIndexToName(result.setup.aiLevelP1) + tr(" vs ") + aiIndexToName(result.setup.aiLevelP2) + tr(" | ");
