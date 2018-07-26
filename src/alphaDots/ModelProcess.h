@@ -16,7 +16,7 @@ namespace AlphaDots {
     class ModelProcess : public QObject {
         Q_OBJECT
     public:
-        //typedef QSharedPointer<ModelProcess> Ptr;
+        typedef QSharedPointer<ModelProcess> Ptr;
 
         /**
          * Create a model server process for a given model configuration
@@ -28,26 +28,21 @@ namespace AlphaDots {
          * @param debug Set debug flag
          * @param logdest log file destination directory
          */
-        ModelProcess(QString model, int boxesWidth, int boxesHeight, int port, bool allowGPU, bool debug, QString logdest, QString modelKey);
+        ModelProcess(QString model, int boxesWidth, int boxesHeight, int port, QString modelKey);
         ~ModelProcess();
 
-        bool isRunning();
+        QString model();
+        int width();
+        int height();
         int port();
-        void stop(bool wait = true);
-
-    public slots:
-        void processFinishedSlot();
-
-    signals:
-        void processFinishedSignal(QString modelKey);
-
+        QString key();
 
     private:
-        ExternalProcess *modelServer;
-        int width;
-        int height;
-        int modelPort;
-        QString processKey;
+        QString _model;
+        int _width;
+        int _height;
+        int _modelPort;
+        QString _processKey;
     };
 }
 

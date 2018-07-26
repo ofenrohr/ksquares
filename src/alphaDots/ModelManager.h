@@ -10,6 +10,7 @@
 #include <QtCore/QMap>
 #include <qdebug.h>
 #include <QtCore/QMutex>
+#include <zmq.hpp>
 #include "ModelProcess.h"
 
 namespace AlphaDots {
@@ -72,19 +73,20 @@ namespace AlphaDots {
          */
         void setMaximumConcurrentProcesses(int max);
 
-    public slots:
-        void processFinished(QString processKey);
-
     private:
-        ModelManager() = default;
+        ModelManager();
 
-        QMap<QString, ModelProcess*> processMap;
+        zmq::context_t zmqContext;
+        zmq::socket_t mgmtSocket;
+        QMap<QString, ModelProcess::Ptr> processMap;
         QMap<QString, int> processClaims;
-        //QList<ModelProcess*> oldProcesses;
-        int port = 12354;
         QMutex getProcessMutex;
 
-        void sleep(int ms);
+        ExternalProcess::Ptr metaModelManager;
+        bool useGPU=false;
+        bool debug=false;
+        QString logDest;
+        int maxConcurrentProcesses = 0;
 
         /**
          * Get the process for the specified configuration
@@ -93,7 +95,7 @@ namespace AlphaDots {
          * @param height
          * @return
          */
-        ModelProcess* getProcess(QString modelName, int width, int height);
+        ModelProcess::Ptr getProcess(QString modelName, int width, int height);
 
         /**
          * Convert the model configuration data to a string which will be used as the key in processMap
@@ -104,10 +106,9 @@ namespace AlphaDots {
          */
         QString modelInfoToStr(QString modelName, int width, int height);
 
-        bool useGPU=false;
-        bool debug=false;
-        QString logDest;
-        int maxConcurrentProcesses = 0;
+        int sendStartRequest(QString name, int width, int height, bool gpu);
+        int sendStopRequest(ModelProcess::Ptr process);
+
     };
 }
 
