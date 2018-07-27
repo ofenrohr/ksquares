@@ -20,7 +20,9 @@ ModelManager::ModelManager() :
     qDebug() << "Starting meta model server...";
     QStringList args;
     args << Settings::alphaDotsDir() + QStringLiteral("/modelServer/metaModelServer.py");
-    args << QStringLiteral("--debug");
+    if (debug) {
+        args << QStringLiteral("--debug");
+    }
     metaModelManager = ExternalProcess::Ptr(new ExternalProcess(Settings::pythonExecutable(), args, Settings::alphaDotsDir()));
     if (!metaModelManager->startExternalProcess()) {
         QMessageBox::critical(nullptr, tr("AlphaDots Error"), tr("Failed to start python model manager!"));

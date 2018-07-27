@@ -38,6 +38,7 @@ aiAlphaZeroMCTS::aiAlphaZeroMCTS(int newPlayerId, int newMaxPlayerId, int newWid
     mctsTimer = QElapsedTimer();
     isTainted = false;
     mctsRootNode = AlphaZeroMCTSNode::Ptr(nullptr);
+    modelInfo = model;
 
     // get a model server
 	modelServerPort = ModelManager::getInstance().ensureProcessRunning(model.name(), width, height);
@@ -65,6 +66,7 @@ aiAlphaZeroMCTS::~aiAlphaZeroMCTS() {
     if (!mctsRootNode.isNull()) {
         mctsRootNode->clear();
     }
+    ModelManager::getInstance().freeClaimOnProcess(modelInfo.name(), width, height);
 }
 
 int aiAlphaZeroMCTS::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners,
@@ -147,7 +149,7 @@ QList<int> aiAlphaZeroMCTS::mcts() {
             }
         }
         if (foundChild == 1) {
-            qDebug() << "reusing tree";
+            //qDebug() << "reusing tree";
             AlphaZeroMCTSNode::Ptr tmpNode(nullptr);
             for (int i = 0; i < mctsRootNode->children.size(); i++) {
                 if (childIdx == i) {

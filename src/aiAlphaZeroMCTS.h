@@ -106,6 +106,7 @@ namespace AlphaDots {
 
         // model server
         int modelServerPort;
+        ModelInfo modelInfo;
         zmq::context_t context;
         zmq::socket_t socket;
 
