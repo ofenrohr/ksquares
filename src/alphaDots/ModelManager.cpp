@@ -107,9 +107,10 @@ ModelProcess::Ptr ModelManager::getProcess(const QString modelName, int width, i
             while (maxConcurrentProcesses <= processMap.keys().size() && !processMap.contains(modelKey)) {
                 // wait for process to be released before starting the next process
                 locker.unlock();
+                cleanUp();
                 //qDebug() << "waiting for other ModelProcess to finish...";
                 QCoreApplication::processEvents();
-                QThread::msleep(1000);
+                QThread::msleep(100);
                 locker.relock();
             }
         }
@@ -138,10 +139,25 @@ void ModelManager::freeClaimOnProcess(QString modelName, int width, int height) 
     processClaims[modelKey] -= 1;
     //qDebug() << "claims on " << modelKey << " at " << processClaims[modelKey];
     if (processClaims[modelKey] == 0 && maxConcurrentProcesses > 0) {
-        qDebug() << "Releasing ModelProcess...";
-        //processMap[modelKey]->stop(false);
-        sendStopRequest(processMap[modelKey]);
-        processMap.remove(modelKey);
+        if (debug) {
+            qDebug() << "Releasing ModelProcess...";
+        }
+    }
+}
+
+void ModelManager::cleanUp() {
+    QMutexLocker locker(&getProcessMutex);
+    if (maxConcurrentProcesses <= 0) {
+        return;
+    }
+    for (const QString &modelKey : processMap.keys()) {
+        if (processClaims[modelKey] == 0) {
+            if (debug) {
+                qDebug() << "stopping " << modelKey;
+            }
+            sendStopRequest(processMap[modelKey]);
+            processMap.remove(modelKey);
+        }
     }
 }
 

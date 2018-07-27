@@ -226,7 +226,7 @@ QList<int> aiAlphaZeroMCTS::mcts() {
     QList<int> returnSequence;
     if (tau == 0.0) {
         qDebug() << "warining: tau is 0, setting tau to 0.000001";
-        tau = 0.000001;
+        tau = 0.001;
     }
     double exp = 1.0 / tau;
     double childVisitSum = 0;

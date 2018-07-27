@@ -108,6 +108,7 @@ namespace AlphaDots {
 
         int sendStartRequest(QString name, int width, int height, bool gpu);
         int sendStopRequest(ModelProcess::Ptr process);
+        void cleanUp();
 
     };
 }
