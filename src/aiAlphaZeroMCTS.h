@@ -52,7 +52,22 @@ namespace AlphaDots {
          */
         bool predictPolicyValue(const AlphaZeroMCTSNode::Ptr &node);
 
+        /**
+         * Applies diriclet noise to the children of the given node. Uses the GNU Scientific Library to generate
+         * the noise.
+         * @param parentNode
+         * @param alpha
+         */
         void applyDirichletNoiseToChildren(const AlphaZeroMCTSNode::Ptr &parentNode, double alpha);
+
+        /**
+         * Selects an action index randomly according to the given distribution. The distribution does not need
+         * to be normalized. Uses the GNU Scientific Library.
+         * @param K number of available actions
+         * @param distribution weighted distribution for available actions
+         * @return the index of the randomly selected action
+         */
+        int selectActionAccordingToDistribution(int K, double *distribution);
 
         static void setDebug(bool mode) {debug=mode;}
 
@@ -66,6 +81,7 @@ namespace AlphaDots {
         static double C_puct;// = 10.0;
         static double dirichlet_alpha;// = 0.03;
         static int mcts_iterations;// = 1500;
+        static double tau;
         static bool use_move_sequences;
 
     protected:

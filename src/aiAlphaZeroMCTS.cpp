@@ -20,6 +20,7 @@ bool aiAlphaZeroMCTS::debug(false);
 double aiAlphaZeroMCTS::C_puct = 4.0; // overwritten in main.cpp
 double aiAlphaZeroMCTS::dirichlet_alpha = 0.03; // overwritten in main.cpp
 int aiAlphaZeroMCTS::mcts_iterations = 1500; // overwritten in main.cpp
+double aiAlphaZeroMCTS::tau = 1.0; // overwritten in main.cpp
 bool aiAlphaZeroMCTS::use_move_sequences = true; // overwritten in main.cpp
 
 aiAlphaZeroMCTS::aiAlphaZeroMCTS(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight,
@@ -221,35 +222,29 @@ QList<int> aiAlphaZeroMCTS::mcts() {
         QCoreApplication::processEvents();
     }
 
-    //qDebug() << "MCTS iterations: " << finishedIterations;
-
     // select most promising move
     QList<int> returnSequence;
-    long childVisitSum = 0;
+    if (tau == 0.0) {
+        qDebug() << "warining: tau is 0, setting tau to 0.000001";
+        tau = 0.000001;
+    }
+    double exp = 1.0 / tau;
+    double childVisitSum = 0;
     for (const auto &child : mctsRootNode->children) {
-        childVisitSum += child->visitCnt;
+        childVisitSum += std::pow((double)child->visitCnt, exp);
     }
     if (childVisitSum == 0) {
         qDebug() << "ERROR: childVisitSum = 0, children.size() = " << mctsRootNode->children.size();
         return QList<int>();
     }
-    double bestProbability = -INFINITY;
-    for (const auto &child : mctsRootNode->children) {
-        // select by highest visit count
-        double pi_a_given_s0 = (double)child->visitCnt / (double)childVisitSum;
-        if (pi_a_given_s0 > bestProbability) {
-            bestProbability = pi_a_given_s0;
-            returnSequence = child->moves;
-            //child->value = pi_a_given_s0;
-        }
-        // select by best value
-        /*
-        if (child->value > bestProbability) {
-            bestProbability = child->value;
-            line = child->move;
-        }
-         */
+    int K = mctsRootNode->children.size();
+    auto pi = new double[K];
+    for (int i = 0; i < K; i++) {
+        pi[i] = std::pow((double)mctsRootNode->children[i]->visitCnt, exp) / childVisitSum;
+        mctsRootNode->children[i]->a = pi[i];
     }
+    int selectedAction = selectActionAccordingToDistribution(K, pi);
+    returnSequence = mctsRootNode->children[selectedAction]->moves;
     lineVal = -mctsRootNode->value;
 
     // debug stuff
@@ -467,4 +462,11 @@ void aiAlphaZeroMCTS::applyDirichletNoiseToChildren(const AlphaZeroMCTSNode::Ptr
         const auto &child = parentNode->children[i];
         child->prior = (1-eps) * child->prior + eps * theta[i];
     }
+}
+
+int aiAlphaZeroMCTS::selectActionAccordingToDistribution(int K, double *distribution) {
+    gsl_ran_discrete_t *dist = gsl_ran_discrete_preproc(K, distribution);
+    int k = gsl_ran_discrete(rng, dist);
+    delete dist;
+    return k;
 }

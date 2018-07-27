@@ -155,3 +155,25 @@ void GSLTest::testGSL005() {
     file.close();
     gsl_rng_free(rng);
 }
+
+void GSLTest::testGSL006() {
+    auto rng = gsl_rng_alloc(gsl_rng_taus);
+    gsl_rng_set(rng, std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+
+    double P[] = { 0.1, 0.6, 0.3 };
+    gsl_ran_discrete_t *dist = gsl_ran_discrete_preproc(3, P);
+
+    int binsCnt = 3;
+    std::vector<int> bins;
+    bins.reserve(binsCnt);
+    for (int i = 0; i < binsCnt; i++) {
+        bins[i] = 0;
+    }
+    for (int i = 0; i < 1000; i++) {
+        int k = gsl_ran_discrete(rng, dist);
+        bins[k]++;
+    }
+    for (int i = 0; i < binsCnt; i++) {
+        printf("%d -> %.2f -> %d\n", i, P[i], bins[i]);
+    }
+}

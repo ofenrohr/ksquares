@@ -51,11 +51,18 @@ set( ksquarestest_SRCS
 		../src/aiConvNet.cpp
 		../src/AlphaZeroMCTSNode.cpp
 		../src/aiAlphaZeroMCTS.cpp
+        ../src/MCTSAlphaZeroAISettingsDialog.cpp
+		../src/aiLevelList.h
+		../src/ConvNetAISettingsDialog.cpp
+		../src/AlphaDotsHelper.cpp
+		../src/aiControllerWorker.cpp
+		../src/KSquaresAI.h
         ${ProtoSrcs}
         ${alphaDotsSRCS}
 		${alphaDotsModelEvaluationSRCS}
 		${alphaDotsDatasetsSRCS}
 		${alphaDotsAiEvalSRCS}
+
         )
 
 kconfig_add_kcfg_files(ksquarestest_SRCS GENERATE_MOC ../src/settings.kcfgc)
