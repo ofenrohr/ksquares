@@ -22,6 +22,7 @@ double aiAlphaZeroMCTS::dirichlet_alpha = 0.03; // overwritten in main.cpp
 int aiAlphaZeroMCTS::mcts_iterations = 1500; // overwritten in main.cpp
 double aiAlphaZeroMCTS::tau = 1.0; // overwritten in main.cpp
 bool aiAlphaZeroMCTS::use_move_sequences = true; // overwritten in main.cpp
+bool aiAlphaZeroMCTS::use_probabilistic_final_move_selection = false; // overwritten in main.cpp
 
 aiAlphaZeroMCTS::aiAlphaZeroMCTS(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight,
                                  int thinkTime, ModelInfo model) :
@@ -224,26 +225,46 @@ QList<int> aiAlphaZeroMCTS::mcts() {
 
     // select most promising move
     QList<int> returnSequence;
-    if (tau == 0.0) {
-        qDebug() << "warining: tau is 0, setting tau to 0.000001";
-        tau = 0.001;
+    int selectedAction = -1;
+    if (use_probabilistic_final_move_selection) {
+        if (tau == 0.0) {
+            qDebug() << "warining: tau is 0, setting tau to 0.001";
+            tau = 0.001;
+        }
+        double exp = 1.0 / tau;
+        double childVisitSum = 0;
+        for (const auto &child : mctsRootNode->children) {
+            childVisitSum += std::pow((double) child->visitCnt, exp);
+        }
+        if (childVisitSum == 0) {
+            qDebug() << "ERROR: childVisitSum = 0, children.size() = " << mctsRootNode->children.size();
+            return QList<int>();
+        }
+        int K = mctsRootNode->children.size();
+        auto pi = new double[K];
+        for (int i = 0; i < K; i++) {
+            pi[i] = std::pow((double) mctsRootNode->children[i]->visitCnt, exp) / childVisitSum;
+            mctsRootNode->children[i]->a = pi[i];
+        }
+        selectedAction = selectActionAccordingToDistribution(K, pi);
+    } else {
+        double childVisitSum = 0;
+        for (const auto &child : mctsRootNode->children) {
+            childVisitSum += child->visitCnt;
+        }
+        if (childVisitSum == 0) {
+            qDebug() << "ERROR: childVisitSum = 0, children.size() = " << mctsRootNode->children.size();
+            return QList<int>();
+        }
+        double bestValue = -INFINITY;
+        for (int i = 0; i < mctsRootNode->children.size(); i++) {
+            double val = mctsRootNode->children[i]->visitCnt / childVisitSum;
+            if (val > bestValue) {
+                bestValue = val;
+                selectedAction = i;
+            }
+        }
     }
-    double exp = 1.0 / tau;
-    double childVisitSum = 0;
-    for (const auto &child : mctsRootNode->children) {
-        childVisitSum += std::pow((double)child->visitCnt, exp);
-    }
-    if (childVisitSum == 0) {
-        qDebug() << "ERROR: childVisitSum = 0, children.size() = " << mctsRootNode->children.size();
-        return QList<int>();
-    }
-    int K = mctsRootNode->children.size();
-    auto pi = new double[K];
-    for (int i = 0; i < K; i++) {
-        pi[i] = std::pow((double)mctsRootNode->children[i]->visitCnt, exp) / childVisitSum;
-        mctsRootNode->children[i]->a = pi[i];
-    }
-    int selectedAction = selectActionAccordingToDistribution(K, pi);
     returnSequence = mctsRootNode->children[selectedAction]->moves;
     lineVal = -mctsRootNode->value;
 

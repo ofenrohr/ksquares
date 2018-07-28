@@ -83,6 +83,7 @@ namespace AlphaDots {
         static int mcts_iterations;// = 1500;
         static double tau;
         static bool use_move_sequences;
+        static bool use_probabilistic_final_move_selection;
 
     protected:
         QList<int> mcts();

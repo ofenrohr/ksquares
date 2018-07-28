@@ -66,11 +66,31 @@ new smart moves that the network would not have made.
 
 This AI offers the following hyperparameters:
 
-* `--hp-mcts-iterations` number of MCTS iterations. The default value is 1500
-* `--hp-mcts-cpuct` the C_puct value which controls exploration vs. 
+* `--hp-mcts-iterations INT` number of MCTS iterations. The default value is 1500
+* `--hp-mcts-cpuct FLOAT` the C_puct value which controls exploration vs. 
   exploitation. The default value is 10.0
-* `--hp-mcts-dirichlet-alpha` the alpha parameter for the dirichlet noise that
+* `--hp-mcts-dirichlet-alpha FLOAT` the alpha parameter for the dirichlet noise that
   is applied to the children of the MCTS root node. Default: 0.03
+* `--hp-mcts-no-move-sequences` when this flag is set, the AI will not use move 
+  sequences but only single lines for each node in the Monte-Carlo tree.
+  A move sequence can contain more than one line and represents a full move
+  by a player. For example: In a situation where a player can capture a chain, the 
+  algorithm will generate a sequence where it does Double-Dealing on the chain and 
+  it will also generate other sequences where it fully captures the chain and then
+  draws another available line. Move sequences reduce the search space by using
+  knowledge specific to Dots and Boxes. Settings this flag will disable the use of
+  this knowledge.
+* `--hp-mcts-use-probabilistic-final-move-selection` enables probabilistic final
+  move selection instead of always selecting the highest rated move. MCTS generates
+  a probability distribution over all direct children of the root node. Usually, 
+  the move with the highest probability is selected, ignoring the other moves with
+  lower probabilities. By setting this flag, a decision is made according to the 
+  generated probability distribution.
+* `--hp-mcts-tau FLOAT` controls the probability distribution when selecting the
+  final move. Defaults to 1. For lower values than 1.0 the distribution favors
+  moves with higher probability while for values greater than 1.0 the probabilities
+  equalize. Tau is only used when `--hp-mcts-use-probabilistic-final-move-selection`
+  is active.
   
 You can also set the hyperparameters in the GUI:
 

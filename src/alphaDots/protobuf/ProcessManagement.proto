@@ -12,6 +12,7 @@ message ProcessManagementRequest {
         STOP = 1;
     }
     required Action action = 5;
+    required bool gpu = 6;
 }
 
 message ProcessManagementResponse {

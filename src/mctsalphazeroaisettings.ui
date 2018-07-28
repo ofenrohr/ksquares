@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>366</width>
-    <height>284</height>
+    <width>351</width>
+    <height>444</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -19,20 +19,13 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout_3">
-   <item row="0" column="0">
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
       <string>MCTS Alpha Zero AI Settings</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="0">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>AlphaDots model</string>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="1">
        <widget class="QComboBox" name="aiModel">
         <item>
@@ -47,22 +40,22 @@
         </item>
        </widget>
       </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>AlphaDots model</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
-   <item row="1" column="0">
+   <item>
     <widget class="QGroupBox" name="groupBox_2">
      <property name="title">
       <string>Advanced Settings</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>MCTS iterations</string>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="1">
        <widget class="QSpinBox" name="mctsIterations">
         <property name="minimum">
@@ -76,10 +69,10 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_3">
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_2">
         <property name="text">
-         <string>C PUCT</string>
+         <string>MCTS iterations</string>
         </property>
        </widget>
       </item>
@@ -100,6 +93,23 @@
         </property>
        </widget>
       </item>
+      <item row="0" column="0" colspan="2">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>These settings are only temporary and are not specific to players.</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>C PUCT</string>
+        </property>
+       </widget>
+      </item>
       <item row="3" column="1">
        <widget class="QDoubleSpinBox" name="dirichletNoise">
         <property name="decimals">
@@ -116,12 +126,51 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="0" colspan="2">
-       <widget class="QLabel" name="label_5">
-        <property name="text">
-         <string>These settings are only temporary and are not specific to players.</string>
+      <item row="6" column="0">
+       <widget class="QLabel" name="label_6">
+        <property name="enabled">
+         <bool>false</bool>
         </property>
-        <property name="wordWrap">
+        <property name="text">
+         <string>Tau</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="1">
+       <widget class="QDoubleSpinBox" name="tau">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="decimals">
+         <number>3</number>
+        </property>
+        <property name="minimum">
+         <double>0.001000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>9999.989999999999782</double>
+        </property>
+        <property name="singleStep">
+         <double>0.010000000000000</double>
+        </property>
+        <property name="value">
+         <double>1.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0" colspan="2">
+       <widget class="QCheckBox" name="probabilisticFinalMoveSelection">
+        <property name="text">
+         <string>Probabilistic final move selection</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0" colspan="2">
+       <widget class="QCheckBox" name="moveSequences">
+        <property name="text">
+         <string>Use move sequences</string>
+        </property>
+        <property name="checked">
          <bool>true</bool>
         </property>
        </widget>
@@ -129,7 +178,7 @@
      </layout>
     </widget>
    </item>
-   <item row="2" column="0">
+   <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -145,5 +194,38 @@
   </layout>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>probabilisticFinalMoveSelection</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>tau</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>157</x>
+     <y>349</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>228</x>
+     <y>381</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>probabilisticFinalMoveSelection</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>label_6</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>157</x>
+     <y>349</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>86</x>
+     <y>381</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

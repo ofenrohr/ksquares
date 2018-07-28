@@ -197,6 +197,9 @@ void NewGameDialog::aiConfigDialog(int player, int ai) {
             alphazeroDialog->mctsIterations->setValue(AlphaDots::aiAlphaZeroMCTS::mcts_iterations);
             alphazeroDialog->cPUCT->setValue(AlphaDots::aiAlphaZeroMCTS::C_puct);
             alphazeroDialog->dirichletNoise->setValue(AlphaDots::aiAlphaZeroMCTS::dirichlet_alpha);
+            alphazeroDialog->moveSequences->setChecked(AlphaDots::aiAlphaZeroMCTS::use_move_sequences);
+            alphazeroDialog->probabilisticFinalMoveSelection->setChecked(AlphaDots::aiAlphaZeroMCTS::use_probabilistic_final_move_selection);
+            alphazeroDialog->tau->setValue(AlphaDots::aiAlphaZeroMCTS::tau);
 
             // execute the dialog
             if (alphazeroDialog->exec() == QDialog::Rejected) {
@@ -217,6 +220,9 @@ void NewGameDialog::aiConfigDialog(int player, int ai) {
             AlphaDots::aiAlphaZeroMCTS::mcts_iterations = alphazeroDialog->mctsIterations->value();
             AlphaDots::aiAlphaZeroMCTS::C_puct = alphazeroDialog->cPUCT->value();
             AlphaDots::aiAlphaZeroMCTS::dirichlet_alpha = alphazeroDialog->dirichletNoise->value();
+            AlphaDots::aiAlphaZeroMCTS::use_move_sequences = alphazeroDialog->moveSequences->isChecked();
+            AlphaDots::aiAlphaZeroMCTS::use_probabilistic_final_move_selection = alphazeroDialog->probabilisticFinalMoveSelection->isChecked();
+            AlphaDots::aiAlphaZeroMCTS::tau = alphazeroDialog->tau->value();
 
             // save settings
             Settings::self()->save();

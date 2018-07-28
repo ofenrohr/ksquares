@@ -23,6 +23,9 @@ ModelManager::ModelManager() :
     if (debug) {
         args << QStringLiteral("--debug");
     }
+    if (useGPU) {
+        args << QStringLiteral("--gpu");
+    }
     metaModelManager = ExternalProcess::Ptr(new ExternalProcess(Settings::pythonExecutable(), args, Settings::alphaDotsDir()));
     if (!metaModelManager->startExternalProcess()) {
         QMessageBox::critical(nullptr, tr("AlphaDots Error"), tr("Failed to start python model manager!"));
@@ -42,6 +45,7 @@ int ModelManager::sendStartRequest(QString name, int width, int height, bool gpu
     mgmtRequest.set_height(height);
     mgmtRequest.set_key(modelKey.toStdString());
     mgmtRequest.set_action(ProcessManagementRequest::START);
+    mgmtRequest.set_gpu(useGPU);
 
     // send request
     if (!ProtobufConnector::sendString(mgmtSocket, mgmtRequest.SerializeAsString())) {
@@ -72,6 +76,7 @@ int ModelManager::sendStopRequest(ModelProcess::Ptr process) {
     mgmtRequest.set_height(process->height());
     mgmtRequest.set_key(process->key().toStdString());
     mgmtRequest.set_action(ProcessManagementRequest::STOP);
+    mgmtRequest.set_gpu(useGPU);
 
     // send request
     if (!ProtobufConnector::sendString(mgmtSocket, mgmtRequest.SerializeAsString())) {

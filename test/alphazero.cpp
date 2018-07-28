@@ -78,9 +78,6 @@ void alphazero::runTest(KSquares::AILevel ai, QString testName, QString modelNam
     AlphaDots::aiAlphaZeroMCTS::setDebug(true);
     AlphaDots::ModelManager::getInstance().allowGPU(gpu);
 
-    // try different hyperparameters
-    AlphaDots::aiAlphaZeroMCTS::C_puct = 10;
-
     // prepare result table
     QString id = QString::number(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
     QString C = QString::number(AlphaDots::aiAlphaZeroMCTS::C_puct, 'g', 1);
@@ -354,7 +351,7 @@ void alphazero::testAlphaZero012() {
 
     AlphaDots::ModelManager::getInstance().setDebug(false);
     AlphaDots::ModelManager::getInstance().allowGPU(true);
-    AlphaDots::aiAlphaZeroMCTS::tau = 0.1;
+    //AlphaDots::aiAlphaZeroMCTS::tau = 0.1;
     runTest(KSquares::AI_MCTS_ALPHAZERO, tr("berlekamp"), modelName, allNames, boardPaths, allExpectedLines, true);
 }
 
