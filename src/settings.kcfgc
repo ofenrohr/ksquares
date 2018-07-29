@@ -2,4 +2,4 @@
 File=ksquares.kcfg
 ClassName=Settings
 Singleton=true
-Mutators=PlayerNames,BoardWidth,BoardHeight,NumOfPlayers, PlayerOneAi,PlayerTwoAi,PlayerThreeAi,PlayerFourAi, HumanList, LineColor,IndicatorLineColor,QuickStart,DisplayLineNumbers,AiThinkTime,AlphaDotsDir,WineExecutable,PythonExecutable,AlphaDotsModel,AiConvNetModels,AiMCTSAlphaZeroModels
+Mutators=PlayerNames,BoardWidth,BoardHeight,NumOfPlayers, PlayerOneAi,PlayerTwoAi,PlayerThreeAi,PlayerFourAi, HumanList, LineColor,IndicatorLineColor,QuickStart,DisplayLineNumbers,AiThinkTime,AlphaDotsDir,WineExecutable,PythonExecutable,AlphaDotsModel,AiConvNetModels,AiMCTSAlphaZeroModels,AiUseGPU

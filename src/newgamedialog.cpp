@@ -139,6 +139,13 @@ void NewGameDialog::aiConfigDialog(int player, int ai) {
                              tr("There are no models. Check your AlphaDots installation"));
     }
 
+    QList<int> gpuConfig = Settings::aiUseGPU();
+    if (gpuConfig.size() != 4) {
+        qDebug() << "Setting AiUseGPU does not have 4 entries. Resetting...";
+        gpuConfig.clear();
+        gpuConfig << 0 << 0 << 0 << 0;
+    }
+
     switch (ai) {
         case KSquares::AI_CONVNET: {
             auto *convnetDialog = new ConvNetAISettingsDialog();
@@ -151,9 +158,23 @@ void NewGameDialog::aiConfigDialog(int player, int ai) {
                 convnetDialog->aiModel->addItem(model.name());
             }
 
+            QStringList convNetModels = Settings::aiConvNetModels();
+            if (convNetModels.length() != 4) {
+                qDebug() << "Setting AiConvNetModels does not have 4 entries. Resetting...";
+                convNetModels.clear();
+                if (!models.isEmpty()) {
+                    convNetModels.append(models[0].name());
+                } else {
+                    convNetModels.append(tr(""));
+                }
+            }
+
             // preselect configured model
             QString initiallySelectedModel = Settings::aiConvNetModels()[player];
             convnetDialog->aiModel->setCurrentText(initiallySelectedModel);
+
+            // prepare gpu setting
+            convnetDialog->gpu->setChecked(gpuConfig[player]);
 
             // execute the dialog
             if (convnetDialog->exec() == QDialog::Rejected) {
@@ -163,14 +184,10 @@ void NewGameDialog::aiConfigDialog(int player, int ai) {
 
             // store dialog result
             QString selectedModel = convnetDialog->aiModel->currentText();
-            QStringList convNetModels = Settings::aiConvNetModels();
-            if (convNetModels.length() != 4) {
-                qDebug() << "Setting aIConvNetModels does not have 4 entries. Resetting...";
-                convNetModels.clear();
-                convNetModels.append(selectedModel);
-            }
             convNetModels[player] = selectedModel;
             Settings::setAiConvNetModels(convNetModels);
+            gpuConfig[player] = convnetDialog->gpu->isChecked() ? 1 : 0;
+            Settings::setAiUseGPU(gpuConfig);
 
             // save settings
             Settings::self()->save();
@@ -189,9 +206,23 @@ void NewGameDialog::aiConfigDialog(int player, int ai) {
                 alphazeroDialog->aiModel->addItem(model.name());
             }
 
+            QStringList mctsModels = Settings::aiMCTSAlphaZeroModels();
+            if (mctsModels.length() != 4) {
+                qDebug() << "Setting aiMCTSAlphaZeroModels does not have 4 entries. Resetting...";
+                mctsModels.clear();
+                if (!models.isEmpty()) {
+                    mctsModels.append(models[0].name());
+                } else {
+                    mctsModels.append(tr(""));
+                }
+            }
+
             // preselect configured model
             QString initiallySelectedModel = Settings::aiMCTSAlphaZeroModels()[player];
             alphazeroDialog->aiModel->setCurrentText(initiallySelectedModel);
+
+            // gpu stuff
+            alphazeroDialog->gpu->setChecked(gpuConfig[player]);
 
             // set the AlphaZero hyperparameters
             alphazeroDialog->mctsIterations->setValue(AlphaDots::aiAlphaZeroMCTS::mcts_iterations);
@@ -209,12 +240,6 @@ void NewGameDialog::aiConfigDialog(int player, int ai) {
 
             // store dialog result
             QString selectedModel = alphazeroDialog->aiModel->currentText();
-            QStringList mctsModels = Settings::aiMCTSAlphaZeroModels();
-            if (mctsModels.length() != 4) {
-                qDebug() << "Setting aiMCTSAlphaZeroModels does not have 4 entries. Resetting...";
-                mctsModels.clear();
-                mctsModels.append(selectedModel);
-            }
             mctsModels[player] = selectedModel;
             Settings::setAiMCTSAlphaZeroModels(mctsModels);
             AlphaDots::aiAlphaZeroMCTS::mcts_iterations = alphazeroDialog->mctsIterations->value();
@@ -223,6 +248,8 @@ void NewGameDialog::aiConfigDialog(int player, int ai) {
             AlphaDots::aiAlphaZeroMCTS::use_move_sequences = alphazeroDialog->moveSequences->isChecked();
             AlphaDots::aiAlphaZeroMCTS::use_probabilistic_final_move_selection = alphazeroDialog->probabilisticFinalMoveSelection->isChecked();
             AlphaDots::aiAlphaZeroMCTS::tau = alphazeroDialog->tau->value();
+            gpuConfig[player] = alphazeroDialog->gpu->isChecked() ? 1 : 0;
+            Settings::setAiUseGPU(gpuConfig);
 
             // save settings
             Settings::self()->save();

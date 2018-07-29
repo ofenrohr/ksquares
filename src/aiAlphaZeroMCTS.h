@@ -23,7 +23,8 @@ namespace AlphaDots {
         //==========================
 
         aiAlphaZeroMCTS(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight,
-                        int thinkTime = 5000, ModelInfo model = ProtobufConnector::getInstance().getModelByName(i18n("AlphaZeroV11")));
+                        int thinkTime = 5000, ModelInfo model = ProtobufConnector::getInstance().getModelByName(i18n("AlphaZeroV11")),
+                        bool gpu = false);
 
         ~aiAlphaZeroMCTS();
 
@@ -126,6 +127,7 @@ namespace AlphaDots {
         ModelInfo modelInfo;
         zmq::context_t context;
         zmq::socket_t socket;
+        bool useGPU;
 
         // GSLTest random number generator
         gsl_rng *rng;

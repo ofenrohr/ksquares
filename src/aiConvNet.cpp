@@ -15,12 +15,13 @@
 
 using namespace AlphaDots;
 
-aiConvNet::aiConvNet(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel, int thinkTime, ModelInfo model)
+aiConvNet::aiConvNet(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel, int thinkTime, ModelInfo model, bool gpu)
 		: KSquaresAi(newWidth, newHeight),
 		  playerId(newPlayerId),
 		  maxPlayerId(newMaxPlayerId),
 		  level(newLevel),
 		  modelInfo(model),
+		  useGPU(gpu),
 		  context(zmq::context_t(1)),
 		  socket(zmq::socket_t(context, ZMQ_REQ))
 {
@@ -30,52 +31,23 @@ aiConvNet::aiConvNet(int newPlayerId, int newMaxPlayerId, int newWidth, int newH
 	turnTime = -5;
 	isTainted = false;
 
-	//qDebug() << "aiConvNet";
-
-	port = ModelManager::getInstance().ensureProcessRunning(modelInfo.name(), width, height);
+	port = ModelManager::getInstance().ensureProcessRunning(modelInfo.name(), width, height, useGPU);
 	if (port < 0) {
 		qDebug() << "ensureProcessRunning failed!";
 		isTainted = true;
 	}
 
-	//qDebug() << "zmq connect...";
-	//context = zmq::context_t(1);
-	//socket = zmq::socket_t(context, ZMQ_REQ);
 	try {
-		//qDebug().noquote().nospace() << "tcp://127.0.0.1:" << QString::number(port);
 		socket.connect("tcp://127.0.0.1:" + std::to_string(port));
-		//qDebug() << "zmq connect done";
-		//socket.connect("icp:///tmp/alphaDots/model");
-	} catch (zmq::error_t err) {
+	} catch (zmq::error_t &err) {
 		qDebug() << "Connection failed! " << err.num() << ": " << err.what();
 		//return -1;
+		isTainted = true;
 	}
-
-	// moved to ModelManager and ModelProcess
-	/*
-    qDebug() << "Starting: modelServer.py --model" << model.name();
-	QStringList args;
-	args << Settings::alphaDotsDir() + QStringLiteral("/modelServer/modelServer.py")
-		 << QStringLiteral("--model")
-		 << model.name()
-    	 << QStringLiteral("--width")
-		 << QString::number(width*2 + 3)
-         << QStringLiteral("--height")
-         << QString::number(height*2 + 3)
-		 //<< QStringLiteral("--debug")
-         ;
-	modelServer = new ExternalProcess(QStringLiteral("/usr/bin/python2.7"), args);
-	modelServer->addEnvironmentVariable(QStringLiteral("CUDA_VISIBLE_DEVICES"), QStringLiteral("-1"));
-	if (!modelServer->startExternalProcess()) {
-		qDebug() << "ERROR: can't start model server!";
-	}
-	 */
 }
 
 aiConvNet::~aiConvNet() {
-	//modelServer->stopExternalProcess();
-	//delete modelServer;
-	ModelManager::getInstance().freeClaimOnProcess(modelInfo.name(), width, height);
+	ModelManager::getInstance().freeClaimOnProcess(modelInfo.name(), width, height, useGPU);
 }
 
 int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners,
@@ -84,6 +56,10 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 	QCoreApplication::processEvents();
 	QElapsedTimer moveTimer;
 	moveTimer.start();
+
+	if (isTainted) {
+		return -1;
+	}
 
 	if (port < 0) {
         isTainted = true;

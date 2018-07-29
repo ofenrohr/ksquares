@@ -30,13 +30,14 @@
 #include <QtWidgets/QMessageBox>
 #include <QtCore/QCoreApplication>
 
-aiController::aiController(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel, int thinkTime, QString model) :
+aiController::aiController(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel, int thinkTime, QString model, bool gpu) :
 		playerId(newPlayerId),
 		maxPlayerId(newMaxPlayerId),
 		width(newWidth),
 		height(newHeight),
 		level(newLevel),
-		aiThinkTime(thinkTime)
+		aiThinkTime(thinkTime),
+		useGPU(gpu)
 {
 	//qDebug() << "aiController init: nw = " << newWidth << ", nh = " << newHeight << ", w = " << width << ", h = " << height;
 	//linesSize = aiFunctions::toLinesSize(width, height);
@@ -95,24 +96,6 @@ int aiController::chooseLine(const QList<bool> &newLines, const QList<int> &newS
 	KSquaresAi::Ptr ai = getAi();
     lastTurnTime = ai->lastMoveTime();
     return ai->chooseLine(newLines, newSquareOwners, lineHistory);
-    /*
-	int retryCnt = 0;
-	while (retryCnt < 3)
-	{
-		int line = ai->chooseLine(newLines, newSquareOwners, lineHistory);
-		if (line < 0)
-		{
-			retryCnt++;
-			qDebug() << "ai returned line index < 0, retry " << retryCnt;
-		}
-		else
-		{
-			lastTurnTime = ai->lastMoveTime();
-			return line;
-		}
-	}
-     */
-	return -1;
 }
 
 KSquaresAi::Ptr aiController::getAi()
@@ -169,7 +152,7 @@ KSquaresAi::Ptr aiController::getAi()
 				QCoreApplication::exit(1);
 			}
 			if (ai.isNull())
-				ai = KSquaresAi::Ptr(new aiConvNet(playerId, maxPlayerId, width, height, level, aiThinkTime, alphaDotsModel));
+				ai = KSquaresAi::Ptr(new aiConvNet(playerId, maxPlayerId, width, height, level, aiThinkTime, alphaDotsModel, useGPU));
 		break;
 		case KSquares::AI_MCTS_CONVNET:
 
@@ -186,7 +169,7 @@ KSquaresAi::Ptr aiController::getAi()
 				QCoreApplication::exit(1);
 			}
 			if (ai.isNull())
-				ai = KSquaresAi::Ptr(new AlphaDots::aiAlphaZeroMCTS(playerId, maxPlayerId, width, height, aiThinkTime, alphaDotsModel));
+				ai = KSquaresAi::Ptr(new AlphaDots::aiAlphaZeroMCTS(playerId, maxPlayerId, width, height, aiThinkTime, alphaDotsModel, useGPU));
 		break;
 	}
 	return ai;

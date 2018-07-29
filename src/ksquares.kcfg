@@ -86,6 +86,11 @@ http://www.kde.org/standards/kcfg/1.0/kcfg.xsd" >
 			<whatsthis>Model to use in AlphaDots</whatsthis>
 			<default>BasicStrategy</default>
 		</entry>
+		<entry name="AiUseGPU" type="IntList">
+			<label>Allow AIs to use GPU</label>
+			<whatsthis>Allow AIs to use GPU if available</whatsthis>
+			<default>0,0,0,0</default>
+		</entry>
 	</group>
 	<group name="Display">
 		<entry name="LineColor" type="Color">

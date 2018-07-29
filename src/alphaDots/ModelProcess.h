@@ -24,17 +24,17 @@ namespace AlphaDots {
          * @param boxesWidth Width of the board in boxes
          * @param boxesHeight Height of the board in boxes
          * @param port The port the model server should listen on
-         * @param allowGPU Disable GPU restriction by environment variables
-         * @param debug Set debug flag
-         * @param logdest log file destination directory
+         * @param gpu Disable GPU restriction by environment variables
+         * @param modelKey string that contains all important infos to identify the model process
          */
-        ModelProcess(QString model, int boxesWidth, int boxesHeight, int port, QString modelKey);
+        ModelProcess(QString model, int boxesWidth, int boxesHeight, int port, bool gpu, QString modelKey);
         ~ModelProcess();
 
         QString model();
         int width();
         int height();
         int port();
+        bool gpu();
         QString key();
 
     private:
@@ -42,6 +42,7 @@ namespace AlphaDots {
         int _width;
         int _height;
         int _modelPort;
+        bool _gpu;
         QString _processKey;
     };
 }

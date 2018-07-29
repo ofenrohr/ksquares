@@ -23,9 +23,6 @@ ModelManager::ModelManager() :
     if (debug) {
         args << QStringLiteral("--debug");
     }
-    if (useGPU) {
-        args << QStringLiteral("--gpu");
-    }
     metaModelManager = ExternalProcess::Ptr(new ExternalProcess(Settings::pythonExecutable(), args, Settings::alphaDotsDir()));
     if (!metaModelManager->startExternalProcess()) {
         QMessageBox::critical(nullptr, tr("AlphaDots Error"), tr("Failed to start python model manager!"));
@@ -37,7 +34,7 @@ ModelManager::ModelManager() :
 }
 
 int ModelManager::sendStartRequest(QString name, int width, int height, bool gpu) {
-    QString modelKey = modelInfoToStr(name, width, height);
+    QString modelKey = modelInfoToStr(name, width, height, gpu || useGPU);
     // prepare request
     ProcessManagementRequest mgmtRequest;
     mgmtRequest.set_model(name.toStdString());
@@ -45,7 +42,7 @@ int ModelManager::sendStartRequest(QString name, int width, int height, bool gpu
     mgmtRequest.set_height(height);
     mgmtRequest.set_key(modelKey.toStdString());
     mgmtRequest.set_action(ProcessManagementRequest::START);
-    mgmtRequest.set_gpu(useGPU);
+    mgmtRequest.set_gpu(gpu || useGPU);
 
     // send request
     if (!ProtobufConnector::sendString(mgmtSocket, mgmtRequest.SerializeAsString())) {
@@ -76,7 +73,7 @@ int ModelManager::sendStopRequest(ModelProcess::Ptr process) {
     mgmtRequest.set_height(process->height());
     mgmtRequest.set_key(process->key().toStdString());
     mgmtRequest.set_action(ProcessManagementRequest::STOP);
-    mgmtRequest.set_gpu(useGPU);
+    mgmtRequest.set_gpu(process->gpu() || useGPU);
 
     // send request
     if (!ProtobufConnector::sendString(mgmtSocket, mgmtRequest.SerializeAsString())) {
@@ -99,25 +96,26 @@ int ModelManager::sendStopRequest(ModelProcess::Ptr process) {
     return resp.port();
 }
 
-int ModelManager::ensureProcessRunning(const QString modelName, int width, int height) {
-    ModelProcess::Ptr process = getProcess(modelName, width, height);
+int ModelManager::ensureProcessRunning(const QString modelName, int width, int height, bool gpu) {
+    ModelProcess::Ptr process = getProcess(modelName, width, height, gpu || useGPU);
     return process->port();
 }
 
-ModelProcess::Ptr ModelManager::getProcess(const QString modelName, int width, int height) {
+ModelProcess::Ptr ModelManager::getProcess(const QString modelName, int width, int height, bool gpu) {
     QMutexLocker locker(&getProcessMutex);
-    QString modelKey = modelInfoToStr(modelName, width, height);
+    QString modelKey = modelInfoToStr(modelName, width, height, gpu || useGPU);
     if (!processMap.contains(modelKey)) {
-        if (maxConcurrentProcesses > 0 && maxConcurrentProcesses <= processMap.keys().size()) {
-            while (maxConcurrentProcesses <= processMap.keys().size() && !processMap.contains(modelKey)) {
-                // wait for process to be released before starting the next process
-                locker.unlock();
-                cleanUp();
-                //qDebug() << "waiting for other ModelProcess to finish...";
-                QCoreApplication::processEvents();
-                QThread::msleep(100);
-                locker.relock();
-            }
+        //if (maxConcurrentProcesses > 0 && maxConcurrentProcesses <= processMap.keys().size()) {
+        //    while (maxConcurrentProcesses <= processMap.keys().size() && !processMap.contains(modelKey)) {
+        while ((gpu||useGPU) && maxConcurrentProcesses > 0 && activeGPUprocesses() >= maxConcurrentProcesses && !processMap.contains(modelKey)) {
+            // TODO: warn if we can't get a gpu after 2 minutes
+            // wait for process to be released before starting the next process
+            locker.unlock();
+            cleanUp();
+            //qDebug() << "waiting for other ModelProcess to finish...";
+            QCoreApplication::processEvents();
+            QThread::msleep(100);
+            locker.relock();
         }
         if (processMap.contains(modelKey)) {
             // another thread has started the process while this thread was waiting
@@ -125,9 +123,9 @@ ModelProcess::Ptr ModelManager::getProcess(const QString modelName, int width, i
         } else {
             // start the process
             qDebug() << "sending model start request...";
-            int port = sendStartRequest(modelName, width, height, useGPU);
+            int port = sendStartRequest(modelName, width, height, gpu || useGPU);
             qDebug() << "model starting on port " << QString::number(port);
-            ModelProcess::Ptr process = ModelProcess::Ptr(new ModelProcess(modelName, width, height, port, modelKey));
+            ModelProcess::Ptr process = ModelProcess::Ptr(new ModelProcess(modelName, width, height, port, gpu || useGPU, modelKey));
             processMap[modelKey] = process;
             processClaims[modelKey] = 1;
         }
@@ -138,16 +136,18 @@ ModelProcess::Ptr ModelManager::getProcess(const QString modelName, int width, i
     return processMap[modelKey];
 }
 
-void ModelManager::freeClaimOnProcess(QString modelName, int width, int height) {
+void ModelManager::freeClaimOnProcess(QString modelName, int width, int height, bool gpu) {
     QMutexLocker locker(&getProcessMutex);
-    QString modelKey = modelInfoToStr(modelName, width, height);
+    QString modelKey = modelInfoToStr(modelName, width, height, gpu || useGPU);
     processClaims[modelKey] -= 1;
     //qDebug() << "claims on " << modelKey << " at " << processClaims[modelKey];
+    /*
     if (processClaims[modelKey] == 0 && maxConcurrentProcesses > 0) {
         if (debug) {
             qDebug() << "Releasing ModelProcess...";
         }
     }
+     */
 }
 
 void ModelManager::cleanUp() {
@@ -156,7 +156,7 @@ void ModelManager::cleanUp() {
         return;
     }
     for (const QString &modelKey : processMap.keys()) {
-        if (processClaims[modelKey] == 0) {
+        if ((processMap[modelKey]->gpu() || useGPU) && processClaims[modelKey] == 0) {
             if (debug) {
                 qDebug() << "stopping " << modelKey;
             }
@@ -166,8 +166,19 @@ void ModelManager::cleanUp() {
     }
 }
 
-QString ModelManager::modelInfoToStr(QString modelName, int width, int height) {
-    return modelName + QStringLiteral("-") + QString::number(width) + QStringLiteral("x") + QString::number(height);
+int ModelManager::activeGPUprocesses() {
+    int processCnt = 0;
+    for (const auto &process : processMap.values()) {
+        if (process->gpu() || useGPU) {
+            processCnt++;
+        }
+    }
+    return processCnt;
+}
+
+QString ModelManager::modelInfoToStr(QString modelName, int width, int height, bool gpu) {
+    return modelName + QStringLiteral("-") + QString::number(width) + QStringLiteral("x") + QString::number(height) +
+           (gpu || useGPU ? QStringLiteral("-GPU") : QStringLiteral(""));
 }
 
 void ModelManager::allowGPU(bool allowGPU) {

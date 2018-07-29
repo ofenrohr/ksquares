@@ -16,7 +16,8 @@
 class aiConvNet : public KSquaresAi {
     public:
         aiConvNet(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel, int thinkTime = 5000,
-				  AlphaDots::ModelInfo model = AlphaDots::ProtobufConnector::getInstance().getModelByName(QStringLiteral("AlphaZeroV7")));
+				  AlphaDots::ModelInfo model = AlphaDots::ProtobufConnector::getInstance().getModelByName(QStringLiteral("AlphaZeroV7")),
+                  bool gpu = false);
 		~aiConvNet();
 
 		int chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &lineHistory) override;
@@ -42,10 +43,10 @@ class aiConvNet : public KSquaresAi {
 		bool isTainted;
         /// port the model server listens on
     	int port;
-        /// model sever
-        //ExternalProcess *modelServer;
 		/// model info
 		AlphaDots::ModelInfo modelInfo;
+		/// use GPU
+		bool useGPU;
 
         zmq::context_t context;//(1);
         zmq::socket_t socket;//(context, ZMQ_REQ);

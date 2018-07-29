@@ -27,6 +27,7 @@
 #include <settings.h>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMessageBox>
+#include <alphaDots/ModelManager.h>
 // TODO: update file dialog includes
 //#include <KStatusBar>
 //#include <KAction>
@@ -191,6 +192,9 @@ void KSquaresWindow::gameReset()
         Settings::self()->save();
     }
 
+    // stop old model servers
+    AlphaDots::ModelManager::getInstance().stopAll(false);
+
     // create AIs
 	ais.clear();
 	for (int i = 0; i < Settings::numOfPlayers(); i++)
@@ -209,7 +213,7 @@ void KSquaresWindow::gameReset()
         if (Settings::humanList()[i] != 2) {
             aic = aiController::Ptr(new aiController(i, playerList.size() - 1, Settings::boardWidth(),
                                                      Settings::boardHeight(), aiLevel, Settings::aiThinkTime() * 1000,
-                                                     alphaDotsModel));
+                                                     alphaDotsModel, Settings::aiUseGPU()[i]));
         } else {
             aic = aiController::Ptr(new aiController(i, playerList.size() - 1, Settings::boardWidth(),
                                                      Settings::boardHeight(), KSquares::AI_EASY,
@@ -460,7 +464,9 @@ void KSquaresWindow::aiChooseLine()
 void KSquaresWindow::aiChoseLine(const int &line)
 {
 	qDebug() << "chose line...";
-	sGame->addLineToIndex(line);
+	if (!sGame->addLineToIndex(line)) {
+        QMessageBox::critical(this, tr("Error"), tr("AI failed"));
+    }
 }
 
 void KSquaresWindow::setupActions()
@@ -496,21 +502,6 @@ void KSquaresWindow::optionsPreferences()
 
     connect(dialog, &KConfigDialog::settingsChanged, m_view, &GameBoardView::setBoardSize);
     connect(dialog, &KConfigDialog::settingsChanged, m_scene, &GameBoardScene::updateDebugLines);
-    // TODO this doesn't seem right?! there should be no need to explicitly capture changed states in the configuration page
-    //connect(ui_prefs_display.kcfg_DisplayLineNumbers, SIGNAL(stateChanged(int)), this, SLOT(updateLineNumberDisplaySetting(int)));
     dialog->show();
-}
-
-void KSquaresWindow::updateLineNumberDisplaySetting(int x) {
-    qDebug() << "update line number display setting" << x;
-    Settings::setDisplayLineNumbers(x);
-    m_scene->setDebugLineDisplay(x!=0);
-    m_view->setBoardSize();
-    Settings::self()->save();
-    /*
-    if (sGame->isRunning()) {
-        resetBoard(sGame->board()->width(), sGame->board()->height());
-    }
-     */
 }
 

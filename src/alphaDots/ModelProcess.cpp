@@ -7,11 +7,12 @@
 
 using namespace AlphaDots;
 
-ModelProcess::ModelProcess(QString model, int boxesWidth, int boxesHeight, int port, QString modelKey) :
+ModelProcess::ModelProcess(QString model, int boxesWidth, int boxesHeight, int port, bool gpu, QString modelKey) :
     _model(model),
     _width(boxesWidth),
     _height(boxesHeight),
     _modelPort(port),
+    _gpu(gpu),
     _processKey(modelKey)
 {
     qDebug() << "starting ModelProcess(" << _model << "," << _width << "," << _height << "," << _processKey << ")";
@@ -28,6 +29,10 @@ QString ModelProcess::model() {
 
 int ModelProcess::port() {
     return _modelPort;
+}
+
+bool ModelProcess::gpu() {
+    return _gpu;
 }
 
 int ModelProcess::width() {

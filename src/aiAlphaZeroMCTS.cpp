@@ -25,9 +25,9 @@ bool aiAlphaZeroMCTS::use_move_sequences = true; // overwritten in main.cpp
 bool aiAlphaZeroMCTS::use_probabilistic_final_move_selection = false; // overwritten in main.cpp
 
 aiAlphaZeroMCTS::aiAlphaZeroMCTS(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight,
-                                 int thinkTime, ModelInfo model) :
+                                 int thinkTime, ModelInfo model, bool gpu) :
         KSquaresAi(newWidth, newHeight), playerId(newPlayerId), maxPlayerId(newMaxPlayerId),
-        mctsTimeout(thinkTime), context(zmq::context_t(1)), socket(zmq::socket_t(context, ZMQ_REQ))
+        mctsTimeout(thinkTime), useGPU(gpu), context(zmq::context_t(1)), socket(zmq::socket_t(context, ZMQ_REQ))
 {
     // setup basics
     width = newWidth;
@@ -43,7 +43,7 @@ aiAlphaZeroMCTS::aiAlphaZeroMCTS(int newPlayerId, int newMaxPlayerId, int newWid
     modelInfo = model;
 
     // get a model server
-	modelServerPort = ModelManager::getInstance().ensureProcessRunning(model.name(), width, height);
+	modelServerPort = ModelManager::getInstance().ensureProcessRunning(model.name(), width, height, gpu);
 	if (modelServerPort < 0) {
 		qDebug() << "ensureProcessRunning failed!";
 		isTainted = true;
@@ -68,7 +68,7 @@ aiAlphaZeroMCTS::~aiAlphaZeroMCTS() {
     if (!mctsRootNode.isNull()) {
         mctsRootNode->clear();
     }
-    ModelManager::getInstance().freeClaimOnProcess(modelInfo.name(), width, height);
+    ModelManager::getInstance().freeClaimOnProcess(modelInfo.name(), width, height, useGPU);
 }
 
 int aiAlphaZeroMCTS::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners,

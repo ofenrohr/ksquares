@@ -34,9 +34,10 @@ namespace AlphaDots {
          * @param modelName name of the alpha dots model
          * @param width board width in boxes
          * @param height board height in boxes
+         * @param gpu allow gpu usage
          * @return port number of the model server or -1 on error
          */
-        int ensureProcessRunning(QString modelName, int width, int height);
+        int ensureProcessRunning(QString modelName, int width, int height, bool gpu);
 
         /**
          * Tells the model manager that a process won't be used anymore.
@@ -45,10 +46,10 @@ namespace AlphaDots {
          * @param width board width in boxes
          * @param height board height in boxes
          */
-        void freeClaimOnProcess(QString modelName, int width, int height);
+        void freeClaimOnProcess(QString modelName, int width, int height, bool gpu);
 
         /**
-         * Allow the model Process to use gpu resources.
+         * Allow the model Process to use gpu resources for all processes.
          * @param allowGPU
          */
         void allowGPU(bool allowGPU);
@@ -65,7 +66,7 @@ namespace AlphaDots {
 
         bool getDebug() { return debug; }
 
-        void setLogDest(QString &dest) {logDest = dest;}
+        //void setLogDest(QString &dest) {logDest = dest;}
 
         /**
          * Sets the maximum number of processes that are allowed to run at the same time.
@@ -79,13 +80,14 @@ namespace AlphaDots {
         zmq::context_t zmqContext;
         zmq::socket_t mgmtSocket;
         QMap<QString, ModelProcess::Ptr> processMap;
+        /// counts gpu process claims
         QMap<QString, int> processClaims;
         QMutex getProcessMutex;
 
         ExternalProcess::Ptr metaModelManager;
         bool useGPU=false;
         bool debug=false;
-        QString logDest;
+        //QString logDest;
         int maxConcurrentProcesses = 0;
 
         /**
@@ -95,7 +97,14 @@ namespace AlphaDots {
          * @param height
          * @return
          */
-        ModelProcess::Ptr getProcess(QString modelName, int width, int height);
+        ModelProcess::Ptr getProcess(QString modelName, int width, int height, bool gpu);
+
+        /**
+         * Returns the number of currently running processes that use the gpu. Not thread safe - only call if
+         * you locked getProcessMutex!
+         * @return number of gpu processes
+         */
+        int activeGPUprocesses();
 
         /**
          * Convert the model configuration data to a string which will be used as the key in processMap
@@ -104,7 +113,7 @@ namespace AlphaDots {
          * @param height
          * @return
          */
-        QString modelInfoToStr(QString modelName, int width, int height);
+        QString modelInfoToStr(QString modelName, int width, int height, bool gpu);
 
         int sendStartRequest(QString name, int width, int height, bool gpu);
         int sendStopRequest(ModelProcess::Ptr process);

@@ -19,8 +19,8 @@
 using namespace AlphaDots;
 
 SelfPlay::SelfPlay(QString datasetDest, int threads, QString &initialModelName, QString &targetModel,
-                   int iterations, int gamesPerIteration, QString &logdir, int epochs, bool gpuTraining,
-                   DatasetType dataset, bool doUpload, QList<QPoint> boardSizes, bool waitForTrainingToFinish) :
+                   int iterations, int gamesPerIteration, int epochs, bool gpuTraining, DatasetType dataset,
+                   bool doUpload, QList<QPoint> boardSizes, bool waitForTrainingToFinish) :
     KXmlGuiWindow(),
     m_view(new QWidget())
 {
@@ -28,7 +28,6 @@ SelfPlay::SelfPlay(QString datasetDest, int threads, QString &initialModelName, 
 
     datasetDirectory = datasetDest;
     targetModelName = targetModel;
-    logdest = logdir;
     threadCnt = threads;
     datasetType = dataset;
     upload = doUpload;

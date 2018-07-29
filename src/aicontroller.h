@@ -42,7 +42,7 @@ class aiController : public QObject
 		 * @param newLevel level of the ai
 		 */
 		aiController(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight, int newLevel, int thinkTime = 5000,
-					 QString model = QStringLiteral("BasicStrategy"));
+					 QString model = QStringLiteral("BasicStrategy"), bool gpu = false);
 		
 		~aiController();
 		
@@ -91,6 +91,8 @@ class aiController : public QObject
 		AlphaDots::ModelInfo alphaDotsModel;
 		/// alphaDots active?
 		bool alphaDotsActive;
+		/// allow gpu usage
+		bool useGPU;
 };
 
 
