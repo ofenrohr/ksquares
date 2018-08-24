@@ -13,6 +13,7 @@
 #include <PolicyValueData.pb.h>
 #include <alphaDots/ModelManager.h>
 #include <alphaDots/MLImageGenerator.h>
+#include <ModelServer.pb.h>
 
 using namespace AlphaDots;
 
@@ -377,13 +378,22 @@ bool aiAlphaZeroMCTS::predictPolicyValue(const AlphaZeroMCTSNode::Ptr &node) {
 
     // request prediction
     QImage qimg = MLImageGenerator::generateInputImage(board);
+    ModelServerResponse srvResponse;
     PolicyValueData policyValueData;
     if (ProtobufConnector::getInstance().getBatchPredict()) {
         policyValueData = ProtobufConnector::getInstance().batchPredict(socket, qimg);
     } else {
+        // prepare prediction request
+        ModelServerRequest srvRequest;
+        srvRequest.set_action(ModelServerRequest::PREDICT);
+        srvRequest.mutable_predictionrequest()->set_modelhandler(modelInfo.type().toStdString());
+        srvRequest.mutable_predictionrequest()->set_modelkey(ModelManager::modelInfoToStr(modelInfo.name(), width, height, useGPU).toStdString());
+
+        DotsAndBoxesImage *img = new DotsAndBoxesImage(ProtobufConnector::dotsAndBoxesImageToProtobuf(qimg));
+        srvRequest.mutable_predictionrequest()->set_allocated_image(img);
+
         // send prediction request
-        DotsAndBoxesImage img = ProtobufConnector::dotsAndBoxesImageToProtobuf(qimg);
-        if (!ProtobufConnector::sendString(socket, img.SerializeAsString())) {
+        if (!ProtobufConnector::sendString(socket, srvRequest.SerializeAsString())) {
             qDebug() << "failed to send message to model server";
             isTainted = true;
             return false;
@@ -398,7 +408,14 @@ bool aiAlphaZeroMCTS::predictPolicyValue(const AlphaZeroMCTSNode::Ptr &node) {
             return false;
         }
         //qDebug() << QString::fromStdString(rpl);
-        policyValueData.ParseFromString(rpl);
+        //policyValueData.ParseFromString(rpl);
+        srvResponse.ParseFromString(rpl);
+
+        if (srvResponse.status() != ModelServerResponse::RESP_OK) {
+            qDebug() << "ERROR: model server response message: " << QString::fromStdString(srvResponse.errormessage());
+            assert(false);
+        }
+        policyValueData = srvResponse.predictionresponse().pvdata();
     }
 
     // put data into mcts nodes

@@ -10,6 +10,7 @@
 #include <zmq.hpp>
 #include <alphaDots/ExternalProcess.h>
 #include <alphaDots/ProtobufConnector.h>
+#include <gsl/gsl_randist.h>
 #include "DotsAndBoxesImage.pb.h"
 
 
@@ -47,6 +48,8 @@ class aiConvNet : public KSquaresAi {
 		AlphaDots::ModelInfo modelInfo;
 		/// use GPU
 		bool useGPU;
+		// GSL random number generator
+        gsl_rng *rng;
 
         zmq::context_t context;//(1);
         zmq::socket_t socket;//(context, ZMQ_REQ);

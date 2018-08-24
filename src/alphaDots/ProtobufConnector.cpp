@@ -11,6 +11,7 @@
 #include <QtCore/QThread>
 #include <QtWidgets/QMessageBox>
 #include <QtCore/QDir>
+#include <zmq.hpp>
 
 using namespace AlphaDots;
 
@@ -20,6 +21,7 @@ ProtobufConnector &ProtobufConnector::getInstance() {
 }
 
 ProtobufConnector::ProtobufConnector() :
+    context(1),
     modelListMutex(QMutex::Recursive),
     batchImgMutex(QMutex::NonRecursive),
     batchSize(1),
@@ -139,9 +141,7 @@ GameSequence ProtobufConnector::gameSequenceToProtobuf(QList<QImage> inputSeq, Q
     return ret;
 }
 
-QImage ProtobufConnector::fromProtobuf(std::string msg) {
-    DotsAndBoxesImage img;
-    img.ParseFromString(msg);
+QImage ProtobufConnector::protobufDotsAndBoxesImageToQImage(const DotsAndBoxesImage &img) {
     QImage ret(img.width(), img.height(), QImage::Format_ARGB32);
     for (int i = 0; i < img.width() * img.height(); i++) {
         int c = img.pixels().Get(i);
@@ -152,7 +152,7 @@ QImage ProtobufConnector::fromProtobuf(std::string msg) {
     return ret;
 }
 
-QList<ModelInfo> ProtobufConnector::getModelList(bool useLocking) {
+QList<ModelInfo> ProtobufConnector::getModelList() {
     QMutexLocker locker(&modelListMutex);
     if (!cachedModelList.isEmpty()) {
         return cachedModelList;
@@ -173,7 +173,6 @@ QList<ModelInfo> ProtobufConnector::getModelList(bool useLocking) {
     }
 
     try {
-        zmq::context_t context(1);
         zmq::socket_t socket(context, ZMQ_REQ);
         socket.connect("tcp://127.0.0.1:13452");
 
@@ -183,6 +182,7 @@ QList<ModelInfo> ProtobufConnector::getModelList(bool useLocking) {
         std::string response = recvString(socket, &ok);
         if (!ok) {
             qDebug() << "ERROR: failed to receive model list";
+            socket.close();
             return cachedModelList;
         }
         ModelList modelList;
@@ -205,7 +205,7 @@ QList<ModelInfo> ProtobufConnector::getModelList(bool useLocking) {
 
 ModelInfo ProtobufConnector::getModelByName(QString name) {
     QMutexLocker locker(&modelListMutex);
-    QList<ModelInfo> modelList = getModelList(true);
+    QList<ModelInfo> modelList = getModelList();
     for (auto model : modelList) {
         if (model.name() == name) {
             return model;

@@ -1,0 +1,20 @@
+syntax = "proto2";
+
+package AlphaDots;
+
+import "DotsAndBoxesImage.proto";
+import "GameSequence.proto";
+import "PolicyValueData.proto";
+
+message PredictionRequest {
+    required string modelHandler = 1;
+    required string modelKey = 2;
+    optional DotsAndBoxesImage image = 3;
+    optional GameSequence sequence = 4;
+}
+
+message PredictionResponse {
+    optional DotsAndBoxesImage image = 1;
+    optional PolicyValueData pvdata = 2;
+}
+

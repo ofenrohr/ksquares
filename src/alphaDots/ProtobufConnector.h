@@ -41,14 +41,14 @@ namespace AlphaDots {
          * @param msg protobuf data
          * @return image data
          */
-        static QImage fromProtobuf(std::string msg);
+        static QImage protobufDotsAndBoxesImageToQImage(const DotsAndBoxesImage &img);
 
 
         /**
          * Get model list.
          * @return
          */
-        QList<ModelInfo> getModelList(bool useLocking=false);
+        QList<ModelInfo> getModelList();
         ModelInfo getModelByName(QString name);
 
         /**
@@ -73,6 +73,7 @@ namespace AlphaDots {
 
     private:
         ProtobufConnector();
+        zmq::context_t context;
         QList<ModelInfo> cachedModelList;
         QMutex modelListMutex;
         QAtomicInt batchSize;

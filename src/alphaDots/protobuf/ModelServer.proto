@@ -1,0 +1,27 @@
+syntax = "proto2";
+
+package AlphaDots;
+
+import "ProcessManagement.proto";
+import "Prediction.proto";
+
+message ModelServerRequest {
+    enum ServerAction {
+        MANAGE = 1;
+        PREDICT = 2;
+    }
+    required ServerAction action = 1;
+    optional ProcessManagementRequest mgmtRequest = 2;
+    optional PredictionRequest predictionRequest = 3;
+}
+
+message ModelServerResponse {
+    enum ServerResponse {
+        RESP_OK = 1;
+        RESP_FAIL = 2;
+    }
+    required ServerResponse status = 1;
+    optional string errorMessage = 2;
+    optional ProcessManagementResponse mgmtResponse = 3;
+    optional PredictionResponse predictionResponse = 4;
+}

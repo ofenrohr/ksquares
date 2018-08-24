@@ -129,7 +129,7 @@ namespace AlphaDots {
         zmq::socket_t socket;
         bool useGPU;
 
-        // GSLTest random number generator
+        // GSL random number generator
         gsl_rng *rng;
 
         // list of original prior values

@@ -74,6 +74,15 @@ namespace AlphaDots {
          */
         void setMaximumConcurrentProcesses(int max);
 
+        /**
+         * Convert the model configuration data to a string which will be used as the key in processMap
+         * @param modelName
+         * @param width
+         * @param height
+         * @return
+         */
+        static QString modelInfoToStr(QString modelName, int width, int height, bool gpu);
+
     private:
         ModelManager();
 
@@ -87,6 +96,7 @@ namespace AlphaDots {
         ExternalProcess::Ptr metaModelManager;
         bool useGPU=false;
         bool debug=false;
+        bool pythonManagerRunning=false;
         //QString logDest;
         int maxConcurrentProcesses = 0;
 
@@ -105,15 +115,6 @@ namespace AlphaDots {
          * @return number of gpu processes
          */
         int activeGPUprocesses();
-
-        /**
-         * Convert the model configuration data to a string which will be used as the key in processMap
-         * @param modelName
-         * @param width
-         * @param height
-         * @return
-         */
-        QString modelInfoToStr(QString modelName, int width, int height, bool gpu);
 
         int sendStartRequest(QString name, int width, int height, bool gpu);
         int sendStopRequest(ModelProcess::Ptr process);

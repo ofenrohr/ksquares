@@ -12,6 +12,7 @@
 #include "alphaDots/ModelManager.h"
 #include <PolicyValueData.pb.h>
 #include <cmath>
+#include <ModelServer.pb.h>
 
 using namespace AlphaDots;
 
@@ -44,9 +45,12 @@ aiConvNet::aiConvNet(int newPlayerId, int newMaxPlayerId, int newWidth, int newH
 		//return -1;
 		isTainted = true;
 	}
+	rng = gsl_rng_alloc(gsl_rng_taus);
+	gsl_rng_set(rng, std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
 }
 
 aiConvNet::~aiConvNet() {
+	gsl_rng_free(rng);
 	ModelManager::getInstance().freeClaimOnProcess(modelInfo.name(), width, height, useGPU);
 }
 
@@ -79,15 +83,21 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 		lines[i] = newLines[i];
 	}
 
+	// prepare common part of model server request
+    ModelServerRequest srvRequest;
+    srvRequest.set_action(ModelServerRequest::PREDICT);
+    srvRequest.mutable_predictionrequest()->set_modelhandler(modelInfo.type().toStdString());
+    srvRequest.mutable_predictionrequest()->set_modelkey(ModelManager::modelInfoToStr(modelInfo.name(), width, height, useGPU).toStdString());
+
 	if (modelInfo.type() == QStringLiteral("DirectInference") ||
         modelInfo.type() == QStringLiteral("DirectInferenceCategorical")) {
 		aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(lines, linesSize, width, height, newSquareOwners, playerId, maxPlayerId));
 		DotsAndBoxesImage img = ProtobufConnector::dotsAndBoxesImageToProtobuf(MLImageGenerator::generateInputImage(board));
-		ProtobufConnector::sendString(socket, img.SerializeAsString());
+		srvRequest.mutable_predictionrequest()->set_allocated_image(&img);
 	}
     else if (modelInfo.type() == QStringLiteral("Sequence") ||
              modelInfo.type() == QStringLiteral("SequenceCategorical")) {
-		//qDebug() << "sequence model";
+        // prepare image data
 		aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(width, height));
 		QList<QImage> imageSeq;
 		imageSeq.append(MLImageGenerator::generateInputImage(board));
@@ -95,7 +105,9 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 			board->doMove(move.line);
 			imageSeq.append(MLImageGenerator::generateInputImage(board));
 		}
+		// convert image data to protobuf message
 		GameSequence seq = ProtobufConnector::gameSequenceToProtobuf(imageSeq);
+		// protobuf error checking
         std::vector<std::string> errors;
         seq.FindInitializationErrors(&errors);
         foreach (std::string err, errors) {
@@ -104,59 +116,76 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 		if (errors.size() > 0) {
 			qDebug() << "imageSeq: " << imageSeq;
 		}
-		if (!ProtobufConnector::sendString(socket, seq.SerializeAsString())) {
-            qDebug() << "ProtobufConnector::sendString failed!";
-            isTainted = true;
-			delete[] lines;
-			return -1;
-        }
+		// add sequence protobuf message to model server request
+		srvRequest.mutable_predictionrequest()->set_allocated_sequence(&seq);
 	}
     else if (modelInfo.type() == QStringLiteral("PolicyValue")) {
 		aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(lines, linesSize, width, height, newSquareOwners, playerId, maxPlayerId));
 		QImage inputImg = MLImageGenerator::generateInputImage(board);
-		DotsAndBoxesImage img = ProtobufConnector::dotsAndBoxesImageToProtobuf(inputImg);
-		if (!ProtobufConnector::sendString(socket, img.SerializeAsString())) {
-			qDebug() << "failed to send request!";
-			isTainted = true;
-			delete[] lines;
-			return -1;
-		}
+		DotsAndBoxesImage *img = new DotsAndBoxesImage(ProtobufConnector::dotsAndBoxesImageToProtobuf(inputImg));
+		srvRequest.mutable_predictionrequest()->set_allocated_image(img);
 	} else {
 		qDebug() << "ERROR: unknown model type!";
         qDebug() << modelInfo.type();
 		exit(-1);
 	}
 
+	// send model server request
+    if (!ProtobufConnector::sendString(socket, srvRequest.SerializeAsString())) {
+        qDebug() << "ProtobufConnector::sendString failed!";
+        isTainted = true;
+        delete[] lines;
+        return -1;
+    }
+
+    // receive response...
 	//qDebug() << "sending protobuf string done";
 	bool ok;
 	std::string rpl = ProtobufConnector::recvString(socket, &ok);
 	if (!ok) {
+	    qDebug() << "Failed to receive reply via zeromq!";
+		isTainted = true;
+		delete[] lines;
+		return -1;
+	}
+
+	ModelServerResponse srvResponse;
+	srvResponse.ParseFromString(rpl);
+
+	if (srvResponse.status() != ModelServerResponse::RESP_OK) {
+		qDebug() << "ModelServer failed: " << QString::fromStdString(srvResponse.errormessage());
+		isTainted = true;
 		delete[] lines;
 		return -1;
 	}
 
 	//qDebug() << "Received: " << (char*)reply.data();
     if (modelInfo.type() == QStringLiteral("PolicyValue")) {
-		PolicyValueData policyValueData;
-		policyValueData.ParseFromString(rpl);
+		const PolicyValueData policyValueData = srvResponse.predictionresponse().pvdata();
 
-		int ret = -1;
+		QList<int> bestLines;
         int lineCnt = policyValueData.policy_size();
 		double best = -INFINITY;
 		for (int i = 0; i < lineCnt; i++) {
 			if (lines[i]) {
 				continue;
 			}
+			if (policyValueData.policy(i) == best) {
+				bestLines.append(i);
+			}
             if (policyValueData.policy(i) > best) {
 				best = policyValueData.policy(i);
-				ret = i;
+				bestLines.clear();
+				bestLines.append(i);
 			}
         }
+		int ret = bestLines[gsl_rng_uniform_int(rng, bestLines.size())];
 
         delete[] lines;
 		return ret;
 	} else {
-		QImage prediction = ProtobufConnector::fromProtobuf(rpl);
+		const QImage prediction = ProtobufConnector::protobufDotsAndBoxesImageToQImage(
+				srvResponse.predictionresponse().image());
 
 		QList<QPoint> bestPoints;
 		int bestVal = -1;
@@ -200,7 +229,7 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 
 		//qDebug() << "Highest value:" << bestVal << "at" << bestPoints;
 		if (bestPoints.count() > 1) {
-			linePoint = bestPoints[rand() % bestPoints.count()];
+			linePoint = bestPoints[gsl_rng_uniform_int(rng, bestPoints.count())];
 			//qDebug() << "selected point: " << linePoint;
 		}
 

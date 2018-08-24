@@ -19,7 +19,9 @@ namespace AlphaDots {
         QString path();
         QString type();
         QString ai();
+        bool valid();
 
+        void setValid(bool valid) {_valid=valid;}
         void setName(QString name) {_name=name;}
 
     protected:
@@ -28,6 +30,7 @@ namespace AlphaDots {
         QString _path;
         QString _type;
         QString _ai;
+        bool _valid;
     };
 }
 

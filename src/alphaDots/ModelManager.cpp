@@ -7,6 +7,7 @@
 #include <settings.h>
 #include <QtWidgets/QMessageBox>
 #include "ProcessManagement.pb.h"
+#include "ModelServer.pb.h"
 #include "ModelManager.h"
 #include "ProtobufConnector.h"
 
@@ -17,35 +18,37 @@ ModelManager::ModelManager() :
     zmqContext(zmq::context_t(1)),
     mgmtSocket(zmq::socket_t(zmqContext, ZMQ_REQ))
 {
-    qDebug() << "Starting meta model server...";
+    qDebug() << "Starting multi model server...";
     QStringList args;
-    args << Settings::alphaDotsDir() + QStringLiteral("/modelServer/metaModelServer.py");
-    if (debug) {
-        args << QStringLiteral("--debug");
-    }
+    args << Settings::alphaDotsDir() + QStringLiteral("/modelServer/multiModelServer.py");
+    //args << QStringLiteral("--debug");
     metaModelManager = ExternalProcess::Ptr(new ExternalProcess(Settings::pythonExecutable(), args, Settings::alphaDotsDir()));
     if (!metaModelManager->startExternalProcess()) {
         QMessageBox::critical(nullptr, tr("AlphaDots Error"), tr("Failed to start python model manager!"));
         return;
     }
-    qDebug() << "Connecting to tcp://127.0.0.1:12353";
-    mgmtSocket.connect("tcp://127.0.0.1:12353");
+    qDebug() << "Connecting to tcp://127.0.0.1:12352";
+    mgmtSocket.connect("tcp://127.0.0.1:12352");
     qDebug() << "Connection established";
 }
 
 int ModelManager::sendStartRequest(QString name, int width, int height, bool gpu) {
+    qDebug() << "ModelManager->sendStartRequest: " << name << "," << width << "," << height << "," << gpu;
     QString modelKey = modelInfoToStr(name, width, height, gpu || useGPU);
     // prepare request
-    ProcessManagementRequest mgmtRequest;
-    mgmtRequest.set_model(name.toStdString());
-    mgmtRequest.set_width(width);
-    mgmtRequest.set_height(height);
-    mgmtRequest.set_key(modelKey.toStdString());
-    mgmtRequest.set_action(ProcessManagementRequest::START);
-    mgmtRequest.set_gpu(gpu || useGPU);
+    ModelServerRequest srvRequest;
+    srvRequest.set_action(ModelServerRequest::MANAGE);
+    srvRequest.mutable_mgmtrequest()->set_model(name.toStdString());
+    srvRequest.mutable_mgmtrequest()->set_width(width);
+    srvRequest.mutable_mgmtrequest()->set_height(height);
+    srvRequest.mutable_mgmtrequest()->set_key(modelKey.toStdString());
+    srvRequest.mutable_mgmtrequest()->set_action(ProcessManagementRequest::START);
+    srvRequest.mutable_mgmtrequest()->set_gpu(gpu || useGPU);
+
+    assert(srvRequest.mgmtrequest().model() == name.toStdString());
 
     // send request
-    if (!ProtobufConnector::sendString(mgmtSocket, mgmtRequest.SerializeAsString())) {
+    if (!ProtobufConnector::sendString(mgmtSocket, srvRequest.SerializeAsString())) {
         QMessageBox::critical(nullptr, tr("AlphaDots error"), tr("Failed to send command to start model server!"));
         return -1;
     }
@@ -57,26 +60,32 @@ int ModelManager::sendStartRequest(QString name, int width, int height, bool gpu
         QMessageBox::critical(nullptr, tr("AlphaDots error"), tr("Failed to start model server!"));
         return -1;
     }
-    ProcessManagementResponse resp;
-    resp.ParseFromString(zmqResp);
-    assert(modelKey.toStdString() == resp.key());
+    //ProcessManagementResponse resp;
+    ModelServerResponse srvResponse;
+    srvResponse.ParseFromString(zmqResp);
+    if (srvResponse.status() != ModelServerResponse::RESP_OK) {
+        qDebug() << "ERROR: Starting model server failed: " << QString::fromStdString(srvResponse.errormessage());
+        assert(false);
+    }
+    assert(modelKey.toStdString() == srvResponse.mgmtresponse().key());
 
     // return model server port
-    return resp.port();
+    return srvResponse.mgmtresponse().port();
 }
 
 int ModelManager::sendStopRequest(ModelProcess::Ptr process) {
     // prepare request
-    ProcessManagementRequest mgmtRequest;
-    mgmtRequest.set_model(process->model().toStdString());
-    mgmtRequest.set_width(process->width());
-    mgmtRequest.set_height(process->height());
-    mgmtRequest.set_key(process->key().toStdString());
-    mgmtRequest.set_action(ProcessManagementRequest::STOP);
-    mgmtRequest.set_gpu(process->gpu() || useGPU);
+    ModelServerRequest srvRequest;
+    srvRequest.set_action(ModelServerRequest::MANAGE);
+    srvRequest.mutable_mgmtrequest()->set_model(process->model().toStdString());
+    srvRequest.mutable_mgmtrequest()->set_width(process->width());
+    srvRequest.mutable_mgmtrequest()->set_height(process->height());
+    srvRequest.mutable_mgmtrequest()->set_key(process->key().toStdString());
+    srvRequest.mutable_mgmtrequest()->set_action(ProcessManagementRequest::STOP);
+    srvRequest.mutable_mgmtrequest()->set_gpu(process->gpu() || useGPU);
 
     // send request
-    if (!ProtobufConnector::sendString(mgmtSocket, mgmtRequest.SerializeAsString())) {
+    if (!ProtobufConnector::sendString(mgmtSocket, srvRequest.SerializeAsString())) {
         QMessageBox::critical(nullptr, tr("AlphaDots error"), tr("Failed to send command to stop model server!"));
         return -1;
     }
@@ -88,12 +97,16 @@ int ModelManager::sendStopRequest(ModelProcess::Ptr process) {
         QMessageBox::critical(nullptr, tr("AlphaDots error"), tr("Failed to stop model server!"));
         return -1;
     }
-    ProcessManagementResponse resp;
+    ModelServerResponse resp;
     resp.ParseFromString(zmqResp);
-    assert(process->key().toStdString() == resp.key());
+    if(resp.status() != ModelServerResponse::RESP_OK) {
+        qDebug() << "ERROR: Starting model server failed: " << QString::fromStdString(resp.errormessage());
+        assert(false);
+    }
+    assert(process->key().toStdString() == resp.mgmtresponse().key());
 
     // return model server port
-    return resp.port();
+    return resp.mgmtresponse().port();
 }
 
 int ModelManager::ensureProcessRunning(const QString modelName, int width, int height, bool gpu) {
@@ -178,7 +191,7 @@ int ModelManager::activeGPUprocesses() {
 
 QString ModelManager::modelInfoToStr(QString modelName, int width, int height, bool gpu) {
     return modelName + QStringLiteral("-") + QString::number(width) + QStringLiteral("x") + QString::number(height) +
-           (gpu || useGPU ? QStringLiteral("-GPU") : QStringLiteral(""));
+           (gpu ? QStringLiteral("-GPU") : QStringLiteral(""));
 }
 
 void ModelManager::allowGPU(bool allowGPU) {
