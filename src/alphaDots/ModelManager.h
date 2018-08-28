@@ -57,7 +57,7 @@ namespace AlphaDots {
         /**
          * Stops all running model processes
          */
-        void stopAll(bool wait = true);
+        void stopAll();
 
         /**
          * Sets the debug mode
@@ -72,7 +72,7 @@ namespace AlphaDots {
          * Sets the maximum number of processes that are allowed to run at the same time.
          * @param max number of processes, 0 for unlimited
          */
-        void setMaximumConcurrentProcesses(int max);
+        //void setMaximumConcurrentProcesses(int max);
 
         /**
          * Convert the model configuration data to a string which will be used as the key in processMap
@@ -96,9 +96,9 @@ namespace AlphaDots {
         ExternalProcess::Ptr metaModelManager;
         bool useGPU=false;
         bool debug=false;
-        bool pythonManagerRunning=false;
+        //bool pythonManagerRunning=false;
         //QString logDest;
-        int maxConcurrentProcesses = 0;
+        //int maxConcurrentProcesses = 0;
 
         /**
          * Get the process for the specified configuration
@@ -114,7 +114,7 @@ namespace AlphaDots {
          * you locked getProcessMutex!
          * @return number of gpu processes
          */
-        int activeGPUprocesses();
+        //int activeGPUprocesses();
 
         int sendStartRequest(QString name, int width, int height, bool gpu);
         int sendStopRequest(ModelProcess::Ptr process);

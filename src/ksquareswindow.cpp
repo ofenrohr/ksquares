@@ -193,7 +193,7 @@ void KSquaresWindow::gameReset()
     }
 
     // stop old model servers
-    AlphaDots::ModelManager::getInstance().stopAll(false);
+    AlphaDots::ModelManager::getInstance().stopAll();
 
     // create AIs
 	ais.clear();

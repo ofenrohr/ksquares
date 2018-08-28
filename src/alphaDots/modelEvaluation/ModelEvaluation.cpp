@@ -44,7 +44,7 @@ ModelEvaluation::ModelEvaluation(QString models, bool fast, int threadCnt, int g
 }
 
 ModelEvaluation::~ModelEvaluation() {
-    AlphaDots::ModelManager::getInstance().stopAll(false);
+    AlphaDots::ModelManager::getInstance().stopAll();
     //delete m_view;
     m_view->deleteLater();
     //delete resultModel;
@@ -325,7 +325,7 @@ void ModelEvaluation::evaluationFinished() {
     qDebug() << "evaluation finished!";
     evaluationRunning = false;
     endTime = QDateTime::currentDateTime();
-    ModelManager::getInstance().stopAll(true);
+    ModelManager::getInstance().stopAll();
 }
 
 void ModelEvaluation::saveResultsAs() {

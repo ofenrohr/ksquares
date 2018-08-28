@@ -21,7 +21,7 @@ ModelManager::ModelManager() :
     qDebug() << "Starting multi model server...";
     QStringList args;
     args << Settings::alphaDotsDir() + QStringLiteral("/modelServer/multiModelServer.py");
-    //args << QStringLiteral("--debug");
+    args << QStringLiteral("--debug");
     metaModelManager = ExternalProcess::Ptr(new ExternalProcess(Settings::pythonExecutable(), args, Settings::alphaDotsDir()));
     if (!metaModelManager->startExternalProcess()) {
         QMessageBox::critical(nullptr, tr("AlphaDots Error"), tr("Failed to start python model manager!"));
@@ -74,6 +74,8 @@ int ModelManager::sendStartRequest(QString name, int width, int height, bool gpu
 }
 
 int ModelManager::sendStopRequest(ModelProcess::Ptr process) {
+    qDebug() << "sending stop request for " << process->key();
+
     // prepare request
     ModelServerRequest srvRequest;
     srvRequest.set_action(ModelServerRequest::MANAGE);
@@ -94,14 +96,15 @@ int ModelManager::sendStopRequest(ModelProcess::Ptr process) {
     bool ok = false;
     std::string zmqResp = ProtobufConnector::recvString(mgmtSocket, &ok);
     if (!ok) {
-        QMessageBox::critical(nullptr, tr("AlphaDots error"), tr("Failed to stop model server!"));
+        //QMessageBox::critical(nullptr, tr("AlphaDots error"), tr("Failed to stop model server!"));
         return -1;
     }
     ModelServerResponse resp;
     resp.ParseFromString(zmqResp);
     if(resp.status() != ModelServerResponse::RESP_OK) {
         qDebug() << "ERROR: Starting model server failed: " << QString::fromStdString(resp.errormessage());
-        assert(false);
+        //assert(false);
+        return -1;
     }
     assert(process->key().toStdString() == resp.mgmtresponse().key());
 
@@ -118,30 +121,13 @@ ModelProcess::Ptr ModelManager::getProcess(const QString modelName, int width, i
     QMutexLocker locker(&getProcessMutex);
     QString modelKey = modelInfoToStr(modelName, width, height, gpu || useGPU);
     if (!processMap.contains(modelKey)) {
-        //if (maxConcurrentProcesses > 0 && maxConcurrentProcesses <= processMap.keys().size()) {
-        //    while (maxConcurrentProcesses <= processMap.keys().size() && !processMap.contains(modelKey)) {
-        while ((gpu||useGPU) && maxConcurrentProcesses > 0 && activeGPUprocesses() >= maxConcurrentProcesses && !processMap.contains(modelKey)) {
-            // TODO: warn if we can't get a gpu after 2 minutes
-            // wait for process to be released before starting the next process
-            locker.unlock();
-            cleanUp();
-            //qDebug() << "waiting for other ModelProcess to finish...";
-            QCoreApplication::processEvents();
-            QThread::msleep(100);
-            locker.relock();
-        }
-        if (processMap.contains(modelKey)) {
-            // another thread has started the process while this thread was waiting
-            processClaims[modelKey] += 1;
-        } else {
-            // start the process
-            qDebug() << "sending model start request...";
-            int port = sendStartRequest(modelName, width, height, gpu || useGPU);
-            qDebug() << "model starting on port " << QString::number(port);
-            ModelProcess::Ptr process = ModelProcess::Ptr(new ModelProcess(modelName, width, height, port, gpu || useGPU, modelKey));
-            processMap[modelKey] = process;
-            processClaims[modelKey] = 1;
-        }
+        // start the process
+        qDebug() << "sending model start request...";
+        int port = sendStartRequest(modelName, width, height, gpu || useGPU);
+        qDebug() << "model starting on port " << QString::number(port);
+        ModelProcess::Ptr process = ModelProcess::Ptr(new ModelProcess(modelName, width, height, port, gpu || useGPU, modelKey));
+        processMap[modelKey] = process;
+        processClaims[modelKey] = 1;
     } else {
         processClaims[modelKey] += 1;
     }
@@ -153,32 +139,37 @@ void ModelManager::freeClaimOnProcess(QString modelName, int width, int height, 
     QMutexLocker locker(&getProcessMutex);
     QString modelKey = modelInfoToStr(modelName, width, height, gpu || useGPU);
     processClaims[modelKey] -= 1;
-    //qDebug() << "claims on " << modelKey << " at " << processClaims[modelKey];
-    /*
-    if (processClaims[modelKey] == 0 && maxConcurrentProcesses > 0) {
-        if (debug) {
-            qDebug() << "Releasing ModelProcess...";
-        }
+    if (processClaims[modelKey] == 0 && !processMap[modelKey]->gpu()) {
+        sendStopRequest(processMap[modelKey]);
     }
-     */
 }
 
 void ModelManager::cleanUp() {
     QMutexLocker locker(&getProcessMutex);
+    /*
     if (maxConcurrentProcesses <= 0) {
         return;
     }
+     */
+    /*
     for (const QString &modelKey : processMap.keys()) {
         if ((processMap[modelKey]->gpu() || useGPU) && processClaims[modelKey] == 0) {
             if (debug) {
                 qDebug() << "stopping " << modelKey;
             }
-            sendStopRequest(processMap[modelKey]);
-            processMap.remove(modelKey);
+            if (sendStopRequest(processMap[modelKey]) < 0) {
+                qDebug() << "failed to stop process";
+            } else {
+                processMap.remove(modelKey);
+            }
         }
     }
+     */
+    stopAll();
+    //metaModelManager->stopExternalProcess(true,false,false);
 }
 
+/*
 int ModelManager::activeGPUprocesses() {
     int processCnt = 0;
     for (const auto &process : processMap.values()) {
@@ -188,6 +179,7 @@ int ModelManager::activeGPUprocesses() {
     }
     return processCnt;
 }
+ */
 
 QString ModelManager::modelInfoToStr(QString modelName, int width, int height, bool gpu) {
     return modelName + QStringLiteral("-") + QString::number(width) + QStringLiteral("x") + QString::number(height) +
@@ -196,26 +188,39 @@ QString ModelManager::modelInfoToStr(QString modelName, int width, int height, b
 
 void ModelManager::allowGPU(bool allowGPU) {
     useGPU = allowGPU;
+    /*
     if (allowGPU) {
         qDebug() << "GPU active: limiting maximum number of concurrent ModelProcess instances to 1";
         setMaximumConcurrentProcesses(1);
     } else {
         setMaximumConcurrentProcesses(0);
     }
+     */
 }
 
-void ModelManager::stopAll(bool wait) {
+void ModelManager::stopAll() {
+    QList<QString> removeList;
+    int i = 0;
     for (const auto &process : processMap) {
-        sendStopRequest(process);
+        if (!process->gpu()) {
+            sendStopRequest(process);
+            removeList.append(modelInfoToStr(process->model(), process->width(), process->height(), process->gpu()));
+        }
+        i++;
     }
-    processMap.clear();
+    for (const auto &i : removeList) {
+        processMap.remove(i);
+        processClaims.remove(i);
+    }
+    //processMap.clear();
 }
 
 void ModelManager::setDebug(bool mode) {
     debug = mode;
 }
 
+/*
 void ModelManager::setMaximumConcurrentProcesses(int max) {
     maxConcurrentProcesses = max;
 }
-
+*/
