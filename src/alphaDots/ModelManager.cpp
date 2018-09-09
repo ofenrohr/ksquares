@@ -20,7 +20,7 @@ ModelManager::ModelManager() :
 {
     qDebug() << "Starting multi model server...";
     QStringList args;
-    args << Settings::alphaDotsDir() + QStringLiteral("/modelServer/multiModelServer.py");
+    args << Settings::alphaDotsDir() + QStringLiteral("/modelServer/modelServer.py");
     args << QStringLiteral("--debug");
     metaModelManager = ExternalProcess::Ptr(new ExternalProcess(Settings::pythonExecutable(), args, Settings::alphaDotsDir()));
     if (!metaModelManager->startExternalProcess()) {
