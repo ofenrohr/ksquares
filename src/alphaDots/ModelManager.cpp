@@ -21,7 +21,7 @@ ModelManager::ModelManager() :
     qDebug() << "Starting multi model server...";
     QStringList args;
     args << Settings::alphaDotsDir() + QStringLiteral("/modelServer/modelServer.py");
-    args << QStringLiteral("--debug");
+    //args << QStringLiteral("--debug");
     metaModelManager = ExternalProcess::Ptr(new ExternalProcess(Settings::pythonExecutable(), args, Settings::alphaDotsDir()));
     if (!metaModelManager->startExternalProcess()) {
         QMessageBox::critical(nullptr, tr("AlphaDots Error"), tr("Failed to start python model manager!"));
@@ -140,7 +140,7 @@ void ModelManager::freeClaimOnProcess(QString modelName, int width, int height, 
     QString modelKey = modelInfoToStr(modelName, width, height, gpu || useGPU);
     processClaims[modelKey] -= 1;
     if (processClaims[modelKey] == 0 && !processMap[modelKey]->gpu()) {
-        sendStopRequest(processMap[modelKey]);
+        //sendStopRequest(processMap[modelKey]);
     }
 }
 
@@ -183,7 +183,7 @@ int ModelManager::activeGPUprocesses() {
 
 QString ModelManager::modelInfoToStr(QString modelName, int width, int height, bool gpu) {
     return modelName + QStringLiteral("-") + QString::number(width) + QStringLiteral("x") + QString::number(height) +
-           (gpu ? QStringLiteral("-GPU") : QStringLiteral(""));
+           (gpu || ModelManager::getInstance().useGPU ? QStringLiteral("-GPU") : QStringLiteral(""));
 }
 
 void ModelManager::allowGPU(bool allowGPU) {

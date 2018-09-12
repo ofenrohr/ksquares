@@ -9,6 +9,7 @@ message ModelServerRequest {
     enum ServerAction {
         MANAGE = 1;
         PREDICT = 2;
+        STATUS = 3;
     }
     required ServerAction action = 1;
     optional ProcessManagementRequest mgmtRequest = 2;
@@ -24,4 +25,5 @@ message ModelServerResponse {
     optional string errorMessage = 2;
     optional ProcessManagementResponse mgmtResponse = 3;
     optional PredictionResponse predictionResponse = 4;
+    optional string statusMessage = 5;
 }
