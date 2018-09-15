@@ -44,7 +44,7 @@ ModelEvaluation::ModelEvaluation(QString models, bool fast, int threadCnt, int g
 }
 
 ModelEvaluation::~ModelEvaluation() {
-    AlphaDots::ModelManager::getInstance().stopAll();
+    //AlphaDots::ModelManager::getInstance().stopAll();
     //delete m_view;
     m_view->deleteLater();
     //delete resultModel;

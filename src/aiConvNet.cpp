@@ -181,6 +181,8 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
         }
 		int ret = bestLines[gsl_rng_uniform_int(rng, bestLines.size())];
 
+		qDebug() << "bestLines: " << bestLines;
+		qDebug() << "selected line: " << ret;
         delete[] lines;
 		return ret;
 	} else {

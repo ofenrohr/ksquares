@@ -18,21 +18,30 @@ ModelManager::ModelManager() :
     zmqContext(zmq::context_t(1)),
     mgmtSocket(zmq::socket_t(zmqContext, ZMQ_REQ))
 {
+}
+
+void ModelManager::startManagementProcess() {
     qDebug() << "Starting multi model server...";
     QStringList args;
     args << Settings::alphaDotsDir() + QStringLiteral("/modelServer/modelServer.py");
-    //args << QStringLiteral("--debug");
-    metaModelManager = ExternalProcess::Ptr(new ExternalProcess(Settings::pythonExecutable(), args, Settings::alphaDotsDir()));
-    if (!metaModelManager->startExternalProcess()) {
+    if (debug) {
+        args << QStringLiteral("--debug");
+    }
+    managementProcess = ExternalProcess::Ptr(new ExternalProcess(Settings::pythonExecutable(), args, Settings::alphaDotsDir()));
+    if (!managementProcess->startExternalProcess()) {
         QMessageBox::critical(nullptr, tr("AlphaDots Error"), tr("Failed to start python model manager!"));
         return;
     }
     qDebug() << "Connecting to tcp://127.0.0.1:12352";
     mgmtSocket.connect("tcp://127.0.0.1:12352");
     qDebug() << "Connection established";
+    managementProcessActive = true;
 }
 
 int ModelManager::sendStartRequest(QString name, int width, int height, bool gpu) {
+    if (!managementProcessActive) {
+        startManagementProcess();
+    }
     qDebug() << "ModelManager->sendStartRequest: " << name << "," << width << "," << height << "," << gpu;
     QString modelKey = modelInfoToStr(name, width, height, gpu || useGPU);
     // prepare request
@@ -88,7 +97,8 @@ int ModelManager::sendStopRequest(ModelProcess::Ptr process) {
 
     // send request
     if (!ProtobufConnector::sendString(mgmtSocket, srvRequest.SerializeAsString())) {
-        QMessageBox::critical(nullptr, tr("AlphaDots error"), tr("Failed to send command to stop model server!"));
+        //QMessageBox::critical(nullptr, tr("AlphaDots error"), tr("Failed to send command to stop model server!"));
+        qDebug() << "ERROR Failed to send stop request!";
         return -1;
     }
 
@@ -97,12 +107,13 @@ int ModelManager::sendStopRequest(ModelProcess::Ptr process) {
     std::string zmqResp = ProtobufConnector::recvString(mgmtSocket, &ok);
     if (!ok) {
         //QMessageBox::critical(nullptr, tr("AlphaDots error"), tr("Failed to stop model server!"));
+        qDebug() << "ERROR: Failed to receive response for stop request!";
         return -1;
     }
     ModelServerResponse resp;
     resp.ParseFromString(zmqResp);
     if(resp.status() != ModelServerResponse::RESP_OK) {
-        qDebug() << "ERROR: Starting model server failed: " << QString::fromStdString(resp.errormessage());
+        qDebug() << "ERROR: Stopping model server failed: " << QString::fromStdString(resp.errormessage());
         //assert(false);
         return -1;
     }
@@ -144,43 +155,6 @@ void ModelManager::freeClaimOnProcess(QString modelName, int width, int height, 
     }
 }
 
-void ModelManager::cleanUp() {
-    QMutexLocker locker(&getProcessMutex);
-    /*
-    if (maxConcurrentProcesses <= 0) {
-        return;
-    }
-     */
-    /*
-    for (const QString &modelKey : processMap.keys()) {
-        if ((processMap[modelKey]->gpu() || useGPU) && processClaims[modelKey] == 0) {
-            if (debug) {
-                qDebug() << "stopping " << modelKey;
-            }
-            if (sendStopRequest(processMap[modelKey]) < 0) {
-                qDebug() << "failed to stop process";
-            } else {
-                processMap.remove(modelKey);
-            }
-        }
-    }
-     */
-    stopAll();
-    //metaModelManager->stopExternalProcess(true,false,false);
-}
-
-/*
-int ModelManager::activeGPUprocesses() {
-    int processCnt = 0;
-    for (const auto &process : processMap.values()) {
-        if (process->gpu() || useGPU) {
-            processCnt++;
-        }
-    }
-    return processCnt;
-}
- */
-
 QString ModelManager::modelInfoToStr(QString modelName, int width, int height, bool gpu) {
     return modelName + QStringLiteral("-") + QString::number(width) + QStringLiteral("x") + QString::number(height) +
            (gpu || ModelManager::getInstance().useGPU ? QStringLiteral("-GPU") : QStringLiteral(""));
@@ -188,17 +162,10 @@ QString ModelManager::modelInfoToStr(QString modelName, int width, int height, b
 
 void ModelManager::allowGPU(bool allowGPU) {
     useGPU = allowGPU;
-    /*
-    if (allowGPU) {
-        qDebug() << "GPU active: limiting maximum number of concurrent ModelProcess instances to 1";
-        setMaximumConcurrentProcesses(1);
-    } else {
-        setMaximumConcurrentProcesses(0);
-    }
-     */
 }
 
 void ModelManager::stopAll() {
+    /*
     QList<QString> removeList;
     int i = 0;
     for (const auto &process : processMap) {
@@ -212,15 +179,13 @@ void ModelManager::stopAll() {
         processMap.remove(i);
         processClaims.remove(i);
     }
-    //processMap.clear();
+     */
+    if (managementProcessActive && managementProcess->isRunning()) {
+        managementProcess->stopExternalProcess(true, false, true);
+    }
+    managementProcessActive = false;
 }
 
 void ModelManager::setDebug(bool mode) {
     debug = mode;
 }
-
-/*
-void ModelManager::setMaximumConcurrentProcesses(int max) {
-    maxConcurrentProcesses = max;
-}
-*/

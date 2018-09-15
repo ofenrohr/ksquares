@@ -49,13 +49,19 @@ namespace AlphaDots {
         void freeClaimOnProcess(QString modelName, int width, int height, bool gpu);
 
         /**
+         * Starts the python management process that handles starting other processes
+         * that do the actual work.
+         */
+        void startManagementProcess();
+
+        /**
          * Allow the model Process to use gpu resources for all processes.
          * @param allowGPU
          */
         void allowGPU(bool allowGPU);
 
         /**
-         * Stops all running model processes
+         * Stops all running model processes and the management process.
          */
         void stopAll();
 
@@ -93,10 +99,10 @@ namespace AlphaDots {
         QMap<QString, int> processClaims;
         QMutex getProcessMutex;
 
-        ExternalProcess::Ptr metaModelManager;
+        ExternalProcess::Ptr managementProcess;
+        bool managementProcessActive=false;
         bool useGPU=false;
         bool debug=false;
-        //bool pythonManagerRunning=false;
         //QString logDest;
         //int maxConcurrentProcesses = 0;
 
@@ -116,9 +122,22 @@ namespace AlphaDots {
          */
         //int activeGPUprocesses();
 
+        /**
+         * Sends a START command to the management process.
+         * @param name The name of the model as it is listed in the models.yaml list
+         * @param width Width of the game in boxes
+         * @param height Height of the game in boxes
+         * @param gpu Flag to enable GPU acceleration
+         * @return The port of the model server or -1 if it failed
+         */
         int sendStartRequest(QString name, int width, int height, bool gpu);
+        /**
+         * Sends a STOP command to the process.
+         * @param process the model process to stop
+         * @return the port of the stopped process or -1 if it failed
+         */
         int sendStopRequest(ModelProcess::Ptr process);
-        void cleanUp();
+        //void cleanUp();
 
     };
 }

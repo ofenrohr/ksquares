@@ -96,6 +96,7 @@ bool ExternalProcess::stopExternalProcess(bool terminate, bool kill, bool wait) 
 			}
 			// wait for it
 			if (wait) {
+				qDebug() << "waiting for process to die";
 				if (process->waitForFinished()) {
 					qDebug() << "killed process";
 				} else {
