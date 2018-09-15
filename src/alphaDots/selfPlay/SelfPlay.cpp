@@ -52,7 +52,7 @@ SelfPlay::SelfPlay(QString datasetDest, int threads, QString &initialModelName, 
 
     trainEpochs = epochs;
     trainOnGPU = gpuTraining;
-    alphaZeroV10Training = nullptr;
+    trainingProcess = nullptr;
 
     assert(iterationSize % threads == 0);
 
@@ -184,7 +184,7 @@ void SelfPlay::updateTrainingInfo() {
     //    QFile f(it.next());
     //    f.open(QIODevice::ReadOnly);
     //QFile trainingLog(
-    if (alphaZeroV10Training->isRunning()) {
+    if (trainingProcess->isRunning()) {
         QTimer::singleShot(3000, this, SLOT(updateTrainingInfo()));
     } else {
         if (iteration >= iterationCnt) {
@@ -196,8 +196,8 @@ void SelfPlay::updateTrainingInfo() {
 void SelfPlay::setupIteration() {
     // wait for training to finish? TODO
     if (waitForTraining && iteration >= 0) {
-        if (alphaZeroV10Training != nullptr) {
-            if (alphaZeroV10Training->isRunning()) {
+        if (trainingProcess != nullptr) {
+            if (trainingProcess->isRunning()) {
                 QTimer::singleShot(1000, this, SLOT(setupIteration()));
                 return;
             }
@@ -355,30 +355,30 @@ void SelfPlay::finishIteration() {
         processArgs << tr("--upload");
     }
     QString processWorkingDirectory = Settings::alphaDotsDir() + tr("/modelServer/models/alphaZero");
-    if (alphaZeroV10Training == nullptr) {
-        alphaZeroV10Training = new ExternalProcess(processPath, processArgs, processWorkingDirectory);
+    if (trainingProcess == nullptr) {
+        trainingProcess = new ExternalProcess(processPath, processArgs, processWorkingDirectory);
     } else {
-        if (alphaZeroV10Training->isRunning()) {
+        if (trainingProcess->isRunning()) {
             /*
             QMessageBox::critical(this, tr("SelfPlay error"),
                                   tr("Training takes longer than generating data. sth seems wrong! Waiting for training to finish..."));
              */
-            while (alphaZeroV10Training->isRunning()) {
+            while (trainingProcess->isRunning()) {
                 QThread::sleep(1);
                 QCoreApplication::processEvents();
             }
         }
-        disconnect(alphaZeroV10Training, SIGNAL(processFinished()), this, SLOT(trainingFinished()));
-        alphaZeroV10Training->deleteLater();
-        alphaZeroV10Training = new ExternalProcess(processPath, processArgs, processWorkingDirectory);
+        disconnect(trainingProcess, SIGNAL(processFinished()), this, SLOT(trainingFinished()));
+        trainingProcess->deleteLater();
+        trainingProcess = new ExternalProcess(processPath, processArgs, processWorkingDirectory);
     }
     if (!trainOnGPU) {
         // disable gpu, training on very little data -> cpu is enough
-        alphaZeroV10Training->addEnvironmentVariable(tr("CUDA_VISIBLE_DEVICES"), tr("-1"));
+        trainingProcess->addEnvironmentVariable(tr("CUDA_VISIBLE_DEVICES"), tr("-1"));
     }
-    connect(alphaZeroV10Training, SIGNAL(processFinished()), this, SLOT(trainingFinished()));
+    connect(trainingProcess, SIGNAL(processFinished()), this, SLOT(trainingFinished()));
     trainingStartTime = QDateTime::currentDateTime();
-    if (!alphaZeroV10Training->startExternalProcess()) {
+    if (!trainingProcess->startExternalProcess()) {
         QMessageBox::critical(this, tr("SelfPlay error"),
                               tr("Failed to start external process for training!"));
     }

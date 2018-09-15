@@ -180,8 +180,12 @@ void ModelManager::stopAll() {
         processClaims.remove(i);
     }
      */
+    qDebug() << "stopAll() - mgmtProcessActive: " << managementProcessActive;
     if (managementProcessActive && managementProcess->isRunning()) {
-        managementProcess->stopExternalProcess(true, false, true);
+        qDebug() << " process is running: " << managementProcess->isRunning();
+        ModelProcess::Ptr emptyProcess = ModelProcess::Ptr(new ModelProcess(QStringLiteral(""), 0, 0, 0, false, QStringLiteral("")));
+        sendStopRequest(emptyProcess);
+        //managementProcess->stopExternalProcess(true, true, true);
     }
     managementProcessActive = false;
 }

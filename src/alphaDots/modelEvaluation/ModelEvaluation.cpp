@@ -338,7 +338,7 @@ void ModelEvaluation::saveResultsAs() {
         return;
     }
 
-    // do a lot of stuff to generate a nice grid table...
+    // do a lot of stuff to generate a nice markdown grid table...
     //ExternalProcess git(tr("/usr/bin/git"), QStringList() << "log" << "-1" << "--format=%H"
     // find out maximum line width
     int maxWidth = 72;

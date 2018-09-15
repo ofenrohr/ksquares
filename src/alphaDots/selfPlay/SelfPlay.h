@@ -75,7 +75,7 @@ namespace AlphaDots {
         // training process
         int trainEpochs;
         bool trainOnGPU;
-        ExternalProcess *alphaZeroV10Training;
+        ExternalProcess *trainingProcess;
         QDateTime trainingStartTime;
         QString trainingLogBasename;
     };
