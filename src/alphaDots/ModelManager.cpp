@@ -165,21 +165,21 @@ void ModelManager::allowGPU(bool allowGPU) {
 }
 
 void ModelManager::stopAll() {
-    /*
     QList<QString> removeList;
     int i = 0;
     for (const auto &process : processMap) {
-        if (!process->gpu()) {
-            sendStopRequest(process);
-            removeList.append(modelInfoToStr(process->model(), process->width(), process->height(), process->gpu()));
-        }
+        sendStopRequest(process);
+        removeList.append(modelInfoToStr(process->model(), process->width(), process->height(), process->gpu()));
         i++;
     }
     for (const auto &i : removeList) {
         processMap.remove(i);
         processClaims.remove(i);
     }
-     */
+    if (managementProcessActive && managementProcess->isRunning()) {
+        ProtobufConnector::requestStatus(mgmtSocket);
+    }
+    /*
     qDebug() << "stopAll() - mgmtProcessActive: " << managementProcessActive;
     if (managementProcessActive && managementProcess->isRunning()) {
         qDebug() << " process is running: " << managementProcess->isRunning();
@@ -188,6 +188,7 @@ void ModelManager::stopAll() {
         //managementProcess->stopExternalProcess(true, true, true);
     }
     managementProcessActive = false;
+     */
 }
 
 void ModelManager::setDebug(bool mode) {

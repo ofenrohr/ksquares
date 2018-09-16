@@ -339,6 +339,7 @@ void KSquaresWindow::playerTakeTurn(KSquaresPlayer *currentPlayer)
         QTimer::singleShot(200, this, &KSquaresWindow::aiChooseLine);
         setCursor(Qt::ArrowCursor);
     }
+    QCoreApplication::processEvents();
 }
 
 void KSquaresWindow::loadGame()

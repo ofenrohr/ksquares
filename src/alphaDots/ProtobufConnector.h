@@ -71,6 +71,11 @@ namespace AlphaDots {
         void setBatchPredict(bool mode);
         bool getBatchPredict();
 
+        /**
+         * Sends a STATUS request to the model manager server. Only used for debugging.
+         */
+        static void requestStatus(zmq::socket_t &socket);
+
     private:
         ProtobufConnector();
         zmq::context_t context;
@@ -85,6 +90,8 @@ namespace AlphaDots {
         QMutex batchImgMutex;
         QAtomicInt batchPredictionState;
         bool batchPredictMode;
+
+        static int TIMEOUT;
     };
 }
 

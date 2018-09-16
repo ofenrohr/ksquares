@@ -12,8 +12,12 @@
 #include <QtWidgets/QMessageBox>
 #include <QtCore/QDir>
 #include <zmq.hpp>
+#include <QtCore/QTimer>
+#include <ModelServer.pb.h>
 
 using namespace AlphaDots;
+
+int ProtobufConnector::TIMEOUT = 15 * 1000;
 
 ProtobufConnector &ProtobufConnector::getInstance() {
     static ProtobufConnector instance;
@@ -232,17 +236,25 @@ bool ProtobufConnector::sendString(zmq::socket_t &socket, std::string msg) {
 	ulong message_size = msg.size();
 	zmq::message_t request(message_size);
 	memcpy(request.data(), msg.c_str(), message_size);
-    try {
-        if (!socket.send(request)) {
-            qDebug() << "ERROR: failed to send message via zmq" << errno;
+
+    bool done = false;
+    QTime timeoutTimer;
+    timeoutTimer.start();
+    while (!done) {
+        try {
+            if (socket.send(request, ZMQ_DONTWAIT)) {
+                done = true;
+            }
+        } catch (zmq::error_t &ex) {
+            qDebug() << "zmq send error: " << ex.num();
+            qDebug() << "msg: " << ex.what();
             //QMessageBox::critical(nullptr, QObject::tr("zmq error"), QObject::tr("failed to send message with zmq"));
             return false;
         }
-    } catch (zmq::error_t &ex) {
-        qDebug() << "zmq send error: " << ex.num();
-        qDebug() << "msg: " << ex.what();
-        //QMessageBox::critical(nullptr, QObject::tr("zmq error"), QObject::tr("failed to send message with zmq"));
-        return false;
+        if (timeoutTimer.elapsed() > TIMEOUT) {
+            qDebug() << "zmq send timeout!";
+            return false;
+        }
     }
     return true;
 }
@@ -250,19 +262,25 @@ bool ProtobufConnector::sendString(zmq::socket_t &socket, std::string msg) {
 std::string ProtobufConnector::recvString(zmq::socket_t &socket, bool *ok) {
 	zmq::message_t reply;
     *ok = true;
-    try {
-        if (!socket.recv(&reply)) {
-            qDebug() << "ERROR: failed to recv message via zmq" << errno;
-            *ok = false;
+    bool done = false;
+    QTime timeoutTimer;
+    timeoutTimer.start();
+    while (!done) {
+        try {
+            if (socket.recv(&reply, ZMQ_DONTWAIT)) {
+                done = true;
+            }
+        } catch (zmq::error_t &ex) {
+            qDebug() << "zmq recv error: " << ex.num();
+            qDebug() << "msg: " << ex.what();
             //QMessageBox::critical(nullptr, QObject::tr("zmq error"), QObject::tr("failed to recv message with zmq"));
+            *ok = false;
             return "error";
         }
-    } catch (zmq::error_t &ex) {
-        qDebug() << "zmq recv error: " << ex.num();
-        qDebug() << "msg: " << ex.what();
-        //QMessageBox::critical(nullptr, QObject::tr("zmq error"), QObject::tr("failed to recv message with zmq"));
-        *ok = false;
-        return "error";
+        if (timeoutTimer.elapsed() > TIMEOUT) {
+            *ok = false;
+            return "timeout";
+        }
     }
     std::string rpl = std::string(static_cast<char*>(reply.data()), reply.size());
     return rpl;
@@ -401,4 +419,28 @@ void ProtobufConnector::setBatchPredict(bool mode) {
 
 bool ProtobufConnector::getBatchPredict() {
     return batchPredictMode;
+}
+
+void ProtobufConnector::requestStatus(zmq::socket_t &socket) {
+    ModelServerRequest statusRequest;
+    statusRequest.set_action(ModelServerRequest::STATUS);
+    if (!ProtobufConnector::sendString(socket, statusRequest.SerializeAsString())) {
+        qDebug() << "failed to request status!";
+        return;
+    }
+    bool ok = false;
+    std::string resp = ProtobufConnector::recvString(socket, &ok);
+    if (!ok) {
+        qDebug() << "failed to receive status!";
+        return;
+    }
+    ModelServerResponse statusResponse;
+    statusResponse.ParseFromString(resp);
+    qDebug() << "STATUS: ";
+    if (statusResponse.status() == ModelServerResponse::RESP_OK ) {
+        qDebug() << "RESP_OK";
+        qDebug().noquote() << QString::fromStdString(statusResponse.statusmessage());
+    } else {
+        qDebug() << "RESP_FAIL";
+    }
 }
