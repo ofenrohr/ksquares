@@ -17,7 +17,7 @@
 
 using namespace AlphaDots;
 
-int ProtobufConnector::TIMEOUT = 15 * 1000;
+int ProtobufConnector::TIMEOUT = 30 * 1000;
 
 ProtobufConnector &ProtobufConnector::getInstance() {
     static ProtobufConnector instance;
@@ -278,6 +278,7 @@ std::string ProtobufConnector::recvString(zmq::socket_t &socket, bool *ok) {
             return "error";
         }
         if (timeoutTimer.elapsed() > TIMEOUT) {
+            qDebug() << "zmq recv timeout!";
             *ok = false;
             return "timeout";
         }

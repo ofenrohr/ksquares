@@ -21,6 +21,7 @@ namespace AlphaDots {
                        std::vector<uint8_t> *inputData,
                        std::vector<uint8_t> *outputData,
                        std::vector<double> *valueData);
+        ~SelfPlayWorker();
 
     public slots:
         void process();

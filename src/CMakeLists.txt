@@ -74,7 +74,7 @@ set(ksquares_SRCS
     AlphaDotsHelper.cpp
     aiControllerWorker.cpp
     KSquaresAI.h
-)
+		alphaDots/selfPlay/GenerateData.cpp alphaDots/selfPlay/GenerateData.h alphaDots/selfPlay/TrainNetwork.cpp alphaDots/selfPlay/TrainNetwork.h alphaDots/selfPlay/EvaluateNetwork.cpp alphaDots/selfPlay/EvaluateNetwork.h)
 
 file(GLOB protoMessages alphaDots/protobuf/*.proto)
 PROTOBUF_GENERATE_CPP(ProtoSrcs ProtoHeaders ${protoMessages})

@@ -13,29 +13,30 @@
 #include <alphaDots/datasets/StageFourDataset.h>
 #include <alphaDots/MLDataGenerator.h>
 #include "ui_SelfPlayForm.h"
+#include "GenerateData.h"
+#include "TrainNetwork.h"
 
 namespace AlphaDots {
     class SelfPlay : public KXmlGuiWindow, public Ui::SelfPlayForm {
     Q_OBJECT
     public:
-        SelfPlay(QString datasetDest, int threads, QString &initialModel, QString &targetModelName,
+        SelfPlay(QString &datasetDest, int threads, QString &initialModel, QString &targetModelName,
                  int iterations, int gamesPerIteration, int epochs, bool gpuTraining, DatasetType dataset,
-                 bool doUpload, QList<QPoint> boardSizes, bool waitForTrainingToFinish);
+                 bool doUpload, QList<QPoint> &boardSizes, bool waitForTrainingToFinish);
 
         void initObject();
 
-        void updateInfo();
 
     public slots:
-        void recvProgress(int progress, int thread);
-
-        void threadFinished(int thread);
-
         void trainingFinished();
 
         void updateTrainingInfo();
 
         void setupIteration();
+
+        void generateDataFinished();
+
+        void updateDataGenInfo();
 
         void finishIteration();
 
@@ -47,37 +48,17 @@ namespace AlphaDots {
         int threadCnt;
         QList<QPoint> availableBoardSizes;
         int iterationCnt;
-        int iterationSize;
         QString targetModelName;
         QString logdest;
-        DatasetType datasetType;
         bool upload;
         bool waitForTraining;
 
         // current state infos
-        ModelInfo currentModel;
-        QPoint currentBoardSize;
         int iteration;
-        int gamesCompleted;
-        QList<bool> threadRunning;
-        QList<StageFourDataset *> threadGenerators;
-        QDateTime lastInfoUpdate;
 
-        // mutex lockers
-        mutable QMutex recvProgressMutex;
-        mutable QMutex threadFinishedMutex;
-
-        // data container for one iteration
-        std::vector<uint8_t> *input;
-        std::vector<uint8_t> *output;
-        std::vector<double> *value;
-
-        // training process
-        int trainEpochs;
-        bool trainOnGPU;
-        ExternalProcess *trainingProcess;
-        QDateTime trainingStartTime;
-        QString trainingLogBasename;
+        // data generator part
+        GenerateData *dataGen;
+        TrainNetwork *trainNetwork;
     };
 }
 

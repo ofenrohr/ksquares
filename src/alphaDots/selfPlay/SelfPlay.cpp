@@ -18,9 +18,9 @@
 
 using namespace AlphaDots;
 
-SelfPlay::SelfPlay(QString datasetDest, int threads, QString &initialModelName, QString &targetModel,
+SelfPlay::SelfPlay(QString &datasetDest, int threads, QString &initialModelName, QString &targetModel,
                    int iterations, int gamesPerIteration, int epochs, bool gpuTraining, DatasetType dataset,
-                   bool doUpload, QList<QPoint> boardSizes, bool waitForTrainingToFinish) :
+                   bool doUpload, QList<QPoint> &boardSizes, bool waitForTrainingToFinish) :
     KXmlGuiWindow(),
     m_view(new QWidget())
 {
@@ -29,32 +29,20 @@ SelfPlay::SelfPlay(QString datasetDest, int threads, QString &initialModelName, 
     datasetDirectory = datasetDest;
     targetModelName = targetModel;
     threadCnt = threads;
-    datasetType = dataset;
     upload = doUpload;
     waitForTraining = waitForTrainingToFinish;
 
-    currentModel = ProtobufConnector::getInstance().getModelByName(initialModelName);
     iteration = -1;
     iterationCnt = iterations;
-    iterationSize = gamesPerIteration;
-    gamesCompleted = 0;
 
     availableBoardSizes = boardSizes;
 
-    currentBoardSize = availableBoardSizes[0];
+    dataGen = new GenerateData(initialModelName, availableBoardSizes[0], gamesPerIteration, dataset, threads,
+                               datasetDest);
 
-    //input = nullptr;
-    //output = nullptr;
-    //value = nullptr;
-    input = new std::vector<uint8_t>();//imgDataSize);
-    output = new std::vector<uint8_t>();//imgDataSize);
-    value = new std::vector<double >();//iterationSize);
+    trainNetwork = new TrainNetwork(epochs, gpuTraining, doUpload, datasetDest);
 
-    trainEpochs = epochs;
-    trainOnGPU = gpuTraining;
-    trainingProcess = nullptr;
-
-    assert(iterationSize % threads == 0);
+    assert(dataGen->gamesPerIteration() % threads == 0);
 
 
     QTimer::singleShot(0, this, &SelfPlay::initObject);
@@ -67,13 +55,18 @@ void SelfPlay::initObject() {
     setCentralWidget(m_view);
     setupGUI();
 
+    connect(dataGen, SIGNAL(infoChanged()), this, SLOT(updateDataGenInfo()));
+    connect(dataGen, SIGNAL(iterationFinished()), this, SLOT(generateDataFinished()));
+    connect(trainNetwork, SIGNAL(infoChanged()), this, SLOT(updateTrainingInfo()));
+    connect(trainNetwork, SIGNAL(trainingFinished()), this, SLOT(trainingFinished()));
+
     setupIteration();
     trainingStatusLbl->setText(tr("waiting for data..."));
 }
 
-void SelfPlay::updateInfo() {
-    currentModelLabel->setText(currentModel.name());
-    boardSizeLabel->setText(tr("%1 x %2").arg(currentBoardSize.x()).arg(currentBoardSize.y()));
+void SelfPlay::updateDataGenInfo() {
+    currentModelLabel->setText(dataGen->modelName());
+    boardSizeLabel->setText(dataGen->boardSizeStr());
     QString prettySizes;
     bool first = true;
     for (QPoint p : availableBoardSizes) {
@@ -87,308 +80,72 @@ void SelfPlay::updateInfo() {
     availableBoardSizesLbl->setText(prettySizes);
     iterationLabel->setText(QString::number(iteration));
     progressBar->setMinimum(0);
-    progressBar->setMaximum(iterationSize);
-    progressBar->setValue(gamesCompleted);
-    datasetGeneratorLbl->setText(datasetType == StageFour ? tr("Stage Four") : tr("Stage Four (no MCTS)"));
-    lastInfoUpdate = QDateTime::currentDateTime();
+    progressBar->setMaximum(dataGen->gamesPerIteration());
+    progressBar->setValue(dataGen->completedGames());
+    datasetGeneratorLbl->setText(dataGen->getDatasetType() == StageFour ? tr("Stage Four") : tr("Stage Four (no MCTS)"));
 }
 
 void SelfPlay::updateTrainingInfo() {
-    QDir logDir(Settings::alphaDotsDir() + tr("/modelServer/models/alphaZero/logs/"));
-
-    // prepare label text with default values
-    QString epochStr, etaStr, lossStr, policyLossStr, valueLossStr;
-
-    // prepare regular expressions
-    QRegularExpression epochRegex(tr("Epoch (\\d+/\\d+)"));
-    // 4/8 [==============>...............] - ETA: 4s - loss: 2.1109 - policy_loss: 1.8616 - value_loss: 0.2096
-    QRegularExpression etaRegex(tr("ETA: (.*?) -"));
-    QRegularExpression lossRegex(tr("loss: (.*?) - policy_loss: (.*?) - value_loss: (.*?)$"));
-
-    // search log file
-    QStringList nameFilters;
-    nameFilters << trainingLogBasename + tr("*log");
-    auto entryList = logDir.entryList(nameFilters, QDir::Files | QDir::NoDotAndDotDot, QDir::Time);
-    if (entryList.size() > 0) {
-        // check log file
-        QString trainingLogPath = logDir.absolutePath() + tr("/") + entryList.first();
-        QFile trainingLog(trainingLogPath);
-        if (trainingLog.exists()) {
-            if (QFileInfo(trainingLog).created() >= trainingStartTime) {
-                // link to log file
-                logLinkLbl->setText(tr("<a href=\"") + trainingLogPath + tr("\">") + entryList.first() + tr("</a>"));
-                logLinkLbl->setTextFormat(Qt::RichText);
-                logLinkLbl->setTextInteractionFlags(Qt::TextBrowserInteraction);
-                logLinkLbl->setOpenExternalLinks(true);
-                // open log file
-                if (trainingLog.open(QIODevice::ReadOnly)) {
-                    // read log file
-                    QTextStream logStream(&trainingLog);
-                    QString logStr = logStream.readAll();
-
-                    // match epoch
-                    auto matchIter = epochRegex.globalMatch(logStr);
-                    while (matchIter.hasNext()) {
-                        auto match = matchIter.next();
-                        if (match.isValid()) {
-                            if (match.capturedTexts().size() == 2) {
-                                epochStr = match.captured(1);
-                                //qDebug() << "MATCH!";
-                            } else {
-                                epochStr = QString::number(match.capturedTexts().size());
-                            }
-                        }
-                    }
-
-                    // match eta
-                    auto etaIter = etaRegex.globalMatch(logStr);
-                    while (etaIter.hasNext()) {
-                        auto match = etaIter.next();
-                        if (match.isValid()) {
-                            if (match.capturedTexts().size() == 2) {
-                                etaStr = match.captured(1);
-                            }
-                        }
-                    }
-
-                    // match loss
-                    auto lossIter = lossRegex.globalMatch(logStr);
-                    while (lossIter.hasNext()) {
-                        auto match = lossIter.next();
-                        if (match.isValid()) {
-                            if (match.capturedTexts().size() == 4) {
-                                lossStr = match.captured(1);
-                                policyLossStr = match.captured(2);
-                                valueLossStr = match.captured(3);
-                            }
-                        }
-                    }
-                } else {
-                    qDebug() << "failed to open training log!";
-                }
-            } else {
-                qDebug() << "current training log doesn't exist yet";
-            }
-        } else {
-            qDebug() << "training log doesn't exist!" << entryList.first();
-        }
-    } else {
-        qDebug() << "empty entry list!";
-    }
-    epochLbl->setText(epochStr);
-    etaLbl->setText(etaStr);
-    lossLbl->setText(lossStr);
-    policyLossLbl->setText(policyLossStr);
-    valueLossLbl->setText(valueLossStr);
-    //while (it.hasNext()) {
-    //    QFile f(it.next());
-    //    f.open(QIODevice::ReadOnly);
-    //QFile trainingLog(
-    if (trainingProcess->isRunning()) {
-        QTimer::singleShot(3000, this, SLOT(updateTrainingInfo()));
-    } else {
-        if (iteration >= iterationCnt) {
-            QCoreApplication::exit(0);
-        }
-    }
+    trainingStatusLbl->setText(trainNetwork->getStatusStr());
+    logLinkLbl->setText(trainNetwork->getLogLink());
+    logLinkLbl->setTextFormat(Qt::RichText);
+    logLinkLbl->setTextInteractionFlags(Qt::TextBrowserInteraction);
+    logLinkLbl->setOpenExternalLinks(true);
+    epochLbl->setText(trainNetwork->getEpochStr());
+    etaLbl->setText(trainNetwork->getEtaStr());
+    lossLbl->setText(trainNetwork->getLossStr());
+    policyLossLbl->setText(trainNetwork->getPolicyLossStr());
+    valueLossLbl->setText(trainNetwork->getValueLossStr());
 }
 
 void SelfPlay::setupIteration() {
     // wait for training to finish? TODO
     if (waitForTraining && iteration >= 0) {
-        if (trainingProcess != nullptr) {
-            if (trainingProcess->isRunning()) {
-                QTimer::singleShot(1000, this, SLOT(setupIteration()));
-                return;
-            }
+        if (trainNetwork->trainingInProgress()) {
+            QTimer::singleShot(1000, this, SLOT(setupIteration()));
+            return;
         }
     }
 
     iteration++;
-    gamesCompleted = 0;
 
-    // prepare the data containers
-    /*
-    if (input != nullptr && output != nullptr && value != nullptr) {
-        delete input;
-        delete output;
-        delete value;
-    }
-     */
-    int w = MLImageGenerator::boxesToImgSize(currentBoardSize.x());
-    int h = MLImageGenerator::boxesToImgSize(currentBoardSize.y());
-    int imgDataSize = iterationSize * w * h;
-    input->resize(imgDataSize);
-    output->resize(imgDataSize);
-    value->resize(iterationSize);
+    dataGen->setBoardSize(availableBoardSizes[qrand() % availableBoardSizes.size()]);
+    dataGen->startIteration();
 
-    // check and reset thread status
-    for (const auto &i : threadRunning) {
-        assert(!i);
-    }
-    threadRunning.clear();
-
-    // start the threads
-    assert(threadGenerators.empty());
-    for (int i = 0; i < threadCnt; i++) {
-        StageFourDataset *gen;
-        switch (datasetType) {
-            case StageFour:
-                gen = new StageFourDataset(false,
-                                           currentBoardSize.x(),
-                                           currentBoardSize.y(),
-                                           currentModel.name(),
-                                           i,
-                                           threadCnt);
-                break;
-            case StageFourNoMCTS:
-                gen = new StageFourDataset(false,
-                                           currentBoardSize.x(),
-                                           currentBoardSize.y(),
-                                           currentModel.name(),
-                                           i,
-                                           threadCnt,
-                                           false);
-                break;
-            default:
-                QMessageBox::critical(this, tr("Self-Play error"), tr("Selected dataset generator is not supported"));
-                QCoreApplication::quit();
-                return;
-        }
-
-        threadGenerators.append(gen);
-        if (i == 0) {
-            gen->startConverter(iterationSize, datasetDirectory, false);
-        }
-        gen->setInputData(input);
-        gen->setPolicyData(output);
-        gen->setValueData(value);
-
-        auto *thread = new QThread();
-        auto *worker = new SelfPlayWorker(gen, i, iterationSize / threadCnt, currentModel, input, output, value);
-        worker->moveToThread(thread);
-        connect(thread, SIGNAL(started()), worker, SLOT(process()));
-        connect(worker, SIGNAL(finished(int)), thread, SLOT(quit()));
-        connect(worker, SIGNAL(finished(int)), worker, SLOT(deleteLater()));
-        connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
-        connect(worker, SIGNAL(progress(int, int)), this, SLOT(recvProgress(int, int)));
-        connect(worker, SIGNAL(finished(int)), this, SLOT(threadFinished(int)));
-        thread->start();
-        threadRunning.append(true);
-    }
-
-    updateInfo();
+    updateDataGenInfo();
 }
 
-void SelfPlay::recvProgress(int progress, int thread) {
-    QMutexLocker locker(&recvProgressMutex);
-    gamesCompleted++;
-    if (gamesCompleted == iterationSize ||
-        lastInfoUpdate.addMSecs(100) < QDateTime::currentDateTime() ||
-        gamesCompleted % threadCnt == 0
-    ) {
-        //lastInfoUpdate = QDateTime::currentDateTime();
-        updateInfo();
-    }
-}
-
-void SelfPlay::threadFinished(int thread) {
-    QMutexLocker locker(&threadFinishedMutex);
-
-    threadRunning[thread] = false;
-    bool done = true;
-    for (const auto &i : threadRunning) {
-        done = !i && done;
-    }
-    if (done) {
-        finishIteration();
-        if (iteration < iterationCnt) {
-            setupIteration();
-        } else {
-            qDebug() << "last iteration done... waiting for training to finish...";
-        }
-    }
-}
 
 void SelfPlay::trainingFinished() {
-    trainingStatusLbl->setText(tr("waiting for new data..."));
+    finishIteration();
 }
 
 void SelfPlay::finishIteration() {
-    currentBoardSize = availableBoardSizes[qrand() % availableBoardSizes.size()];
-
-    // stop model process to free up gpu
-    // (do this before saving data so give it a little time to stop)
-    ModelManager::getInstance().stopAll();
-
-    // save data
-    if (!threadGenerators[0]->stopConverter()) {
-        QCoreApplication::quit();
-    }
-    QString datasetPath = threadGenerators[0]->getDatasetPath();
-    for (const auto &gen : threadGenerators) {
-        gen->deleteLater();
-    }
-    threadGenerators.clear();
-
-    // start training on new data
-    QString processPath = Settings::pythonExecutable();
-    QStringList processArgs;
-    processArgs
-            << Settings::alphaDotsDir() + tr("/modelServer/models/alphaZero/alphaZeroV10.py")
-            << tr("--dataset")
-            << datasetPath
-            << tr("--iteration")
-            << QString::number(iteration)
-            << tr("--epochs")
-            << QString::number(trainEpochs)
-            << tr("--initmodel")
-            << Settings::alphaDotsDir() + tr("/modelServer/models/") + currentModel.path()
-            << tr("--targetmodel")
-            << Settings::alphaDotsDir() + tr("/modelServer/models/") + ProtobufConnector::getInstance().getModelByName(targetModelName).path()
-            << tr("--itermodeldest")
-            << datasetDirectory
-            //<< tr("--logdest")
-            //<< logdest
-            ;
-    if (upload) {
-        processArgs << tr("--upload");
-    }
-    QString processWorkingDirectory = Settings::alphaDotsDir() + tr("/modelServer/models/alphaZero");
-    if (trainingProcess == nullptr) {
-        trainingProcess = new ExternalProcess(processPath, processArgs, processWorkingDirectory);
-    } else {
-        if (trainingProcess->isRunning()) {
-            /*
-            QMessageBox::critical(this, tr("SelfPlay error"),
-                                  tr("Training takes longer than generating data. sth seems wrong! Waiting for training to finish..."));
-             */
-            while (trainingProcess->isRunning()) {
-                QThread::sleep(1);
-                QCoreApplication::processEvents();
-            }
-        }
-        disconnect(trainingProcess, SIGNAL(processFinished()), this, SLOT(trainingFinished()));
-        trainingProcess->deleteLater();
-        trainingProcess = new ExternalProcess(processPath, processArgs, processWorkingDirectory);
-    }
-    if (!trainOnGPU) {
-        // disable gpu, training on very little data -> cpu is enough
-        trainingProcess->addEnvironmentVariable(tr("CUDA_VISIBLE_DEVICES"), tr("-1"));
-    }
-    connect(trainingProcess, SIGNAL(processFinished()), this, SLOT(trainingFinished()));
-    trainingStartTime = QDateTime::currentDateTime();
-    if (!trainingProcess->startExternalProcess()) {
-        QMessageBox::critical(this, tr("SelfPlay error"),
-                              tr("Failed to start external process for training!"));
-    }
-    trainingStatusLbl->setText(tr("training..."));
     if (iteration == 0) {
-        currentModel = ProtobufConnector::getInstance().getModelByName(targetModelName);
+        ModelInfo nextModel = ProtobufConnector::getInstance().getModelByName(targetModelName);
+        dataGen->setCurrentModel(nextModel);
         //currentModel.setName(currentModel.name()+tr(".")+QString::number(iteration));
     }
-    QFileInfo fi(ProtobufConnector::getInstance().getModelByName(targetModelName).path());
-    trainingLogBasename = fi.baseName();
-    QTimer::singleShot(100, this, SLOT(updateTrainingInfo()));
+    iteration++;
+    qDebug() << "new iteration: " << iteration;
+    if (iteration >= iterationCnt) {
+        qDebug() << "last iteration done! exiting...";
+        QCoreApplication::exit(0);
+    }
+    setupIteration();
+}
 
+void SelfPlay::generateDataFinished() {
+    /*
+    if (iteration < iterationCnt) {
+        // TODO add evaluation!
+        setupIteration();
+    } else {
+        qDebug() << "last iteration done... waiting for training to finish...";
+    }
+     */
+    qDebug() << "generating data finished";
+    trainNetwork->startTraining(dataGen->getDatasetPath(), iteration, dataGen->getCurrentModel().path(),
+                                ProtobufConnector::getInstance().getModelByName(targetModelName).path(),
+                                datasetDirectory);
 }

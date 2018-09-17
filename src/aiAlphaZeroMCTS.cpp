@@ -82,6 +82,11 @@ int aiAlphaZeroMCTS::chooseLine(const QList<bool> &newLines, const QList<int> &n
         return -1;
     }
 
+    if (isTainted) {
+        qDebug() << "tained -> returning -1";
+        return -1;
+    }
+
     if (!currentMoveSequence.empty()) {
         return currentMoveSequence.takeFirst();
     }

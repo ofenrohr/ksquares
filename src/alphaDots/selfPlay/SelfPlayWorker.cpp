@@ -18,6 +18,9 @@ AlphaDots::SelfPlayWorker::SelfPlayWorker(DatasetGenerator *generator, int threa
     value = valueData;
 }
 
+AlphaDots::SelfPlayWorker::~SelfPlayWorker() {
+}
+
 void AlphaDots::SelfPlayWorker::process() {
     for (int i = 0; i < sampleCnt; i++) {
         datasetGen->generateDataset();

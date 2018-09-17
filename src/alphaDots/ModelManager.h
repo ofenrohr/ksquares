@@ -91,6 +91,7 @@ namespace AlphaDots {
 
     private:
         ModelManager();
+        ~ModelManager();
 
         zmq::context_t zmqContext;
         zmq::socket_t mgmtSocket;

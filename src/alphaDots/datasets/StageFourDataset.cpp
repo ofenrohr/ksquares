@@ -158,6 +158,11 @@ Dataset StageFourDataset::generateDataset() {
     // output image is generated with AlphaZero MCTS
     int alphaZeroLine = -1;
     QImage outputImage = MLImageGenerator::generateOutputImage(board, alphaZeroAi, &alphaZeroLine);
+    if (alphaZeroLine < 0) {
+        qDebug() << "AI failed, dataset is tained!";
+        assert(false);
+        return Dataset();
+    }
     board->doMove(alphaZeroLine);
 
     // calculate value

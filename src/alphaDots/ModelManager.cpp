@@ -20,6 +20,8 @@ ModelManager::ModelManager() :
 {
 }
 
+ModelManager::~ModelManager() {}
+
 void ModelManager::startManagementProcess() {
     qDebug() << "Starting multi model server...";
     QStringList args;
@@ -58,7 +60,8 @@ int ModelManager::sendStartRequest(QString name, int width, int height, bool gpu
 
     // send request
     if (!ProtobufConnector::sendString(mgmtSocket, srvRequest.SerializeAsString())) {
-        QMessageBox::critical(nullptr, tr("AlphaDots error"), tr("Failed to send command to start model server!"));
+        //QMessageBox::critical(nullptr, tr("AlphaDots error"), tr("Failed to send command to start model server!"));
+        qDebug() << tr("Failed to send command to start model server!");
         return -1;
     }
 
@@ -66,7 +69,8 @@ int ModelManager::sendStartRequest(QString name, int width, int height, bool gpu
     bool ok = false;
     std::string zmqResp = ProtobufConnector::recvString(mgmtSocket, &ok);
     if (!ok) {
-        QMessageBox::critical(nullptr, tr("AlphaDots error"), tr("Failed to start model server!"));
+        //QMessageBox::critical(nullptr, tr("AlphaDots error"), tr("Failed to start model server!"));
+        qDebug() << tr("Failed to start model server!");
         return -1;
     }
     //ProcessManagementResponse resp;
@@ -136,7 +140,11 @@ ModelProcess::Ptr ModelManager::getProcess(const QString modelName, int width, i
         qDebug() << "sending model start request...";
         int port = sendStartRequest(modelName, width, height, gpu || useGPU);
         qDebug() << "model starting on port " << QString::number(port);
+
         ModelProcess::Ptr process = ModelProcess::Ptr(new ModelProcess(modelName, width, height, port, gpu || useGPU, modelKey));
+        if (port < 0) {
+            return process;
+        }
         processMap[modelKey] = process;
         processClaims[modelKey] = 1;
     } else {
@@ -150,9 +158,6 @@ void ModelManager::freeClaimOnProcess(QString modelName, int width, int height, 
     QMutexLocker locker(&getProcessMutex);
     QString modelKey = modelInfoToStr(modelName, width, height, gpu || useGPU);
     processClaims[modelKey] -= 1;
-    if (processClaims[modelKey] == 0 && !processMap[modelKey]->gpu()) {
-        //sendStopRequest(processMap[modelKey]);
-    }
 }
 
 QString ModelManager::modelInfoToStr(QString modelName, int width, int height, bool gpu) {
