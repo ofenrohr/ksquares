@@ -247,6 +247,9 @@
         <property name="text">
          <string/>
         </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
        </widget>
       </item>
       <item row="1" column="0">
@@ -310,7 +313,7 @@
       </sizepolicy>
      </property>
      <property name="title">
-      <string>Evaluate data</string>
+      <string>Evaluate network</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_3">
       <item row="0" column="0">

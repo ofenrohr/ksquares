@@ -115,6 +115,20 @@ void SelfPlay::setupIteration() {
     updateDataGenInfo();
 }
 
+void SelfPlay::generateDataFinished() {
+    /*
+    if (iteration < iterationCnt) {
+        // TODO add evaluation!
+        setupIteration();
+    } else {
+        qDebug() << "last iteration done... waiting for training to finish...";
+    }
+     */
+    qDebug() << "generating data finished";
+    trainNetwork->startTraining(dataGen->getDatasetPath(), iteration, dataGen->getCurrentModel().path(),
+                                ProtobufConnector::getInstance().getModelByName(targetModelName).path(),
+                                datasetDirectory);
+}
 
 void SelfPlay::trainingFinished() {
     finishIteration();
@@ -131,21 +145,8 @@ void SelfPlay::finishIteration() {
     if (iteration >= iterationCnt) {
         qDebug() << "last iteration done! exiting...";
         QCoreApplication::exit(0);
+    } else {
+        setupIteration();
     }
-    setupIteration();
 }
 
-void SelfPlay::generateDataFinished() {
-    /*
-    if (iteration < iterationCnt) {
-        // TODO add evaluation!
-        setupIteration();
-    } else {
-        qDebug() << "last iteration done... waiting for training to finish...";
-    }
-     */
-    qDebug() << "generating data finished";
-    trainNetwork->startTraining(dataGen->getDatasetPath(), iteration, dataGen->getCurrentModel().path(),
-                                ProtobufConnector::getInstance().getModelByName(targetModelName).path(),
-                                datasetDirectory);
-}

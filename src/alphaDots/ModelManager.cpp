@@ -170,30 +170,33 @@ void ModelManager::allowGPU(bool allowGPU) {
 }
 
 void ModelManager::stopAll() {
-    QList<QString> removeList;
-    int i = 0;
-    for (const auto &process : processMap) {
-        sendStopRequest(process);
-        removeList.append(modelInfoToStr(process->model(), process->width(), process->height(), process->gpu()));
-        i++;
-    }
-    for (const auto &i : removeList) {
-        processMap.remove(i);
-        processClaims.remove(i);
-    }
+    qDebug() << "[stopAll] - mgmtProcessActive: " << managementProcessActive;
     if (managementProcessActive && managementProcess->isRunning()) {
-        ProtobufConnector::requestStatus(mgmtSocket);
-    }
-    /*
-    qDebug() << "stopAll() - mgmtProcessActive: " << managementProcessActive;
-    if (managementProcessActive && managementProcess->isRunning()) {
-        qDebug() << " process is running: " << managementProcess->isRunning();
+        qDebug() << "[stopAll] stopping all sub processes...";
+        QList<QString> removeList;
+        int i = 0;
+        for (const auto &process : processMap) {
+            sendStopRequest(process);
+            removeList.append(modelInfoToStr(process->model(), process->width(), process->height(), process->gpu()));
+            i++;
+        }
+        for (const auto &i : removeList) {
+            if (processClaims[i] > 0) {
+                qDebug() << "[stopAll] warning: processClaims > 0 for " << i;
+            }
+            processMap.remove(i);
+            processClaims.remove(i);
+        }
+        if (managementProcessActive && managementProcess->isRunning()) {
+            ProtobufConnector::requestStatus(mgmtSocket);
+        }
+        qDebug() << "[stopAll] management process pid: " << managementProcess->isRunning();
+        qDebug() << "[stopAll] sending stop request to manage process";
         ModelProcess::Ptr emptyProcess = ModelProcess::Ptr(new ModelProcess(QStringLiteral(""), 0, 0, 0, false, QStringLiteral("")));
         sendStopRequest(emptyProcess);
         //managementProcess->stopExternalProcess(true, true, true);
     }
     managementProcessActive = false;
-     */
 }
 
 void ModelManager::setDebug(bool mode) {

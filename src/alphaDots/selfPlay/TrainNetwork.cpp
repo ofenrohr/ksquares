@@ -71,7 +71,7 @@ void TrainNetwork::startTraining(QString datasetPath, int trainIteration, QStrin
         // disable gpu, training on very little data -> cpu is enough
         trainingProcess->addEnvironmentVariable(tr("CUDA_VISIBLE_DEVICES"), tr("-1"));
     }
-    connect(trainingProcess, SIGNAL(processFinished()), this, SLOT(trainingFinished()));
+    //connect(trainingProcess, SIGNAL(processFinished()), this, SLOT(trainingFinished()));
     trainingStartTime = QDateTime::currentDateTime();
     if (!trainingProcess->startExternalProcess()) {
         QMessageBox::critical(nullptr, tr("SelfPlay error"),
