@@ -14,7 +14,7 @@ namespace AlphaDots {
     class TrainNetwork : public QObject {
         Q_OBJECT
     public:
-        TrainNetwork(int epochs, bool gpu, bool upload, QString datasetDestDir);
+        TrainNetwork(int epochs, bool gpu, bool upload, QString &datasetDestDir);
 
         bool trainingInProgress() const;
 
@@ -28,8 +28,7 @@ namespace AlphaDots {
         const QString &getValueLossStr() const;
 
     public slots:
-        void startTraining(QString datasetPath, int iteration, QString initModelPath, QString targetModelPath,
-                           QString iterationModelDir);
+        void startTraining(const QString &datasetPath, int iteration, const QString &initModelPath, const QString &targetModelPath);
         void updateTrainingInfo();
 
     signals:

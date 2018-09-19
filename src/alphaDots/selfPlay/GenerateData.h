@@ -34,7 +34,7 @@ namespace AlphaDots {
         int completedGames() {return gamesCompleted;}
         int gamesPerIteration() {return iterationSize;}
         DatasetType getDatasetType() {return datasetType;}
-        QString getDatasetPath() {return datasetPath;}
+        const QString &getDatasetPath() const {return datasetPath;}
 
         // setter
         void setBoardSize(QPoint &size) {currentBoardSize = size;}

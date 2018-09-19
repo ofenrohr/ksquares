@@ -6,6 +6,7 @@
 #define KSQUARES_MODELINFO_H
 
 #include <QtCore/QString>
+#include <AlphaDotsModel.pb.h>
 
 
 namespace AlphaDots {
@@ -23,6 +24,8 @@ namespace AlphaDots {
 
         void setValid(bool valid) {_valid=valid;}
         void setName(QString name) {_name=name;}
+
+        ProtoModel *toProtobuf();
 
     protected:
         QString _name;

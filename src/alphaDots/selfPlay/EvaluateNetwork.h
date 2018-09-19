@@ -16,6 +16,7 @@ namespace AlphaDots {
         EvaluateNetwork(const ModelInfo &initialModel);
 
         const ModelInfo &getBestModel() const;
+        const ModelInfo &getContendingModel() const;
         const TestResultModel *getResultModel() const;
 
     public slots:

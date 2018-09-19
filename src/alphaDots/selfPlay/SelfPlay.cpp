@@ -20,17 +20,16 @@ using namespace AlphaDots;
 
 SelfPlay::SelfPlay(QString &datasetDest, int threads, QString &initialModelName, QString &targetModel,
                    int iterations, int gamesPerIteration, int epochs, bool gpuTraining, DatasetType dataset,
-                   bool doUpload, QList<QPoint> &boardSizes, bool waitForTrainingToFinish) :
+                   bool doUpload, QList<QPoint> &boardSizes) :
     KXmlGuiWindow(),
     m_view(new QWidget())
 {
-    qDebug() << "SelfPlay()";
+    qDebug() << "[SelfPlay] SelfPlay()";
 
     datasetDirectory = datasetDest;
     targetModelName = targetModel;
     threadCnt = threads;
     upload = doUpload;
-    waitForTraining = waitForTrainingToFinish;
 
     iteration = -1;
     iterationCnt = iterations;
@@ -39,8 +38,11 @@ SelfPlay::SelfPlay(QString &datasetDest, int threads, QString &initialModelName,
 
     dataGen = new GenerateData(initialModelName, availableBoardSizes[0], gamesPerIteration, dataset, threads,
                                datasetDest);
+    bestModel = dataGen->getCurrentModel();
 
     trainNetwork = new TrainNetwork(epochs, gpuTraining, doUpload, datasetDest);
+
+    evaluateNetwork = new EvaluateNetwork(bestModel);
 
     assert(dataGen->gamesPerIteration() % threads == 0);
 
@@ -49,19 +51,34 @@ SelfPlay::SelfPlay(QString &datasetDest, int threads, QString &initialModelName,
 }
 
 void SelfPlay::initObject() {
-    qDebug() << "initObject()";
+    qDebug() << "[SelfPlay] initObject()";
 
     setupUi(m_view);
     setCentralWidget(m_view);
     setupGUI();
 
+    // connect self-play pipeline
     connect(dataGen, SIGNAL(infoChanged()), this, SLOT(updateDataGenInfo()));
     connect(dataGen, SIGNAL(iterationFinished()), this, SLOT(generateDataFinished()));
     connect(trainNetwork, SIGNAL(infoChanged()), this, SLOT(updateTrainingInfo()));
     connect(trainNetwork, SIGNAL(trainingFinished()), this, SLOT(trainingFinished()));
+    connect(evaluateNetwork, SIGNAL(infoChanged()), this, SLOT(updateEvaluationInfo()));
+    connect(evaluateNetwork, SIGNAL(evaluationFinished()), this, SLOT(evaluationFinished()));
 
+    // set things in motion
     setupIteration();
-    trainingStatusLbl->setText(tr("waiting for data..."));
+}
+
+void SelfPlay::setupIteration() {
+    iteration++;
+
+    dataGen->setCurrentModel(bestModel);
+    dataGen->setBoardSize(availableBoardSizes[qrand() % availableBoardSizes.size()]);
+    dataGen->startIteration();
+
+    updateDataGenInfo();
+    updateTrainingInfo();
+    updateEvaluationInfo();
 }
 
 void SelfPlay::updateDataGenInfo() {
@@ -98,39 +115,35 @@ void SelfPlay::updateTrainingInfo() {
     valueLossLbl->setText(trainNetwork->getValueLossStr());
 }
 
-void SelfPlay::setupIteration() {
-    // wait for training to finish? TODO
-    if (waitForTraining && iteration >= 0) {
-        if (trainNetwork->trainingInProgress()) {
-            QTimer::singleShot(1000, this, SLOT(setupIteration()));
-            return;
-        }
-    }
-
-    iteration++;
-
-    dataGen->setBoardSize(availableBoardSizes[qrand() % availableBoardSizes.size()]);
-    dataGen->startIteration();
-
-    updateDataGenInfo();
-}
-
 void SelfPlay::generateDataFinished() {
-    /*
-    if (iteration < iterationCnt) {
-        // TODO add evaluation!
-        setupIteration();
-    } else {
-        qDebug() << "last iteration done... waiting for training to finish...";
-    }
-     */
-    qDebug() << "generating data finished";
+    qDebug() << "[SelfPlay] generating data finished";
+    QFileInfo bestModelPath(bestModel.path());
+
+    contendingModel = ModelInfo(
+            targetModelName + "(" + QString::number(iteration) + ")",
+            bestModel.desc(),
+            bestModelPath.fileName().replace(QRegExp("\\.\\d*\\.h5"), "." + QString::number(iteration) + ".h5"),
+            bestModel.type(),
+            bestModel.ai());
+    ProtobufConnector::getInstance().addModelToList(contendingModel);
     trainNetwork->startTraining(dataGen->getDatasetPath(), iteration, dataGen->getCurrentModel().path(),
-                                ProtobufConnector::getInstance().getModelByName(targetModelName).path(),
-                                datasetDirectory);
+                                ProtobufConnector::getInstance().getModelByName(targetModelName).path());
 }
 
 void SelfPlay::trainingFinished() {
+    qDebug() << "[SelfPlay] training network finished";
+
+    evaluateNetwork->startEvaluation(threadCnt, contendingModel);
+}
+
+void SelfPlay::updateEvaluationInfo() {
+    bestModelLbl->setText(evaluateNetwork->getBestModel().name());
+    evalModelLbl->setText(evaluateNetwork->getContendingModel().name());
+}
+
+void SelfPlay::evaluationFinished() {
+    qDebug() << "[SelfPlay] evaluation finished";
+    bestModel = evaluateNetwork->getBestModel();
     finishIteration();
 }
 
@@ -141,9 +154,9 @@ void SelfPlay::finishIteration() {
         //currentModel.setName(currentModel.name()+tr(".")+QString::number(iteration));
     }
     iteration++;
-    qDebug() << "new iteration: " << iteration;
+    qDebug() << "[SelfPlay] new iteration: " << iteration;
     if (iteration >= iterationCnt) {
-        qDebug() << "last iteration done! exiting...";
+        qDebug() << "[SelfPlay] last iteration done! exiting...";
         QCoreApplication::exit(0);
     } else {
         setupIteration();

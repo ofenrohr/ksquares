@@ -17,6 +17,7 @@
 #include <QtCore/QMutex>
 #include <PolicyValueData.pb.h>
 #include "ModelInfo.h"
+#include "ExternalProcess.h"
 
 namespace AlphaDots {
     class ProtobufConnector {
@@ -24,6 +25,7 @@ namespace AlphaDots {
         static ProtobufConnector& getInstance();
         ProtobufConnector(ProtobufConnector const &) = delete;
         void operator=(ProtobufConnector const &) = delete;
+        ~ProtobufConnector();
 
         /**
          * Put the image data in the protobuf data class
@@ -50,6 +52,9 @@ namespace AlphaDots {
          */
         QList<ModelInfo> getModelList();
         ModelInfo getModelByName(QString name);
+        bool ensureModelListServerRunning();
+
+        bool addModelToList(ModelInfo model);
 
         /**
          * Converts a pixel line position to the line index format used by ksquares
@@ -79,7 +84,8 @@ namespace AlphaDots {
     private:
         ProtobufConnector();
         zmq::context_t context;
-        QList<ModelInfo> cachedModelList;
+        QMutex modelListProcMutex;
+        ExternalProcess *modelListProc;
         QMutex modelListMutex;
         QAtomicInt batchSize;
         QAtomicInt batchCnt;

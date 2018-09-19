@@ -39,3 +39,17 @@ QString ModelInfo::type() {
 QString ModelInfo::ai() {
     return _ai;
 }
+
+bool ModelInfo::valid() {
+    return _valid;
+}
+
+ProtoModel *ModelInfo::toProtobuf() {
+    ProtoModel *ret = new ProtoModel();
+    ret->set_name(_name.toStdString());
+    ret->set_desc(_desc.toStdString());
+    ret->set_path(_path.toStdString());
+    ret->set_type(_type.toStdString());
+    ret->set_ai(_ai.toStdString());
+    return ret;
+}

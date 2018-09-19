@@ -15,6 +15,7 @@
 #include "ui_SelfPlayForm.h"
 #include "GenerateData.h"
 #include "TrainNetwork.h"
+#include "EvaluateNetwork.h"
 
 namespace AlphaDots {
     class SelfPlay : public KXmlGuiWindow, public Ui::SelfPlayForm {
@@ -22,21 +23,25 @@ namespace AlphaDots {
     public:
         SelfPlay(QString &datasetDest, int threads, QString &initialModel, QString &targetModelName,
                  int iterations, int gamesPerIteration, int epochs, bool gpuTraining, DatasetType dataset,
-                 bool doUpload, QList<QPoint> &boardSizes, bool waitForTrainingToFinish);
+                 bool doUpload, QList<QPoint> &boardSizes);
 
         void initObject();
 
 
     public slots:
-        void trainingFinished();
-
-        void updateTrainingInfo();
-
         void setupIteration();
 
         void generateDataFinished();
 
         void updateDataGenInfo();
+
+        void trainingFinished();
+
+        void updateTrainingInfo();
+
+        void evaluationFinished();
+
+        void updateEvaluationInfo();
 
         void finishIteration();
 
@@ -51,14 +56,18 @@ namespace AlphaDots {
         QString targetModelName;
         QString logdest;
         bool upload;
-        bool waitForTraining;
 
         // current state infos
         int iteration;
+        ModelInfo bestModel;
+        ModelInfo contendingModel;
 
         // data generator part
         GenerateData *dataGen;
+        // train network part
         TrainNetwork *trainNetwork;
+        // evaluate network part
+        EvaluateNetwork *evaluateNetwork;
     };
 }
 

@@ -4,20 +4,30 @@
 
 #include "EvaluateNetwork.h"
 
-AlphaDots::EvaluateNetwork::EvaluateNetwork(const AlphaDots::ModelInfo &initialModel) {
+using namespace AlphaDots;
+
+EvaluateNetwork::EvaluateNetwork(const AlphaDots::ModelInfo &initialModel) :
+    contendingModel()
+{
     resultModel = nullptr;
     bestModel = initialModel;
 }
 
-void AlphaDots::EvaluateNetwork::startEvaluation(int games, const AlphaDots::ModelInfo &newModel) {
-
+void EvaluateNetwork::startEvaluation(int games, const AlphaDots::ModelInfo &newModel) {
+    contendingModel = newModel;
+    bestModel = newModel;
+    emit evaluationFinished();
 }
 
-const AlphaDots::ModelInfo &AlphaDots::EvaluateNetwork::getBestModel() const {
+const ModelInfo &AlphaDots::EvaluateNetwork::getBestModel() const {
     return bestModel;
 }
 
-const AlphaDots::TestResultModel *AlphaDots::EvaluateNetwork::getResultModel() const {
+const ModelInfo &AlphaDots::EvaluateNetwork::getContendingModel() const {
+    return contendingModel;
+}
+
+const TestResultModel *AlphaDots::EvaluateNetwork::getResultModel() const {
     return resultModel;
 }
 

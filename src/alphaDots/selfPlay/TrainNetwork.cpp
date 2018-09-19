@@ -14,17 +14,18 @@
 
 using namespace AlphaDots;
 
-TrainNetwork::TrainNetwork(int epochs, bool gpu, bool doUpload, QString datasetDestDir) {
+TrainNetwork::TrainNetwork(int epochs, bool gpu, bool doUpload, QString &datasetDestDir) {
     trainEpochs = epochs;
     trainOnGPU = gpu;
     upload = doUpload;
     iteration = 0;
     trainingProcess = nullptr;
     datasetDest = datasetDestDir;
+    statusStr = tr("waiting for data...");
 }
 
-void TrainNetwork::startTraining(QString datasetPath, int trainIteration, QString initModelPath,
-                                 QString targetModelPath, QString iterationModelDir) {
+void TrainNetwork::startTraining(const QString &datasetPath, int trainIteration, const QString &initModelPath,
+                                 const QString &targetModelPath) {
     iteration = trainIteration;
     // start training on new data
     QString processPath = Settings::pythonExecutable();
@@ -41,8 +42,6 @@ void TrainNetwork::startTraining(QString datasetPath, int trainIteration, QStrin
             << Settings::alphaDotsDir() + tr("/modelServer/models/") + initModelPath
             << tr("--targetmodel")
             << Settings::alphaDotsDir() + tr("/modelServer/models/") + targetModelPath
-            << tr("--itermodeldest")
-            << iterationModelDir
         //<< tr("--logdest")
         //<< logdest
             ;
@@ -159,13 +158,13 @@ void TrainNetwork::updateTrainingInfo() {
     } else {
         qDebug() << "empty entry list!";
     }
-    //while (it.hasNext()) {
-    //    QFile f(it.next());
-    //    f.open(QIODevice::ReadOnly);
-    //QFile trainingLog(
+
+    // check if training is done
     if (trainingProcess->isRunning()) {
+        // training not done -> check again in 3 seconds
         QTimer::singleShot(3000, this, SLOT(updateTrainingInfo()));
     } else {
+        // training is done! wrap things up
         statusStr = tr("waiting for new data...");
         emit trainingFinished();
     }

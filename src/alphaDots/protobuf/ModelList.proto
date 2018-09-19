@@ -7,3 +7,13 @@ import "AlphaDotsModel.proto";
 message ModelList {
     repeated ProtoModel models = 1;
 }
+
+message ModelListRequest {
+    enum ModelListAction {
+        GET = 1;
+        ADD = 2;
+        REMOVE = 3;
+    }
+    required ModelListAction action = 1;
+    optional ProtoModel model = 2;
+}

@@ -27,13 +27,20 @@ ProtobufConnector &ProtobufConnector::getInstance() {
 ProtobufConnector::ProtobufConnector() :
     context(1),
     modelListMutex(QMutex::Recursive),
+    modelListProcMutex(QMutex::NonRecursive),
     batchImgMutex(QMutex::NonRecursive),
     batchSize(1),
     batchCnt(0),
     batchPredictionState(0),
     batchPredictMode(false)
 {
-    cachedModelList.clear();
+    modelListProc = nullptr;
+}
+
+ProtobufConnector::~ProtobufConnector() {
+    if (modelListProc != nullptr) {
+        delete modelListProc;
+    }
 }
 
 DotsAndBoxesImage ProtobufConnector::dotsAndBoxesImageToProtobuf(const QImage &img) {
@@ -156,55 +163,126 @@ QImage ProtobufConnector::protobufDotsAndBoxesImageToQImage(const DotsAndBoxesIm
     return ret;
 }
 
-QList<ModelInfo> ProtobufConnector::getModelList() {
-    QMutexLocker locker(&modelListMutex);
-    if (!cachedModelList.isEmpty()) {
-        return cachedModelList;
+bool ProtobufConnector::ensureModelListServerRunning() {
+    QMutexLocker locker(&modelListProcMutex);
+
+    if (modelListProc != nullptr) {
+        if (!modelListProc->isRunning()) {
+            if (!modelListProc->startExternalProcess()) {
+                qDebug() << "ERROR: failed to restart model list process";
+                return false;
+            }
+            // restart of model list process successful
+            return true;
+        } else {
+            // model list is already running
+            return true;
+        }
     }
 
     QDir dir(Settings::alphaDotsDir());
     if (!dir.exists()) {
-        return cachedModelList;
+        qDebug() << "ERROR: alphaDots dir does not exist!";
+        return false;
     }
 
-    QString process = Settings::pythonExecutable();//QStringLiteral("/usr/bin/python2.7");
+    QString process = Settings::pythonExecutable();
     QStringList processArgs;
-    processArgs << Settings::alphaDotsDir() + QObject::tr("/modelServer/modelList.py");
-    ExternalProcess modelListProc(process, processArgs);
-    if (!modelListProc.startExternalProcess()) {
+    processArgs << Settings::alphaDotsDir() + "/modelServer/modelList.py";
+    modelListProc = new ExternalProcess(process, processArgs);
+    if (!modelListProc->startExternalProcess()) {
         qDebug() << "ERROR: failed to start " << process << processArgs;
-        return cachedModelList;
+        return false;
+    }
+
+    return true;
+}
+
+QList<ModelInfo> ProtobufConnector::getModelList() {
+    QMutexLocker locker(&modelListMutex);
+
+    if (!ensureModelListServerRunning()) {
+        qDebug() << "ERROR: no model list server running, returning empty model list!";
+        return QList<ModelInfo>();
+    }
+
+    QDir dir(Settings::alphaDotsDir());
+    if (!dir.exists()) {
+        qDebug() << "ERROR: alpha dots not configured - returning empty model list!";
+        return QList<ModelInfo>();
     }
 
     try {
         zmq::socket_t socket(context, ZMQ_REQ);
         socket.connect("tcp://127.0.0.1:13452");
 
-        sendString(socket, "get");
+        ModelListRequest modelListRequest;
+        modelListRequest.set_action(ModelListRequest::GET);
+        sendString(socket, modelListRequest.SerializeAsString());
 
         bool ok = false;
         std::string response = recvString(socket, &ok);
         if (!ok) {
-            qDebug() << "ERROR: failed to receive model list";
+            qDebug() << "ERROR: failed to receive model list (zmq failed)";
             socket.close();
-            return cachedModelList;
+            return QList<ModelInfo>();
         }
         ModelList modelList;
         modelList.ParseFromString(response);
 
+        QList<ModelInfo> retModelList;
         for (int i = 0; i < modelList.models().size(); i++) {
             ProtoModel model = modelList.models().Get(i);
+            ModelInfo retModel(QString::fromStdString(model.name()), QString::fromStdString(model.desc()),
+                                 QString::fromStdString(model.path()), QString::fromStdString(model.type()),
+                                 QString::fromStdString(model.ai()));
+            retModelList.append(retModel);
+            /*
             cachedModelList.append(ModelInfo(QString::fromStdString(model.name()), QString::fromStdString(model.desc()),
                                  QString::fromStdString(model.path()), QString::fromStdString(model.type()), QString::fromStdString(model.ai())));
+             */
         }
+        return retModelList;
 
     } catch (zmq::error_t &err) {
         qDebug() << "ERROR receiving list: " << err.num() << err.what();
     }
 
-    modelListProc.stopExternalProcess(false, false);
+    qDebug() << "ERROR: failed to get model list, returning empty list";
+    return QList<ModelInfo>();
+}
 
-    return cachedModelList;
+bool ProtobufConnector::addModelToList(ModelInfo model) {
+    QMutexLocker locker(&modelListMutex);
+    if (!ensureModelListServerRunning()) {
+        qDebug() << "ERROR: model list server not running, can not add model!";
+        return false;
+    }
+
+    try {
+        zmq::socket_t socket(context, ZMQ_REQ);
+        socket.connect("tcp://127.0.0.1:13452");
+
+        ModelListRequest modelListRequest;
+        modelListRequest.set_action(ModelListRequest::ADD);
+        modelListRequest.set_allocated_model(model.toProtobuf());
+        sendString(socket, modelListRequest.SerializeAsString());
+
+        bool ok = false;
+        std::string response = recvString(socket, &ok);
+        if (!ok) {
+            qDebug() << "ERROR: failed to add model to list (zmq failed)";
+            socket.close();
+            return false;
+        }
+        ModelList modelList;
+        modelList.ParseFromString(response);
+    } catch (zmq::error_t &err) {
+        qDebug() << "ERROR adding model to list: " << err.num() << err.what();
+        return false;
+    }
+
+    return true;
 }
 
 ModelInfo ProtobufConnector::getModelByName(QString name) {
@@ -216,6 +294,7 @@ ModelInfo ProtobufConnector::getModelByName(QString name) {
         }
     }
     qDebug() << "ERROR: failed to find model with name " << name;
+    assert(false);
     if (!modelList.empty()) {
         return modelList[0];
     }
