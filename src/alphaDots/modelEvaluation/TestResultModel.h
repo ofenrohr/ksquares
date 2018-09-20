@@ -16,7 +16,7 @@ namespace AlphaDots {
     class TestResultModel : public QAbstractTableModel {
     Q_OBJECT
     public:
-        TestResultModel(QObject *parent, QList<ModelInfo> *models, int gamesPerAi);
+        TestResultModel(QObject *parent, QList<ModelInfo> *models, QList<ModelInfo> *adversaryModels, int gamesPerAi);
 
         ~TestResultModel();
 
@@ -82,6 +82,7 @@ namespace AlphaDots {
 
     private:
         QList<ModelInfo> *modelList;
+        QList<ModelInfo> *adverarialModels;
 
         QList<AITestResult> results;
         QList<QList<int>> rows;

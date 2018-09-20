@@ -55,6 +55,7 @@ namespace AlphaDots {
 
         TestResultModel *resultModel;
         QList<ModelInfo> modelList;
+		QList<ModelInfo> opponentModelList;
 
         bool fastEvaluation;
 		FastModelEvaluation *fastEvaluationHandler;

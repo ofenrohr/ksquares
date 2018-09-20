@@ -27,6 +27,10 @@ namespace AlphaDots {
 
         ProtoModel *toProtobuf();
 
+        bool operator==(const ModelInfo &rhs) const;
+
+        bool operator!=(const ModelInfo &rhs) const;
+
     protected:
         QString _name;
         QString _desc;

@@ -104,6 +104,7 @@ KSquaresAi::Ptr aiController::getAi()
 	{
 		default:
 			qDebug() << "Unknown ai level " << level;
+			assert(false);
 		case KSquares::AI_EASY:
 		case KSquares::AI_MEDIUM:
 		case KSquares::AI_HARD:

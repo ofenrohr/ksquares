@@ -32,8 +32,13 @@ ModelEvaluation::ModelEvaluation(QString models, bool fast, int threadCnt, int g
     qRegisterMetaType<QVector<int> >("QVector<int>");
     connect(sGame, SIGNAL(gameOver(QVector<KSquaresPlayer>)), this, SLOT(gameOver(QVector<KSquaresPlayer>)));
     connect(sGame, SIGNAL(takeTurnSig(KSquaresPlayer*)), this, SLOT(playerTakeTurn(KSquaresPlayer*)));
+    opponentModelList.clear();
+    opponentModelList.append(ModelInfo("Easy", "", "", "", "easy"));
+    opponentModelList.append(ModelInfo("Medium", "", "", "", "medium"));
+    opponentModelList.append(ModelInfo("Hard", "", "", "", "hard"));
+    opponentModelList.append(ProtobufConnector::getInstance().getModelByName("AlphaZeroV7"));
     createTestSetups(boardSize);
-    resultModel = new TestResultModel(this, &modelList, gamesPerAi);
+    resultModel = new TestResultModel(this, &modelList, &opponentModelList, gamesPerAi);
 
     if (gamesPerAi % 2 != 0) {
         QMessageBox::critical(this, tr("ModelEvaluation error"), tr("ERROR: games per AI must be multiple of 2"));
@@ -142,18 +147,23 @@ void ModelEvaluation::createTestSetups(QPoint boardSize) {
 
     testSetups.clear();
 
+
     for (int m = 0; m < modelList.size(); m++) { // all models
-        for (int r = 0; r < 3; r++) { // ai easy, medium, hard (r = rule based ai id)
+        for (int r = 0; r < opponentModelList.size(); r++) { // ai easy, medium, hard (r = rule based ai id)
             for (int i = 0; i < gamesPerAi / 2; i++) {
+                bool ok;
                 AITestSetup setup;
-                setup.aiLevelP1 = r;
-                setup.aiLevelP2 = 3 + m;
+                setup.aiLevelP1 = -r-1;
+                setup.aiLevelP2 = m+1;
                 setup.timeout = timeout;
                 setup.boardSize = QPoint(testBoardWidth, testBoardHeight);
                 setup.modelNameP1 = modelList[m].name();
                 setup.modelNameP2 = modelList[m].name();
-                bool ok;
-                setup.modelAiP1 = (KSquares::AILevel) r;
+                setup.modelAiP1 = aiFunctions::parseAiLevel(opponentModelList[r].ai(), &ok);
+                if (!ok) {
+                    QMessageBox::critical(nullptr, tr("Error"), tr("Creating test setups failed! Unknown model ai!") + opponentModelList[r].ai());
+                    return;
+                }
                 setup.modelAiP2 = aiFunctions::parseAiLevel(modelList[m].ai(), &ok);
                 if (!ok) {
                     QMessageBox::critical(nullptr, tr("Error"), tr("Creating test setups failed! Unknown model ai!") + modelList[m].ai());
@@ -162,18 +172,22 @@ void ModelEvaluation::createTestSetups(QPoint boardSize) {
                 testSetups.append(setup);
             }
             for (int i = 0; i < gamesPerAi / 2; i++) {
+                bool ok;
                 AITestSetup setup;
-                setup.aiLevelP1 = 3 + m;
-                setup.aiLevelP2 = r;
+                setup.aiLevelP1 = m+1;
+                setup.aiLevelP2 = -r-1;
                 setup.timeout = timeout;
                 setup.boardSize = QPoint(testBoardWidth, testBoardHeight);
                 setup.modelNameP1 = modelList[m].name();
                 setup.modelNameP2 = modelList[m].name();
-                bool ok;
                 setup.modelAiP1 = aiFunctions::parseAiLevel(modelList[m].ai(), &ok);
-                setup.modelAiP2 = (KSquares::AILevel) r;
                 if (!ok) {
                     QMessageBox::critical(nullptr, tr("Error"), tr("Creating test setups failed! Unknown model ai!") + modelList[m].ai());
+                    return;
+                }
+                setup.modelAiP2 = aiFunctions::parseAiLevel(opponentModelList[r].ai(), &ok);
+                if (!ok) {
+                    QMessageBox::critical(nullptr, tr("Error"), tr("Creating test setups failed! Unknown model ai!") + opponentModelList[r].ai());
                     return;
                 }
                 testSetups.append(setup);
@@ -191,9 +205,14 @@ void ModelEvaluation::loadTestSetup(const AITestSetup &setup) {
 
     //QString modelName = modelList[(setup.aiLevelP1>setup.aiLevelP2?setup.aiLevelP1:setup.aiLevelP2)-3].name();
 	// create AI players
+	QString p1l = setup.aiLevelP1 < 0 ? opponentModelList[-setup.aiLevelP1 -1].ai() : modelList[setup.aiLevelP1 -1].ai();
+	QString p2l = setup.aiLevelP2 < 0 ? opponentModelList[-setup.aiLevelP2 -1].ai() : modelList[setup.aiLevelP2 -1].ai();
+	bool ok = false;
+	int p1 = aiFunctions::parseAiLevel(p1l, &ok);
+	int p2 = aiFunctions::parseAiLevel(p2l, &ok);
 	aiList.clear();
-	aiController::Ptr aic0(new aiController(0, 1, width, height, setup.aiLevelP1 > 2 ? setup.modelAiP1 : setup.aiLevelP1, setup.timeout, setup.modelNameP1));
-	aiController::Ptr aic1(new aiController(1, 1, width, height, setup.aiLevelP2 > 2 ? setup.modelAiP2 : setup.aiLevelP2, setup.timeout, setup.modelNameP2));
+	aiController::Ptr aic0(new aiController(0, 1, width, height, p1, setup.timeout, setup.modelNameP1));
+	aiController::Ptr aic1(new aiController(1, 1, width, height, p2, setup.timeout, setup.modelNameP2));
 	aiList.append(aic0);
 	aiList.append(aic1);
 
@@ -309,15 +328,10 @@ void ModelEvaluation::nextGame() {
 }
 
 QString ModelEvaluation::aiName(int level) {
-    switch (level) {
-        case 0:
-            return tr("Easy");
-        case 1:
-            return tr("Medium");
-        case 2:
-            return tr("Hard");
-        default:
-            return modelList[level - 3].name();
+    if (level < 0) {
+        return opponentModelList[-level - 1].name();
+    } else {
+        return modelList[level - 1].name();
     }
 }
 

@@ -53,3 +53,16 @@ ProtoModel *ModelInfo::toProtobuf() {
     ret->set_ai(_ai.toStdString());
     return ret;
 }
+
+bool ModelInfo::operator==(const ModelInfo &rhs) const {
+    return _name == rhs._name &&
+           _desc == rhs._desc &&
+           _path == rhs._path &&
+           _type == rhs._type &&
+           _ai == rhs._ai &&
+           _valid == rhs._valid;
+}
+
+bool ModelInfo::operator!=(const ModelInfo &rhs) const {
+    return !(rhs == *this);
+}
