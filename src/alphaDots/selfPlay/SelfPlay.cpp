@@ -31,7 +31,7 @@ SelfPlay::SelfPlay(QString &datasetDest, int threads, QString &initialModelName,
     threadCnt = threads;
     upload = doUpload;
 
-    iteration = -1;
+    iteration = 0;
     iterationCnt = iterations;
 
     availableBoardSizes = boardSizes;
@@ -117,17 +117,20 @@ void SelfPlay::updateTrainingInfo() {
 
 void SelfPlay::generateDataFinished() {
     qDebug() << "[SelfPlay] generating data finished";
-    QFileInfo bestModelPath(bestModel.path());
+    ModelInfo targetModel = ProtobufConnector::getInstance().getModelByName(targetModelName);
+
+    QFileInfo targetModelPath(targetModel.path());
 
     contendingModel = ModelInfo(
-            targetModelName + "(" + QString::number(iteration) + ")",
-            bestModel.desc(),
-            bestModelPath.fileName().replace(QRegExp("\\.\\d*\\.h5"), "." + QString::number(iteration) + ".h5"),
-            bestModel.type(),
-            bestModel.ai());
+            targetModelName + "_" + QString::number(iteration),
+            targetModel.desc(),
+            targetModelPath.dir().path() + "/" + targetModelPath.fileName().replace(QRegExp("\\.{0,1}\\d*\\.h5"), "." + QString::number(iteration) + ".h5"),
+            targetModel.type(),
+            targetModel.ai());
     ProtobufConnector::getInstance().addModelToList(contendingModel);
+    qDebug() << "[SelfPlay] starting training";
     trainNetwork->startTraining(dataGen->getDatasetPath(), iteration, dataGen->getCurrentModel().path(),
-                                ProtobufConnector::getInstance().getModelByName(targetModelName).path());
+                                contendingModel.path());
 }
 
 void SelfPlay::trainingFinished() {
@@ -144,16 +147,12 @@ void SelfPlay::updateEvaluationInfo() {
 void SelfPlay::evaluationFinished() {
     qDebug() << "[SelfPlay] evaluation finished";
     bestModel = evaluateNetwork->getBestModel();
+    qDebug() << "best model: " << bestModel.name();
     finishIteration();
 }
 
 void SelfPlay::finishIteration() {
-    if (iteration == 0) {
-        ModelInfo nextModel = ProtobufConnector::getInstance().getModelByName(targetModelName);
-        dataGen->setCurrentModel(nextModel);
-        //currentModel.setName(currentModel.name()+tr(".")+QString::number(iteration));
-    }
-    iteration++;
+    dataGen->setCurrentModel(bestModel);
     qDebug() << "[SelfPlay] new iteration: " << iteration;
     if (iteration >= iterationCnt) {
         qDebug() << "[SelfPlay] last iteration done! exiting...";

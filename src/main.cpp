@@ -215,7 +215,7 @@ int main(int argc, char **argv)
         bool ok = false;
         int tmp = parser.value(i18n("iterations")).toInt(&ok);
         if (ok) {
-            iterationCnt = tmp-1;
+            iterationCnt = tmp;
         } else {
             QMessageBox::warning(nullptr, i18n("Self-Play error"), i18n("Invalid iterations"));
         }

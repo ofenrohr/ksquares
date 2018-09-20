@@ -189,7 +189,8 @@ bool ProtobufConnector::ensureModelListServerRunning() {
     QString process = Settings::pythonExecutable();
     QStringList processArgs;
     processArgs << Settings::alphaDotsDir() + "/modelServer/modelList.py";
-    modelListProc = new ExternalProcess(process, processArgs);
+    QString workingDir = Settings::alphaDotsDir() + "/modelServer/";
+    modelListProc = new ExternalProcess(process, processArgs, workingDir);
     if (!modelListProc->startExternalProcess()) {
         qDebug() << "ERROR: failed to start " << process << processArgs;
         return false;
@@ -254,6 +255,8 @@ QList<ModelInfo> ProtobufConnector::getModelList() {
 
 bool ProtobufConnector::addModelToList(ModelInfo model) {
     QMutexLocker locker(&modelListMutex);
+    qDebug() << "adding model to list" << model.name();
+
     if (!ensureModelListServerRunning()) {
         qDebug() << "ERROR: model list server not running, can not add model!";
         return false;
