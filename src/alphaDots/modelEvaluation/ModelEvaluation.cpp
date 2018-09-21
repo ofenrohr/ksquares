@@ -17,10 +17,11 @@
 
 using namespace AlphaDots;
 
-ModelEvaluation::ModelEvaluation(QString models, bool fast, int threadCnt, int games, QPoint boardSize) :
+ModelEvaluation::ModelEvaluation(QString &models, QString &opponentModels, bool fast, int threadCnt, int games, QPoint boardSize) :
         KXmlGuiWindow(), m_view(new QWidget()) {
     qDebug() << "ModelEvaluation" << models << fast;
     modelList = getModelList(models);
+    opponentModelList = getModelList(opponentModels);
     fastEvaluation = fast;
     threads = threadCnt;
     gamesPerAi = games;
@@ -32,11 +33,13 @@ ModelEvaluation::ModelEvaluation(QString models, bool fast, int threadCnt, int g
     qRegisterMetaType<QVector<int> >("QVector<int>");
     connect(sGame, SIGNAL(gameOver(QVector<KSquaresPlayer>)), this, SLOT(gameOver(QVector<KSquaresPlayer>)));
     connect(sGame, SIGNAL(takeTurnSig(KSquaresPlayer*)), this, SLOT(playerTakeTurn(KSquaresPlayer*)));
+    /*
     opponentModelList.clear();
     opponentModelList.append(ModelInfo("Easy", "", "", "", "easy"));
     //opponentModelList.append(ModelInfo("Medium", "", "", "", "medium"));
     //opponentModelList.append(ModelInfo("Hard", "", "", "", "hard"));
     opponentModelList.append(ProtobufConnector::getInstance().getModelByName("AlphaZeroV7"));
+     */
     createTestSetups(boardSize);
     resultModel = new TestResultModel(this, &modelList, &opponentModelList, gamesPerAi);
 
@@ -90,7 +93,7 @@ void ModelEvaluation::initObject() {
     }
 }
 
-QList<ModelInfo> ModelEvaluation::getModelList(QString models) {
+QList<ModelInfo> ModelEvaluation::getModelList(QString &models) {
     QList<ModelInfo> allModels = ProtobufConnector::getInstance().getModelList();
     QList<ModelInfo> ret;
 

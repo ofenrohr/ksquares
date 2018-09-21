@@ -68,7 +68,8 @@ int main(int argc, char **argv)
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("dataset-dest"), i18n("Dataset destination directory"), i18n("dataset-dest")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("model-evaluation"), i18n("Evaluate all models")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("model-list"), i18n("List all available models")));
-    parser.addOption(QCommandLineOption(QStringList() <<  i18n("models"), i18n("List models to evaluate"), i18n("models")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("models"), i18n("List of models to evaluate. All available models will be evaluated when left empty. Besides all models in AlphaDots this parameter supports the following built-in AIs: easy, medium, hard, alphabeta, dabble, dabblenohash, qdab, knox, mcts-a, mcts-b, mcts-c"), i18n("models")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("opponent-models"), i18n("List of opponent models in evaluation. Default: easy,medium,hard. Besides all models in AlphaDots this parameter supports the following built-in AIs: easy, medium, hard, alphabeta, dabble, dabblenohash, qdab, knox, mcts-a, mcts-b, mcts-c"), i18n("opponent-models")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("fast-model-evaluation"), i18n("Run multi-threaded fast evaluation")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("threads"), i18n("Number of threads for model evaluation and dataset generation (default: 4)"), i18n("threads")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("games"),
@@ -167,6 +168,15 @@ int main(int argc, char **argv)
             gamesPerAi_slow = tmp;
             gamesPerAi_fast = tmp;
         }
+    }
+
+    // evaluation model list
+    QString evalModels = parser.value(i18n("models"));
+
+    // opponent model list
+    QString opponentModels = "easy,medium,hard";
+    if (parser.isSet(i18n("opponent-models"))) {
+        opponentModels = parser.value("opponent-models");
     }
 
     // specific dataset generator requested?
@@ -453,10 +463,10 @@ int main(int argc, char **argv)
         AlphaDots::MLDataGenerator *dataGenerator = new AlphaDots::MLDataGenerator(datasetType, boardWidth, boardHeight);
         dataGenerator->show();
     } else if (parser.isSet(i18n("model-evaluation"))) {
-        AlphaDots::ModelEvaluation *modelEvaluation = new AlphaDots::ModelEvaluation(parser.value(i18n("models")), false, threads, gamesPerAi_slow, evaluationBoardSize);
+        AlphaDots::ModelEvaluation *modelEvaluation = new AlphaDots::ModelEvaluation(evalModels, opponentModels, false, threads, gamesPerAi_slow, evaluationBoardSize);
         modelEvaluation->show();
     } else if (parser.isSet(i18n("fast-model-evaluation"))) {
-        AlphaDots::ModelEvaluation *modelEvaluation = new AlphaDots::ModelEvaluation(parser.value(i18n("models")), true, threads, gamesPerAi_fast, evaluationBoardSize);
+        AlphaDots::ModelEvaluation *modelEvaluation = new AlphaDots::ModelEvaluation(evalModels, opponentModels, true, threads, gamesPerAi_fast, evaluationBoardSize);
         modelEvaluation->show();
     } else if (parser.isSet(i18n("model-list"))) {
         AlphaDots::ModelEvaluation::printModelList();

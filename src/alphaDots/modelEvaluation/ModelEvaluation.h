@@ -23,13 +23,14 @@ namespace AlphaDots {
         /**
          * Controller for model evaluation.
          * @param models Empty string to evaluate all available models.
+         * @param opponentModels List of opponent models, empty string for all models
          * @param fast Run fast multi-threaded evaluation
          */
-        explicit ModelEvaluation(QString models, bool fast=false, int threadCnt=4, int games=10, QPoint boardSize=QPoint(5,5));
+        explicit ModelEvaluation(QString &models, QString &opponentModels, bool fast=false, int threadCnt=4, int games=10, QPoint boardSize=QPoint(5,5));
 
 		~ModelEvaluation() override;
 
-		QList<ModelInfo> getModelList(QString models);
+		QList<ModelInfo> getModelList(QString &models);
         void initObject();
 
 		static void printModelList();
