@@ -24,23 +24,23 @@ QString ModelInfo::name() const {
     return _name;
 }
 
-QString ModelInfo::desc() {
+QString ModelInfo::desc() const {
     return _desc;
 }
 
-QString ModelInfo::path() {
+QString ModelInfo::path() const {
     return _path;
 }
 
-QString ModelInfo::type() {
+QString ModelInfo::type() const {
     return _type;
 }
 
-QString ModelInfo::ai() {
+QString ModelInfo::ai() const {
     return _ai;
 }
 
-bool ModelInfo::valid() {
+bool ModelInfo::valid() const {
     return _valid;
 }
 

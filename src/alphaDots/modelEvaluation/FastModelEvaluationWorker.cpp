@@ -10,17 +10,18 @@
 using namespace AlphaDots;
 
 FastModelEvaluationWorker::FastModelEvaluationWorker(AITestSetupManager *testSetupManager,
-                                                     TestResultModel *testResultModel, int thread) :
+                                                     TestResultModel *testResultModel, int thread,
+                                                     QList<ModelInfo> *modelList, QList<ModelInfo> *opponentModelList) :
     setupManager(testSetupManager),
     resultModel(testResultModel),
-    threadID(thread)
+    threadID(thread),
+    models(modelList),
+    opponentModels(opponentModelList)
 {
     qDebug() << "[FastModelEvaluationWorker] init";
 }
 
-FastModelEvaluationWorker::~FastModelEvaluationWorker() {
-
-}
+FastModelEvaluationWorker::~FastModelEvaluationWorker() = default;
 
 void FastModelEvaluationWorker::process() {
     //qDebug() << "[FastModelEvaluationWorker] starting actual model evaluation";
@@ -36,12 +37,18 @@ void FastModelEvaluationWorker::process() {
 
         qDebug() << "[FastModelEvaluationWorker] starting match: " << setup.aiLevelP1 << "vs." << setup.aiLevelP2;
 
+        QString p1l = setup.aiLevelP1 < 0 ? opponentModels->at(-setup.aiLevelP1 -1).ai() : models->at(setup.aiLevelP1 -1).ai();
+        QString p2l = setup.aiLevelP2 < 0 ? opponentModels->at(-setup.aiLevelP2 -1).ai() : models->at(setup.aiLevelP2 -1).ai();
+        ok = false;
+        int p1 = aiFunctions::parseAiLevel(p1l, &ok);
+        int p2 = aiFunctions::parseAiLevel(p2l, &ok);
+
         // execute setup
         int width = setup.boardSize.x();
         int height = setup.boardSize.y();
         Board board(2, width, height);
-        aiController::Ptr aic0(new aiController(0, 1, width, height, setup.modelAiP1, setup.timeout, setup.modelNameP1));
-        aiController::Ptr aic1(new aiController(1, 1, width, height, setup.modelAiP2, setup.timeout, setup.modelNameP2));
+        aiController::Ptr aic0(new aiController(0, 1, width, height, p1, setup.timeout, setup.modelNameP1));
+        aiController::Ptr aic1(new aiController(1, 1, width, height, p2, setup.timeout, setup.modelNameP2));
 
         //qDebug() << "board info: " << board.lines().size() << ":" << board.lines();
 

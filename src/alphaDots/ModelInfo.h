@@ -16,11 +16,11 @@ namespace AlphaDots {
         ModelInfo(QString name, QString desc, QString path, QString type, QString ai);
 
         QString name() const;
-        QString desc();
-        QString path();
-        QString type();
-        QString ai();
-        bool valid();
+        QString desc() const;
+        QString path() const;
+        QString type() const;
+        QString ai() const;
+        bool valid() const;
 
         void setValid(bool valid) {_valid=valid;}
         void setName(QString name) {_name=name;}

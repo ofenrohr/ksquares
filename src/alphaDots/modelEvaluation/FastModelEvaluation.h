@@ -19,7 +19,8 @@ namespace AlphaDots {
 
         ~FastModelEvaluation();
 
-        void startEvaluation(QList<AITestSetup> *testSetups, TestResultModel *resultModel);
+        void startEvaluation(QList<AITestSetup> *testSetups, TestResultModel *resultModel, QList<ModelInfo> *models,
+                             QList<ModelInfo> *opponentModels);
 
     public slots:
         void threadFinished(int threadID);

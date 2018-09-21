@@ -14,6 +14,7 @@
 #include <zmq.hpp>
 #include <QtCore/QTimer>
 #include <ModelServer.pb.h>
+#include <aifunctions.h>
 
 using namespace AlphaDots;
 
@@ -295,6 +296,11 @@ ModelInfo ProtobufConnector::getModelByName(QString name) {
         if (model.name() == name) {
             return model;
         }
+    }
+    bool ok = false;
+    aiFunctions::parseAiLevel(name, &ok);
+    if (ok) {
+        return ModelInfo(name, "", "", "", name);
     }
     qDebug() << "ERROR: failed to find model with name " << name;
     assert(false);

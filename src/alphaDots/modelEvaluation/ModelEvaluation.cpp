@@ -34,15 +34,16 @@ ModelEvaluation::ModelEvaluation(QString models, bool fast, int threadCnt, int g
     connect(sGame, SIGNAL(takeTurnSig(KSquaresPlayer*)), this, SLOT(playerTakeTurn(KSquaresPlayer*)));
     opponentModelList.clear();
     opponentModelList.append(ModelInfo("Easy", "", "", "", "easy"));
-    opponentModelList.append(ModelInfo("Medium", "", "", "", "medium"));
-    opponentModelList.append(ModelInfo("Hard", "", "", "", "hard"));
+    //opponentModelList.append(ModelInfo("Medium", "", "", "", "medium"));
+    //opponentModelList.append(ModelInfo("Hard", "", "", "", "hard"));
     opponentModelList.append(ProtobufConnector::getInstance().getModelByName("AlphaZeroV7"));
     createTestSetups(boardSize);
     resultModel = new TestResultModel(this, &modelList, &opponentModelList, gamesPerAi);
 
     if (gamesPerAi % 2 != 0) {
-        QMessageBox::critical(this, tr("ModelEvaluation error"), tr("ERROR: games per AI must be multiple of 2"));
+        QMessageBox::critical(this, tr("ModelEvaluation error"), tr("ERROR: games per AI must be a multiple of 2"));
         QCoreApplication::exit(1);
+        return;
     }
 
     QTimer::singleShot(0, this, &ModelEvaluation::initObject);
@@ -85,7 +86,7 @@ void ModelEvaluation::initObject() {
         }
         fastEvaluationHandler = new FastModelEvaluation(threads);
         connect(fastEvaluationHandler, SIGNAL(evaluationFinished()), this, SLOT(evaluationFinished()));
-        fastEvaluationHandler->startEvaluation(&testSetups, resultModel);
+        fastEvaluationHandler->startEvaluation(&testSetups, resultModel, &modelList, &opponentModelList);
     }
 }
 
@@ -108,15 +109,13 @@ QList<ModelInfo> ModelEvaluation::getModelList(QString models) {
                 break;
             }
         }
-            /*
         if (!foundModel) {
-            KSquares::AILevel lvl = aiFunctions::parseAiLevel(modelStr, &foundModel);
+            aiFunctions::parseAiLevel(modelStr, &foundModel);
             if (foundModel) {
                 ModelInfo aiWithoutModel(modelStr, tr(""), tr(""), tr(""), modelStr);
                 ret.append(aiWithoutModel);
             }
         }
-             */
         if (!foundModel) {
             QMessageBox::critical(this, tr("ModelEvaluation"), tr("unknown model: ") + modelStr);
         }
@@ -149,7 +148,7 @@ void ModelEvaluation::createTestSetups(QPoint boardSize) {
 
 
     for (int m = 0; m < modelList.size(); m++) { // all models
-        for (int r = 0; r < opponentModelList.size(); r++) { // ai easy, medium, hard (r = rule based ai id)
+        for (int r = 0; r < opponentModelList.size(); r++) {
             for (int i = 0; i < gamesPerAi / 2; i++) {
                 bool ok;
                 AITestSetup setup;
@@ -157,7 +156,7 @@ void ModelEvaluation::createTestSetups(QPoint boardSize) {
                 setup.aiLevelP2 = m+1;
                 setup.timeout = timeout;
                 setup.boardSize = QPoint(testBoardWidth, testBoardHeight);
-                setup.modelNameP1 = modelList[m].name();
+                setup.modelNameP1 = opponentModelList[r].name();
                 setup.modelNameP2 = modelList[m].name();
                 setup.modelAiP1 = aiFunctions::parseAiLevel(opponentModelList[r].ai(), &ok);
                 if (!ok) {
@@ -179,7 +178,7 @@ void ModelEvaluation::createTestSetups(QPoint boardSize) {
                 setup.timeout = timeout;
                 setup.boardSize = QPoint(testBoardWidth, testBoardHeight);
                 setup.modelNameP1 = modelList[m].name();
-                setup.modelNameP2 = modelList[m].name();
+                setup.modelNameP2 = opponentModelList[r].name();
                 setup.modelAiP1 = aiFunctions::parseAiLevel(modelList[m].ai(), &ok);
                 if (!ok) {
                     QMessageBox::critical(nullptr, tr("Error"), tr("Creating test setups failed! Unknown model ai!") + modelList[m].ai());

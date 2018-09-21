@@ -20,19 +20,20 @@ FastModelEvaluation::~FastModelEvaluation() {
     delete setupManager;
 }
 
-void FastModelEvaluation::startEvaluation(QList<AITestSetup> *testSetups, TestResultModel *resultModel) {
+void FastModelEvaluation::startEvaluation(QList<AITestSetup> *testSetups, TestResultModel *resultModel,
+                                          QList<ModelInfo> *models, QList<ModelInfo> *opponentModels) {
     qDebug() << "[FastModelEvaluation] starting fast evaluation";
     setupManager = new AITestSetupManager(testSetups);
     for (int t = 0; t < threadCnt; t++) {
         // https://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
         auto *thread = new QThread();
-        auto *worker = new FastModelEvaluationWorker(setupManager, resultModel, t);
+        auto *worker = new FastModelEvaluationWorker(setupManager, resultModel, t, models, opponentModels);
         worker->moveToThread(thread);
         connect(thread, SIGNAL(started()), worker, SLOT(process()));
         connect(worker, SIGNAL(finished(int)), this, SLOT(threadFinished(int)));
         connect(worker, SIGNAL(finished(int)), thread, SLOT(quit()));
-        //connect(worker, SIGNAL(finished(int)), worker, SLOT(deleteLater()));
-        //connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
+        connect(worker, SIGNAL(finished(int)), worker, SLOT(deleteLater()));
+        connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
         thread->start();
     }
 }
