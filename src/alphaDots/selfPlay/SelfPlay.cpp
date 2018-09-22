@@ -14,6 +14,7 @@
 #include <alphaDots/ModelManager.h>
 #include <QtCore/QDirIterator>
 #include <alphaDots/AlphaDotsExceptions.h>
+#include <aiAlphaZeroMCTS.h>
 #include "SelfPlay.h"
 #include "SelfPlayWorker.h"
 
@@ -113,6 +114,8 @@ void SelfPlay::setupIteration() {
 
     mode = GENERATE;
 
+    aiAlphaZeroMCTS::use_probabilistic_final_move_selection = true;
+
     dataGen->setCurrentModel(bestModel);
     dataGen->setBoardSize(availableBoardSizes[gsl_rng_uniform_int(rng, availableBoardSizes.size())]);
     dataGen->startIteration();
@@ -197,6 +200,8 @@ void SelfPlay::trainingFinished() {
 
     mode = EVALUATE;
     updateOverview();
+
+    aiAlphaZeroMCTS::use_probabilistic_final_move_selection = false;
 
     evaluateNetwork->startEvaluation(contendingModel);
 }

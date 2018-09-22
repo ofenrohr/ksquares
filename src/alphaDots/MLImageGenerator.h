@@ -19,13 +19,13 @@
 namespace AlphaDots {
     class MLImageGenerator {
 
-        static void drawBackgroundAndDots(QImage &img, bool drawDots = true);
+        static void drawBackgroundAndDots(QImage &img, bool drawDots = true, bool categorical = false);
 
-        static void drawLineAt(QImage &img, int lineIdx, int w, int h);
+        static void drawLineAt(QImage &img, int lineIdx, int w, int h, bool categorical = false);
 
-        static void drawLines(QImage &img, QSharedPointer<aiBoard> board);
+        static void drawLines(QImage &img, QSharedPointer<aiBoard> board, bool categorical = false);
 
-        static void drawBoxes(QImage &img, QSharedPointer<aiBoard> board);
+        static void drawBoxes(QImage &img, QSharedPointer<aiBoard> board, bool categorical = false);
 
     public:
         /**
@@ -35,7 +35,7 @@ namespace AlphaDots {
          */
         static int boxesToImgSize(int boxes);
 
-        static QImage generateInputImage(QSharedPointer<aiBoard> board);
+        static QImage generateInputImage(QSharedPointer<aiBoard> board, bool categorical = false);
 
         static QImage generateOutputImage(QSharedPointer<aiBoard> board, QSharedPointer<KSquaresAi> ai, int *line=nullptr);
 
@@ -49,6 +49,15 @@ namespace AlphaDots {
         static const int MLImageBoxB = 150;
         static const int MLImageDot = 215;
         static const int MLImageLine = 255;
+
+        /**
+         * Define colors to use in categorical images
+         */
+        static const int MLImageBackgroundCat = 0;
+        static const int MLImageLineCat = 1;
+        static const int MLImageBoxACat = 2;
+        static const int MLImageBoxBCat = 3;
+        static const int MLImageDotCat = 4;
     };
 }
 

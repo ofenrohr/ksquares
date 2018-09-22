@@ -11,6 +11,7 @@ message PredictionRequest {
     required string modelKey = 2;
     optional DotsAndBoxesImage image = 3;
     optional GameSequence sequence = 4;
+    optional bool categorical = 5;
 }
 
 message PredictionResponse {

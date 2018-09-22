@@ -14,6 +14,7 @@
 #include <alphaDots/ModelManager.h>
 #include <alphaDots/MLImageGenerator.h>
 #include <ModelServer.pb.h>
+#include <QtWidgets/QMessageBox>
 
 using namespace AlphaDots;
 
@@ -201,7 +202,9 @@ QList<int> aiAlphaZeroMCTS::mcts() {
             qDebug() << "WARNING: MCTS selection step failed";
             break;
         }
-        predictPolicyValue(node);
+        if (!predictPolicyValue(node)) {
+            break;
+        }
         if (node.isNull()) { // sth failed
             qDebug() << "WARNING: MCTS simulation step failed";
             break;
@@ -382,7 +385,7 @@ bool aiAlphaZeroMCTS::predictPolicyValue(const AlphaZeroMCTSNode::Ptr &node) {
     }
 
     // request prediction
-    QImage qimg = MLImageGenerator::generateInputImage(board);
+    QImage qimg = MLImageGenerator::generateInputImage(board, true);
     ModelServerResponse srvResponse;
     PolicyValueData policyValueData;
     if (ProtobufConnector::getInstance().getBatchPredict()) {
@@ -393,8 +396,9 @@ bool aiAlphaZeroMCTS::predictPolicyValue(const AlphaZeroMCTSNode::Ptr &node) {
         srvRequest.set_action(ModelServerRequest::PREDICT);
         srvRequest.mutable_predictionrequest()->set_modelhandler(modelInfo.type().toStdString());
         srvRequest.mutable_predictionrequest()->set_modelkey(ModelManager::modelInfoToStr(modelInfo.name(), width, height, useGPU).toStdString());
+        srvRequest.mutable_predictionrequest()->set_categorical(true);
 
-        DotsAndBoxesImage *img = new DotsAndBoxesImage();
+        auto *img = new DotsAndBoxesImage();
         ProtobufConnector::copyDataToProtobuf(img, qimg);
         srvRequest.mutable_predictionrequest()->set_allocated_image(img);
 
@@ -419,7 +423,9 @@ bool aiAlphaZeroMCTS::predictPolicyValue(const AlphaZeroMCTSNode::Ptr &node) {
 
         if (srvResponse.status() != ModelServerResponse::RESP_OK) {
             qDebug() << "ERROR: model server response message: " << QString::fromStdString(srvResponse.errormessage());
-            assert(false);
+            //QMessageBox::critical(nullptr, "KSquares", "model server error message: " + QString::fromStdString(srvResponse.errormessage()));
+            //assert(false);
+            return false;
         }
         policyValueData = srvResponse.predictionresponse().pvdata();
     }
