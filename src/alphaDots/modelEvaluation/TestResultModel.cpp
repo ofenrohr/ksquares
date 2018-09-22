@@ -10,11 +10,13 @@
 using namespace AlphaDots;
 
 TestResultModel::TestResultModel(QObject *parent, QList<ModelInfo> *models, QList<ModelInfo> *adversaryModels, int gamesPerAi) :
-        QAbstractTableModel(parent),
+        QAbstractTableModel(parent)/*,
         modelList(models),
         adverarialModels(adversaryModels),
-        gamesPerAiCnt(gamesPerAi)
+        gamesPerAiCnt(gamesPerAi)*/
 {
+    reset(models, adversaryModels, gamesPerAi);
+    /*
     rows.reserve(modelList->size());
     modelHistories.reserve(modelList->size());
     for (int i = 0; i < modelList->size(); i++) {
@@ -29,9 +31,38 @@ TestResultModel::TestResultModel(QObject *parent, QList<ModelInfo> *models, QLis
             qDebug() << "WARNING: model list and adversary model list contain the same model! that's not supported";
         }
     }
+     */
 }
 
 TestResultModel::~TestResultModel() = default;
+
+void TestResultModel::reset(QList<ModelInfo> *models, QList<ModelInfo> *opponentModels, int gamesPerAi) {
+    QMutexLocker locker(&rowsMutex); // make it thread safe
+    results.clear();
+    rows.clear();
+    modelHistories.clear();
+    modelList = models;
+    adverarialModels = opponentModels;
+    gamesPerAiCnt = gamesPerAi;
+
+    rows.reserve(modelList->size());
+    modelHistories.reserve(modelList->size());
+    for (int i = 0; i < modelList->size(); i++) {
+        QList<int> columns;
+        for (int j = 0; j < columnCount(); j++) {
+            columns.append(0);
+        }
+        rows.append(columns);
+        modelHistories.append(tr(""));
+
+        if (adverarialModels->contains(modelList->at(i))) {
+            qDebug() << "WARNING: model list and adversary model list contain the same model! that's not supported";
+        }
+    }
+    emit(headerDataChanged(Qt::Orientation::Horizontal, 0, columnCount()));
+    emit(headerDataChanged(Qt::Orientation::Vertical, 0, rowCount()));
+    emit(dataChanged(createIndex(0,0),createIndex(rowCount(), columnCount())));
+}
 
 int TestResultModel::rowCount(const QModelIndex &parent) const {
     return modelList->size();
@@ -69,6 +100,10 @@ QVariant TestResultModel::data(const QModelIndex &index, int role) const {
         return rows[index.row()][index.column()];
     }
     return QVariant();
+}
+
+int TestResultModel::rawData(const int row, const int column) const {
+    return rows[row][column];
 }
 
 void TestResultModel::addResult(AITestResult result) {

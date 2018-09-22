@@ -20,7 +20,10 @@ ModelManager::ModelManager() :
 {
 }
 
-ModelManager::~ModelManager() {}
+ModelManager::~ModelManager() {
+    qDebug() << "~ModelManager";
+    stopAll();
+}
 
 void ModelManager::startManagementProcess() {
     qDebug() << "Starting multi model server...";

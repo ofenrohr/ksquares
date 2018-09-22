@@ -20,18 +20,22 @@ namespace AlphaDots {
 
         ~TestResultModel();
 
+        void reset(QList<ModelInfo> *models, QList<ModelInfo> *adversaryModels, int gamesPerAi);
+
         /**
          * Number of rows in result table
          * @param parent
          * @return
          */
         int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+
         /**
          * Number of columns in result table
          * @param parent
          * @return
          */
         int columnCount(const QModelIndex &parent = QModelIndex()) const override;
+
         /**
          * Data for cells in result table
          * @param index
@@ -39,6 +43,15 @@ namespace AlphaDots {
          * @return
          */
         QVariant data(const QModelIndex &index, int role) const override;
+
+        /**
+         * Raw access to data at given position
+         * @param x
+         * @param y
+         * @return
+         */
+        int rawData(int row, int column) const;
+
         /**
          * Captions for rows and columns
          * @param section
@@ -78,7 +91,13 @@ namespace AlphaDots {
          * Returns the line histories of all games
          * @return line histories of all games.
          */
-        QList<QString> getHistories() { return gameHistories; }
+        QList<QString> &getHistories() { return gameHistories; }
+
+        /**
+         * Returns the list of test results.
+         * @return list of test results
+         */
+        QList<AITestResult> &getResults() { return results; }
 
     private:
         QList<ModelInfo> *modelList;

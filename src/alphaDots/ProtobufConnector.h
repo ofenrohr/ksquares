@@ -20,12 +20,13 @@
 #include "ExternalProcess.h"
 
 namespace AlphaDots {
-    class ProtobufConnector {
+    class ProtobufConnector : public QObject {
+        Q_OBJECT
     public:
         static ProtobufConnector& getInstance();
         ProtobufConnector(ProtobufConnector const &) = delete;
         void operator=(ProtobufConnector const &) = delete;
-        ~ProtobufConnector();
+        ~ProtobufConnector() override;
 
         /**
          * Put the image data in the protobuf data class
@@ -80,6 +81,9 @@ namespace AlphaDots {
          * Sends a STATUS request to the model manager server. Only used for debugging.
          */
         static void requestStatus(zmq::socket_t &socket);
+
+    public slots:
+        void modelListServerFinished();
 
     private:
         ProtobufConnector();

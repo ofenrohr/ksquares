@@ -35,6 +35,9 @@ namespace AlphaDots {
 
 		static void printModelList();
 
+		static void createTestSetups(QList<AITestSetup> &testSetups, QPoint boardSize, int timeout,
+				QList<ModelInfo> &modelList, QList<ModelInfo> &opponentModelList, int gamesPerAi);
+
     public slots:
 		void aiChoseLine(const int &line);
 		void nextGame();

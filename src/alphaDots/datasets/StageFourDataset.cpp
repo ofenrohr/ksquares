@@ -160,6 +160,7 @@ Dataset StageFourDataset::generateDataset() {
     QImage outputImage = MLImageGenerator::generateOutputImage(board, alphaZeroAi, &alphaZeroLine);
     if (alphaZeroLine < 0) {
         qDebug() << "AI failed, dataset is tained!";
+        QMessageBox::critical(nullptr, "KSquares Stage Four dataset error", "AI failed to produce valid line, creating dataset failed!");
         assert(false);
         return Dataset();
     }

@@ -39,7 +39,9 @@ ProtobufConnector::ProtobufConnector() :
 }
 
 ProtobufConnector::~ProtobufConnector() {
+    qDebug() << "~ProtobufConnector";
     if (modelListProc != nullptr) {
+        modelListProc->stopExternalProcess(false, true, false);
         delete modelListProc;
     }
 }
@@ -192,12 +194,19 @@ bool ProtobufConnector::ensureModelListServerRunning() {
     processArgs << Settings::alphaDotsDir() + "/modelServer/modelList.py";
     QString workingDir = Settings::alphaDotsDir() + "/modelServer/";
     modelListProc = new ExternalProcess(process, processArgs, workingDir);
+    connect(modelListProc, SIGNAL(processFinished()), this, SLOT(modelListServerFinished()));
     if (!modelListProc->startExternalProcess()) {
         qDebug() << "ERROR: failed to start " << process << processArgs;
         return false;
     }
 
     return true;
+}
+
+void ProtobufConnector::modelListServerFinished() {
+    qDebug() << "Model List Server finished!";
+    delete modelListProc;
+    modelListProc = nullptr;
 }
 
 QList<ModelInfo> ProtobufConnector::getModelList() {

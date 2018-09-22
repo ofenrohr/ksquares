@@ -24,6 +24,7 @@ namespace AlphaDots {
         SelfPlay(QString &datasetDest, int threads, QString &initialModel, QString &targetModelName,
                  int iterations, int gamesPerIteration, int epochs, bool gpuTraining, DatasetType dataset,
                  bool doUpload, QList<QPoint> &boardSizes);
+        ~SelfPlay();
 
         void initObject();
 

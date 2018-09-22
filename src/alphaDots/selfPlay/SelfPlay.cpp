@@ -42,12 +42,18 @@ SelfPlay::SelfPlay(QString &datasetDest, int threads, QString &initialModelName,
 
     trainNetwork = new TrainNetwork(epochs, gpuTraining, doUpload, datasetDest);
 
-    evaluateNetwork = new EvaluateNetwork(bestModel);
+    evaluateNetwork = new EvaluateNetwork(bestModel, threadCnt*2, threadCnt);
 
     assert(dataGen->gamesPerIteration() % threads == 0);
 
 
     QTimer::singleShot(0, this, &SelfPlay::initObject);
+}
+
+SelfPlay::~SelfPlay() {
+    dataGen->deleteLater();
+    trainNetwork->deleteLater();
+    evaluateNetwork->deleteLater();
 }
 
 void SelfPlay::initObject() {
@@ -64,6 +70,10 @@ void SelfPlay::initObject() {
     connect(trainNetwork, SIGNAL(trainingFinished()), this, SLOT(trainingFinished()));
     connect(evaluateNetwork, SIGNAL(infoChanged()), this, SLOT(updateEvaluationInfo()));
     connect(evaluateNetwork, SIGNAL(evaluationFinished()), this, SLOT(evaluationFinished()));
+
+    // set gui elements
+    resultsTable->setModel(evaluateNetwork->getResultModel());
+    resultsTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
     // set things in motion
     setupIteration();
@@ -136,7 +146,7 @@ void SelfPlay::generateDataFinished() {
 void SelfPlay::trainingFinished() {
     qDebug() << "[SelfPlay] training network finished";
 
-    evaluateNetwork->startEvaluation(threadCnt, contendingModel);
+    evaluateNetwork->startEvaluation(contendingModel);
 }
 
 void SelfPlay::updateEvaluationInfo() {

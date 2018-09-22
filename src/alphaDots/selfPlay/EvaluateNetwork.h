@@ -8,19 +8,22 @@
 #include <QObject>
 #include <alphaDots/ModelInfo.h>
 #include <alphaDots/modelEvaluation/TestResultModel.h>
+#include <alphaDots/modelEvaluation/FastModelEvaluation.h>
 
 namespace AlphaDots {
     class EvaluateNetwork : public QObject {
     Q_OBJECT
     public:
-        EvaluateNetwork(const ModelInfo &initialModel);
+        EvaluateNetwork(const ModelInfo &initialModel, int games, int threads);
+        ~EvaluateNetwork();
 
         const ModelInfo &getBestModel() const;
         const ModelInfo &getContendingModel() const;
-        const TestResultModel *getResultModel() const;
+        TestResultModel *getResultModel() const;
 
     public slots:
-        void startEvaluation(int games, const ModelInfo &newModel);
+        void startEvaluation(const ModelInfo &newModel);
+        void fastModelEvaluationFinished();
 
     signals:
         void infoChanged();
@@ -30,6 +33,12 @@ namespace AlphaDots {
         ModelInfo bestModel;
         ModelInfo contendingModel;
         TestResultModel *resultModel;
+        QList<ModelInfo> modelList;
+        QList<ModelInfo> opponentModelList;
+        int gamesPerAi;
+        QList<AITestSetup> testSetups;
+        FastModelEvaluation *fastModelEvaluation;
+        int threadCnt;
     };
 }
 

@@ -143,13 +143,12 @@ void ModelEvaluation::printModelList() {
 }
 
 void ModelEvaluation::createTestSetups(QPoint boardSize) {
-    int testBoardWidth = boardSize.x();
-    int testBoardHeight = boardSize.y();
-    int timeout = 5000;
+    createTestSetups(testSetups, boardSize, 5000, modelList, opponentModelList, gamesPerAi);
+}
 
+void ModelEvaluation::createTestSetups(QList<AITestSetup> &testSetups, QPoint boardSize, int timeout,
+        QList<ModelInfo> &modelList, QList<ModelInfo> &opponentModelList, int gamesPerAi) {
     testSetups.clear();
-
-
     for (int m = 0; m < modelList.size(); m++) { // all models
         for (int r = 0; r < opponentModelList.size(); r++) {
             for (int i = 0; i < gamesPerAi / 2; i++) {
@@ -158,7 +157,7 @@ void ModelEvaluation::createTestSetups(QPoint boardSize) {
                 setup.aiLevelP1 = -r-1;
                 setup.aiLevelP2 = m+1;
                 setup.timeout = timeout;
-                setup.boardSize = QPoint(testBoardWidth, testBoardHeight);
+                setup.boardSize = boardSize;
                 setup.modelNameP1 = opponentModelList[r].name();
                 setup.modelNameP2 = modelList[m].name();
                 setup.modelAiP1 = aiFunctions::parseAiLevel(opponentModelList[r].ai(), &ok);
@@ -179,7 +178,7 @@ void ModelEvaluation::createTestSetups(QPoint boardSize) {
                 setup.aiLevelP1 = m+1;
                 setup.aiLevelP2 = -r-1;
                 setup.timeout = timeout;
-                setup.boardSize = QPoint(testBoardWidth, testBoardHeight);
+                setup.boardSize = boardSize;
                 setup.modelNameP1 = modelList[m].name();
                 setup.modelNameP2 = opponentModelList[r].name();
                 setup.modelAiP1 = aiFunctions::parseAiLevel(modelList[m].ai(), &ok);
@@ -196,6 +195,8 @@ void ModelEvaluation::createTestSetups(QPoint boardSize) {
             }
         }
     }
+
+    return;
 }
 
 void ModelEvaluation::loadTestSetup(const AITestSetup &setup) {

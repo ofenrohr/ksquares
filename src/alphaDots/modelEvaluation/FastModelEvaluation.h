@@ -15,9 +15,9 @@ namespace AlphaDots {
     class FastModelEvaluation : public QObject {
     Q_OBJECT
     public:
-        FastModelEvaluation(int threads);
+        explicit FastModelEvaluation(int threads);
 
-        ~FastModelEvaluation();
+        ~FastModelEvaluation() override;
 
         void startEvaluation(QList<AITestSetup> *testSetups, TestResultModel *resultModel, QList<ModelInfo> *models,
                              QList<ModelInfo> *opponentModels);

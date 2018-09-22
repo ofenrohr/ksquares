@@ -6,6 +6,7 @@
 #include "FastModelEvaluationWorker.h"
 #include <QThread>
 #include <qdebug.h>
+#include <QtWidgets/QMessageBox>
 
 using namespace AlphaDots;
 
@@ -13,7 +14,7 @@ FastModelEvaluation::FastModelEvaluation(int threads) : QObject() {
     qDebug() << "[FastModelEvaluation] init";
     setupManager = nullptr;
     threadCnt = threads;
-    threadsRunning = threadCnt;
+    threadsRunning = 0;
 }
 
 FastModelEvaluation::~FastModelEvaluation() {
@@ -23,6 +24,13 @@ FastModelEvaluation::~FastModelEvaluation() {
 void FastModelEvaluation::startEvaluation(QList<AITestSetup> *testSetups, TestResultModel *resultModel,
                                           QList<ModelInfo> *models, QList<ModelInfo> *opponentModels) {
     qDebug() << "[FastModelEvaluation] starting fast evaluation";
+    if (threadsRunning != 0) {
+        qDebug() << "[FastModelEvaluation] attempt to start evaluation while old threads are still running!";
+        QMessageBox::critical(nullptr, "KSquares Model Evaluation", "ERROR: attempt to start model evaluation while old threads are still running!");
+        assert(false);
+    }
+    delete setupManager; // clang-tidy says: deleting nullptr is fine
+    threadsRunning = threadCnt;
     setupManager = new AITestSetupManager(testSetups);
     for (int t = 0; t < threadCnt; t++) {
         // https://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
@@ -39,7 +47,7 @@ void FastModelEvaluation::startEvaluation(QList<AITestSetup> *testSetups, TestRe
 }
 
 void FastModelEvaluation::threadFinished(int threadID) {
-    qDebug() << "thread " << threadID << " finished";
+    qDebug() << "thread " << threadID << " finished (still running: " << threadsRunning << ")";
     threadsRunning--;
     if (threadsRunning == 0) {
         emit(evaluationFinished());
