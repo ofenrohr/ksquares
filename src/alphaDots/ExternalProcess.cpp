@@ -119,7 +119,6 @@ bool ExternalProcess::stopExternalProcess(bool terminate, bool kill, bool wait) 
 
         QCoreApplication::processEvents();
 
-		/*
 		disconnect(process, SIGNAL(error(QProcess::ProcessError)), this, SLOT(processError(QProcess::ProcessError)));
 		disconnect(process, SIGNAL(stateChanged(QProcess::ProcessState)), this, SLOT(processStateChanged(QProcess::ProcessState)));
 		disconnect(process, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(processFinished(int, QProcess::ExitStatus)));
@@ -129,7 +128,6 @@ bool ExternalProcess::stopExternalProcess(bool terminate, bool kill, bool wait) 
 		process->deleteLater();
 
 		QCoreApplication::processEvents();
-		 */
 	}
 	processRunning = false;
     return true;

@@ -5,6 +5,7 @@
 #include "ProtobufConnector.h"
 #include "ExternalProcess.h"
 #include "ModelManager.h"
+#include <alphaDots/AlphaDotsExceptions.h>
 
 #include <QDebug>
 #include <settings.h>
@@ -312,7 +313,8 @@ ModelInfo ProtobufConnector::getModelByName(QString name) {
         return ModelInfo(name, "", "", "", name);
     }
     qDebug() << "ERROR: failed to find model with name " << name;
-    assert(false);
+    //assert(false);
+    throw ModelNotFoundException();
     if (!modelList.empty()) {
         return modelList[0];
     }

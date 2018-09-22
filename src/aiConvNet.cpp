@@ -92,8 +92,8 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 	if (modelInfo.type() == QStringLiteral("DirectInference") ||
         modelInfo.type() == QStringLiteral("DirectInferenceCategorical")) {
 		aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(lines, linesSize, width, height, newSquareOwners, playerId, maxPlayerId));
-		DotsAndBoxesImage img = ProtobufConnector::dotsAndBoxesImageToProtobuf(MLImageGenerator::generateInputImage(board));
-		srvRequest.mutable_predictionrequest()->set_allocated_image(&img);
+		DotsAndBoxesImage *img = new DotsAndBoxesImage(ProtobufConnector::dotsAndBoxesImageToProtobuf(MLImageGenerator::generateInputImage(board)));
+		srvRequest.mutable_predictionrequest()->set_allocated_image(img);
 	}
     else if (modelInfo.type() == QStringLiteral("Sequence") ||
              modelInfo.type() == QStringLiteral("SequenceCategorical")) {
@@ -106,10 +106,10 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 			imageSeq.append(MLImageGenerator::generateInputImage(board));
 		}
 		// convert image data to protobuf message
-		GameSequence seq = ProtobufConnector::gameSequenceToProtobuf(imageSeq);
+		GameSequence *seq = new GameSequence(ProtobufConnector::gameSequenceToProtobuf(imageSeq));
 		// protobuf error checking
         std::vector<std::string> errors;
-        seq.FindInitializationErrors(&errors);
+        seq->FindInitializationErrors(&errors);
         foreach (std::string err, errors) {
             qDebug() << "GameSequence protobuf error: " << QString::fromStdString(err);
         }
@@ -117,7 +117,7 @@ int aiConvNet::chooseLine(const QList<bool> &newLines, const QList<int> &newSqua
 			qDebug() << "imageSeq: " << imageSeq;
 		}
 		// add sequence protobuf message to model server request
-		srvRequest.mutable_predictionrequest()->set_allocated_sequence(&seq);
+		srvRequest.mutable_predictionrequest()->set_allocated_sequence(seq);
 	}
     else if (modelInfo.type() == QStringLiteral("PolicyValue")) {
 		aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(lines, linesSize, width, height, newSquareOwners, playerId, maxPlayerId));

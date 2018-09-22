@@ -23,13 +23,20 @@ namespace AlphaDots {
     public:
         SelfPlay(QString &datasetDest, int threads, QString &initialModel, QString &targetModelName,
                  int iterations, int gamesPerIteration, int epochs, bool gpuTraining, DatasetType dataset,
-                 bool doUpload, QList<QPoint> &boardSizes);
+                 bool doUpload, QList<QPoint> &boardSizes, int gamesPerEvaluation);
         ~SelfPlay();
 
         void initObject();
 
+        enum SelfPlayMode {
+            GENERATE,
+            TRAIN,
+            EVALUATE
+        };
 
     public slots:
+        void updateOverview();
+
         void setupIteration();
 
         void generateDataFinished();
@@ -49,6 +56,9 @@ namespace AlphaDots {
     private:
         QWidget *m_view;
 
+        // GSL random number generator
+        gsl_rng *rng;
+
         // general configuration
         QString datasetDirectory;
         int threadCnt;
@@ -59,6 +69,7 @@ namespace AlphaDots {
         bool upload;
 
         // current state infos
+        SelfPlayMode mode;
         int iteration;
         ModelInfo bestModel;
         ModelInfo contendingModel;

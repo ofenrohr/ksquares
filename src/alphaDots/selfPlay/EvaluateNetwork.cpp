@@ -20,8 +20,8 @@ EvaluateNetwork::EvaluateNetwork(const AlphaDots::ModelInfo &initialModel, const
 }
 
 EvaluateNetwork::~EvaluateNetwork() {
-    delete resultModel;
-    delete fastModelEvaluation;
+    resultModel->deleteLater();
+    fastModelEvaluation->deleteLater();
 }
 
 void EvaluateNetwork::startEvaluation(const AlphaDots::ModelInfo &newModel) {

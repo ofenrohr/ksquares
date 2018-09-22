@@ -120,7 +120,7 @@ int aiAlphaZeroMCTS::chooseLine(const QList<bool> &newLines, const QList<int> &n
             return -1;
         }
         turnTime = moveTimer.elapsed();
-        return freeLines.at(qrand() % freeLines.size());
+        return freeLines.at(gsl_rng_uniform_int(rng,freeLines.size()));
     }
 
     turnTime = moveTimer.elapsed();
@@ -394,7 +394,8 @@ bool aiAlphaZeroMCTS::predictPolicyValue(const AlphaZeroMCTSNode::Ptr &node) {
         srvRequest.mutable_predictionrequest()->set_modelhandler(modelInfo.type().toStdString());
         srvRequest.mutable_predictionrequest()->set_modelkey(ModelManager::modelInfoToStr(modelInfo.name(), width, height, useGPU).toStdString());
 
-        DotsAndBoxesImage *img = new DotsAndBoxesImage(ProtobufConnector::dotsAndBoxesImageToProtobuf(qimg));
+        DotsAndBoxesImage *img = new DotsAndBoxesImage();
+        ProtobufConnector::copyDataToProtobuf(img, qimg);
         srvRequest.mutable_predictionrequest()->set_allocated_image(img);
 
         // send prediction request

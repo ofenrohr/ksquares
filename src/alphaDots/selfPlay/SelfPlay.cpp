@@ -13,6 +13,7 @@
 #include <QtWidgets/QMessageBox>
 #include <alphaDots/ModelManager.h>
 #include <QtCore/QDirIterator>
+#include <alphaDots/AlphaDotsExceptions.h>
 #include "SelfPlay.h"
 #include "SelfPlayWorker.h"
 
@@ -20,7 +21,7 @@ using namespace AlphaDots;
 
 SelfPlay::SelfPlay(QString &datasetDest, int threads, QString &initialModelName, QString &targetModel,
                    int iterations, int gamesPerIteration, int epochs, bool gpuTraining, DatasetType dataset,
-                   bool doUpload, QList<QPoint> &boardSizes) :
+                   bool doUpload, QList<QPoint> &boardSizes, int evalGames) :
     KXmlGuiWindow(),
     m_view(new QWidget())
 {
@@ -42,10 +43,13 @@ SelfPlay::SelfPlay(QString &datasetDest, int threads, QString &initialModelName,
 
     trainNetwork = new TrainNetwork(epochs, gpuTraining, doUpload, datasetDest);
 
-    evaluateNetwork = new EvaluateNetwork(bestModel, threadCnt*2, threadCnt);
+    evaluateNetwork = new EvaluateNetwork(bestModel, evalGames, threadCnt);
 
     assert(dataGen->gamesPerIteration() % threads == 0);
 
+    // init rng
+    rng = gsl_rng_alloc(gsl_rng_taus);
+    gsl_rng_set(rng, std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
 
     QTimer::singleShot(0, this, &SelfPlay::initObject);
 }
@@ -54,11 +58,13 @@ SelfPlay::~SelfPlay() {
     dataGen->deleteLater();
     trainNetwork->deleteLater();
     evaluateNetwork->deleteLater();
+    gsl_rng_free(rng);
 }
 
 void SelfPlay::initObject() {
     qDebug() << "[SelfPlay] initObject()";
 
+    // setup gui stuff
     setupUi(m_view);
     setCentralWidget(m_view);
     setupGUI();
@@ -79,13 +85,39 @@ void SelfPlay::initObject() {
     setupIteration();
 }
 
+void SelfPlay::updateOverview() {
+    switch (mode) {
+        case GENERATE:
+            generateLbl->setText("<span style=\"text-decoration: underline;\">Generate</span>");
+            trainLbl->setText("Train");
+            evaluateLbl->setText("Evaluate");
+            break;
+        case TRAIN:
+            generateLbl->setText("Generate");
+            trainLbl->setText("<span style=\"text-decoration: underline;\">Train</span>");
+            evaluateLbl->setText("Evaluate");
+            break;
+        case EVALUATE:
+            generateLbl->setText("Generate");
+            trainLbl->setText("Train");
+            evaluateLbl->setText("<span style=\"text-decoration: underline;\">Evaluate</span>");
+            break;
+        default:
+            qDebug() << "unknown mode!";
+            assert(false);
+    }
+}
+
 void SelfPlay::setupIteration() {
     iteration++;
 
+    mode = GENERATE;
+
     dataGen->setCurrentModel(bestModel);
-    dataGen->setBoardSize(availableBoardSizes[qrand() % availableBoardSizes.size()]);
+    dataGen->setBoardSize(availableBoardSizes[gsl_rng_uniform_int(rng, availableBoardSizes.size())]);
     dataGen->startIteration();
 
+    updateOverview();
     updateDataGenInfo();
     updateTrainingInfo();
     updateEvaluationInfo();
@@ -112,24 +144,28 @@ void SelfPlay::updateDataGenInfo() {
     datasetGeneratorLbl->setText(dataGen->getDatasetType() == StageFour ? tr("Stage Four") : tr("Stage Four (no MCTS)"));
 }
 
-void SelfPlay::updateTrainingInfo() {
-    trainingStatusLbl->setText(trainNetwork->getStatusStr());
-    logLinkLbl->setText(trainNetwork->getLogLink());
-    logLinkLbl->setTextFormat(Qt::RichText);
-    logLinkLbl->setTextInteractionFlags(Qt::TextBrowserInteraction);
-    logLinkLbl->setOpenExternalLinks(true);
-    epochLbl->setText(trainNetwork->getEpochStr());
-    etaLbl->setText(trainNetwork->getEtaStr());
-    lossLbl->setText(trainNetwork->getLossStr());
-    policyLossLbl->setText(trainNetwork->getPolicyLossStr());
-    valueLossLbl->setText(trainNetwork->getValueLossStr());
-}
-
 void SelfPlay::generateDataFinished() {
     qDebug() << "[SelfPlay] generating data finished";
-    ModelInfo targetModel = ProtobufConnector::getInstance().getModelByName(targetModelName);
+    ModelInfo targetModel;
+    try {
+        targetModel = ProtobufConnector::getInstance().getModelByName(targetModelName);
+    } catch (ModelNotFoundException &ex) {
+        qDebug() << "[SelfPlay] target model does not exist! creating a new model!";
+        if (targetModelName.trimmed().isEmpty()) {
+            qDebug() << "[SelfPlay] target model name is empty! creating new name";
+            targetModelName = QUuid::createUuid().toString(QUuid::WithoutBraces);
+            qDebug() << "[SelfPlay] target model name: " << targetModelName;
+        }
+        QFileInfo targetModelPathFI(bestModel.path());
+        QString targetModelPath = targetModelPathFI.dir().path() + "/" + targetModelName + ".h5";
+        targetModel = ModelInfo(targetModelName, "Created by self-play mode in KSquares", targetModelPath, bestModel.type(), bestModel.ai());
+        ProtobufConnector::getInstance().addModelToList(targetModel);
+    }
 
     QFileInfo targetModelPath(targetModel.path());
+
+    mode = TRAIN;
+    updateOverview();
 
     contendingModel = ModelInfo(
             targetModelName + "_" + QString::number(iteration),
@@ -143,8 +179,24 @@ void SelfPlay::generateDataFinished() {
                                 contendingModel.path());
 }
 
+void SelfPlay::updateTrainingInfo() {
+    trainingStatusLbl->setText(trainNetwork->getStatusStr());
+    logLinkLbl->setText(trainNetwork->getLogLink());
+    logLinkLbl->setTextFormat(Qt::RichText);
+    logLinkLbl->setTextInteractionFlags(Qt::TextBrowserInteraction);
+    logLinkLbl->setOpenExternalLinks(true);
+    epochLbl->setText(trainNetwork->getEpochStr());
+    etaLbl->setText(trainNetwork->getEtaStr());
+    lossLbl->setText(trainNetwork->getLossStr());
+    policyLossLbl->setText(trainNetwork->getPolicyLossStr());
+    valueLossLbl->setText(trainNetwork->getValueLossStr());
+}
+
 void SelfPlay::trainingFinished() {
     qDebug() << "[SelfPlay] training network finished";
+
+    mode = EVALUATE;
+    updateOverview();
 
     evaluateNetwork->startEvaluation(contendingModel);
 }

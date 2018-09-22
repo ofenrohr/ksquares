@@ -16,6 +16,7 @@
 #include <QObject>
 #include <QThread>
 #include <alphaDots/ModelInfo.h>
+#include <gsl/gsl_rng.h>
 #include "aifunctions.h"
 #include "boardAnalysis.h"
 #include "board.h"
@@ -69,7 +70,6 @@ class aiController : public QObject
 		long lastMoveTime() {return lastTurnTime;}
 
 	protected:
-		
 		/// The ID of the player this AI belongs to
 		int playerId;
 		/// number of players - 1

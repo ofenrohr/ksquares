@@ -39,11 +39,6 @@ aiController::aiController(int newPlayerId, int newMaxPlayerId, int newWidth, in
 		aiThinkTime(thinkTime),
 		useGPU(gpu)
 {
-	//qDebug() << "aiController init: nw = " << newWidth << ", nh = " << newHeight << ", w = " << width << ", h = " << height;
-	//linesSize = aiFunctions::toLinesSize(width, height);
-	//lines = new bool[linesSize];
-	srand( (unsigned)time( NULL ) );
-	//qDebug() << "AI: Starting AI level" << level;
 	lastTurnTime = -2;
 	if (!model.isEmpty()) {
 		alphaDotsModel = AlphaDots::ProtobufConnector::getInstance().getModelByName(model);
@@ -60,6 +55,9 @@ aiController::~aiController()
 
 QList<int> aiController::autoFill(int safeMovesLeft, int width, int height)
 {
+	auto *rng = gsl_rng_alloc(gsl_rng_taus);
+	gsl_rng_set(rng, std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+
 	QList<int> fillLines;
 	
 	int linesSize = aiFunctions::toLinesSize(width, height);
@@ -73,7 +71,7 @@ QList<int> aiController::autoFill(int safeMovesLeft, int width, int height)
 	//qDebug() << safeMoves().isEmpty();
 	while( !( (next = aiFunctions::safeMoves(width, height, linesSize, lines)).isEmpty() ) )
 	{
-		int nextLine = next[rand() % next.size()];
+		int nextLine = next[gsl_rng_uniform_int(rng, next.size())];
 		lines[nextLine] = true;
 		//qDebug() << nextLine;
 		fillLines << nextLine;
@@ -83,11 +81,11 @@ QList<int> aiController::autoFill(int safeMovesLeft, int width, int height)
 	for (int i = 0; i<safeMovesLeft; ++i)
 	{
 		if (fillLines.isEmpty()) break;
-		int index = rand() % fillLines.size();
+		int index = gsl_rng_uniform_int(rng,fillLines.size());
 		fillLines.removeAt(index);
 	}
 
-	delete lines;
+	delete[] lines;
 	return fillLines;
 }
 

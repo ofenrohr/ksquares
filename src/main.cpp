@@ -73,7 +73,7 @@ int main(int argc, char **argv)
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("fast-model-evaluation"), i18n("Run multi-threaded fast evaluation")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("threads"), i18n("Number of threads for model evaluation and dataset generation (default: 4)"), i18n("threads")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("games"),
-        i18n("Number of games played in evaluation against Easy,Medium and Hard each (default slow: 10, default fast: 100)"), i18n("threads")));
+        i18n("Number of games played in evaluation against Easy,Medium and Hard each (default slow: 10, default fast: 100, default self-play: 4)"), i18n("threads")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("gpu"), i18n("When set, the model process will be allowed to use the GPU. In combination with model evaluation of more than one model, this can cause problems when more than one model is evaluated.")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("self-play"), i18n("Generate training data in self-play")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("iterations"), i18n("Number of iterations in self-play"), i18n("iterations")));
@@ -161,12 +161,14 @@ int main(int argc, char **argv)
     // get number of games for evaluation
     int gamesPerAi_slow = 10;
     int gamesPerAi_fast = 100;
+    int gamesPerAi_eval = 4;
     if (parser.isSet(i18n("games"))) {
         bool ok = false;
         int tmp = parser.value(i18n("games")).toInt(&ok);
         if (ok) {
             gamesPerAi_slow = tmp;
             gamesPerAi_fast = tmp;
+            gamesPerAi_eval = tmp;
         }
     }
 
@@ -475,7 +477,7 @@ int main(int argc, char **argv)
         if (!parser.isSet(i18n("dataset-generator"))) {
             datasetType = AlphaDots::StageFour;
         }
-        AlphaDots::SelfPlay *selfPlay = new AlphaDots::SelfPlay(datasetDest, threads, initialModelName, targetModelName, iterationCnt, iterationSize, epochs, gpuTraining, datasetType, upload, boardSizes);
+        AlphaDots::SelfPlay *selfPlay = new AlphaDots::SelfPlay(datasetDest, threads, initialModelName, targetModelName, iterationCnt, iterationSize, epochs, gpuTraining, datasetType, upload, boardSizes, gamesPerAi_eval);
         selfPlay->show();
     } else {
         KSquaresWindow *mainWindow = new KSquaresWindow;
