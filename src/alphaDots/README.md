@@ -255,6 +255,8 @@ Both evaluation modes support the following optional arguments:
 * `--models MODELS` 
   By default, all models will be evaluated. If you are only interested in a specific
   subset, use this optional argument. You can get a list of all available models with `ksquares --model-list`
+* `--opponent-models MODELS` This parameter selects the models to evaluate against. By default
+  the built-in AIs `Easy`, `Medium` and `Hard` are used.
 * `--dataset-width WIDTH` Board width measured in boxes.
 * `--dataset-height HEIGHT` Board height measured in boxes.
 * `--gpu` Allow the model server to use the GPU.
@@ -314,8 +316,6 @@ The following optional arguments will be considered by self-play:
   not use GPU acceleration, because it only takes a fraction of the overall time.
 * `--threads N` number of thread to use when generating data with the MCTS AI 
   (StageFour dataset). Default: 4
-* `--batch-prediction` if this flag is set, the MCTS AI threads will send their requests in batches.
-  Batch size corresponds to the number of threads.
 * `--iterations N` number of self-play iterations to run. Default: 50
 * `--iteration-size N` number of samples to generate per iteration
 * `--initial-model` the name of the model to start generating training data with. Default: `alphaZeroV7`
@@ -323,6 +323,7 @@ The following optional arguments will be considered by self-play:
   `models.yaml` list in `alphaDots/modelServer/models`. 
 * `--debug` print debug information for individual prediction requests. Settings this flag
   will slow things down considerably.
+* `--debug-mcts` print debug output about the AlphaZeroMCTS algorithm.
 * `--gpu-training` enable GPU acceleration for the training python script.
 * `--dataset-generator` select the dataset generator. Supported generators are:
     * `StageFour` the StageFour dataset generator
@@ -331,6 +332,7 @@ The following optional arguments will be considered by self-play:
 * `--board-sizes` sets the board sizes in boxes on which the self-play mode will operate.
   Default value: 4x3,5x4,6x5,7x5,8x8,14x7,14x14,10x9.
   Board lengths must be at least 2 and at most 20.
+* `--no-evaluation` disables the evaluation step.
 
 Please be aware that the self-play mode honors hyperparameters for the StageFour
 dataset generator and the AlphaZero MCTS AI.

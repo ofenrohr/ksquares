@@ -22,7 +22,7 @@ using namespace AlphaDots;
 
 SelfPlay::SelfPlay(QString &datasetDest, int threads, QString &initialModelName, QString &targetModel,
                    int iterations, int gamesPerIteration, int epochs, bool gpuTraining, DatasetType dataset,
-                   bool doUpload, QList<QPoint> &boardSizes, int evalGames) :
+                   bool doUpload, QList<QPoint> &boardSizes, int evalGames, bool noEval) :
     KXmlGuiWindow(),
     m_view(new QWidget())
 {
@@ -32,6 +32,7 @@ SelfPlay::SelfPlay(QString &datasetDest, int threads, QString &initialModelName,
     targetModelName = targetModel;
     threadCnt = threads;
     upload = doUpload;
+    disableEvaluation = noEval;
 
     iteration = 0;
     iterationCnt = iterations;
@@ -81,6 +82,11 @@ void SelfPlay::initObject() {
     // set gui elements
     resultsTable->setModel(evaluateNetwork->getResultModel());
     resultsTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+    if (disableEvaluation) {
+        evalBox->setVisible(false);
+        evaluateLbl->setVisible(false);
+    }
 
     // set things in motion
     setupIteration();
@@ -174,7 +180,7 @@ void SelfPlay::generateDataFinished() {
     contendingModel = ModelInfo(
             targetModelName + "_" + QString::number(iteration),
             targetModel.desc(),
-            targetModelPath.dir().path() + "/" + targetModelPath.fileName().replace(QRegExp("\\.{0,1}\\d*\\.h5"), "." + QString::number(iteration) + ".h5"),
+            targetModelPath.dir().path() + "/" + targetModelPath.fileName().replace(QRegExp("(\\.\\d+){0,1}\\.h5"), "." + QString::number(iteration) + ".h5"),
             targetModel.type(),
             targetModel.ai());
     ProtobufConnector::getInstance().addModelToList(contendingModel);
@@ -204,7 +210,13 @@ void SelfPlay::trainingFinished() {
 
     aiAlphaZeroMCTS::use_probabilistic_final_move_selection = false;
 
-    evaluateNetwork->startEvaluation(contendingModel);
+    if (disableEvaluation) {
+        qDebug() << "[SelfPlay] skipping evaluation";
+        bestModel = contendingModel;
+        finishIteration();
+    } else {
+        evaluateNetwork->startEvaluation(contendingModel);
+    }
 }
 
 void SelfPlay::updateEvaluationInfo() {

@@ -23,7 +23,7 @@ namespace AlphaDots {
     public:
         SelfPlay(QString &datasetDest, int threads, QString &initialModel, QString &targetModelName,
                  int iterations, int gamesPerIteration, int epochs, bool gpuTraining, DatasetType dataset,
-                 bool doUpload, QList<QPoint> &boardSizes, int gamesPerEvaluation);
+                 bool doUpload, QList<QPoint> &boardSizes, int gamesPerEvaluation, bool noEvaluation);
         ~SelfPlay();
 
         void initObject();
@@ -67,6 +67,7 @@ namespace AlphaDots {
         QString targetModelName;
         QString logdest;
         bool upload;
+        bool disableEvaluation;
 
         // current state infos
         SelfPlayMode mode;
