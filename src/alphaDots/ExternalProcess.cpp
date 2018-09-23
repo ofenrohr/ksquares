@@ -47,7 +47,9 @@ bool ExternalProcess::startExternalProcess() {
         env.insert(envVars[i].first, envVars[i].second);
     }
 	process->setProcessEnvironment(env);
+    qDebug() << "process env vars: " << env.toStringList();
 	process->setWorkingDirectory(processWorkingDirectory);
+	qDebug() << "process working directory: " << process->workingDirectory();
 	qRegisterMetaType<QProcess::ProcessError>("QProcess::ProcessError");
 	qRegisterMetaType<QProcess::ProcessState>("QProcess::ProcessState");
 	qRegisterMetaType<QProcess::ExitStatus>("QProcess::ExitStatus");

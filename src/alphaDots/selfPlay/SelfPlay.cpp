@@ -117,7 +117,8 @@ void SelfPlay::setupIteration() {
     aiAlphaZeroMCTS::use_probabilistic_final_move_selection = true;
 
     dataGen->setCurrentModel(bestModel);
-    dataGen->setBoardSize(availableBoardSizes[gsl_rng_uniform_int(rng, availableBoardSizes.size())]);
+    //dataGen->setBoardSize(availableBoardSizes[gsl_rng_uniform_int(rng, availableBoardSizes.size())]);
+    dataGen->setBoardSize(availableBoardSizes[iteration % availableBoardSizes.size()]);
     dataGen->startIteration();
 
     updateOverview();

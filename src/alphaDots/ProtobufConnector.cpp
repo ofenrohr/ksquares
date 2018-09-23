@@ -19,7 +19,7 @@
 
 using namespace AlphaDots;
 
-int ProtobufConnector::TIMEOUT = 30 * 1000;
+int ProtobufConnector::TIMEOUT = 10 * 60 * 1000; // 10 minute timeout
 
 ProtobufConnector &ProtobufConnector::getInstance() {
     static ProtobufConnector instance;
@@ -193,8 +193,12 @@ bool ProtobufConnector::ensureModelListServerRunning() {
     QString process = Settings::pythonExecutable();
     QStringList processArgs;
     processArgs << Settings::alphaDotsDir() + "/modelServer/modelList.py";
+    if (ModelManager::getInstance().getDebug()) {
+        processArgs << "--debug";
+    }
     QString workingDir = Settings::alphaDotsDir() + "/modelServer/";
     modelListProc = new ExternalProcess(process, processArgs, workingDir);
+    modelListProc->addEnvironmentVariable("PYTHONPATH", ".:protobuf/py");
     connect(modelListProc, SIGNAL(processFinished()), this, SLOT(modelListServerFinished()));
     if (!modelListProc->startExternalProcess()) {
         qDebug() << "ERROR: failed to start " << process << processArgs;

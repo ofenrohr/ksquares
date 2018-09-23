@@ -32,7 +32,8 @@ void ModelManager::startManagementProcess() {
     if (debug) {
         args << QStringLiteral("--debug");
     }
-    managementProcess = ExternalProcess::Ptr(new ExternalProcess(Settings::pythonExecutable(), args, Settings::alphaDotsDir()));
+    managementProcess = ExternalProcess::Ptr(new ExternalProcess(Settings::pythonExecutable(), args, Settings::alphaDotsDir() + "/modelServer/"));
+    managementProcess->addEnvironmentVariable("PYTHONPATH", ".:protobuf/py");
     if (!managementProcess->startExternalProcess()) {
         QMessageBox::critical(nullptr, tr("AlphaDots Error"), tr("Failed to start python model manager!"));
         return;
