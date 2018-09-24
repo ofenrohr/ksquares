@@ -38,6 +38,9 @@ namespace AlphaDots {
 		static void createTestSetups(QList<AITestSetup> &testSetups, QPoint boardSize, int timeout,
 				QList<ModelInfo> &modelList, QList<ModelInfo> &opponentModelList, int gamesPerAi);
 
+		static void writeResultsToStream(QTextStream &stream, QDateTime &startTime, QDateTime &endTime,
+        TestResultModel *resultModel, int threads, bool evaluationRunning, bool includeArgs = true, bool includeGIT = true);
+
     public slots:
 		void aiChoseLine(const int &line);
 		void nextGame();

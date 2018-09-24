@@ -355,6 +355,13 @@ void ModelEvaluation::saveResultsAs() {
         return;
     }
 
+    QTextStream outputStream(&outputFile);
+    writeResultsToStream(outputStream, startTime, endTime, resultModel, threads, evaluationRunning);
+}
+
+void ModelEvaluation::writeResultsToStream(QTextStream &outputStream, QDateTime &startTime, QDateTime &endTime,
+        TestResultModel *resultModel, int threads, bool evaluationRunning, bool includeArgs, bool includeGIT) {
+
     // do a lot of stuff to generate a nice markdown grid table...
     //ExternalProcess git(tr("/usr/bin/git"), QStringList() << "log" << "-1" << "--format=%H"
     // find out maximum line width
@@ -384,13 +391,15 @@ void ModelEvaluation::saveResultsAs() {
         }
         gitStatus.append(tr("%1\\ |\n").arg(l, -maxWidth + 2));
     }
+
     // generate markdown file
-    QTextStream outputStream(&outputFile);
     outputStream << "# Model evaluation report\n";
     outputStream << "This is an automatically generated report for the model evaluation with KSquares.\n\n";
     outputStream << "## Configuration\n\n\n";
-    outputStream << "+-----------------+" << tr("%1").arg(tr(""), maxWidth, QLatin1Char('-')) << "+\n";
-    outputStream << "|Command line args|" << tr("%1").arg(cmdArgs, -maxWidth) << "|\n";
+    if (includeArgs) {
+        outputStream << "+-----------------+" << tr("%1").arg(tr(""), maxWidth, QLatin1Char('-')) << "+\n";
+        outputStream << "|Command line args|" << tr("%1").arg(cmdArgs, -maxWidth) << "|\n";
+    }
     outputStream << "+-----------------+" << tr("%1").arg(tr(""), maxWidth, QLatin1Char('-')) << "+\n";
     outputStream << "|Current time     |" << tr("%1").arg(QDateTime::currentDateTime().toString(QObject::tr("dd.MM.yyyy hh:mm:ss")), -maxWidth) << "|\n";
     outputStream << "+-----------------+" << tr("%1").arg(tr(""), maxWidth, QLatin1Char('-')) << "+\n";
@@ -401,14 +410,16 @@ void ModelEvaluation::saveResultsAs() {
     } else {
         outputStream << "|End time         |" << tr("%1").arg(endTime.toString(QObject::tr("dd.MM.yyyy hh:mm:ss")), -maxWidth) << "|\n";
     }
-    outputStream << "+-----------------+" << tr("%1").arg(tr(""), maxWidth, QLatin1Char('-')) << "+\n";
-    outputStream << "|GIT branch       |" << tr("%1").arg(tr(GIT_BRANCH), -maxWidth) << "|\n";
-    outputStream << "+-----------------+" << tr("%1").arg(tr(""), maxWidth, QLatin1Char('-')) << "+\n";
-    outputStream << "|GIT commit       |" << tr("%1").arg(tr(GIT_COMMIT_HASH), -maxWidth) << "|\n";
-    outputStream << "+-----------------+" << tr("%1").arg(tr(""), maxWidth, QLatin1Char('-')) << "+\n";
-    outputStream << "|GIT status       |" << gitStatus;
-    outputStream << "+-----------------+" << tr("%1").arg(tr(""), maxWidth, QLatin1Char('-')) << "+\n";
-    outputStream << "|Threads          |" << tr("%1").arg(QString::number(threads), -maxWidth) << "|\n";
+    if (includeGIT) {
+        outputStream << "+-----------------+" << tr("%1").arg(tr(""), maxWidth, QLatin1Char('-')) << "+\n";
+        outputStream << "|GIT branch       |" << tr("%1").arg(tr(GIT_BRANCH), -maxWidth) << "|\n";
+        outputStream << "+-----------------+" << tr("%1").arg(tr(""), maxWidth, QLatin1Char('-')) << "+\n";
+        outputStream << "|GIT commit       |" << tr("%1").arg(tr(GIT_COMMIT_HASH), -maxWidth) << "|\n";
+        outputStream << "+-----------------+" << tr("%1").arg(tr(""), maxWidth, QLatin1Char('-')) << "+\n";
+        outputStream << "|GIT status       |" << gitStatus;
+        outputStream << "+-----------------+" << tr("%1").arg(tr(""), maxWidth, QLatin1Char('-')) << "+\n";
+        outputStream << "|Threads          |" << tr("%1").arg(QString::number(threads), -maxWidth) << "|\n";
+    }
     outputStream << "+-----------------+" << tr("%1").arg(tr(""), maxWidth, QLatin1Char('-')) << "+\n";
     outputStream << "\n";
 

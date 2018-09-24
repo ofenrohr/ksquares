@@ -27,6 +27,10 @@ namespace AlphaDots {
         const QString &getPolicyLossStr() const;
         const QString &getValueLossStr() const;
 
+        // other getters
+        const QString &getTrainingLogPath() const;
+        int getEpochs() const;
+
     public slots:
         void startTraining(const QString &datasetPath, int iteration, const QString &initModelPath, const QString &targetModelPath);
         void updateTrainingInfo();
@@ -45,6 +49,7 @@ namespace AlphaDots {
         QString trainingLogBasename;
         int iteration;
         QString datasetDest;
+        QString trainingLogPath;
 
         // info data
         QString statusStr;

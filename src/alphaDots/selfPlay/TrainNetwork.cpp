@@ -97,7 +97,7 @@ void TrainNetwork::updateTrainingInfo() {
     auto entryList = logDir.entryList(nameFilters, QDir::Files | QDir::NoDotAndDotDot, QDir::Time);
     if (!entryList.empty()) {
         // check log file
-        QString trainingLogPath = logDir.absolutePath() + tr("/") + entryList.first();
+        trainingLogPath = logDir.absolutePath() + tr("/") + entryList.first();
         QFile trainingLog(trainingLogPath);
         if (trainingLog.exists()) {
             if (QFileInfo(trainingLog).created() >= trainingStartTime) {
@@ -206,3 +206,10 @@ const QString &TrainNetwork::getStatusStr() const {
     return statusStr;
 }
 
+const QString &TrainNetwork::getTrainingLogPath() const {
+    return trainingLogPath;
+}
+
+int TrainNetwork::getEpochs() const {
+    return trainEpochs;
+}

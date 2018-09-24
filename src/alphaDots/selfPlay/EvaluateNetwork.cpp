@@ -39,10 +39,12 @@ void EvaluateNetwork::startEvaluation(const AlphaDots::ModelInfo &newModel) {
     resultModel->reset(&modelList, &opponentModelList, gamesPerAi);
 
     fastModelEvaluation->startEvaluation(&testSetups, resultModel, &modelList, &opponentModelList);
+    startTime = QDateTime::currentDateTime();
     emit(infoChanged());
 }
 
 void EvaluateNetwork::fastModelEvaluationFinished() {
+    endTime = QDateTime::currentDateTime();
     int games = resultModel->rawData(0,0);
     int winsByContender = resultModel->rawData(0,1);
 
@@ -57,6 +59,22 @@ void EvaluateNetwork::fastModelEvaluationFinished() {
     }
     emit infoChanged();
     emit evaluationFinished();
+}
+
+QString &EvaluateNetwork::saveResults() {
+    QString datetime = QDateTime::currentDateTime().toString(QObject::tr("yyyy-MM-dd_hh-mm-ss"));
+    resultPath = "ModelEvaluationReport-" + datetime + ".md";
+
+    QFile outputFile(resultPath);
+    if (!outputFile.open(QIODevice::ReadWrite)) {
+        qDebug() << "failed to open output file!";
+        return resultPath;
+    }
+
+    QTextStream outputStream(&outputFile);
+    ModelEvaluation::writeResultsToStream(outputStream, startTime, endTime, resultModel, threadCnt, false, false, true);
+
+    return resultPath;
 }
 
 const ModelInfo &AlphaDots::EvaluateNetwork::getBestModel() const {

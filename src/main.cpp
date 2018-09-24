@@ -98,6 +98,7 @@ int main(int argc, char **argv)
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("board-sizes"), i18n("Board sizes available in self-play mode. Format AxB,CxD e.g. 5x4,4x4. Minimum: 2, Maximum 20"), i18n("board-sizes")));
     //parser.addOption(QCommandLineOption(QStringList() <<  i18n("wait-for-training"), i18n("Do not generate new training data while training is running.")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("no-evaluation"), i18n("Disable model evaluation in self-play mode.")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("report-dir"), i18n("Output directory for reports by the self-play mode."), "report-dir"));
 
     about.setupCommandLine(&parser);
     parser.process(app);
@@ -436,6 +437,12 @@ int main(int argc, char **argv)
         }
     }
 
+    // report directory
+    QString reportDir = ".";
+    if (parser.isSet("report-dir")) {
+        reportDir = parser.value("report-dir");
+    }
+
     // start things
     if (parser.isSet(i18n("demo"))) {
         KSquaresDemoWindow *demoWindow = new KSquaresDemoWindow;
@@ -489,7 +496,7 @@ int main(int argc, char **argv)
         }
         AlphaDots::SelfPlay *selfPlay = new AlphaDots::SelfPlay(datasetDest, threads, initialModelName, targetModelName,
                 iterationCnt, iterationSize, epochs, gpuTraining, datasetType, upload, boardSizes, gamesPerAi_eval,
-                noEvaluation);
+                noEvaluation, reportDir);
         selfPlay->show();
     } else {
         KSquaresWindow *mainWindow = new KSquaresWindow;

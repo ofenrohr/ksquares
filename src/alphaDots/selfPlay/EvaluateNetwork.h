@@ -6,6 +6,7 @@
 #define KSQUARES_EVALUATENETWORK_H
 
 #include <QObject>
+#include <QDateTime>
 #include <alphaDots/ModelInfo.h>
 #include <alphaDots/modelEvaluation/TestResultModel.h>
 #include <alphaDots/modelEvaluation/FastModelEvaluation.h>
@@ -20,6 +21,8 @@ namespace AlphaDots {
         const ModelInfo &getBestModel() const;
         const ModelInfo &getContendingModel() const;
         TestResultModel *getResultModel() const;
+        QString &saveResults();
+        int getGames() const {return gamesPerAi;}
 
     public slots:
         void startEvaluation(const ModelInfo &newModel);
@@ -39,6 +42,9 @@ namespace AlphaDots {
         QList<AITestSetup> testSetups;
         FastModelEvaluation *fastModelEvaluation;
         int threadCnt;
+        QDateTime startTime;
+        QDateTime endTime;
+        QString resultPath;
     };
 }
 

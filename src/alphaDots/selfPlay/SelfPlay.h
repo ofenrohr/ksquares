@@ -6,12 +6,14 @@
 #define KSQUARES_SELFPLAY_H
 
 #include <KXmlGui/KXmlGuiWindow>
-#include <QtCore/QMutexLocker>
-#include <QtCore/QDateTime>
+#include <QMutexLocker>
+#include <QDateTime>
+#include <QElapsedTimer>
 #include <alphaDots/ModelInfo.h>
 #include <alphaDots/ExternalProcess.h>
 #include <alphaDots/datasets/StageFourDataset.h>
 #include <alphaDots/MLDataGenerator.h>
+#include <alphaDots/ReportLogger.h>
 #include "ui_SelfPlayForm.h"
 #include "GenerateData.h"
 #include "TrainNetwork.h"
@@ -23,7 +25,8 @@ namespace AlphaDots {
     public:
         SelfPlay(QString &datasetDest, int threads, QString &initialModel, QString &targetModelName,
                  int iterations, int gamesPerIteration, int epochs, bool gpuTraining, DatasetType dataset,
-                 bool doUpload, QList<QPoint> &boardSizes, int gamesPerEvaluation, bool noEvaluation);
+                 bool doUpload, QList<QPoint> &boardSizes, int gamesPerEvaluation, bool noEvaluation,
+                 QString &reportDir);
         ~SelfPlay();
 
         void initObject();
@@ -68,6 +71,13 @@ namespace AlphaDots {
         QString logdest;
         bool upload;
         bool disableEvaluation;
+        QDir reportDir;
+
+        // report stream
+        QString reportId;
+        QString reportFilePath;
+        QSharedPointer<ReportLogger> report;
+        QElapsedTimer timer;
 
         // current state infos
         SelfPlayMode mode;
