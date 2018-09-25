@@ -8,10 +8,12 @@
 
 using namespace AlphaDots;
 
-EvaluateNetwork::EvaluateNetwork(const AlphaDots::ModelInfo &initialModel, const int games, const int threads) :
+EvaluateNetwork::EvaluateNetwork(const AlphaDots::ModelInfo &initialModel, const int games, const int threads,
+        const bool doQuickStart) :
     contendingModel(),
     gamesPerAi(games),
-    threadCnt(threads)
+    threadCnt(threads),
+    quickStart(doQuickStart)
 {
     bestModel = initialModel;
     resultModel = new TestResultModel(this, &modelList, &opponentModelList, gamesPerAi);
@@ -38,7 +40,7 @@ void EvaluateNetwork::startEvaluation(const AlphaDots::ModelInfo &newModel) {
 
     resultModel->reset(&modelList, &opponentModelList, gamesPerAi);
 
-    fastModelEvaluation->startEvaluation(&testSetups, resultModel, &modelList, &opponentModelList);
+    fastModelEvaluation->startEvaluation(&testSetups, resultModel, &modelList, &opponentModelList, quickStart);
     startTime = QDateTime::currentDateTime();
     emit(infoChanged());
 }

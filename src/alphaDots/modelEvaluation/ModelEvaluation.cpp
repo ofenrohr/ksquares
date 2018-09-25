@@ -17,7 +17,8 @@
 
 using namespace AlphaDots;
 
-ModelEvaluation::ModelEvaluation(QString &models, QString &opponentModels, bool fast, int threadCnt, int games, QPoint boardSize) :
+ModelEvaluation::ModelEvaluation(QString &models, QString &opponentModels, bool fast, int threadCnt, int games,
+        QPoint boardSize, bool doQuickStart) :
         KXmlGuiWindow(), m_view(new QWidget()) {
     qDebug() << "ModelEvaluation" << models << fast;
     modelList = getModelList(models);
@@ -27,19 +28,14 @@ ModelEvaluation::ModelEvaluation(QString &models, QString &opponentModels, bool 
     gamesPerAi = games;
     fastEvaluationHandler = nullptr;
     evaluationRunning = false;
+    quickStart = doQuickStart;
     sGame = new KSquaresGame();
     thread = nullptr;
     qRegisterMetaType<QVector<KSquaresPlayer> >("QVector<KSquaresPlayer>");
     qRegisterMetaType<QVector<int> >("QVector<int>");
     connect(sGame, SIGNAL(gameOver(QVector<KSquaresPlayer>)), this, SLOT(gameOver(QVector<KSquaresPlayer>)));
     connect(sGame, SIGNAL(takeTurnSig(KSquaresPlayer*)), this, SLOT(playerTakeTurn(KSquaresPlayer*)));
-    /*
-    opponentModelList.clear();
-    opponentModelList.append(ModelInfo("Easy", "", "", "", "easy"));
-    //opponentModelList.append(ModelInfo("Medium", "", "", "", "medium"));
-    //opponentModelList.append(ModelInfo("Hard", "", "", "", "hard"));
-    opponentModelList.append(ProtobufConnector::getInstance().getModelByName("AlphaZeroV7"));
-     */
+
     createTestSetups(boardSize);
     resultModel = new TestResultModel(this, &modelList, &opponentModelList, gamesPerAi);
 
@@ -89,7 +85,7 @@ void ModelEvaluation::initObject() {
         }
         fastEvaluationHandler = new FastModelEvaluation(threads);
         connect(fastEvaluationHandler, SIGNAL(evaluationFinished()), this, SLOT(evaluationFinished()));
-        fastEvaluationHandler->startEvaluation(&testSetups, resultModel, &modelList, &opponentModelList);
+        fastEvaluationHandler->startEvaluation(&testSetups, resultModel, &modelList, &opponentModelList, quickStart);
     }
 }
 
@@ -195,8 +191,6 @@ void ModelEvaluation::createTestSetups(QList<AITestSetup> &testSetups, QPoint bo
             }
         }
     }
-
-    return;
 }
 
 void ModelEvaluation::loadTestSetup(const AITestSetup &setup) {
@@ -235,6 +229,18 @@ void ModelEvaluation::loadTestSetup(const AITestSetup &setup) {
 	sGame->createGame(playerList, width, height);
 	connect(sGame, SIGNAL(drawLine(int,QColor)), m_scene, SLOT(drawLine(int,QColor)));
 	connect(sGame, SIGNAL(drawSquare(int,QColor)), m_scene, SLOT(drawSquare(int,QColor)));
+
+	// quick start
+	if (quickStart) {
+	    qDebug() << "pre-filling board for quick start";
+        disconnect(sGame, &KSquaresGame::highlightMove, m_scene, &GameBoardScene::highlightLine);
+        QList<int> lines = aiController::autoFill(12, sGame->board()->width(),
+                                                  sGame->board()->height());
+        for (const auto &line : lines) {
+            sGame->addLineToIndex(line);
+        }
+        connect(sGame, &KSquaresGame::highlightMove, m_scene, &GameBoardScene::highlightLine);
+    }
 
     // update info label
     infoLbl->setText(tr("<br/><br/><b>Current game</b><br/>\n") +

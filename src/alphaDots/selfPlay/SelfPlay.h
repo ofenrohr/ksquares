@@ -26,7 +26,7 @@ namespace AlphaDots {
         SelfPlay(QString &datasetDest, int threads, QString &initialModel, QString &targetModelName,
                  int iterations, int gamesPerIteration, int epochs, bool gpuTraining, DatasetType dataset,
                  bool doUpload, QList<QPoint> &boardSizes, int gamesPerEvaluation, bool noEvaluation,
-                 QString &reportDir);
+                 QString &reportDir, bool doQuickStart);
         ~SelfPlay();
 
         void initObject();
@@ -72,6 +72,7 @@ namespace AlphaDots {
         bool upload;
         bool disableEvaluation;
         QDir reportDir;
+        bool quickStart;
 
         // report stream
         QString reportId;

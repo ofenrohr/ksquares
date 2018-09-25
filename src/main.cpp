@@ -99,6 +99,7 @@ int main(int argc, char **argv)
     //parser.addOption(QCommandLineOption(QStringList() <<  i18n("wait-for-training"), i18n("Do not generate new training data while training is running.")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("no-evaluation"), i18n("Disable model evaluation in self-play mode.")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("report-dir"), i18n("Output directory for reports by the self-play mode."), "report-dir"));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("no-quick-start"), i18n("Disable quick start in model evaluation, fast model evaluation and self-play")));
 
     about.setupCommandLine(&parser);
     parser.process(app);
@@ -443,6 +444,11 @@ int main(int argc, char **argv)
         reportDir = parser.value("report-dir");
     }
 
+    bool quickStart = true;
+    if (parser.isSet("no-quick-start")) {
+        quickStart = false;
+    }
+
     // start things
     if (parser.isSet(i18n("demo"))) {
         KSquaresDemoWindow *demoWindow = new KSquaresDemoWindow;
@@ -481,11 +487,11 @@ int main(int argc, char **argv)
         dataGenerator->show();
     } else if (parser.isSet(i18n("model-evaluation"))) {
         auto *modelEvaluation = new AlphaDots::ModelEvaluation(evalModels, opponentModels, false,
-                threads, gamesPerAi_slow, evaluationBoardSize);
+                threads, gamesPerAi_slow, evaluationBoardSize, quickStart);
         modelEvaluation->show();
     } else if (parser.isSet(i18n("fast-model-evaluation"))) {
         auto *modelEvaluation = new AlphaDots::ModelEvaluation(evalModels, opponentModels, true,
-                threads, gamesPerAi_fast, evaluationBoardSize);
+                threads, gamesPerAi_fast, evaluationBoardSize, quickStart);
         modelEvaluation->show();
     } else if (parser.isSet(i18n("model-list"))) {
         AlphaDots::ModelEvaluation::printModelList();
@@ -496,7 +502,7 @@ int main(int argc, char **argv)
         }
         auto *selfPlay = new AlphaDots::SelfPlay(datasetDest, threads, initialModelName, targetModelName,
                 iterationCnt, iterationSize, epochs, gpuTraining, datasetType, upload, boardSizes, gamesPerAi_eval,
-                noEvaluation, reportDir);
+                noEvaluation, reportDir, quickStart);
         selfPlay->show();
     } else {
         KSquaresWindow *mainWindow = new KSquaresWindow;

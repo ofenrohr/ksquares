@@ -15,7 +15,7 @@ namespace AlphaDots {
     class EvaluateNetwork : public QObject {
     Q_OBJECT
     public:
-        EvaluateNetwork(const ModelInfo &initialModel, int games, int threads);
+        EvaluateNetwork(const ModelInfo &initialModel, int games, int threads, bool doQuickStart);
         ~EvaluateNetwork();
 
         const ModelInfo &getBestModel() const;
@@ -42,6 +42,7 @@ namespace AlphaDots {
         QList<AITestSetup> testSetups;
         FastModelEvaluation *fastModelEvaluation;
         int threadCnt;
+        bool quickStart;
         QDateTime startTime;
         QDateTime endTime;
         QString resultPath;

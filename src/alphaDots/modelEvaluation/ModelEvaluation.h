@@ -26,7 +26,8 @@ namespace AlphaDots {
          * @param opponentModels List of opponent models, empty string for all models
          * @param fast Run fast multi-threaded evaluation
          */
-        explicit ModelEvaluation(QString &models, QString &opponentModels, bool fast=false, int threadCnt=4, int games=10, QPoint boardSize=QPoint(5,5));
+        explicit ModelEvaluation(QString &models, QString &opponentModels, bool fast=false, int threadCnt=4,
+                int games=10, QPoint boardSize=QPoint(5,5), bool quickStart=true);
 
 		~ModelEvaluation() override;
 
@@ -69,6 +70,7 @@ namespace AlphaDots {
 
 		int gamesPerAi;
         int threads;
+        bool quickStart;
 
         QWidget *m_view;
         GameBoardScene *m_scene;

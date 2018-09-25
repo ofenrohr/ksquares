@@ -11,12 +11,14 @@ using namespace AlphaDots;
 
 FastModelEvaluationWorker::FastModelEvaluationWorker(AITestSetupManager *testSetupManager,
                                                      TestResultModel *testResultModel, int thread,
-                                                     QList<ModelInfo> *modelList, QList<ModelInfo> *opponentModelList) :
+                                                     QList<ModelInfo> *modelList, QList<ModelInfo> *opponentModelList,
+                                                     bool doQuickStart) :
     setupManager(testSetupManager),
     resultModel(testResultModel),
     threadID(thread),
     models(modelList),
-    opponentModels(opponentModelList)
+    opponentModels(opponentModelList),
+    quickStart(doQuickStart)
 {
     qDebug() << "[FastModelEvaluationWorker] init";
 }
@@ -51,6 +53,8 @@ void FastModelEvaluationWorker::process() {
         aiController::Ptr aic1(new aiController(1, 1, width, height, p2, setup.timeout, setup.modelNameP2));
 
         //qDebug() << "board info: " << board.lines().size() << ":" << board.lines();
+        QList<int> lines = aiController::autoFill(12, width, height);
+
 
         bool error = false;
         bool nextPlayer = false;
@@ -58,8 +62,18 @@ void FastModelEvaluationWorker::process() {
         QList<int> completedSquares;
         QList<int> moveTimesP1;
         QList<int> moveTimesP2;
+
+        if (quickStart) {
+            for (const auto line : lines) {
+                completedSquares.clear();
+                board.addLine(line, &nextPlayer, &boardFilled, &completedSquares);
+                assert(nextPlayer);
+                assert(!boardFilled);
+                assert(completedSquares.empty());
+            }
+        }
         while (!boardFilled) {
-            int line = -1;
+            int line;
             if (board.currentPlayer() == 0) {
                 line = aic0->chooseLine(board.lines(), board.squares(), board.getLineHistory());
                 moveTimesP1.append(aic0->lastMoveTime());
