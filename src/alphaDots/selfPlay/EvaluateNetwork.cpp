@@ -5,6 +5,7 @@
 #include <alphaDots/modelEvaluation/ModelEvaluation.h>
 #include "EvaluateNetwork.h"
 
+#include <QFile>
 
 using namespace AlphaDots;
 
