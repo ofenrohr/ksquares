@@ -223,7 +223,7 @@ void SelfPlay::generateDataFinished() {
         qDebug() << "[SelfPlay] target model does not exist! creating a new model!";
         if (targetModelName.trimmed().isEmpty()) {
             qDebug() << "[SelfPlay] target model name is empty! creating new name";
-            targetModelName = QUuid::createUuid().toString(QUuid::WithoutBraces);
+            targetModelName = QUuid::createUuid().toString();
             qDebug() << "[SelfPlay] target model name: " << targetModelName;
         }
         QFileInfo targetModelPathFI(bestModel.path());
