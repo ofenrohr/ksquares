@@ -19,6 +19,7 @@ namespace AlphaDots {
         explicit ReportLogger(QString &filepath);
 
         void log(QString message);
+        void logTable(QList<QList<QString>> table);
     private:
         QMutex logMutex;
         QString reportFilePath;

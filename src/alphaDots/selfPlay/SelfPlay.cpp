@@ -104,13 +104,23 @@ void SelfPlay::initObject() {
 
     // setup report header
     report->log("# Self-Play report\n\n");
-    report->log("Start time: " + QDateTime::currentDateTime().toString("dd.MM.yyyy hh:mm:ss") + "\n");
 
-    // report command line args
+    // get command line args for report
     QStringList allArgs = QCoreApplication::arguments();
     allArgs.removeFirst();
-    QString cmdArgs = allArgs.join(QLatin1Char(' '));
-    report->log("Command line args: " + cmdArgs + "\n\n");
+    QString cmdArgs = allArgs.join("\n");
+
+    QList<QList<QString>> reportTable = QList<QList<QString>>()
+        << (QList<QString>() << "Start time" << QDateTime::currentDateTime().toString("dd.MM.yyyy hh:mm:ss"))
+        << (QList<QString>() << "Command line arguments" << cmdArgs)
+        << (QList<QString>() << "GIT branch" << GIT_BRANCH)
+        << (QList<QString>() << "GIT commit" << GIT_COMMIT_HASH)
+        << (QList<QString>() << "GIT status" << GIT_STATUS)
+    ;
+    report->logTable(reportTable);
+
+    //report->log("Start time: " + QDateTime::currentDateTime().toString("dd.MM.yyyy hh:mm:ss") + "\n");
+    //report->log("Command line args: " + cmdArgs + "\n\n");
 
     // set things in motion
     setupIteration();
@@ -158,10 +168,7 @@ void SelfPlay::setupIteration() {
     updateEvaluationInfo();
 
     report->log("## Iteration " + QString::number(iteration) + "\n\n");
-    report->log("Best model: " + bestModel.name() + " (" + bestModel.path() + ")\n");
-    report->log("Board size: " + QString::number(dataGen->boardSize().x()) + " x " + QString::number(dataGen->boardSize().y()) + "\n\n");
     report->log("### Generate data\n\n");
-    report->log("Generating " + QString::number(dataGen->gamesPerIteration()) + " samples\n");
 }
 
 void SelfPlay::updateDataGenInfo() {
@@ -178,7 +185,7 @@ void SelfPlay::updateDataGenInfo() {
         prettySizes.append(QString::number(p.x()) + tr("x") + QString::number(p.y()));
     }
     availableBoardSizesLbl->setText(prettySizes);
-    iterationLabel->setText(QString::number(iteration));
+    iterationLabel->setText(QString::number(iteration) + " / " + QString::number(iterationCnt));
     progressBar->setMinimum(0);
     progressBar->setMaximum(dataGen->gamesPerIteration());
     progressBar->setValue(dataGen->completedGames());
@@ -189,13 +196,20 @@ void SelfPlay::generateDataFinished() {
     qDebug() << "[SelfPlay] generating data finished";
 
     // report status of data generation
+
     QTime generateTime(0,0);
     generateTime = generateTime.addMSecs(timer.elapsed());
-    report->log("Duration of data generation: " + generateTime.toString("hh:mm:ss.zzz") + "\n");
     QTime sampleGenTime(0,0);
     sampleGenTime = sampleGenTime.addMSecs(timer.elapsed() / dataGen->gamesPerIteration());
-    report->log("Average time needed to generate a single sample: " + sampleGenTime.toString("hh:mm:ss.zzz") + "\n");
-    report->log("Path of generated dataset: " + dataGen->getDatasetPath() + "\n\n");
+    QList<QList<QString>> reportTable = QList<QList<QString>>()
+            << (QList<QString>() << "Model used to generate data" << bestModel.name() + " (" + bestModel.path() + ")")
+            << (QList<QString>() << "Board size" << QString::number(dataGen->boardSize().x()) + " x " + QString::number(dataGen->boardSize().y()))
+            << (QList<QString>() << "Number of samples" << QString::number(dataGen->gamesPerIteration()))
+            << (QList<QString>() << "Duration of data generation" << generateTime.toString("hh:mm:ss.zzz") )
+            << (QList<QString>() << "Average time needed to generate a single sample: " << sampleGenTime.toString("hh:mm:ss.zzz"))
+            << (QList<QString>() << "Path of generated dataset" << dataGen->getDatasetPath())
+            ;
+    report->logTable(reportTable);
 
     // prepare training
     ModelInfo targetModel;
@@ -233,9 +247,6 @@ void SelfPlay::generateDataFinished() {
 
     // report training stuff
     report->log("### Training network\n\n");
-    report->log("Initial model path: " + dataGen->getCurrentModel().path() + "\n");
-    report->log("Target model path: " + contendingModel.path() + "\n");
-    report->log("Training epochs: " + QString::number(trainNetwork->getEpochs()) +"\n");
 }
 
 void SelfPlay::updateTrainingInfo() {
@@ -254,14 +265,20 @@ void SelfPlay::updateTrainingInfo() {
 void SelfPlay::trainingFinished() {
     qDebug() << "[SelfPlay] training network finished";
 
-    // report training results
     QString trainingLogCopy = reportDir.absoluteFilePath("Training-Iteration-" + QString::number(iteration) + "-" +
-            reportId + ".log");
+                                                         reportId + ".log");
     QFile::copy(trainNetwork->getTrainingLogPath(), trainingLogCopy);
-    report->log("Training log: ["+trainingLogCopy+"]("+trainingLogCopy+")\n");
     QTime trainTime(0,0);
     trainTime = trainTime.addMSecs(timer.elapsed());
-    report->log("Duration of network training: " + trainTime.toString("hh:mm:ss.zzz") + "\n\n");
+
+    // report training results
+    QList<QList<QString>> reportTable = QList<QList<QString>>()
+            << (QList<QString>() << "Initial model path" << dataGen->getCurrentModel().path())
+            << (QList<QString>() << "Target model path" << contendingModel.path())
+            << (QList<QString>() << "Training log" << " ["+trainingLogCopy+"]("+trainingLogCopy+") ")
+            << (QList<QString>() << "Duration of network training" << trainTime.toString("hh:mm:ss.zzz"))
+            ;
+    report->logTable(reportTable);
 
     // enter next mode
     mode = EVALUATE;
@@ -274,10 +291,6 @@ void SelfPlay::trainingFinished() {
         bestModel = contendingModel;
         finishIteration();
     } else {
-        report->log("### Evaluating network\n\n");
-        report->log("Best network: " + bestModel.name() + " (" + bestModel.path() + ")\n");
-        report->log("Contending network: " + contendingModel.name() + " (" + contendingModel.path() + ")\n");
-        report->log("Number of games played for evaluation: " + QString::number(evaluateNetwork->getGames()) +"\n");
         timer.start();
         evaluateNetwork->startEvaluation(contendingModel);
     }
@@ -294,15 +307,30 @@ void SelfPlay::evaluationFinished() {
     QString localEvalReportPath = reportDir.absoluteFilePath("Evaluation-Report-Iteration-"+QString::number(iteration)+
             "-" + reportId + ".md");
     QFile::copy(evalReportPath, localEvalReportPath);
-    report->log("Full evaluation report: ["+localEvalReportPath+"]("+localEvalReportPath+")\n");
+
+    report->log("### Evaluating network\n\n");
+    QList<QList<QString>> reportTable = QList<QList<QString>>()
+            << (QList<QString>() << "Best network" << bestModel.name() + " (" + bestModel.path() + ")")
+            << (QList<QString>() << "Contending network" << contendingModel.name() + " (" + contendingModel.path() + ")")
+            << (QList<QString>() << "Number of games played for evaluation" << QString::number(evaluateNetwork->getGames()))
+            << (QList<QString>() << "Full evaluation report" << " ["+localEvalReportPath+"]("+localEvalReportPath+") ")
+            ;
+
     bestModel = evaluateNetwork->getBestModel();
-    report->log("New best model: " + bestModel.name() + "(" +bestModel.path()+")\n\n");
+
+    reportTable << (QList<QString>() << "New best network" << bestModel.name() + " (" +bestModel.path()+") ");
+    report->logTable(reportTable);
     qDebug() << "best model: " << bestModel.name();
     finishIteration();
 }
 
 void SelfPlay::finishIteration() {
     dataGen->setCurrentModel(bestModel);
+    // update the target model
+    ModelInfo tmpBestModel = bestModel;
+    tmpBestModel.setName(targetModelName);
+    ProtobufConnector::getInstance().addModelToList(tmpBestModel);
+
     qDebug() << "[SelfPlay] new iteration: " << iteration;
     if (iteration >= iterationCnt) {
         qDebug() << "[SelfPlay] last iteration done! exiting...";

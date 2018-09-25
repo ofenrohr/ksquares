@@ -477,14 +477,14 @@ int main(int argc, char **argv)
         }
         dataGenerator->show();
     } else if (parser.isSet(i18n("show-generate"))) {
-        AlphaDots::MLDataGenerator *dataGenerator = new AlphaDots::MLDataGenerator(datasetType, boardWidth, boardHeight);
+        auto *dataGenerator = new AlphaDots::MLDataGenerator(datasetType, boardWidth, boardHeight);
         dataGenerator->show();
     } else if (parser.isSet(i18n("model-evaluation"))) {
-        AlphaDots::ModelEvaluation *modelEvaluation = new AlphaDots::ModelEvaluation(evalModels, opponentModels, false,
+        auto *modelEvaluation = new AlphaDots::ModelEvaluation(evalModels, opponentModels, false,
                 threads, gamesPerAi_slow, evaluationBoardSize);
         modelEvaluation->show();
     } else if (parser.isSet(i18n("fast-model-evaluation"))) {
-        AlphaDots::ModelEvaluation *modelEvaluation = new AlphaDots::ModelEvaluation(evalModels, opponentModels, true,
+        auto *modelEvaluation = new AlphaDots::ModelEvaluation(evalModels, opponentModels, true,
                 threads, gamesPerAi_fast, evaluationBoardSize);
         modelEvaluation->show();
     } else if (parser.isSet(i18n("model-list"))) {
@@ -494,7 +494,7 @@ int main(int argc, char **argv)
         if (!parser.isSet(i18n("dataset-generator"))) {
             datasetType = AlphaDots::StageFour;
         }
-        AlphaDots::SelfPlay *selfPlay = new AlphaDots::SelfPlay(datasetDest, threads, initialModelName, targetModelName,
+        auto *selfPlay = new AlphaDots::SelfPlay(datasetDest, threads, initialModelName, targetModelName,
                 iterationCnt, iterationSize, epochs, gpuTraining, datasetType, upload, boardSizes, gamesPerAi_eval,
                 noEvaluation, reportDir);
         selfPlay->show();
