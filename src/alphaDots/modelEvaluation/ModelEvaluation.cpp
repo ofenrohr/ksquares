@@ -18,7 +18,7 @@
 using namespace AlphaDots;
 
 ModelEvaluation::ModelEvaluation(QString &models, QString &opponentModels, bool fast, int threadCnt, int games,
-        QPoint boardSize, bool doQuickStart) :
+        QPoint boardSize, bool doQuickStart, QString reportDirectory) :
         KXmlGuiWindow(), m_view(new QWidget()) {
     qDebug() << "ModelEvaluation" << models << fast;
     modelList = getModelList(models);
@@ -29,6 +29,8 @@ ModelEvaluation::ModelEvaluation(QString &models, QString &opponentModels, bool 
     fastEvaluationHandler = nullptr;
     evaluationRunning = false;
     quickStart = doQuickStart;
+    reportDir = reportDirectory;
+
     sGame = new KSquaresGame();
     thread = nullptr;
     qRegisterMetaType<QVector<KSquaresPlayer> >("QVector<KSquaresPlayer>");
@@ -348,6 +350,18 @@ void ModelEvaluation::evaluationFinished() {
     qDebug() << "evaluation finished!";
     evaluationRunning = false;
     endTime = QDateTime::currentDateTime();
+
+    if (reportDir != "") {
+        QString datetime = QDateTime::currentDateTime().toString(QObject::tr("yyyy-MM-dd_hh-mm-ss"));
+        QString dest = reportDir + "/ModelEvaluationReport-" + datetime + ".md";
+        QFile outputFile(dest);
+        if (outputFile.open(QIODevice::WriteOnly)) {
+            qDebug() << "Saving evaluation report to: " << dest;
+            QTextStream outputStream(&outputFile);
+            writeResultsToStream(outputStream, startTime, endTime, resultModel, threads, evaluationRunning);
+            QCoreApplication::exit(0);
+        }
+    }
     ModelManager::getInstance().stopAll();
 }
 
@@ -356,7 +370,7 @@ void ModelEvaluation::saveResultsAs() {
     QString dest = QFileDialog::getSaveFileName(this, QObject::tr("Save results as"), QObject::tr("ModelEvaluationReport-") + datetime + QObject::tr(".md"), QObject::tr("Markdown file (*.md)"));
 
     QFile outputFile(dest);
-    if (!outputFile.open(QIODevice::ReadWrite)) {
+    if (!outputFile.open(QIODevice::WriteOnly)) {
         qDebug() << "failed to open output file!";
         return;
     }

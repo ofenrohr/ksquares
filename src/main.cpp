@@ -439,7 +439,7 @@ int main(int argc, char **argv)
     }
 
     // report directory
-    QString reportDir = ".";
+    QString reportDir = "";
     if (parser.isSet("report-dir")) {
         reportDir = parser.value("report-dir");
     }
@@ -487,11 +487,11 @@ int main(int argc, char **argv)
         dataGenerator->show();
     } else if (parser.isSet(i18n("model-evaluation"))) {
         auto *modelEvaluation = new AlphaDots::ModelEvaluation(evalModels, opponentModels, false,
-                threads, gamesPerAi_slow, evaluationBoardSize, quickStart);
+                threads, gamesPerAi_slow, evaluationBoardSize, quickStart, reportDir);
         modelEvaluation->show();
     } else if (parser.isSet(i18n("fast-model-evaluation"))) {
         auto *modelEvaluation = new AlphaDots::ModelEvaluation(evalModels, opponentModels, true,
-                threads, gamesPerAi_fast, evaluationBoardSize, quickStart);
+                threads, gamesPerAi_fast, evaluationBoardSize, quickStart, reportDir);
         modelEvaluation->show();
     } else if (parser.isSet(i18n("model-list"))) {
         AlphaDots::ModelEvaluation::printModelList();
