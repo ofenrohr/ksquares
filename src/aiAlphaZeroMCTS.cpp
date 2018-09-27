@@ -466,7 +466,10 @@ bool aiAlphaZeroMCTS::predictPolicyValue(const AlphaZeroMCTSNode::Ptr &node) {
         }
         child->prior /= (double) child->moves.size();
         if (child->prior == NAN) {
-            assert(false);
+            //assert(false);
+            qDebug() << "child prior is NAN!";
+            isTainted = true;
+            child->prior = 0;
         }
         priorSum += child->prior;
     }
