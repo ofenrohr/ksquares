@@ -355,7 +355,9 @@ AlphaZeroMCTSNode::Ptr aiAlphaZeroMCTS::selection(const AlphaZeroMCTSNode::Ptr &
     if (selectedNode.isNull()) {
         qDebug() << "selected node is null, no child has been selected?!";
         qDebug().noquote() << boardToString(board);
-        assert(false);
+        //assert(false);
+        isTainted = true;
+        selectedNode = node->children[gsl_rng_uniform_int(rng, node->children.size())];
         return selectedNode;
     }
 

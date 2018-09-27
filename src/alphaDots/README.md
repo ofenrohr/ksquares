@@ -359,8 +359,7 @@ ksquares --self-play --iteration-size 10000 --threads 8 --gpu-training --dataset
 AlphaZeroV11 was trained for 38 iterations with a iteration size of 10,000
 after it was created with the [IPython Notebook](AlphaZeroV11.html).
 
-### Screenshots
+### Screenshot
 
-[ksquares --self-play and system performance monitoring](ksquares-self-play.png)
+![ksquares --self-play](ksquares-self-play.png)
 
-![*ksquares --self-play without MCTS*](ksquares-self-play-nomcts.png)
