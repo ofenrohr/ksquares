@@ -62,10 +62,11 @@ int main(int argc, char **argv)
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("generate"), i18n("Generate training data"), i18n("generate")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("show-generate"), i18n("Generate training data")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("dataset-generator"),
-        i18n("Select dataset type to generate. valid values: firstTry, stageOne, basicStrategy, LSTM, LSTM2, StageTwo"), i18n("dataset-generator")));
+        i18n("Select dataset type to generate. valid values: firstTry, stageOne, basicStrategy, LSTM, LSTM2, StageTwo, StageThree, StageFour, StageFourNoMCTS"), i18n("dataset-generator")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("dataset-width"), i18n("Dataset width in boxes"), i18n("dataset-width")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("dataset-height"), i18n("Dataset height in boxes"), i18n("dataset-height")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("dataset-dest"), i18n("Dataset destination directory"), i18n("dataset-dest")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("dataset-ai"), i18n("AI used to generate expected output (only used by StageFourNoMCTS)"), i18n("dataset-ai")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("model-evaluation"), i18n("Evaluate all models")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("model-list"), i18n("List all available models")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("models"), i18n("List of models to evaluate. All available models will be evaluated when left empty. Besides all models in AlphaDots this parameter supports the following built-in AIs: easy, medium, hard, alphabeta, dabble, dabblenohash, qdab, knox, mcts-a, mcts-b, mcts-c"), i18n("models")));
@@ -212,6 +213,21 @@ int main(int argc, char **argv)
         }
     }
 
+    KSquares::AILevel aiLevel = KSquares::AI_HARD;
+    if (parser.isSet("dataset-ai")) {
+        QString param = parser.value("dataset-ai").toLower();
+        if (param == "easy") {
+            aiLevel = KSquares::AI_EASY;
+        } else if (param == "medium") {
+            aiLevel = KSquares::AI_MEDIUM;
+        } else if (param == "hard") {
+            aiLevel = KSquares::AI_HARD;
+        } else {
+            QMessageBox::critical(nullptr, i18n("Error"), i18n("ERROR: unknown value for dataset-ai. Supported values are 'easy', 'medium' and 'hard'"));
+            return 1;
+        }
+    }
+
     // get dataset destination
     QString datasetDest = QDir::currentPath();
     if (parser.isSet(i18n("dataset-dest"))) {
@@ -276,10 +292,12 @@ int main(int argc, char **argv)
     }
 
     // batch predction
+    /*
     if (parser.isSet(i18n("batch-prediction"))) {
         AlphaDots::ProtobufConnector::getInstance().setBatchPredict(true);
         AlphaDots::ProtobufConnector::getInstance().setBatchSize(threads);
     }
+     */
 
     // log file destination
     /*
@@ -476,14 +494,14 @@ int main(int argc, char **argv)
 
         AlphaDots::MLDataGenerator *dataGenerator=nullptr;
         if (ok) {
-            dataGenerator = new AlphaDots::MLDataGenerator(exampleCnt, datasetType, boardWidth, boardHeight,
+            dataGenerator = new AlphaDots::MLDataGenerator(exampleCnt, datasetType, aiLevel, boardWidth, boardHeight,
                     datasetDest, threads);
         } else {
-            dataGenerator = new AlphaDots::MLDataGenerator(datasetType, boardWidth, boardHeight);
+            dataGenerator = new AlphaDots::MLDataGenerator(datasetType, aiLevel, boardWidth, boardHeight);
         }
         dataGenerator->show();
     } else if (parser.isSet(i18n("show-generate"))) {
-        auto *dataGenerator = new AlphaDots::MLDataGenerator(datasetType, boardWidth, boardHeight);
+        auto *dataGenerator = new AlphaDots::MLDataGenerator(datasetType, aiLevel, boardWidth, boardHeight);
         dataGenerator->show();
     } else if (parser.isSet(i18n("model-evaluation"))) {
         auto *modelEvaluation = new AlphaDots::ModelEvaluation(evalModels, opponentModels, false,
@@ -502,7 +520,7 @@ int main(int argc, char **argv)
         }
         auto *selfPlay = new AlphaDots::SelfPlay(datasetDest, threads, initialModelName, targetModelName,
                 iterationCnt, iterationSize, epochs, gpuTraining, datasetType, upload, boardSizes, gamesPerAi_eval,
-                noEvaluation, reportDir, quickStart);
+                noEvaluation, reportDir, quickStart, aiLevel);
         selfPlay->show();
     } else {
         KSquaresWindow *mainWindow = new KSquaresWindow;

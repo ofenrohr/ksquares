@@ -19,7 +19,7 @@ namespace AlphaDots {
         Q_OBJECT
     public:
         GenerateData(QString &initialModelName, QPoint &boardSize, int gamesPerIteraion, DatasetType datasetType,
-                     int threads, QString &datasetDestination);
+                     int threads, QString &datasetDestination, KSquares::AILevel aiLevel);
         ~GenerateData();
 
         std::vector<uint8_t> *getInput() {return input;}
@@ -66,6 +66,7 @@ namespace AlphaDots {
         int iterationSize;
         DatasetType datasetType;
         int threadCnt;
+        KSquares::AILevel aiLevel;
 
         // state data
         ModelInfo currentModel;

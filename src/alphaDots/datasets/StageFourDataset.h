@@ -15,7 +15,8 @@ namespace AlphaDots {
     public:
         typedef QSharedPointer<StageFourDataset> Ptr;
 
-        StageFourDataset(bool gui, int w, int h, QString modelName, int thread=-1, int threads=-1, bool useMCTS=true);
+        StageFourDataset(bool gui, int w, int h, QString modelName, int thread=-1, int threads=-1, bool useMCTS=true,
+                int fastAiLevel=2);
 
         ~StageFourDataset();
 
@@ -65,6 +66,7 @@ namespace AlphaDots {
         QString datasetPath;
         bool createdData;
         bool useMCTSai;
+        int fastAiLevel;
     };
 }
 

@@ -17,7 +17,8 @@ using namespace AlphaDots;
 double StageFourDataset::sigmaScale = 0.125; // overwritten in main.cpp
 double StageFourDataset::meanScale = 0.5; // overwritten in main.cpp
 
-StageFourDataset::StageFourDataset(bool gui, int w, int h, QString modelName, int thread, int threads, bool useMCTS) {
+StageFourDataset::StageFourDataset(bool gui, int w, int h, QString modelName, int thread, int threads, bool useMCTS,
+        int aiLevel) {
     isGUI = gui;
     width = w;
     height = h;
@@ -26,6 +27,7 @@ StageFourDataset::StageFourDataset(bool gui, int w, int h, QString modelName, in
     threadIdx = thread;
     threadCnt = threads;
     useMCTSai = useMCTS;
+    fastAiLevel = aiLevel;
 
     model = ProtobufConnector::getInstance().getModelByName(modelName);
 
@@ -121,7 +123,7 @@ Dataset StageFourDataset::generateDataset() {
     aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(width, height));//MLDataGenerator::generateRandomBoard(width, height, 15);
 
     // create fast ai
-    KSquaresAi::Ptr fastAi = KSquaresAi::Ptr(new aiEasyMediumHard(0, width, height, 2));
+    KSquaresAi::Ptr fastAi = KSquaresAi::Ptr(new aiEasyMediumHard(0, width, height, fastAiLevel));
 
     // add hard ai moves
     int linesSize = aiFunctions::toLinesSize(width, height);

@@ -13,7 +13,7 @@
 using namespace AlphaDots;
 
 GenerateData::GenerateData(QString &initialModelName, QPoint &boardSize, int gamesPerIteraion, DatasetType dataset,
-                           int threads, QString &datasetDestination) {
+                           int threads, QString &datasetDestination, KSquares::AILevel generatorAiLevel) {
     input = new std::vector<uint8_t>();
     output = new std::vector<uint8_t>();
     value = new std::vector<double >();
@@ -25,6 +25,7 @@ GenerateData::GenerateData(QString &initialModelName, QPoint &boardSize, int gam
     datasetType = dataset;
     threadCnt = threads;
     datasetDirectory = datasetDestination;
+    aiLevel = generatorAiLevel;
 }
 
 GenerateData::~GenerateData() {
@@ -62,7 +63,9 @@ void GenerateData::startIteration() {
                                            currentBoardSize.y(),
                                            currentModel.name(),
                                            i,
-                                           threadCnt);
+                                           threadCnt,
+                                           true,
+                                           aiLevel);
                 break;
             case StageFourNoMCTS:
                 // gen will be deleted by ~SelfPlayWorker
@@ -72,7 +75,8 @@ void GenerateData::startIteration() {
                                            currentModel.name(),
                                            i,
                                            threadCnt,
-                                           false);
+                                           false,
+                                           aiLevel);
                 break;
             default:
                 QMessageBox::critical(nullptr, tr("Self-Play error"), tr("Selected dataset generator is not supported"));

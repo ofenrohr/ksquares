@@ -36,13 +36,14 @@ namespace AlphaDots {
     Q_OBJECT
 
     public:
-        MLDataGenerator(DatasetType datasetType, int width, int height);
+        MLDataGenerator(DatasetType datasetType, int aiLevel, int width, int height);
 
         /**
          * Generate examplesCnt training samples.
          * @param samples number of training examples
          */
-        MLDataGenerator(long samples, DatasetType datasetType, int width, int height, QString destinationDirectory, int threads);
+        MLDataGenerator(long samples, DatasetType datasetType, int aiLevel, int width, int height, QString destinationDirectory,
+                int threads);
 
         ~MLDataGenerator();
 
@@ -123,6 +124,8 @@ namespace AlphaDots {
         QList<int> threadProgr;
         /// Dataset type to generate en masse
         DatasetType generateDatasetType;
+        /// AI used to generated expected output
+        KSquares::AILevel aiLevel;
         /// One Dataset generator for each thread
         QList<DatasetGenerator::Ptr> threadGenerators;
 

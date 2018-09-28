@@ -24,17 +24,20 @@
 
 using namespace AlphaDots;
 
-MLDataGenerator::MLDataGenerator(DatasetType datasetType, int width, int height) : KXmlGuiWindow(), m_view(new QWidget()) {
+MLDataGenerator::MLDataGenerator(DatasetType datasetType, int generatorAiLevel, int width, int height)
+        : KXmlGuiWindow(), m_view(new QWidget()) {
     threadCnt = 4;
     examplesCnt = -1;
     generateDatasetType = datasetType;
     datasetWidth = width;
     datasetHeight = height;
     datasetDestDir = QStringLiteral("./");
+    aiLevel = static_cast<KSquares::AILevel>(generatorAiLevel);
     initConstructor();
 }
 
-MLDataGenerator::MLDataGenerator(long samples, DatasetType datasetType, int width, int height, QString destDir, int threads) : KXmlGuiWindow(), m_view(new QWidget()) {
+MLDataGenerator::MLDataGenerator(long samples, DatasetType datasetType, int generatorAiLevel, int width, int height,
+        QString destDir, int threads) : KXmlGuiWindow(), m_view(new QWidget()) {
     qDebug() << "auto generate mode";
     examplesCnt = samples;
     generateDatasetType = datasetType;
@@ -42,6 +45,7 @@ MLDataGenerator::MLDataGenerator(long samples, DatasetType datasetType, int widt
     datasetHeight = height;
     datasetDestDir = destDir;
     threadCnt = threads;
+    aiLevel = static_cast<KSquares::AILevel>(generatorAiLevel);
     initConstructor();
 }
 
@@ -104,11 +108,13 @@ void MLDataGenerator::selectGenerator(int gen) {
             qDebug() << "selected stage three generator";
             break;
         case 6:
-            guiGenerator = DatasetGenerator::Ptr(new StageFourDataset(true, datasetWidth, datasetHeight, tr("AlphaZeroV7")));
+            guiGenerator = DatasetGenerator::Ptr(new StageFourDataset(true, datasetWidth, datasetHeight,
+                    tr("AlphaZeroV7"), -1, -1, true, aiLevel));
             qDebug() << "selected stage four generator";
             break;
         case 7:
-            guiGenerator = DatasetGenerator::Ptr(new StageFourDataset(true, datasetWidth, datasetHeight, tr("AlphaZeroV7"), -1,-1, false));
+            guiGenerator = DatasetGenerator::Ptr(new StageFourDataset(true, datasetWidth, datasetHeight,
+                    tr("AlphaZeroV7"), -1, -1, false, aiLevel));
             qDebug() << "selected stage four (no mcts) generator";
             break;
         default:
@@ -157,9 +163,11 @@ DatasetGenerator::Ptr MLDataGenerator::getDatasetGenerator(int thread) {
         case StageThree:
             return StageThreeDataset::Ptr(new StageThreeDataset(false, datasetWidth, datasetHeight, thread, threadCnt));
         case StageFour:
-            return StageFourDataset::Ptr(new StageFourDataset(false, datasetWidth, datasetHeight, tr("AlphaZeroV7"), thread, threadCnt));
+            return StageFourDataset::Ptr(new StageFourDataset(false, datasetWidth, datasetHeight, tr("AlphaZeroV7"),
+                    thread, threadCnt, true, aiLevel));
         case StageFourNoMCTS:
-            return StageFourDataset::Ptr(new StageFourDataset(false, datasetWidth, datasetHeight, tr("AlphaZeroV7"), thread, threadCnt, false));
+            return StageFourDataset::Ptr(new StageFourDataset(false, datasetWidth, datasetHeight, tr("AlphaZeroV7"),
+                    thread, threadCnt, false, aiLevel));
     }
     return DatasetGenerator::Ptr(nullptr);
 }
