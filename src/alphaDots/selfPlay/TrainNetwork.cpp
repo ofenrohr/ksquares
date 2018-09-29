@@ -14,13 +14,14 @@
 
 using namespace AlphaDots;
 
-TrainNetwork::TrainNetwork(int epochs, bool gpu, bool doUpload, QString &datasetDestDir) {
+TrainNetwork::TrainNetwork(int epochs, bool gpu, bool doUpload, QString &datasetDestDir, bool noAugmentation) {
     trainEpochs = epochs;
     trainOnGPU = gpu;
     upload = doUpload;
     iteration = 0;
     trainingProcess = nullptr;
     datasetDest = datasetDestDir;
+    disableAugmentation = noAugmentation;
     statusStr = tr("waiting for data...");
 }
 
@@ -45,6 +46,9 @@ void TrainNetwork::startTraining(const QString &datasetPath, int trainIteration,
         //<< tr("--logdest")
         //<< logdest
             ;
+    if (disableAugmentation) {
+        processArgs << "--no-augmentation";
+    }
     if (upload) {
         processArgs << tr("--upload");
     }

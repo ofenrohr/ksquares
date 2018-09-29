@@ -81,32 +81,34 @@ void StageFourDataset::startConverter(int samples, QString destinationDirectory,
 
 bool StageFourDataset::stopConverter() {
     QString timeStr = QDateTime::currentDateTime().toString(QStringLiteral("-hh:mm-dd_MM_yyyy"));
-    std::string filename =
+    QString filename =
             "/StageFour-" +
-            model.name().toStdString() +
+            model.name() +
+            (fastAiLevel == KSquares::AI_EASY ? "-EASY" :
+            (fastAiLevel == KSquares::AI_MEDIUM ? "-MEDIUM" : "HARD")) +
             (useMCTSai ?
-                "-it" + std::to_string(aiAlphaZeroMCTS::mcts_iterations) +
-                "-dir" + std::to_string(aiAlphaZeroMCTS::dirichlet_alpha) +
-                "-c:" + std::to_string(aiAlphaZeroMCTS::C_puct)
-            : "-noMCTS" ) +
-            "-" + std::to_string(sampleCnt) +
-            "-" + std::to_string(width) + "x" + std::to_string(height) +
-            "-sig" + std::to_string(sigmaScale) +
-            "-mean" + std::to_string(meanScale) +
-            timeStr.toStdString() +
+                "-it" + QString::number(aiAlphaZeroMCTS::mcts_iterations) +
+                "-dir" + QString::number(aiAlphaZeroMCTS::dirichlet_alpha) +
+                "-c:" + QString::number(aiAlphaZeroMCTS::C_puct)
+            : QString("-noMCTS") ) +
+            "-" + QString::number(sampleCnt) +
+            "-" + QString::number(width) + "x" + QString::number(height) +
+            "-sig" + QString::number(sigmaScale) +
+            "-mean" + QString::number(meanScale) +
+            timeStr +
             ".npz";
     //std::string filename = "/StageThree.npz";
-    datasetPath = destDir + QString::fromStdString(filename);
+    datasetPath = destDir + filename;
     bool success = true;
-    if (!cnpy::npz_save(destDir.toStdString()+filename, "input", &(*input)[0], dataSize, "w")) {
+    if (!cnpy::npz_save(destDir.toStdString()+filename.toStdString(), "input", &(*input)[0], dataSize, "w")) {
         QMessageBox::critical(nullptr, QObject::tr("Error"), QObject::tr("failed to save input data"));
         success = false;
     }
-    if (!cnpy::npz_save(destDir.toStdString()+filename, "policy", &(*policy)[0], dataSize, "a")) {
+    if (!cnpy::npz_save(destDir.toStdString()+filename.toStdString(), "policy", &(*policy)[0], dataSize, "a")) {
         QMessageBox::critical(nullptr, QObject::tr("Error"), QObject::tr("failed to save policy data"));
         success = false;
     }
-    if (!cnpy::npz_save(destDir.toStdString()+filename, "value", &(*value)[0], valueDataSize, "a")) {
+    if (!cnpy::npz_save(destDir.toStdString()+filename.toStdString(), "value", &(*value)[0], valueDataSize, "a")) {
         QMessageBox::critical(nullptr, QObject::tr("Error"), QObject::tr("failed to save value data"));
         success = false;
     }

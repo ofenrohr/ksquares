@@ -23,7 +23,7 @@ using namespace AlphaDots;
 SelfPlay::SelfPlay(QString &datasetDest, int threads, QString &initialModelName, QString &targetModel,
                    int iterations, int gamesPerIteration, int epochs, bool gpuTraining, DatasetType dataset,
                    bool doUpload, QList<QPoint> &boardSizes, int evalGames, bool noEval, QString &reportDirectory,
-                   bool doQuickStart, int aiLevel) :
+                   bool doQuickStart, int aiLevel, bool noAugmentation) :
     KXmlGuiWindow(),
     m_view(new QWidget())
 {
@@ -47,7 +47,7 @@ SelfPlay::SelfPlay(QString &datasetDest, int threads, QString &initialModelName,
                                datasetDest, generateAiLevel);
     bestModel = dataGen->getCurrentModel();
 
-    trainNetwork = new TrainNetwork(epochs, gpuTraining, doUpload, datasetDest);
+    trainNetwork = new TrainNetwork(epochs, gpuTraining, doUpload, datasetDest, noAugmentation);
 
     evaluateNetwork = new EvaluateNetwork(bestModel, evalGames, threadCnt, quickStart);
 

@@ -14,7 +14,7 @@ namespace AlphaDots {
     class TrainNetwork : public QObject {
         Q_OBJECT
     public:
-        TrainNetwork(int epochs, bool gpu, bool upload, QString &datasetDestDir);
+        TrainNetwork(int epochs, bool gpu, bool upload, QString &datasetDestDir, bool noAugmentation);
 
         bool trainingInProgress() const;
 
@@ -50,6 +50,7 @@ namespace AlphaDots {
         int iteration;
         QString datasetDest;
         QString trainingLogPath;
+        bool disableAugmentation;
 
         // info data
         QString statusStr;

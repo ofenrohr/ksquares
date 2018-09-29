@@ -101,6 +101,7 @@ int main(int argc, char **argv)
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("no-evaluation"), i18n("Disable model evaluation in self-play mode.")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("report-dir"), i18n("Output directory for reports by the self-play mode."), "report-dir"));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("no-quick-start"), i18n("Disable quick start in model evaluation, fast model evaluation and self-play")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("no-augmentation"), i18n("Disable augmentation in self-play model training")));
 
     about.setupCommandLine(&parser);
     parser.process(app);
@@ -462,9 +463,16 @@ int main(int argc, char **argv)
         reportDir = parser.value("report-dir");
     }
 
+    // disable quick start option
     bool quickStart = true;
     if (parser.isSet("no-quick-start")) {
         quickStart = false;
+    }
+
+    // disable data augmentation in self-play training
+    bool noAugmentation = false;
+    if (parser.isSet("no-augmentation")) {
+        noAugmentation = true;
     }
 
     // start things
@@ -520,7 +528,7 @@ int main(int argc, char **argv)
         }
         auto *selfPlay = new AlphaDots::SelfPlay(datasetDest, threads, initialModelName, targetModelName,
                 iterationCnt, iterationSize, epochs, gpuTraining, datasetType, upload, boardSizes, gamesPerAi_eval,
-                noEvaluation, reportDir, quickStart, aiLevel);
+                noEvaluation, reportDir, quickStart, aiLevel, noAugmentation);
         selfPlay->show();
     } else {
         KSquaresWindow *mainWindow = new KSquaresWindow;
