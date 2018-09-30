@@ -54,7 +54,7 @@ void EvaluateNetwork::fastModelEvaluationFinished() {
     qDebug() << "[EvaluateNetwork] fast model evaluation finished, games: " << games << ", wins by contending model: "
              << winsByContender;
 
-    if (winsByContender > games / 2) {
+    if (winsByContender >= games / 2) {
         qDebug() << "[EvaluateNetwork] contending network won at least 50% of games -> it becomes the new best network";
         bestModel = contendingModel;
     } else {
