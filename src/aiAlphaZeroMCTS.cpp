@@ -15,6 +15,7 @@
 #include <alphaDots/MLImageGenerator.h>
 #include <ModelServer.pb.h>
 #include <QtWidgets/QMessageBox>
+#include <alphaDots/AlphaDotsExceptions.h>
 
 using namespace AlphaDots;
 
@@ -357,11 +358,12 @@ AlphaZeroMCTSNode::Ptr aiAlphaZeroMCTS::selection(const AlphaZeroMCTSNode::Ptr &
         qDebug().noquote() << boardToString(board);
         //assert(false);
         isTainted = true;
-        selectedNode = node->children[gsl_rng_uniform_int(rng, node->children.size())];
+        //selectedNode = node->children[gsl_rng_uniform_int(rng, node->children.size())];
+        throw InternalAiException();
     }
 
-    for (int i = 0; i < selectedNode->moves.size(); i++) {
-        board->doMove(selectedNode->moves[i]);
+    for (int move : selectedNode->moves) {
+        board->doMove(move);
     }
 
     return selection(selectedNode);

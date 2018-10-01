@@ -8,8 +8,8 @@
 #include <exception>
 
 namespace AlphaDots {
-    class ModelNotFoundException : std::exception {
-    };
+    class ModelNotFoundException : public std::exception {};
+    class InternalAiException : public std::exception {};
 }
 
 

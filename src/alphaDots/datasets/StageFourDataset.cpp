@@ -9,6 +9,7 @@
 #include <alphaDots/MLImageGenerator.h>
 #include <aiAlphaZeroMCTS.h>
 #include <aiEasyMediumHard.h>
+#include <alphaDots/AlphaDotsExceptions.h>
 #include "StageFourDataset.h"
 
 
@@ -149,26 +150,29 @@ Dataset StageFourDataset::generateDataset() {
     // create mcts ai with correct player id (important for correct value calculation in mcts)
     KSquaresAi::Ptr alphaZeroAi;
     aiAlphaZeroMCTS::Ptr realAlphaZeroAi;
-    QImage inputImage;
-    QImage outputImage;
-    int alphaZeroLine;
-    bool generatedUntaintedImage = false;
-    do {
-        if (useMCTSai) {
-            realAlphaZeroAi = aiAlphaZeroMCTS::Ptr(new aiAlphaZeroMCTS(currentPlayer, 1, width, height, 5000,
-                                                                       model));// aiEasyMediumHard(0, width, height, 2));
-            alphaZeroAi = realAlphaZeroAi;
-        } else {
-            alphaZeroAi = fastAi;
-        }
+    if (useMCTSai) {
+        realAlphaZeroAi = aiAlphaZeroMCTS::Ptr(new aiAlphaZeroMCTS(currentPlayer, 1, width, height, 5000,
+                                                                   model));// aiEasyMediumHard(0, width, height, 2));
+        alphaZeroAi = realAlphaZeroAi;
+    } else {
+        alphaZeroAi = fastAi;
+    }
 
-        // generate input image
-        inputImage = MLImageGenerator::generateInputImage(board);
-        // output image is generated with AlphaZero MCTS
-        alphaZeroLine = -1;
+    // generate input image
+    QImage inputImage = MLImageGenerator::generateInputImage(board);
+    // output image is generated with AlphaZero MCTS (or fast ai)
+    QImage outputImage;
+    int alphaZeroLine = -1;
+    try {
         outputImage = MLImageGenerator::generateOutputImage(board, alphaZeroAi, &alphaZeroLine);
-        generatedUntaintedImage = !alphaZeroAi->tainted();
-    } while (!generatedUntaintedImage);
+    } catch (InternalAiException &) {
+        failRecursionLevel++;
+        if (failRecursionLevel >= 100) {
+            assert(false);
+        }
+        return generateDataset();
+    }
+    failRecursionLevel = 0;
     if (alphaZeroLine < 0) {
         qDebug() << "AI failed, dataset is tained!";
         QMessageBox::critical(nullptr, "KSquares Stage Four dataset error", "AI failed to produce valid line, creating dataset failed!");

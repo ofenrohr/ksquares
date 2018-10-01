@@ -67,6 +67,7 @@ namespace AlphaDots {
         bool createdData;
         bool useMCTSai;
         int fastAiLevel;
+        int failRecursionLevel;
     };
 }
 
