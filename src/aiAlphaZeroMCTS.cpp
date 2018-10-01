@@ -358,7 +358,6 @@ AlphaZeroMCTSNode::Ptr aiAlphaZeroMCTS::selection(const AlphaZeroMCTSNode::Ptr &
         //assert(false);
         isTainted = true;
         selectedNode = node->children[gsl_rng_uniform_int(rng, node->children.size())];
-        return selectedNode;
     }
 
     for (int i = 0; i < selectedNode->moves.size(); i++) {

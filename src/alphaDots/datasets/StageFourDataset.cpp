@@ -149,19 +149,26 @@ Dataset StageFourDataset::generateDataset() {
     // create mcts ai with correct player id (important for correct value calculation in mcts)
     KSquaresAi::Ptr alphaZeroAi;
     aiAlphaZeroMCTS::Ptr realAlphaZeroAi;
-    if (useMCTSai) {
-        realAlphaZeroAi = aiAlphaZeroMCTS::Ptr(new aiAlphaZeroMCTS(currentPlayer, 1, width, height, 5000,
-                                                          model));// aiEasyMediumHard(0, width, height, 2));
-        alphaZeroAi = realAlphaZeroAi;
-    } else {
-        alphaZeroAi = fastAi;
-    }
+    QImage inputImage;
+    QImage outputImage;
+    int alphaZeroLine;
+    bool generatedUntaintedImage = false;
+    do {
+        if (useMCTSai) {
+            realAlphaZeroAi = aiAlphaZeroMCTS::Ptr(new aiAlphaZeroMCTS(currentPlayer, 1, width, height, 5000,
+                                                                       model));// aiEasyMediumHard(0, width, height, 2));
+            alphaZeroAi = realAlphaZeroAi;
+        } else {
+            alphaZeroAi = fastAi;
+        }
 
-    // generate input image
-    QImage inputImage = MLImageGenerator::generateInputImage(board);
-    // output image is generated with AlphaZero MCTS
-    int alphaZeroLine = -1;
-    QImage outputImage = MLImageGenerator::generateOutputImage(board, alphaZeroAi, &alphaZeroLine);
+        // generate input image
+        inputImage = MLImageGenerator::generateInputImage(board);
+        // output image is generated with AlphaZero MCTS
+        alphaZeroLine = -1;
+        outputImage = MLImageGenerator::generateOutputImage(board, alphaZeroAi, &alphaZeroLine);
+        generatedUntaintedImage = !alphaZeroAi->tainted();
+    } while (!generatedUntaintedImage);
     if (alphaZeroLine < 0) {
         qDebug() << "AI failed, dataset is tained!";
         QMessageBox::critical(nullptr, "KSquares Stage Four dataset error", "AI failed to produce valid line, creating dataset failed!");
