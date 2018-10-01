@@ -5,6 +5,7 @@
 #include <aiBoard.h>
 #include <aicontroller.h>
 #include <QtCore/QCoreApplication>
+#include <alphaDots/AlphaDotsExceptions.h>
 #include "FastModelEvaluationWorker.h"
 
 using namespace AlphaDots;
@@ -74,12 +75,19 @@ void FastModelEvaluationWorker::process() {
         }
         while (!boardFilled) {
             int line;
-            if (board.currentPlayer() == 0) {
-                line = aic0->chooseLine(board.lines(), board.squares(), board.getLineHistory());
-                moveTimesP1.append(aic0->lastMoveTime());
-            } else {
-                line = aic1->chooseLine(board.lines(), board.squares(), board.getLineHistory());
-                moveTimesP2.append(aic1->lastMoveTime());
+            try {
+                if (board.currentPlayer() == 0) {
+                    line = aic0->chooseLine(board.lines(), board.squares(), board.getLineHistory());
+                    moveTimesP1.append(aic0->lastMoveTime());
+                } else {
+                    line = aic1->chooseLine(board.lines(), board.squares(), board.getLineHistory());
+                    moveTimesP2.append(aic1->lastMoveTime());
+                }
+            } catch (InternalAiException &ex) {
+                qDebug() << "ERROR: InternalAiException" << ex.what();
+                qDebug().nospace().noquote() << board.toString();
+                error = true;
+                break;
             }
             completedSquares.clear();
             if (!board.addLine(line, &nextPlayer, &boardFilled, &completedSquares)) {
