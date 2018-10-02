@@ -25,7 +25,7 @@ namespace AlphaDots {
         int getGames() const {return gamesPerAi;}
 
     public slots:
-        void startEvaluation(const ModelInfo &newModel);
+        void startEvaluation(const ModelInfo &newModel, const QPoint &boardSize);
         void fastModelEvaluationFinished();
 
     signals:

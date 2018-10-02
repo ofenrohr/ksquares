@@ -297,7 +297,7 @@ void SelfPlay::trainingFinished() {
         finishIteration();
     } else {
         timer.start();
-        evaluateNetwork->startEvaluation(contendingModel);
+        evaluateNetwork->startEvaluation(contendingModel, dataGen->boardSize());
     }
 }
 

@@ -28,10 +28,11 @@ EvaluateNetwork::~EvaluateNetwork() {
     fastModelEvaluation->deleteLater();
 }
 
-void EvaluateNetwork::startEvaluation(const AlphaDots::ModelInfo &newModel) {
+void EvaluateNetwork::startEvaluation(const AlphaDots::ModelInfo &newModel, const QPoint &evalBoardSize) {
     qDebug() << "[EvaluateNetwork] starting fast model evaluation";
 
     contendingModel = newModel;
+    boardSize = evalBoardSize;
 
     modelList.clear();
     modelList.append(contendingModel);
