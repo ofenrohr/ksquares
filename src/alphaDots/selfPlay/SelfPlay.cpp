@@ -49,7 +49,7 @@ SelfPlay::SelfPlay(QString &datasetDest, int threads, QString &initialModelName,
 
     trainNetwork = new TrainNetwork(epochs, gpuTraining, doUpload, datasetDest, noAugmentation);
 
-    evaluateNetwork = new EvaluateNetwork(bestModel, evalGames, threadCnt, quickStart);
+    evaluateNetwork = new EvaluateNetwork(bestModel, evalGames, threadCnt, quickStart, boardSizes[0]);
 
     mode = GENERATE;
 

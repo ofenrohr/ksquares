@@ -10,13 +10,14 @@
 using namespace AlphaDots;
 
 EvaluateNetwork::EvaluateNetwork(const AlphaDots::ModelInfo &initialModel, const int games, const int threads,
-        const bool doQuickStart) :
+        const bool doQuickStart, QPoint &evalBoardSize) :
     contendingModel(),
     gamesPerAi(games),
     threadCnt(threads),
     quickStart(doQuickStart)
 {
     bestModel = initialModel;
+    boardSize = evalBoardSize;
     resultModel = new TestResultModel(this, &modelList, &opponentModelList, gamesPerAi);
     fastModelEvaluation = new FastModelEvaluation(threadCnt);
     connect(fastModelEvaluation, SIGNAL(evaluationFinished()), this, SLOT(fastModelEvaluationFinished()));
@@ -37,7 +38,7 @@ void EvaluateNetwork::startEvaluation(const AlphaDots::ModelInfo &newModel) {
     opponentModelList.clear();
     opponentModelList.append(bestModel);
 
-    ModelEvaluation::createTestSetups(testSetups, QPoint(5,5), 5000, modelList, opponentModelList, gamesPerAi);
+    ModelEvaluation::createTestSetups(testSetups, boardSize, 5000, modelList, opponentModelList, gamesPerAi);
 
     resultModel->reset(&modelList, &opponentModelList, gamesPerAi);
 

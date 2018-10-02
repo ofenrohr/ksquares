@@ -166,9 +166,12 @@ Dataset StageFourDataset::generateDataset() {
     try {
         outputImage = MLImageGenerator::generateOutputImage(board, alphaZeroAi, &alphaZeroLine);
     } catch (InternalAiException &) {
+        qDebug() << "InternalAiException";
+        qDebug().noquote() << aiFunctions::boardToString(board);
         failRecursionLevel++;
         if (failRecursionLevel >= 100) {
             assert(false);
+            return Dataset();
         }
         return generateDataset();
     }

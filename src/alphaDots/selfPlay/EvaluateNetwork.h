@@ -15,7 +15,7 @@ namespace AlphaDots {
     class EvaluateNetwork : public QObject {
     Q_OBJECT
     public:
-        EvaluateNetwork(const ModelInfo &initialModel, int games, int threads, bool doQuickStart);
+        EvaluateNetwork(const ModelInfo &initialModel, int games, int threads, bool doQuickStart, QPoint &boardSize);
         ~EvaluateNetwork();
 
         const ModelInfo &getBestModel() const;
@@ -46,6 +46,7 @@ namespace AlphaDots {
         QDateTime startTime;
         QDateTime endTime;
         QString resultPath;
+        QPoint boardSize;
     };
 }
 
