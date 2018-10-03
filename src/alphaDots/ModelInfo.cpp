@@ -11,6 +11,15 @@ ModelInfo::ModelInfo() {
     _valid = false;
 }
 
+ModelInfo::ModelInfo(const AlphaDots::ModelInfo &other) {
+    _name = other.name();
+    _desc = other.desc();
+    _path = other.path();
+    _type = other.type();
+    _ai = other.ai();
+    _valid = other.valid();
+}
+
 ModelInfo::ModelInfo(QString name, QString desc, QString path, QString type, QString ai) {
     _name = name;
     _desc = desc;

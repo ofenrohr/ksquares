@@ -222,6 +222,7 @@ void SelfPlay::generateDataFinished() {
         targetModel = ProtobufConnector::getInstance().getModelByName(targetModelName);
     } catch (ModelNotFoundException &ex) {
         qDebug() << "[SelfPlay] target model does not exist! creating a new model!";
+        report->log("Target model does not exist yet, creating a new model");
         if (targetModelName.trimmed().isEmpty()) {
             qDebug() << "[SelfPlay] target model name is empty! creating new name";
             targetModelName = QUuid::createUuid().toString();
@@ -230,6 +231,8 @@ void SelfPlay::generateDataFinished() {
         QFileInfo targetModelPathFI(bestModel.path());
         QString targetModelPath = targetModelPathFI.dir().path() + "/" + targetModelName + ".h5";
         targetModel = ModelInfo(targetModelName, "Created by self-play mode in KSquares", targetModelPath, bestModel.type(), bestModel.ai());
+        report->log("Created model: \nName: " + targetModel.name() + "\nDesc: " + targetModel.desc() +
+        "\nPath: " + targetModel.path() + "\nType: " + targetModel.type() + "\nAI: " +targetModel.ai());
         ProtobufConnector::getInstance().addModelToList(targetModel);
     }
 

@@ -16,6 +16,8 @@ namespace AlphaDots {
     class ReportLogger : public QObject {
         Q_OBJECT
     public:
+        typedef QSharedPointer<ReportLogger> Ptr;
+
         explicit ReportLogger(QString &filepath);
 
         void log(QString message);

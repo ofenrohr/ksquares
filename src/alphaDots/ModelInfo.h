@@ -13,6 +13,7 @@ namespace AlphaDots {
     class ModelInfo {
     public:
         ModelInfo();
+        ModelInfo(const ModelInfo &other);
         ModelInfo(QString name, QString desc, QString path, QString type, QString ai);
 
         QString name() const;

@@ -14,6 +14,7 @@
 #include <QtCore/QDateTime>
 #include <alphaDots/ModelManager.h>
 #include <aiControllerWorker.h>
+#include <alphaDots/ReportLogger.h>
 
 using namespace AlphaDots;
 
@@ -354,13 +355,10 @@ void ModelEvaluation::evaluationFinished() {
     if (reportDir != "") {
         QString datetime = QDateTime::currentDateTime().toString(QObject::tr("yyyy-MM-dd_hh-mm-ss"));
         QString dest = reportDir + "/ModelEvaluationReport-" + datetime + ".md";
-        QFile outputFile(dest);
-        if (outputFile.open(QIODevice::WriteOnly)) {
-            qDebug() << "Saving evaluation report to: " << dest;
-            QTextStream outputStream(&outputFile);
-            writeResultsToStream(outputStream, startTime, endTime, resultModel, threads, evaluationRunning);
-            QCoreApplication::exit(0);
-        }
+        qDebug() << "Saving evaluation report to: " << dest;
+        ReportLogger::Ptr report = ReportLogger::Ptr(new ReportLogger(dest));
+        writeResultsToReport(report, startTime, endTime, resultModel, threads, evaluationRunning, modelList, opponentModelList);
+        QCoreApplication::exit(0);
     }
     ModelManager::getInstance().stopAll();
 }
@@ -369,91 +367,69 @@ void ModelEvaluation::saveResultsAs() {
     QString datetime = QDateTime::currentDateTime().toString(QObject::tr("yyyy-MM-dd_hh-mm-ss"));
     QString dest = QFileDialog::getSaveFileName(this, QObject::tr("Save results as"), QObject::tr("ModelEvaluationReport-") + datetime + QObject::tr(".md"), QObject::tr("Markdown file (*.md)"));
 
-    QFile outputFile(dest);
-    if (!outputFile.open(QIODevice::WriteOnly)) {
-        qDebug() << "failed to open output file!";
-        return;
-    }
-
-    QTextStream outputStream(&outputFile);
-    writeResultsToStream(outputStream, startTime, endTime, resultModel, threads, evaluationRunning);
+    ReportLogger::Ptr report = ReportLogger::Ptr(new ReportLogger(dest));
+    writeResultsToReport(report, startTime, endTime, resultModel, threads, evaluationRunning, modelList, opponentModelList);
 }
 
-void ModelEvaluation::writeResultsToStream(QTextStream &outputStream, QDateTime &startTime, QDateTime &endTime,
-        TestResultModel *resultModel, int threads, bool evaluationRunning, bool includeArgs, bool includeGIT) {
+void ModelEvaluation::writeResultsToReport(ReportLogger::Ptr &report, QDateTime &startTime, QDateTime &endTime,
+        TestResultModel *resultModel, int threads, bool evaluationRunning, QList<ModelInfo> &modelList,
+        QList<ModelInfo> &opponentModelList, bool includeArgs, bool includeGIT) {
 
-    // do a lot of stuff to generate a nice markdown grid table...
-    //ExternalProcess git(tr("/usr/bin/git"), QStringList() << "log" << "-1" << "--format=%H"
-    // find out maximum line width
-    int maxWidth = 72;
+    // generate a nice markdown grid table...
     // cmd line args
     QStringList allArgs = QCoreApplication::arguments();
     allArgs.removeFirst();
-    QString cmdArgs = allArgs.join(QLatin1Char(' '));
-    if (cmdArgs.length() > maxWidth) {
-        maxWidth = cmdArgs.length();
-    }
+    QString cmdArgs = allArgs.join("\n");
     // git status cmd width
-    QList<QString> gitStatusLines = tr(GIT_STATUS).split(tr("\n"));
-    for (QString l : gitStatusLines) {
-        if (l.length() > maxWidth) {
-            maxWidth = l.length();
-        }
-    }
     // generate git status table entry
-    QString gitStatus;
-    bool first = true;
-    for (QString l : gitStatusLines) {
-        if (first) {
-            first = false;
-        } else {
-            gitStatus.append(tr("|                 |"));
-        }
-        gitStatus.append(tr("%1\\ |\n").arg(l, -maxWidth + 2));
+    QString gitStatus = GIT_STATUS;
+    // model list
+    QString modelListStr = "";
+    for (const auto &model : modelList) {
+        modelListStr.append(model.name() + " (" + model.path() + ")\n");
+    }
+    QString opponentModelListStr = "";
+    for (const auto &model : opponentModelList) {
+        opponentModelListStr.append(model.name() + " (" + model.path() + ")\n");
     }
 
     // generate markdown file
-    outputStream << "# Model evaluation report\n";
-    outputStream << "This is an automatically generated report for the model evaluation with KSquares.\n\n";
-    outputStream << "## Configuration\n\n\n";
+    report->log("# Model evaluation report\n");
+    report->log("This is an automatically generated report for the model evaluation with KSquares.\n\n");
+    report->log("## Configuration\n\n\n");
+    QList<QList<QString>> reportTable;
     if (includeArgs) {
-        outputStream << "+-----------------+" << tr("%1").arg(tr(""), maxWidth, QLatin1Char('-')) << "+\n";
-        outputStream << "|Command line args|" << tr("%1").arg(cmdArgs, -maxWidth) << "|\n";
+        reportTable << (QList<QString>() << "Command line args" << cmdArgs);
     }
-    outputStream << "+-----------------+" << tr("%1").arg(tr(""), maxWidth, QLatin1Char('-')) << "+\n";
-    outputStream << "|Current time     |" << tr("%1").arg(QDateTime::currentDateTime().toString(QObject::tr("dd.MM.yyyy hh:mm:ss")), -maxWidth) << "|\n";
-    outputStream << "+-----------------+" << tr("%1").arg(tr(""), maxWidth, QLatin1Char('-')) << "+\n";
-    outputStream << "|Start time       |" << tr("%1").arg(startTime.toString(QObject::tr("dd.MM.yyyy hh:mm:ss")), -maxWidth) << "|\n";
-    outputStream << "+-----------------+" << tr("%1").arg(tr(""), maxWidth, QLatin1Char('-')) << "+\n";
+    reportTable << (QList<QString>() << "Current time" << QDateTime::currentDateTime().toString("dd.MM.yyyy hh:mm:ss") );
+    reportTable << (QList<QString>() << "Start time" << startTime.toString("dd.MM.yyyy hh:mm:ss") );
     if (evaluationRunning) {
-        outputStream << "|End time         |" << tr("%1").arg(tr("Evaluation is still running"), -maxWidth) << "|\n";
+        reportTable << (QList<QString>() << "End time" << "Evaluation is still running" );
     } else {
-        outputStream << "|End time         |" << tr("%1").arg(endTime.toString(QObject::tr("dd.MM.yyyy hh:mm:ss")), -maxWidth) << "|\n";
+        reportTable << (QList<QString>() << "End time" << endTime.toString("dd.MM.yyyy hh:mm:ss") );
     }
     if (includeGIT) {
-        outputStream << "+-----------------+" << tr("%1").arg(tr(""), maxWidth, QLatin1Char('-')) << "+\n";
-        outputStream << "|GIT branch       |" << tr("%1").arg(tr(GIT_BRANCH), -maxWidth) << "|\n";
-        outputStream << "+-----------------+" << tr("%1").arg(tr(""), maxWidth, QLatin1Char('-')) << "+\n";
-        outputStream << "|GIT commit       |" << tr("%1").arg(tr(GIT_COMMIT_HASH), -maxWidth) << "|\n";
-        outputStream << "+-----------------+" << tr("%1").arg(tr(""), maxWidth, QLatin1Char('-')) << "+\n";
-        outputStream << "|GIT status       |" << gitStatus;
-        outputStream << "+-----------------+" << tr("%1").arg(tr(""), maxWidth, QLatin1Char('-')) << "+\n";
-        outputStream << "|Threads          |" << tr("%1").arg(QString::number(threads), -maxWidth) << "|\n";
+        reportTable << (QList<QString>() << "GIT branch" << GIT_BRANCH );
+        reportTable << (QList<QString>() << "GIT commit" << GIT_COMMIT_HASH );
+        reportTable << (QList<QString>() << "GIT status" << gitStatus );
     }
-    outputStream << "+-----------------+" << tr("%1").arg(tr(""), maxWidth, QLatin1Char('-')) << "+\n";
-    outputStream << "\n";
+    reportTable << (QList<QString>() << "Threads" << QString::number(threads) );
+    reportTable << (QList<QString>() << "Models" << modelListStr);
+    reportTable << (QList<QString>() << "Opponents" << opponentModelListStr);
+    report->logTable(reportTable);
+    report->log("\n");
 
-    outputStream << "## Results\n\n";
-    outputStream << resultModel->dataToString(false);
-    outputStream << "\n";
+    report->log("## Results\n\n");
+    report->log(resultModel->dataToString(false));
+    report->log("\n");
 
-    outputStream << "## Game histories\n\n";
-    outputStream << "|Match|Result|Board|Lines|\n";
-    outputStream << "|--------|---|---|---------------------------------|\n";
+    report->log("## Game histories\n\n");
+    report->log("|Match|Result|Board|Lines|\n");
+    report->log("|--------|---|---|---------------------------------|\n");
 
     for (const QString &history : resultModel->getHistories()) {
-        outputStream << history;
-        outputStream << "\n";
+        report->log(history);
+        report->log("\n");
     }
-    outputStream << "\n\n";
+    report->log("\n\n");
 }

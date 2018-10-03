@@ -70,14 +70,9 @@ QString &EvaluateNetwork::saveResults() {
     QString datetime = QDateTime::currentDateTime().toString(QObject::tr("yyyy-MM-dd_hh-mm-ss"));
     resultPath = "ModelEvaluationReport-" + datetime + ".md";
 
-    QFile outputFile(resultPath);
-    if (!outputFile.open(QIODevice::ReadWrite)) {
-        qDebug() << "failed to open output file!";
-        return resultPath;
-    }
-
-    QTextStream outputStream(&outputFile);
-    ModelEvaluation::writeResultsToStream(outputStream, startTime, endTime, resultModel, threadCnt, false, false, true);
+    ReportLogger::Ptr report = ReportLogger::Ptr(new ReportLogger(resultPath));
+    ModelEvaluation::writeResultsToReport(report, startTime, endTime, resultModel, threadCnt, false, modelList,
+            opponentModelList, false, true);
 
     return resultPath;
 }
