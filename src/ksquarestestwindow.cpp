@@ -703,27 +703,6 @@ QString setupType(AITestSetup setup)
 			QStringLiteral("ms");
 }
 
-QString prettyAiLevel(int level)
-{
-	switch (level)
-	{
-		case KSquares::AI_EASY: return QStringLiteral("KSquares (Easy)");
-		case KSquares::AI_MEDIUM: return QStringLiteral("KSquares (Medium)");
-		case KSquares::AI_HARD: return QStringLiteral("KSquares (Hard)");
-		case KSquares::AI_VERYHARD: return QStringLiteral("KSquares ($\\alpha\\beta$)");
-		case KSquares::AI_DABBLE: return QStringLiteral("Dabble");
-		case KSquares::AI_DABBLENOHASH: return QStringLiteral("Dabble (NoHash)");
-		case KSquares::AI_QDAB: return QStringLiteral("QDab");
-		case KSquares::AI_KNOX: return QStringLiteral("Knox");
-		case KSquares::AI_MCTS_A: return QStringLiteral("KSquares (MCTS-1)");
-		case KSquares::AI_MCTS_B: return QStringLiteral("KSquares (MCTS-2)");
-		case KSquares::AI_MCTS_C: return QStringLiteral("KSquares (MCTS-3)");
-		case KSquares::AI_CONVNET: return QStringLiteral("Conv Net");
-		case KSquares::AI_DABBLENATIVE: return QStringLiteral("Dabble (Native)");
-		default: return QStringLiteral("Unbekannt");
-	}
-}
-
 QString KSquaresTestWindow::latexResultGroup(QList<AITestResult> group)
 {
 	if (group.size() <= 0)
@@ -818,10 +797,10 @@ QString KSquaresTestWindow::latexResultGroup(QList<AITestResult> group)
 	ret << "\\begin{table}[H]\n";
 	ret << "  \\begin{tabular}{c|cccc}\n";
 	ret << "    \\specialcell{Spieler 1\\\\Spieler 2} & \\specialcell{Gewonnen \\\\(Sp. 1 / Sp. 2)} & Spiele & Crashes & $\\emptyset$ Zugzeit (ms) \\\\ \\hline\n";
-	ret << "    " << prettyAiLevel(lvls.first) << " & $" << QString::number(winsP1.first + winsP2.first) << "$ ($" << QString::number(winsP1.first) << "$ / $" << QString::number(winsP2.first) << "$) &  $" << QString::number(group.size()) << "$ & $" << QString::number(tainted.first) << "$ & $" << QString::number(avgTime.first) << "$ \\\\\n";
-	ret << "    " << prettyAiLevel(lvls.second) << " & $" << QString::number(winsP1.second + winsP2.second) << "$ ($" << QString::number(winsP1.second) << "$ / $" << QString::number(winsP2.second) << "$) & $" << QString::number(group.size()) << "$ & $" << QString::number(tainted.second) << "$ & $" << QString::number(avgTime.second) << "$ \\\\\n";
+	ret << "    " << aiFunctions::prettyAiLevel(lvls.first) << " & $" << QString::number(winsP1.first + winsP2.first) << "$ ($" << QString::number(winsP1.first) << "$ / $" << QString::number(winsP2.first) << "$) &  $" << QString::number(group.size()) << "$ & $" << QString::number(tainted.first) << "$ & $" << QString::number(avgTime.first) << "$ \\\\\n";
+	ret << "    " << aiFunctions::prettyAiLevel(lvls.second) << " & $" << QString::number(winsP1.second + winsP2.second) << "$ ($" << QString::number(winsP1.second) << "$ / $" << QString::number(winsP2.second) << "$) & $" << QString::number(group.size()) << "$ & $" << QString::number(tainted.second) << "$ & $" << QString::number(avgTime.second) << "$ \\\\\n";
 	ret << "  \\end{tabular}\n";
-	ret << "  \\caption{Ergebnisse von " << prettyAiLevel(lvls.first) << " gegen " << prettyAiLevel(lvls.second) << " auf $" << QString::number(group[0].setup.boardSize.x()) << " \\times " << QString::number(group[0].setup.boardSize.y()) << "$ Spielfeld bei maximal $" << QString::number(group[0].setup.timeout/1000) << "$ Sekunden Bedenkzeit}\n";
+	ret << "  \\caption{Ergebnisse von " << aiFunctions::prettyAiLevel(lvls.first) << " gegen " << aiFunctions::prettyAiLevel(lvls.second) << " auf $" << QString::number(group[0].setup.boardSize.x()) << " \\times " << QString::number(group[0].setup.boardSize.y()) << "$ Spielfeld bei maximal $" << QString::number(group[0].setup.timeout/1000) << "$ Sekunden Bedenkzeit}\n";
 	ret << "\\end{table}\n";
 
 	return strret;

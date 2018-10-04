@@ -159,7 +159,7 @@ void SelfPlay::setupIteration() {
 
     mode = GENERATE;
 
-    aiAlphaZeroMCTS::use_probabilistic_final_move_selection = true;
+    //aiAlphaZeroMCTS::use_probabilistic_final_move_selection = true;
 
     dataGen->setCurrentModel(bestModel);
     //dataGen->setBoardSize(availableBoardSizes[gsl_rng_uniform_int(rng, availableBoardSizes.size())]);
@@ -222,7 +222,7 @@ void SelfPlay::generateDataFinished() {
         targetModel = ProtobufConnector::getInstance().getModelByName(targetModelName);
     } catch (ModelNotFoundException &ex) {
         qDebug() << "[SelfPlay] target model does not exist! creating a new model!";
-        report->log("Target model does not exist yet, creating a new model");
+        report->log("Target model does not exist yet, creating a new model\n");
         if (targetModelName.trimmed().isEmpty()) {
             qDebug() << "[SelfPlay] target model name is empty! creating new name";
             targetModelName = QUuid::createUuid().toString();
@@ -232,10 +232,11 @@ void SelfPlay::generateDataFinished() {
         QString targetModelPath = targetModelPathFI.dir().path() + "/" + targetModelName + ".h5";
         targetModel = ModelInfo(targetModelName, "Created by self-play mode in KSquares", targetModelPath, bestModel.type(), bestModel.ai());
         report->log("Created model: \nName: " + targetModel.name() + "\nDesc: " + targetModel.desc() +
-        "\nPath: " + targetModel.path() + "\nType: " + targetModel.type() + "\nAI: " +targetModel.ai());
+        "\nPath: " + targetModel.path() + "\nType: " + targetModel.type() + "\nAI: " +targetModel.ai()+"\n\n");
         ProtobufConnector::getInstance().addModelToList(targetModel);
     }
 
+    qDebug() << "TARGET MODEL: " << targetModel.path();
     QFileInfo targetModelPath(targetModel.path());
 
     mode = TRAIN;
@@ -255,6 +256,10 @@ void SelfPlay::generateDataFinished() {
 
     // report training stuff
     report->log("### Training network\n\n");
+    report->log("current model path: " + dataGen->getCurrentModel().path() + "\n");
+    report->log("target model path: " + targetModel.path() + "\n");
+    report->log("target model path QFileInfo.fileName(): " + targetModelPath.fileName() + "\n");
+    report->log("contending model path: " + contendingModel.path() + "\n");
 }
 
 void SelfPlay::updateTrainingInfo() {
@@ -292,7 +297,7 @@ void SelfPlay::trainingFinished() {
     mode = EVALUATE;
     updateOverview();
 
-    aiAlphaZeroMCTS::use_probabilistic_final_move_selection = false;
+    //aiAlphaZeroMCTS::use_probabilistic_final_move_selection = false;
 
     if (disableEvaluation) {
         qDebug() << "[SelfPlay] skipping evaluation";
@@ -337,6 +342,7 @@ void SelfPlay::finishIteration() {
     // update the target model
     ModelInfo tmpBestModel = bestModel;
     tmpBestModel.setName(targetModelName);
+    report->log("Updating " + targetModelName + " to point to " + bestModel.path());
     ProtobufConnector::getInstance().addModelToList(tmpBestModel);
 
     qDebug() << "[SelfPlay] new iteration: " << iteration;

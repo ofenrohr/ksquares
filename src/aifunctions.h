@@ -163,6 +163,7 @@ class aiFunctions
         QString linelistToString(const QList<int> list) const;
 
 		static KSquares::AILevel parseAiLevel(QString aiLevel, bool *ok);
+		static QString prettyAiLevel(int level);
 
 protected:
 		/// Width of the game board

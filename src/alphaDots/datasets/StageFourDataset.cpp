@@ -41,6 +41,7 @@ StageFourDataset::StageFourDataset(bool gui, int w, int h, QString modelName, in
     qDebug() << " |-> threads: " << threadCnt;
     qDebug() << " |-> modelName: " << modelName;
     qDebug() << " |-> model: " << model.name();
+    qDebug() << " |-> AI: " << aiFunctions::prettyAiLevel(useMCTSai ? KSquares::AI_MCTS_ALPHAZERO : fastAiLevel);
 }
 
 StageFourDataset::~StageFourDataset() {
@@ -85,8 +86,7 @@ bool StageFourDataset::stopConverter() {
     QString filename =
             "/StageFour-" +
             model.name() +
-            (fastAiLevel == KSquares::AI_EASY ? "-EASY" :
-            (fastAiLevel == KSquares::AI_MEDIUM ? "-MEDIUM" : "HARD")) +
+            aiFunctions::prettyAiLevel(useMCTSai ? KSquares::AI_MCTS_ALPHAZERO : fastAiLevel) +
             (useMCTSai ?
                 "-it" + QString::number(aiAlphaZeroMCTS::mcts_iterations) +
                 "-dir" + QString::number(aiAlphaZeroMCTS::dirichlet_alpha) +

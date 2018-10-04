@@ -880,3 +880,26 @@ KSquares::AILevel aiFunctions::parseAiLevel(QString aiLevel, bool *ok) {
     *ok = false;
     return KSquares::AI_EASY;
 }
+
+
+QString aiFunctions::prettyAiLevel(int level)
+{
+    switch (level)
+    {
+        case KSquares::AI_EASY: return QObject::tr("Easy");
+        case KSquares::AI_MEDIUM: return QObject::tr("Medium");
+        case KSquares::AI_HARD: return QObject::tr("Hard");
+        case KSquares::AI_VERYHARD: return QObject::tr("KSquares ($\\alpha\\beta$)");
+        case KSquares::AI_DABBLE: return QObject::tr("Dabble");
+        case KSquares::AI_DABBLENOHASH: return QObject::tr("Dabble (NoHash)");
+        case KSquares::AI_QDAB: return QObject::tr("QDab");
+        case KSquares::AI_KNOX: return QObject::tr("Knox");
+        case KSquares::AI_MCTS_A: return QObject::tr("KSquares (MCTS-1)");
+        case KSquares::AI_MCTS_B: return QObject::tr("KSquares (MCTS-2)");
+        case KSquares::AI_MCTS_C: return QObject::tr("KSquares (MCTS-3)");
+        case KSquares::AI_CONVNET: return QObject::tr("Conv Net");
+        case KSquares::AI_DABBLENATIVE: return QObject::tr("Dabble (Native)");
+        case KSquares::AI_MCTS_ALPHAZERO: return QObject::tr("AlphaZero");
+        default: return QObject::tr("Unbekan:trnt");
+    }
+}
