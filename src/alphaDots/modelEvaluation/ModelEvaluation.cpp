@@ -32,6 +32,9 @@ ModelEvaluation::ModelEvaluation(QString &models, QString &opponentModels, bool 
     quickStart = doQuickStart;
     reportDir = reportDirectory;
 
+    QDir rDir(reportDir);
+    rDir.mkpath(reportDir);
+
     sGame = new KSquaresGame();
     thread = nullptr;
     qRegisterMetaType<QVector<KSquaresPlayer> >("QVector<KSquaresPlayer>");
