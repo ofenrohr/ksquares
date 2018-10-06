@@ -74,6 +74,7 @@ namespace AlphaDots {
         QDir reportDir;
         bool quickStart;
         KSquares::AILevel generateAiLevel;
+        QString originalTargetModelPath;
 
         // report stream
         QString reportId;

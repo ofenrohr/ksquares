@@ -82,6 +82,7 @@ namespace AlphaDots {
 		QThread* thread;
 
         QList<int> lineLog;
+        QList<int> autoFillLines;
 
 		void createTestSetups(QPoint boardSize);
 		/**

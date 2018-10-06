@@ -240,9 +240,8 @@ void ModelEvaluation::loadTestSetup(const AITestSetup &setup) {
 	if (quickStart) {
 	    qDebug() << "pre-filling board for quick start";
         disconnect(sGame, &KSquaresGame::highlightMove, m_scene, &GameBoardScene::highlightLine);
-        QList<int> lines = aiController::autoFill(12, sGame->board()->width(),
-                                                  sGame->board()->height());
-        for (const auto &line : lines) {
+        autoFillLines = aiController::autoFill(12, sGame->board()->width(), sGame->board()->height());
+        for (const auto &line : autoFillLines) {
             sGame->addLineToIndex(line);
         }
         connect(sGame, &KSquaresGame::highlightMove, m_scene, &GameBoardScene::highlightLine);
@@ -260,7 +259,7 @@ void ModelEvaluation::loadTestSetup(const AITestSetup &setup) {
 	playerTakeTurn(sGame->currentPlayer());
 }
 
-void ModelEvaluation::playerTakeTurn(KSquaresPlayer *currentPlayer) {
+void ModelEvaluation::playerTakeTurn(KSquaresPlayer *) {
     qDebug() << "calling aiChooseLine";
     aiChooseLine();
 }
@@ -272,7 +271,7 @@ void ModelEvaluation::aiChooseLine() {
 		return;
 	}
 
-	if (thread != NULL) {
+	if (thread != nullptr) {
 		if (!thread->isFinished()) {
 			qDebug() << "rescheduling aiChooseLine";
 			QTimer::singleShot(10, this, SLOT(aiChooseLine()));
@@ -326,6 +325,7 @@ void ModelEvaluation::gameOver(const QVector<KSquaresPlayer> &playerList) {
     currentResult.scoreP1 = playerList[0].score();
     currentResult.scoreP2 = playerList[1].score();
     currentResult.moves = lineLog;
+    currentResult.autoFillMoves = autoFillLines;
 
     resultModel->addResult(currentResult);
     //resultModel->saveData(tr("ModelEvaluation.csv"));
@@ -427,8 +427,8 @@ void ModelEvaluation::writeResultsToReport(ReportLogger::Ptr &report, QDateTime 
     report->log("\n");
 
     report->log("## Game histories\n\n");
-    report->log("|Match|Result|Board|Lines|\n");
-    report->log("|--------|---|---|---------------------------------|\n");
+    report->log("|Match|Result|Board|AutoFill|Lines|\n");
+    report->log("|--------|---|---|---|---------------------------------|\n");
 
     for (const QString &history : resultModel->getHistories()) {
         report->log(history);

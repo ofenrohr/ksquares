@@ -56,7 +56,7 @@ aiController::~aiController()
 QList<int> aiController::autoFill(int safeMovesLeft, int width, int height)
 {
 	auto *rng = gsl_rng_alloc(gsl_rng_taus);
-	gsl_rng_set(rng, std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
+	gsl_rng_set(rng, qrand() + std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
 
 	QList<int> fillLines;
 	

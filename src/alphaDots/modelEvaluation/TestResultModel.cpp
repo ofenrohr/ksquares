@@ -140,7 +140,18 @@ void TestResultModel::addResult(AITestResult result) {
     hist += QString::number(result.setup.boardSize.x()) + "x" + QString::number(result.setup.boardSize.y());
     hist += " | ";
 
+    for (int i = 0; i < result.autoFillMoves.size(); i++) {
+        if (i != 0) {
+            hist += ", ";
+        }
+        hist += QString::number(result.autoFillMoves[i]);
+    }
+    hist+= " | ";
+
     for (int i = 0; i < result.moves.size(); i++) {
+        if (result.autoFillMoves.contains(result.moves[i])) {
+            continue;
+        }
         if (i != 0) {
             hist += ", ";
         }

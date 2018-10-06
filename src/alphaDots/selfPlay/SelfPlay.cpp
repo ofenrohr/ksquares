@@ -37,6 +37,7 @@ SelfPlay::SelfPlay(QString &datasetDest, int threads, QString &initialModelName,
     reportDir = QDir(reportDirectory);
     quickStart = doQuickStart;
     generateAiLevel = static_cast<KSquares::AILevel>(aiLevel);
+    originalTargetModelPath = "";
 
     iteration = 0;
     iterationCnt = iterations;
@@ -163,7 +164,7 @@ void SelfPlay::setupIteration() {
 
     dataGen->setCurrentModel(bestModel);
     //dataGen->setBoardSize(availableBoardSizes[gsl_rng_uniform_int(rng, availableBoardSizes.size())]);
-    dataGen->setBoardSize(availableBoardSizes[iteration % availableBoardSizes.size()]);
+    dataGen->setBoardSize(availableBoardSizes[(iteration-1) % availableBoardSizes.size()]);
     dataGen->startIteration();
     timer.start();
 
@@ -237,7 +238,10 @@ void SelfPlay::generateDataFinished() {
     }
 
     qDebug() << "TARGET MODEL: " << targetModel.path();
-    QFileInfo targetModelPath(targetModel.path());
+    if (originalTargetModelPath == "") {
+        originalTargetModelPath = targetModel.path();
+    }
+    QFileInfo targetModelPath(originalTargetModelPath);
 
     mode = TRAIN;
     updateOverview();
@@ -342,7 +346,7 @@ void SelfPlay::finishIteration() {
     // update the target model
     ModelInfo tmpBestModel = bestModel;
     tmpBestModel.setName(targetModelName);
-    report->log("Updating " + targetModelName + " to point to " + bestModel.path());
+    report->log("Updating " + targetModelName + " to point to " + bestModel.path() + "\n\n");
     ProtobufConnector::getInstance().addModelToList(tmpBestModel);
 
     qDebug() << "[SelfPlay] new iteration: " << iteration;

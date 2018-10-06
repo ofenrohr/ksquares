@@ -38,7 +38,7 @@ void FastModelEvaluationWorker::process() {
             return;
         }
 
-        qDebug() << "[FastModelEvaluationWorker] starting match: " << setup.aiLevelP1 << "vs." << setup.aiLevelP2;
+        qDebug() << "[FastModelEvaluationWorker] starting match: " << setup.aiLevelP1 << "vs." << setup.aiLevelP2 << "quickstart: " << quickStart;
 
         QString p1l = setup.aiLevelP1 < 0 ? opponentModels->at(-setup.aiLevelP1 -1).ai() : models->at(setup.aiLevelP1 -1).ai();
         QString p2l = setup.aiLevelP2 < 0 ? opponentModels->at(-setup.aiLevelP2 -1).ai() : models->at(setup.aiLevelP2 -1).ai();
@@ -54,7 +54,6 @@ void FastModelEvaluationWorker::process() {
         aiController::Ptr aic1(new aiController(1, 1, width, height, p2, setup.timeout, setup.modelNameP2));
 
         //qDebug() << "board info: " << board.lines().size() << ":" << board.lines();
-        QList<int> lines = aiController::autoFill(12, width, height);
 
 
         bool error = false;
@@ -64,8 +63,10 @@ void FastModelEvaluationWorker::process() {
         QList<int> moveTimesP1;
         QList<int> moveTimesP2;
 
+        AITestResult result;
         if (quickStart) {
-            for (const auto line : lines) {
+            result.autoFillMoves = aiController::autoFill((int)(aiFunctions::toLinesSize(width, height) * 0.35), width, height);
+            for (const auto line : result.autoFillMoves) {
                 completedSquares.clear();
                 board.addLine(line, &nextPlayer, &boardFilled, &completedSquares);
                 assert(nextPlayer);
@@ -100,7 +101,6 @@ void FastModelEvaluationWorker::process() {
         //qDebug() << "finished game";
 
         // save result
-        AITestResult result;
         result.setup = setup;
         result.nameP1 = aic0->getAi()->getName();
         result.nameP2 = aic1->getAi()->getName();

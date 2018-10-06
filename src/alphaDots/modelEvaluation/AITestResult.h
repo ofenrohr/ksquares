@@ -14,6 +14,7 @@ public:
 	AITestSetup setup;
 	QString nameP1;
 	QString nameP2;
+	QList<int> autoFillMoves;
 	QList<int> moves;
 	QList<int> timeP1;
 	QList<int> timeP2;
