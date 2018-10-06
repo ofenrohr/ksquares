@@ -148,12 +148,15 @@ void TestResultModel::addResult(AITestResult result) {
     }
     hist+= " | ";
 
+    bool first = true;
     for (int i = 0; i < result.moves.size(); i++) {
         if (result.autoFillMoves.contains(result.moves[i])) {
             continue;
         }
-        if (i != 0) {
+        if (!first) {
             hist += ", ";
+        } else {
+            first = false;
         }
         hist += QString::number(result.moves[i]);
     }
