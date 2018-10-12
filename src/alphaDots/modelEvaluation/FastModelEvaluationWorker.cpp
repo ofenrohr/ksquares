@@ -38,7 +38,7 @@ void FastModelEvaluationWorker::process() {
             return;
         }
 
-        qDebug() << "[FastModelEvaluationWorker] starting match: " << setup.aiLevelP1 << "vs." << setup.aiLevelP2 << "quickstart: " << quickStart;
+        //qDebug() << "[FastModelEvaluationWorker] starting match: " << setup.aiLevelP1 << "vs." << setup.aiLevelP2 << "quickstart: " << quickStart;
 
         QString p1l = setup.aiLevelP1 < 0 ? opponentModels->at(-setup.aiLevelP1 -1).ai() : models->at(setup.aiLevelP1 -1).ai();
         QString p2l = setup.aiLevelP2 < 0 ? opponentModels->at(-setup.aiLevelP2 -1).ai() : models->at(setup.aiLevelP2 -1).ai();
