@@ -130,9 +130,9 @@ void TestResultModel::addResult(AITestResult result) {
         rows[rowAi][columnAi]++; // inc win counter
     }
     if (result.taintedP1 || result.taintedP2) {
-        rows[rowAi][columnCount()-2]++; // inc error counter
+        rows[rowAi][columnCount()-1]++; // inc error counter
     }
-    rows[rowAi][columnCount()-2] += result.crashesP1 + result.crashesP2;
+    rows[rowAi][columnCount()-1] += result.crashesP1 + result.crashesP2;
     // add line history
     QString hist = "|";
     hist += aiIndexToName(result.setup.aiLevelP1) + " vs " + aiIndexToName(result.setup.aiLevelP2) + " | ";
