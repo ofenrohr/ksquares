@@ -5,15 +5,16 @@
 #include "DoubleDealingAnalysis.h"
 
 DoubleDealingAnalysis::DoubleDealingAnalysis() {
-    _headers = QList<QString>() << "Double Dealing P1" << "Double Dealing P2";
+    _headers = QList<QString>() << "Double Dealing";
 }
 
 DoubleDealingAnalysis::~DoubleDealingAnalysis() = default;
 
 QList<QVariant> DoubleDealingAnalysis::analyseResult(AITestResult &result, bool *ok) {
     *ok = true;
-    auto doubleDealingCounter = QList<int>() << 0 << 0;
+    auto doubleDealingCounter = QList<int>() << 0;
     aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(result.setup.boardSize.x(), result.setup.boardSize.y()));
+    int analysePlayerId = result.setup.aiLevelP1 > 0 ? 0 : 1;
     /*
     for (int move : result.autoFillMoves) {
         board->doMove(move);
@@ -41,8 +42,11 @@ QList<QVariant> DoubleDealingAnalysis::analyseResult(AITestResult &result, bool 
                     if (analysis.chains[analysis.capturableShortChains[0]].squares.size() == 2 &&
                         analysis.chains[analysis.capturableShortChains[0]].lines.size() == 1)
                     {
-                        doubleDealingCounter[board->playerId]++;
-                        qDebug().noquote() << aiFunctions::boardToString(board);
+                        //doubleDealingCounter[board->playerId]++;
+                        if (board->playerId != analysePlayerId) {
+                            doubleDealingCounter[0]++;
+                        }
+                        //qDebug().noquote() << aiFunctions::boardToString(board);
                     }
                 }
                 // option 2: Double Dealing in cyclic chains
@@ -52,13 +56,16 @@ QList<QVariant> DoubleDealingAnalysis::analyseResult(AITestResult &result, bool 
                         analysis.chains[analysis.capturableShortChains[1]].squares.size() == 2 &&
                         analysis.chains[analysis.capturableShortChains[1]].lines.size() == 1)
                     {
-                        doubleDealingCounter[board->playerId]++;
+                        //doubleDealingCounter[board->playerId]++;
+                        if (board->playerId != analysePlayerId) {
+                            doubleDealingCounter[0]++;
+                        }
                     }
                 }
             }
         }
     }
-    return QList<QVariant>() << QVariant(doubleDealingCounter[0]) << QVariant(doubleDealingCounter[1]);
+    return QList<QVariant>() << QVariant(doubleDealingCounter[0]);
 }
 
 int DoubleDealingAnalysis::headerCount() {

@@ -536,10 +536,7 @@ void aiFunctions::findChains(aiBoard *board, QList<KSquares::Chain> *foundChains
             if (canCaptureFromBothEnds && foundChain.type == KSquares::CHAIN_LONG)
                 foundChain.type = KSquares::CHAIN_LOOP;
 
-            if (canCapture)
-                foundChain.ownChain = true;
-            else
-                foundChain.ownChain = false;
+            foundChain.ownChain = canCapture;
 
             //qDebug() << "found chain:" << chain << "squares:" << foundChain.squares << "cap:" << canCapture << "type:" << chainTypeToString(foundChain.type) << " chain: " << linelistToString(chain, board->linesSize, board->width, board->height);
             foundChains->append(foundChain);

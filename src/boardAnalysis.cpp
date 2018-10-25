@@ -66,7 +66,7 @@ KSquares::BoardAnalysis BoardAnalysisFunctions::analyseBoard(aiBoard::Ptr board)
 					analysis.openLongChains.append(i);
 				else
 				{
-					qDebug().noquote() << "ERROR: capturable chain found when there should be none! chain: " << aiFunctions::linelistToString(analysis.chainsAfterCapture[i].lines, board->linesSize, board->width, board->height) << " on board " << aiFunctions::boardToString(board);
+					qDebug().noquote() << "ERROR: capturable long chain found when there should be none! chain: " << aiFunctions::linelistToString(analysis.chainsAfterCapture[i].lines, board->linesSize, board->width, board->height) << " on board " << aiFunctions::boardToString(board);
 					for (int j = 0; j < analysis.chains.size(); j++)
 						qDebug().noquote() << "capture chain: " << aiFunctions::linelistToString(analysis.chains[j].lines, board->linesSize, board->width, board->height);
 				}
@@ -76,7 +76,7 @@ KSquares::BoardAnalysis BoardAnalysisFunctions::analyseBoard(aiBoard::Ptr board)
 					analysis.openLoopChains.append(i);
 				else
 				{
-					qDebug().noquote() << "ERROR: capturable chain found when there should be none! chain: " << aiFunctions::linelistToString(analysis.chainsAfterCapture[i].lines, board->linesSize, board->width, board->height) << " on board " << aiFunctions::boardToString(board);
+					qDebug().noquote() << "ERROR: capturable loop chain found when there should be none! chain: " << aiFunctions::linelistToString(analysis.chainsAfterCapture[i].lines, board->linesSize, board->width, board->height) << " on board " << aiFunctions::boardToString(board);
 					for (int j = 0; j < analysis.chains.size(); j++)
 						qDebug().noquote() << "capture chain: " << aiFunctions::linelistToString(analysis.chains[j].lines, board->linesSize, board->width, board->height);
 				}
@@ -86,7 +86,7 @@ KSquares::BoardAnalysis BoardAnalysisFunctions::analyseBoard(aiBoard::Ptr board)
 					analysis.openShortChains.append(i);
 				else
 				{
-					qDebug().noquote() << "ERROR: capturable chain found when there should be none! chain: " << aiFunctions::linelistToString(analysis.chainsAfterCapture[i].lines, board->linesSize, board->width, board->height) << " on board " << aiFunctions::boardToString(board);
+					qDebug().noquote() << "ERROR: capturable short chain found when there should be none! chain: " << aiFunctions::linelistToString(analysis.chainsAfterCapture[i].lines, board->linesSize, board->width, board->height) << " on board " << aiFunctions::boardToString(board);
 					for (int j = 0; j < analysis.chains.size(); j++)
 						qDebug().noquote() << "capture chain: " << aiFunctions::linelistToString(analysis.chains[j].lines, board->linesSize, board->width, board->height);
 				}
@@ -101,7 +101,7 @@ KSquares::BoardAnalysis BoardAnalysisFunctions::analyseBoard(aiBoard::Ptr board)
 				}
 				else
 				{
-					qDebug().noquote() << "ERROR: capturable chain found when there should be none! chain: " << aiFunctions::linelistToString(analysis.chainsAfterCapture[i].lines, board->linesSize, board->width, board->height) << " on board " << aiFunctions::boardToString(board);
+					qDebug().noquote() << "ERROR: capturable special chain found when there should be none! chain: " << aiFunctions::linelistToString(analysis.chainsAfterCapture[i].lines, board->linesSize, board->width, board->height) << " on board " << aiFunctions::boardToString(board);
 					for (int j = 0; j < analysis.chains.size(); j++)
 						qDebug().noquote() << "capture chain: " << aiFunctions::linelistToString(analysis.chains[j].lines, board->linesSize, board->width, board->height);
 				}
