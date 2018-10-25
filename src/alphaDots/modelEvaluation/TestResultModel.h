@@ -10,13 +10,15 @@
 #include <alphaDots/ModelInfo.h>
 #include <QtCore/QMutex>
 #include "AITestResult.h"
+#include <alphaDots/modelEvaluation/gameplayAnalysis/GameplayAnalysis.h>
 
 namespace AlphaDots {
     // http://doc.qt.io/qt-5/modelview.html
     class TestResultModel : public QAbstractTableModel {
     Q_OBJECT
     public:
-        TestResultModel(QObject *parent, QList<ModelInfo> *models, QList<ModelInfo> *adversaryModels, int gamesPerAi);
+        TestResultModel(QObject *parent, QList<ModelInfo> *models, QList<ModelInfo> *adversaryModels, int gamesPerAi,
+                        QList<GameplayAnalysis *> analysisModules);
 
         ~TestResultModel();
 
@@ -108,6 +110,7 @@ namespace AlphaDots {
         QList<QString> modelHistories;
         QList<QString> gameHistories;
         int gamesPerAiCnt;
+        QList<GameplayAnalysis *> analysisModules;
 
         mutable QMutex rowsMutex;
     };

@@ -9,29 +9,12 @@
 
 using namespace AlphaDots;
 
-TestResultModel::TestResultModel(QObject *parent, QList<ModelInfo> *models, QList<ModelInfo> *adversaryModels, int gamesPerAi) :
-        QAbstractTableModel(parent)/*,
-        modelList(models),
-        adverarialModels(adversaryModels),
-        gamesPerAiCnt(gamesPerAi)*/
+TestResultModel::TestResultModel(QObject *parent, QList<ModelInfo> *models, QList<ModelInfo> *adversaryModels,
+        int gamesPerAi, QList<GameplayAnalysis *> analysisModuleList) :
+        QAbstractTableModel(parent)
 {
+    analysisModules = analysisModuleList;
     reset(models, adversaryModels, gamesPerAi);
-    /*
-    rows.reserve(modelList->size());
-    modelHistories.reserve(modelList->size());
-    for (int i = 0; i < modelList->size(); i++) {
-        QList<int> columns;
-        for (int j = 0; j < columnCount(); j++) {
-            columns.append(0);
-        }
-        rows.append(columns);
-        modelHistories.append(tr(""));
-
-        if (adverarialModels->contains(modelList->at(i))) {
-            qDebug() << "WARNING: model list and adversary model list contain the same model! that's not supported";
-        }
-    }
-     */
 }
 
 TestResultModel::~TestResultModel() = default;
@@ -64,27 +47,40 @@ void TestResultModel::reset(QList<ModelInfo> *models, QList<ModelInfo> *opponent
     emit(dataChanged(createIndex(0,0),createIndex(rowCount(), columnCount())));
 }
 
-int TestResultModel::rowCount(const QModelIndex &parent) const {
+int TestResultModel::rowCount(const QModelIndex &) const {
     return modelList->size();
 }
 
-int TestResultModel::columnCount(const QModelIndex &parent) const {
-    return adverarialModels->size() + 2;//7;
+int TestResultModel::columnCount(const QModelIndex &) const {
+    int analysisColumns = 0;
+    for (const auto module : analysisModules) {
+        analysisColumns += module->headerCount();
+    }
+    return adverarialModels->size() + 2 /* games, errors */ + analysisColumns;
 }
 
 QVariant TestResultModel::headerData(int section, Qt::Orientation orientation, int role) const {
     QMutexLocker locker(&rowsMutex); // make it thread safe
+    int analysisColumns = 0;
+    QList<QString> analysisHeaders;
+    for (const auto module : analysisModules) {
+        analysisColumns += module->headerCount();
+        analysisHeaders.append(module->headers());
+        assert(module->headers().size() == analysisColumns);
+    }
     if (role == Qt::DisplayRole) {
         if (orientation == Qt::Horizontal) {
             if (section == 0) return "Games";
             if (section == adverarialModels->count()+1) return "Errors";
-            if (section > adverarialModels->count()+1) return "UNDEFINED";
-            QString ret = "Wins vs " + adverarialModels->at(section-1).name() + " \nin "
-                          + QString::number(gamesPerAiCnt) + " games";
-            return ret;
-                //case 1: return tr("Wins vs. Easy \nin ").append(QString::number(gamesPerAiCnt)).append(tr(" games"));
-                //case 2: return tr("Wins vs. Medium \nin ").append(QString::number(gamesPerAiCnt)).append(tr(" games"));
-                //case 3: return tr("Wins vs. Hard \nin ").append(QString::number(gamesPerAiCnt)).append(tr(" games"));
+            if (section < adverarialModels->count()+1) {
+                QString ret = "Wins vs " + adverarialModels->at(section - 1).name() + " \nin "
+                              + QString::number(gamesPerAiCnt) + " games";
+                return ret;
+            }
+            if (section < adverarialModels->count()+2+analysisColumns) {
+                return analysisHeaders[section - adverarialModels->count()-2];
+            }
+            return "UNDEFINED";
         }
         if (orientation == Qt::Vertical) {
             return modelList->at(section).name();
@@ -111,6 +107,7 @@ void TestResultModel::addResult(AITestResult result) {
     results.append(result);
     int columnAi = -1; // adversaryModelList (negative aiLevelP1/2)
     int rowAi = -1; // modelList (positive aiLevelP1/2)
+    int errorColumn = adverarialModels->size()+1;
     int columnAiScore = -1;
     int rowAiScore = -1;
     //if (result.setup.aiLevelP1 > result.setup.aiLevelP2) { // rule based ais are 0,1,2 (lowest levels)
@@ -130,9 +127,9 @@ void TestResultModel::addResult(AITestResult result) {
         rows[rowAi][columnAi]++; // inc win counter
     }
     if (result.taintedP1 || result.taintedP2) {
-        rows[rowAi][columnCount()-1]++; // inc error counter
+        rows[rowAi][errorColumn]++; // inc error counter
     }
-    rows[rowAi][columnCount()-1] += result.crashesP1 + result.crashesP2;
+    rows[rowAi][errorColumn] += result.crashesP1 + result.crashesP2;
     // add line history
     QString hist = "|";
     hist += aiIndexToName(result.setup.aiLevelP1) + " vs " + aiIndexToName(result.setup.aiLevelP2) + " | ";
@@ -164,6 +161,22 @@ void TestResultModel::addResult(AITestResult result) {
 
     gameHistories.append(hist);
     modelHistories[rowAi] += hist;
+
+    int analysisColumn = adverarialModels->size() + 2;
+    for (const auto module : analysisModules) {
+        bool ok = false;
+        QList<QVariant> analysisResults = module->analyseResult(result, &ok);
+        if (!ok) {
+            qDebug() << "failed to analyse result!";
+        }
+        for (const auto analysisResult : analysisResults) {
+            rows[rowAi][analysisColumn] += analysisResult.toInt(&ok);
+            if (!ok) {
+                qDebug() << "failed to add analysis result" << analysisResult;
+            }
+            analysisColumn++;
+        }
+    }
 
     // update gui
     emit(dataChanged(createIndex(0,0),createIndex(rowCount(), columnCount())));

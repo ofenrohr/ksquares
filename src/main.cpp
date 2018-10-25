@@ -102,6 +102,7 @@ int main(int argc, char **argv)
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("report-dir"), i18n("Output directory for reports by the self-play mode."), "report-dir"));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("no-quick-start"), i18n("Disable quick start in model evaluation, fast model evaluation and self-play")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("no-augmentation"), i18n("Disable augmentation in self-play model training")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("analyse-double-dealing"), i18n("Enable the Double Dealing analysis in (fast) model evaluation")));
 
     about.setupCommandLine(&parser);
     parser.process(app);
@@ -475,6 +476,12 @@ int main(int argc, char **argv)
         noAugmentation = true;
     }
 
+    // analyse double dealing
+    bool analyseDoubleDealing = false;
+    if (parser.isSet("analyse-double-dealing")) {
+        analyseDoubleDealing = true;
+    }
+
     // start things
     if (parser.isSet(i18n("demo"))) {
         KSquaresDemoWindow *demoWindow = new KSquaresDemoWindow;
@@ -513,11 +520,11 @@ int main(int argc, char **argv)
         dataGenerator->show();
     } else if (parser.isSet(i18n("model-evaluation"))) {
         auto *modelEvaluation = new AlphaDots::ModelEvaluation(evalModels, opponentModels, false,
-                threads, gamesPerAi_slow, evaluationBoardSize, quickStart, reportDir);
+                threads, gamesPerAi_slow, evaluationBoardSize, quickStart, reportDir, analyseDoubleDealing);
         modelEvaluation->show();
     } else if (parser.isSet(i18n("fast-model-evaluation"))) {
         auto *modelEvaluation = new AlphaDots::ModelEvaluation(evalModels, opponentModels, true,
-                threads, gamesPerAi_fast, evaluationBoardSize, quickStart, reportDir);
+                threads, gamesPerAi_fast, evaluationBoardSize, quickStart, reportDir, analyseDoubleDealing);
         modelEvaluation->show();
     } else if (parser.isSet(i18n("model-list"))) {
         AlphaDots::ModelEvaluation::printModelList();

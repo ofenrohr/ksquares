@@ -18,7 +18,7 @@ EvaluateNetwork::EvaluateNetwork(const AlphaDots::ModelInfo &initialModel, const
 {
     bestModel = initialModel;
     boardSize = evalBoardSize;
-    resultModel = new TestResultModel(this, &modelList, &opponentModelList, gamesPerAi);
+    resultModel = new TestResultModel(this, &modelList, &opponentModelList, gamesPerAi, QList<GameplayAnalysis *>());
     fastModelEvaluation = new FastModelEvaluation(threadCnt);
     connect(fastModelEvaluation, SIGNAL(evaluationFinished()), this, SLOT(fastModelEvaluationFinished()));
 }

@@ -28,7 +28,8 @@ namespace AlphaDots {
          * @param fast Run fast multi-threaded evaluation
          */
         explicit ModelEvaluation(QString &models, QString &opponentModels, bool fast=false, int threadCnt=4,
-                int games=10, QPoint boardSize=QPoint(5,5), bool quickStart=true, QString reportDir="");
+                int games=10, QPoint boardSize=QPoint(5,5), bool quickStart=true, QString reportDir="",
+                bool analyseDoubleDealing=false);
 
 		~ModelEvaluation() override;
 

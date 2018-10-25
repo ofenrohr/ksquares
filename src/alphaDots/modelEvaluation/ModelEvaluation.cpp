@@ -15,11 +15,12 @@
 #include <alphaDots/ModelManager.h>
 #include <aiControllerWorker.h>
 #include <alphaDots/ReportLogger.h>
+#include <alphaDots/modelEvaluation/gameplayAnalysis/DoubleDealingAnalysis.h>
 
 using namespace AlphaDots;
 
 ModelEvaluation::ModelEvaluation(QString &models, QString &opponentModels, bool fast, int threadCnt, int games,
-        QPoint boardSize, bool doQuickStart, QString reportDirectory) :
+        QPoint boardSize, bool doQuickStart, QString reportDirectory, bool analyseDoubleDealing) :
         KXmlGuiWindow(), m_view(new QWidget()) {
     qDebug() << "ModelEvaluation" << models << fast;
     modelList = getModelList(models);
@@ -43,7 +44,12 @@ ModelEvaluation::ModelEvaluation(QString &models, QString &opponentModels, bool 
     connect(sGame, SIGNAL(takeTurnSig(KSquaresPlayer*)), this, SLOT(playerTakeTurn(KSquaresPlayer*)));
 
     createTestSetups(boardSize);
-    resultModel = new TestResultModel(this, &modelList, &opponentModelList, gamesPerAi);
+
+    QList<GameplayAnalysis *> analysisModules;
+    if (analyseDoubleDealing) {
+        analysisModules.append(new DoubleDealingAnalysis());
+    }
+    resultModel = new TestResultModel(this, &modelList, &opponentModelList, gamesPerAi, analysisModules);
 
     if (gamesPerAi % 2 != 0) {
         QMessageBox::critical(this, tr("ModelEvaluation error"), tr("ERROR: games per AI must be a multiple of 2"));
