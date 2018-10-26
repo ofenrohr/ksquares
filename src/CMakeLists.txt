@@ -74,7 +74,13 @@ set(ksquares_SRCS
     AlphaDotsHelper.cpp
     aiControllerWorker.cpp
     KSquaresAI.h
-		alphaDots/selfPlay/GenerateData.cpp alphaDots/selfPlay/GenerateData.h alphaDots/selfPlay/TrainNetwork.cpp alphaDots/selfPlay/TrainNetwork.h alphaDots/selfPlay/EvaluateNetwork.cpp alphaDots/selfPlay/EvaluateNetwork.h alphaDots/AlphaDotsExceptions.cpp alphaDots/AlphaDotsExceptions.h alphaDots/ReportLogger.cpp alphaDots/ReportLogger.h alphaDots/modelEvaluation/gameplayAnalysis/DoubleDealingAnalysis.cpp alphaDots/modelEvaluation/gameplayAnalysis/DoubleDealingAnalysis.h)
+	alphaDots/selfPlay/GenerateData.cpp
+	alphaDots/selfPlay/TrainNetwork.cpp
+	alphaDots/selfPlay/EvaluateNetwork.cpp
+	alphaDots/AlphaDotsExceptions.cpp
+	alphaDots/ReportLogger.cpp
+	alphaDots/modelEvaluation/gameplayAnalysis/DoubleDealingAnalysis.cpp
+)
 
 file(GLOB protoMessages alphaDots/protobuf/*.proto)
 PROTOBUF_GENERATE_CPP(ProtoSrcs ProtoHeaders ${protoMessages})

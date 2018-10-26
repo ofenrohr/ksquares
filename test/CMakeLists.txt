@@ -19,6 +19,7 @@ file(GLOB alphaDotsSRCS ../src/alphaDots/*.cpp)
 file(GLOB alphaDotsModelEvaluationSRCS ../src/alphaDots/modelEvaluation/*.cpp)
 file(GLOB alphaDotsDatasetsSRCS ../src/alphaDots/datasets/*.cpp)
 file(GLOB alphaDotsAiEvalSRCS ../src/alphaDots/selfPlay/*.cpp)
+file(GLOB alphaDotsGamplayAnalysisSRCS ../src/alphaDots/modelEvaluation/gameplayAnalysis/*.cpp)
 
 message("blah")
 message(${alphaDotsAiEvalSRCS})
@@ -62,7 +63,7 @@ set( ksquarestest_SRCS
 		${alphaDotsModelEvaluationSRCS}
 		${alphaDotsDatasetsSRCS}
 		${alphaDotsAiEvalSRCS}
-
+		${alphaDotsGamplayAnalysisSRCS}
         )
 
 kconfig_add_kcfg_files(ksquarestest_SRCS GENERATE_MOC ../src/settings.kcfgc)

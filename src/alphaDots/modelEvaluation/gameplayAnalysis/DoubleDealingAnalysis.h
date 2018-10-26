@@ -8,21 +8,25 @@
 
 #include "GameplayAnalysis.h"
 
-class DoubleDealingAnalysis : public GameplayAnalysis {
-public:
-    DoubleDealingAnalysis();
-    ~DoubleDealingAnalysis();
+namespace AlphaDots {
+    class DoubleDealingAnalysis : public GameplayAnalysis {
+    public:
+        DoubleDealingAnalysis();
 
-    QList<QVariant> analyseResult(AITestResult &result, bool *ok) override;
+        ~DoubleDealingAnalysis();
 
-    int headerCount() override;
+        QList<QVariant> analyseResult(AITestResult &result, bool *ok) override;
 
-    QList<QString> headers() override;
+        int headerCount() override;
 
-    QString moduleName() override;
-private:
-    QList<QString> _headers;
-};
+        QList<QString> headers() override;
+
+        QString moduleName() override;
+
+    private:
+        QList<QString> _headers;
+    };
+}
 
 
 #endif //KSQUARES_DOUBLEDEALINGANALYSIS_H

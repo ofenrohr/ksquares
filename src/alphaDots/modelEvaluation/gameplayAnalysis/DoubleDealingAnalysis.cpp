@@ -4,6 +4,8 @@
 
 #include "DoubleDealingAnalysis.h"
 
+using namespace AlphaDots;
+
 DoubleDealingAnalysis::DoubleDealingAnalysis() {
     _headers = QList<QString>() << "Double Dealing";
 }
