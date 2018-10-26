@@ -37,10 +37,6 @@ void TestResultModel::reset(QList<ModelInfo> *models, QList<ModelInfo> *opponent
         }
         rows.append(columns);
         modelHistories.append(tr(""));
-
-        if (adverarialModels->contains(modelList->at(i))) {
-            qDebug() << "WARNING: model list and adversary model list contain the same model! that's not supported";
-        }
     }
     emit(headerDataChanged(Qt::Orientation::Horizontal, 0, columnCount()));
     emit(headerDataChanged(Qt::Orientation::Vertical, 0, rowCount()));

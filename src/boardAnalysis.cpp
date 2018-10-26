@@ -15,42 +15,57 @@
 KSquares::BoardAnalysis BoardAnalysisFunctions::analyseBoard(aiBoard::Ptr board)
 {
 	KSquares::BoardAnalysis analysis;
-	
-	// look for capturable chains
-	aiFunctions::findChains(board, &(analysis.chains), true);
-	
-	// sort capturable chains by classification
-	for (int i = 0; i < analysis.chains.size(); i++)
-	{
-		switch (analysis.chains[i].type)
-		{
-			case KSquares::CHAIN_LONG:
-				if (analysis.chains[i].ownChain)
-					analysis.capturableLongChains.append(i);
-			break;
-			case KSquares::CHAIN_LOOP:
-				if (analysis.chains[i].ownChain)
-					analysis.capturableLoopChains.append(i);
-			break;
-			case KSquares::CHAIN_SHORT:
-				if (analysis.chains[i].ownChain)
-					analysis.capturableShortChains.append(i);
-			break;
-			case KSquares::CHAIN_SPECIAL:
-				qDebug() << "ERROR: special own chain!" << analysis.chains[i];
-			break;
-			case KSquares::CHAIN_UNKNOWN:
-			default:
-				qDebug() << "WARNING: unknown chain! " << analysis.chains[i];
-			break;
+
+	bool foundCapturableChains;
+	int prevNumberOfOwnChains = 0;
+	do {
+		foundCapturableChains = false;
+		int numberOfOwnChains = 0;
+		// look for capturable chains
+		aiFunctions::findChains(board, &(analysis.chains), true);
+
+		// sort capturable chains by classification
+		for (int i = 0; i < analysis.chains.size(); i++) {
+			switch (analysis.chains[i].type) {
+				case KSquares::CHAIN_LONG:
+					if (analysis.chains[i].ownChain) {
+						analysis.capturableLongChains.append(i);
+						numberOfOwnChains++;
+					}
+					break;
+				case KSquares::CHAIN_LOOP:
+					if (analysis.chains[i].ownChain) {
+						analysis.capturableLoopChains.append(i);
+						numberOfOwnChains++;
+					}
+					break;
+				case KSquares::CHAIN_SHORT:
+					if (analysis.chains[i].ownChain) {
+						analysis.capturableShortChains.append(i);
+						numberOfOwnChains++;
+					}
+					break;
+				case KSquares::CHAIN_SPECIAL:
+					qDebug() << "ERROR: special own chain!" << analysis.chains[i];
+					break;
+				case KSquares::CHAIN_UNKNOWN:
+				default:
+					qDebug() << "WARNING: unknown chain! " << analysis.chains[i];
+					break;
+			}
+			// capture everything that can be captured
+			if (analysis.chains[i].ownChain)
+				for (int j = 0; j < analysis.chains[i].lines.size(); j++)
+					if (!board->lines[analysis.chains[i].lines[j]]) // some chains are contained in other chains
+						board->doMove(analysis.chains[i].lines[j]);
+
+			if (numberOfOwnChains > prevNumberOfOwnChains) {
+				foundCapturableChains = true;
+				prevNumberOfOwnChains = numberOfOwnChains;
+			}
 		}
-		// capture everything that can be captured
-		if (analysis.chains[i].ownChain)
-			for (int j = 0; j < analysis.chains[i].lines.size(); j++)
-				if (!board->lines[analysis.chains[i].lines[j]]) // some chains are contained in other chains
-                    board->doMove(analysis.chains[i].lines[j]);
-	}
-	
+	} while (foundCapturableChains);
+
 	//qDebug() << "board after capture " << aiFunctions::boardToString(board);
 	
 	// look for chains a second time
@@ -213,7 +228,7 @@ QSharedPointer<QList<QList<int> > > BoardAnalysisFunctions::getMoveSequences(aiB
 	// double dealing in long chain
 	if (analysis.capturableLongChains.size() > 0)
 	{
-		doubleDealingChainIndex = analysis.capturableLongChains[analysis.capturableLongChains.size()-1];
+		doubleDealingChainIndex = analysis.capturableLongChains[0];
 	}
 	else 
 	{ // try double dealing in short and loop chains
