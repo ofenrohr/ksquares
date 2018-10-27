@@ -23,7 +23,7 @@ using namespace AlphaDots;
 SelfPlay::SelfPlay(QString &datasetDest, int threads, QString &initialModelName, QString &targetModel,
                    int iterations, int gamesPerIteration, int epochs, bool gpuTraining, DatasetType dataset,
                    bool doUpload, QList<QPoint> &boardSizes, int evalGames, bool noEval, QString &reportDirectory,
-                   bool doQuickStart, int aiLevel, bool noAugmentation) :
+                   bool doQuickStart, int aiLevel, bool noAugmentation, bool cumulativeTraining) :
     KXmlGuiWindow(),
     m_view(new QWidget())
 {
@@ -38,6 +38,7 @@ SelfPlay::SelfPlay(QString &datasetDest, int threads, QString &initialModelName,
     quickStart = doQuickStart;
     generateAiLevel = static_cast<KSquares::AILevel>(aiLevel);
     originalTargetModelPath = "";
+    doCumulativeTraining = cumulativeTraining;
 
     iteration = 0;
     iterationCnt = iterations;
@@ -246,17 +247,30 @@ void SelfPlay::generateDataFinished() {
     mode = TRAIN;
     updateOverview();
 
+    ModelInfo prevContendingModel = contendingModel;
+    QString contendingModelPath = targetModelPath.dir().path() + "/" + targetModelPath.fileName().replace(QRegExp("(\\.\\d+){0,1}\\.h5"), "." + QString::number(iteration) + ".h5");
+    if (QFile::exists(contendingModelPath)) {
+        qDebug() << "WARNING: contendingModelPath already exists! using different path";
+        QString timeStr = QDateTime::currentDateTime().toString("yyyyMMddhhmmsszzz");
+        contendingModelPath = targetModelPath.dir().path() + "/" + targetModelPath.fileName().replace(QRegExp("(\\.\\d+){0,1}\\.h5"), "." + QString::number(iteration) + timeStr + ".h5");
+        qDebug() << "new contendingModelPath: " << contendingModelPath;
+    }
     contendingModel = ModelInfo(
             targetModelName + "_" + QString::number(iteration),
             targetModel.desc(),
-            targetModelPath.dir().path() + "/" + targetModelPath.fileName().replace(QRegExp("(\\.\\d+){0,1}\\.h5"), "." + QString::number(iteration) + ".h5"),
+            contendingModelPath,
             targetModel.type(),
             targetModel.ai());
     ProtobufConnector::getInstance().addModelToList(contendingModel);
     qDebug() << "[SelfPlay] starting training";
     timer.start();
-    trainNetwork->startTraining(dataGen->getDatasetPath(), iteration, dataGen->getCurrentModel().path(),
-                                contendingModel.path());
+    if (doCumulativeTraining && prevContendingModel.valid()) {
+        trainNetwork->startTraining(dataGen->getDatasetPath(), iteration, prevContendingModel.path(),
+                                    contendingModel.path());
+    } else {
+        trainNetwork->startTraining(dataGen->getDatasetPath(), iteration, dataGen->getCurrentModel().path(),
+                                    contendingModel.path());
+    }
 
     // report training stuff
     report->log("### Training network\n\n");

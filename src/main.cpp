@@ -103,6 +103,7 @@ int main(int argc, char **argv)
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("no-quick-start"), i18n("Disable quick start in model evaluation, fast model evaluation and self-play")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("no-augmentation"), i18n("Disable augmentation in self-play model training")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("analyse-double-dealing"), i18n("Enable the Double Dealing analysis in (fast) model evaluation")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("cumulative-training"), i18n("Enable cumulative training in self-play")));
 
     about.setupCommandLine(&parser);
     parser.process(app);
@@ -417,7 +418,7 @@ int main(int argc, char **argv)
         AlphaDots::aiAlphaZeroMCTS::use_move_sequences = false;
     }
 
-    // hp-no-move-sequences - hyperparameter for alphazero mcts
+    // hp-mcts-use-probabilistic-final-move-selection - hyperparameter for alphazero mcts
     if (parser.isSet(i18n("hp-mcts-use-probabilistic-final-move-selection"))) {
         AlphaDots::aiAlphaZeroMCTS::use_probabilistic_final_move_selection = true;
     }
@@ -482,6 +483,12 @@ int main(int argc, char **argv)
         analyseDoubleDealing = true;
     }
 
+    // do cumulative training in self-play?
+    bool cumulativeTraining = false;
+    if (parser.isSet("cumulative-training")) {
+        cumulativeTraining = true;
+    }
+
     // start things
     if (parser.isSet(i18n("demo"))) {
         KSquaresDemoWindow *demoWindow = new KSquaresDemoWindow;
@@ -535,7 +542,7 @@ int main(int argc, char **argv)
         }
         auto *selfPlay = new AlphaDots::SelfPlay(datasetDest, threads, initialModelName, targetModelName,
                 iterationCnt, iterationSize, epochs, gpuTraining, datasetType, upload, boardSizes, gamesPerAi_eval,
-                noEvaluation, reportDir, quickStart, aiLevel, noAugmentation);
+                noEvaluation, reportDir, quickStart, aiLevel, noAugmentation, cumulativeTraining);
         selfPlay->show();
     } else {
         KSquaresWindow *mainWindow = new KSquaresWindow;

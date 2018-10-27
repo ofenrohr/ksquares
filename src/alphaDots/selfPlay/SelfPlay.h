@@ -26,7 +26,7 @@ namespace AlphaDots {
         SelfPlay(QString &datasetDest, int threads, QString &initialModel, QString &targetModelName,
                  int iterations, int gamesPerIteration, int epochs, bool gpuTraining, DatasetType dataset,
                  bool doUpload, QList<QPoint> &boardSizes, int gamesPerEvaluation, bool noEvaluation,
-                 QString &reportDir, bool doQuickStart, int aiLevel, bool noAugmentation);
+                 QString &reportDir, bool doQuickStart, int aiLevel, bool noAugmentation, bool cumulativeTraining);
         ~SelfPlay();
 
         void initObject();
@@ -75,6 +75,7 @@ namespace AlphaDots {
         bool quickStart;
         KSquares::AILevel generateAiLevel;
         QString originalTargetModelPath;
+        bool doCumulativeTraining;
 
         // report stream
         QString reportId;
