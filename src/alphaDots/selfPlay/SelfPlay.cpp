@@ -249,7 +249,7 @@ void SelfPlay::generateDataFinished() {
 
     ModelInfo prevContendingModel = contendingModel;
     QString contendingModelPath = targetModelPath.dir().path() + "/" + targetModelPath.fileName().replace(QRegExp("(\\.\\d+){0,1}\\.h5"), "." + QString::number(iteration) + ".h5");
-    if (QFile::exists(contendingModelPath)) {
+    if (QFile::exists(Settings::alphaDotsDir() + "/modelServer/models/" + contendingModelPath)) {
         qDebug() << "WARNING: contendingModelPath already exists! using different path";
         QString timeStr = QDateTime::currentDateTime().toString("yyyyMMddhhmmsszzz");
         contendingModelPath = targetModelPath.dir().path() + "/" + targetModelPath.fileName().replace(QRegExp("(\\.\\d+){0,1}\\.h5"), "." + QString::number(iteration) + timeStr + ".h5");
