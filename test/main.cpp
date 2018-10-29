@@ -6,6 +6,7 @@
 #include "alphazero.h"
 #include "GSLTest.h"
 #include "SharedPointerTest.h"
+#include "moveSequences.h"
 
 int main(int argc, char *argv[])
 {
@@ -88,6 +89,12 @@ int main(int argc, char *argv[])
             printf(" EXECUTING: SharedPointer\n");
             printf("~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=\n");
             status |= QTest::qExec(new SharedPointerTest, subargc, subargv);
+        }
+        if (all || argvec[i] == "MoveSequences") {
+            printf("~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=\n");
+            printf(" EXECUTING: MoveSequences\n");
+            printf("~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=\n");
+            status |= QTest::qExec(new TestMoveSequences, subargc, subargv);
         }
     }
     return status;

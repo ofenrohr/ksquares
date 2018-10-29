@@ -18,9 +18,14 @@ KSquares::BoardAnalysis BoardAnalysisFunctions::analyseBoard(aiBoard::Ptr board)
 
 	bool foundCapturableChains;
 	int prevNumberOfOwnChains = 0;
-	do {
-		foundCapturableChains = false;
-		int numberOfOwnChains = 0;
+	//QList<int> opponentChains;
+	//do {
+		//foundCapturableChains = false;
+		//int numberOfOwnChains = 0;
+		//for (const auto &opponentChain : opponentChains) {
+		//	analysis.chains.removeAt(opponentChain);
+		//}
+		//opponentChains.clear();
 		// look for capturable chains
 		aiFunctions::findChains(board, &(analysis.chains), true);
 
@@ -30,19 +35,19 @@ KSquares::BoardAnalysis BoardAnalysisFunctions::analyseBoard(aiBoard::Ptr board)
 				case KSquares::CHAIN_LONG:
 					if (analysis.chains[i].ownChain) {
 						analysis.capturableLongChains.append(i);
-						numberOfOwnChains++;
+						//numberOfOwnChains++;
 					}
 					break;
 				case KSquares::CHAIN_LOOP:
 					if (analysis.chains[i].ownChain) {
 						analysis.capturableLoopChains.append(i);
-						numberOfOwnChains++;
+						//numberOfOwnChains++;
 					}
 					break;
 				case KSquares::CHAIN_SHORT:
 					if (analysis.chains[i].ownChain) {
 						analysis.capturableShortChains.append(i);
-						numberOfOwnChains++;
+						//numberOfOwnChains++;
 					}
 					break;
 				case KSquares::CHAIN_SPECIAL:
@@ -54,17 +59,22 @@ KSquares::BoardAnalysis BoardAnalysisFunctions::analyseBoard(aiBoard::Ptr board)
 					break;
 			}
 			// capture everything that can be captured
-			if (analysis.chains[i].ownChain)
-				for (int j = 0; j < analysis.chains[i].lines.size(); j++)
-					if (!board->lines[analysis.chains[i].lines[j]]) // some chains are contained in other chains
-						board->doMove(analysis.chains[i].lines[j]);
+			if (analysis.chains[i].ownChain) {
+				for (int line : analysis.chains[i].lines) {
+					if (!board->lines[line]) {// some chains are contained in other chains
+						board->doMove(line);
+					}
+				}
+			}// else {
+			//	opponentChains.append(i);
+			//}
 
-			if (numberOfOwnChains > prevNumberOfOwnChains) {
-				foundCapturableChains = true;
-				prevNumberOfOwnChains = numberOfOwnChains;
-			}
+			//if (numberOfOwnChains > prevNumberOfOwnChains) {
+			//	foundCapturableChains = true;
+			//	prevNumberOfOwnChains = numberOfOwnChains;
+			//}
 		}
-	} while (foundCapturableChains);
+	//} while (foundCapturableChains);
 
 	//qDebug() << "board after capture " << aiFunctions::boardToString(board);
 	
@@ -79,32 +89,38 @@ KSquares::BoardAnalysis BoardAnalysisFunctions::analyseBoard(aiBoard::Ptr board)
 			case KSquares::CHAIN_LONG:
 				if (!analysis.chainsAfterCapture[i].ownChain)
 					analysis.openLongChains.append(i);
+				/*
 				else
 				{
 					qDebug().noquote() << "ERROR: capturable long chain found when there should be none! chain: " << aiFunctions::linelistToString(analysis.chainsAfterCapture[i].lines, board->linesSize, board->width, board->height) << " on board " << aiFunctions::boardToString(board);
 					for (int j = 0; j < analysis.chains.size(); j++)
 						qDebug().noquote() << "capture chain: " << aiFunctions::linelistToString(analysis.chains[j].lines, board->linesSize, board->width, board->height);
 				}
+				 */
 			break;
 			case KSquares::CHAIN_LOOP:
 				if (!analysis.chainsAfterCapture[i].ownChain)
 					analysis.openLoopChains.append(i);
+				/*
 				else
 				{
 					qDebug().noquote() << "ERROR: capturable loop chain found when there should be none! chain: " << aiFunctions::linelistToString(analysis.chainsAfterCapture[i].lines, board->linesSize, board->width, board->height) << " on board " << aiFunctions::boardToString(board);
 					for (int j = 0; j < analysis.chains.size(); j++)
 						qDebug().noquote() << "capture chain: " << aiFunctions::linelistToString(analysis.chains[j].lines, board->linesSize, board->width, board->height);
 				}
+				 */
 			break;
 			case KSquares::CHAIN_SHORT:
 				if (!analysis.chainsAfterCapture[i].ownChain)
 					analysis.openShortChains.append(i);
+				/*
 				else
 				{
 					qDebug().noquote() << "ERROR: capturable short chain found when there should be none! chain: " << aiFunctions::linelistToString(analysis.chainsAfterCapture[i].lines, board->linesSize, board->width, board->height) << " on board " << aiFunctions::boardToString(board);
 					for (int j = 0; j < analysis.chains.size(); j++)
 						qDebug().noquote() << "capture chain: " << aiFunctions::linelistToString(analysis.chains[j].lines, board->linesSize, board->width, board->height);
 				}
+				 */
 			break;
 			case KSquares::CHAIN_SPECIAL:
 				if (!analysis.chainsAfterCapture[i].ownChain)
@@ -114,12 +130,14 @@ KSquares::BoardAnalysis BoardAnalysisFunctions::analyseBoard(aiBoard::Ptr board)
 						analysis.specialLines.append(analysis.chainsAfterCapture[i].lines[j]);
 					}
 				}
+				/*
 				else
 				{
 					qDebug().noquote() << "ERROR: capturable special chain found when there should be none! chain: " << aiFunctions::linelistToString(analysis.chainsAfterCapture[i].lines, board->linesSize, board->width, board->height) << " on board " << aiFunctions::boardToString(board);
 					for (int j = 0; j < analysis.chains.size(); j++)
 						qDebug().noquote() << "capture chain: " << aiFunctions::linelistToString(analysis.chains[j].lines, board->linesSize, board->width, board->height);
 				}
+				 */
 			break;
 			case KSquares::CHAIN_UNKNOWN:
 			default:
@@ -132,13 +150,15 @@ KSquares::BoardAnalysis BoardAnalysisFunctions::analyseBoard(aiBoard::Ptr board)
 	analysis.safeLines = aiFunctions::safeMoves(board->width, board->height, board->linesSize, board->lines);
 	
 	// undo capture moves
-	for (int i = 0; i < analysis.chains.size(); i++)
-	{
-		if (!analysis.chains[i].ownChain)
+	for (int i = analysis.chains.size() - 1; i >= 0; i--) {
+		if (!analysis.chains[i].ownChain) {
 			continue;
-		for (int j = analysis.chains[i].lines.size()-1; j >= 0; j--)
-			if (board->lines[analysis.chains[i].lines[j]]) // some chains are contained in other chains...
-                board->undoMove(analysis.chains[i].lines[j]);
+		}
+		for (int j = analysis.chains[i].lines.size()-1; j >= 0; j--) {
+			if (board->lines[analysis.chains[i].lines[j]]) { // some chains are contained in other chains...
+				board->undoMove(analysis.chains[i].lines[j]);
+			}
+		}
 	}
 	
 	analysis.moveSequences = getMoveSequences(board, analysis);

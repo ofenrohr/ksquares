@@ -119,11 +119,13 @@ void alphazero::runTest(KSquares::AILevel ai, QString testName, QString modelNam
         }
 
         // stop process
+        /*
         if (prevWidth != sGame->board()->width() || prevHeight != sGame->board()->height()) {
             prevWidth = sGame->board()->width();
             prevHeight = sGame->board()->height();
             AlphaDots::ModelManager::getInstance().stopAll();
         }
+         */
 
         // execute ai
         aiController aic(sGame->board()->currentPlayer(), 1, sGame->board()->width(), sGame->board()->height(),

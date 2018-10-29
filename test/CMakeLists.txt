@@ -64,7 +64,7 @@ set( ksquarestest_SRCS
 		${alphaDotsDatasetsSRCS}
 		${alphaDotsAiEvalSRCS}
 		${alphaDotsGamplayAnalysisSRCS}
-        )
+        moveSequences.cpp moveSequences.h)
 
 kconfig_add_kcfg_files(ksquarestest_SRCS GENERATE_MOC ../src/settings.kcfgc)
 
