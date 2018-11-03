@@ -29,7 +29,7 @@ namespace AlphaDots {
          */
         explicit ModelEvaluation(QString &models, QString &opponentModels, bool fast=false, int threadCnt=4,
                 int games=10, QPoint boardSize=QPoint(5,5), bool quickStart=true, QString reportDir="",
-                bool analyseDoubleDealing=false);
+                bool analyseDoubleDealing=false, int thinkTime=5000);
 
 		~ModelEvaluation() override;
 
@@ -75,6 +75,7 @@ namespace AlphaDots {
         int threads;
         bool quickStart;
         QString reportDir;
+        int thinkTime;
 
         QWidget *m_view;
         GameBoardScene *m_scene;

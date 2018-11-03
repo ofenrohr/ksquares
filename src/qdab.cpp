@@ -189,7 +189,7 @@ int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &/*newSquareO
             QStringLiteral(", \"method\": \"Server.MakeMove\"}");
 	QByteArray sendBA = request.toLatin1(); // was: toAscii()
 	socket.write(sendBA);
-	qDebug() << "request: " << sendBA;
+	//qDebug() << "request: " << sendBA;
 	socket.waitForBytesWritten();
 	
 	QElapsedTimer turnTimer;
@@ -214,9 +214,10 @@ int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &/*newSquareO
 		done = responseBA.count('{') > 0 && responseBA.count('{') == responseBA.count('}');
 	}
 	
-	qDebug() << "response: " << responseBA;
+	//qDebug() << "response: " << responseBA;
 	
 	lastTurnTime = turnTimer.elapsed();
+	//qDebug() << "qdab turn time: " << lastTurnTime << ", timeout setting: " << timeout;
 	
 	// parse response from qdab server
     /*
@@ -233,7 +234,7 @@ int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &/*newSquareO
 	}
 	QVariantMap result = json.toVariant().toMap();
 
-	qDebug() << "parsed json: " << result;
+	//qDebug() << "parsed json: " << result;
 	if (result[QStringLiteral("id")] != id)
 	{
 		qDebug() << "ids dont match, aborting. original id = " << id << ", recv id = " << result[QStringLiteral("id")];
@@ -247,7 +248,7 @@ int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &/*newSquareO
 	QVariantMap resultHV = result[QStringLiteral("result")].toMap();
 	unsigned long long rh = resultHV[QStringLiteral("H")].toULongLong();
 	unsigned long long rv = resultHV[QStringLiteral("V")].toULongLong();
-	qDebug() << "result hv: " << rh << ", " << rv;
+	//qDebug() << "result hv: " << rh << ", " << rv;
 	
 	for (int i = 0; i <= 30; i++)
 	{
@@ -256,7 +257,7 @@ int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &/*newSquareO
 			QPoint pa((i % 6), (i / 6));
 			QPoint pb(pa.x(), pa.y() + 1);
 			int idx = Board::pointsToIndex(pa, pb, 5, 5);
-			qDebug() << "H: i: " << i << ", idx: " << idx << ", pa: " << pa << ", pb: " << pb;
+			//qDebug() << "H: i: " << i << ", idx: " << idx << ", pa: " << pa << ", pb: " << pb;
 			if (idx >= newLines.size() || idx < 0)
 			{
 				qDebug() << "error: invalid index from points! idx: " << idx << ", pa: " << pa << ", pb: " << pb;
@@ -273,7 +274,7 @@ int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &/*newSquareO
 			QPoint pa((i/ 6), (i % 6));
 			QPoint pb(pa.x() + 1, pa.y());
 			int idx = Board::pointsToIndex(pa, pb, 5, 5);
-			qDebug() << "V: i: " << i << ", idx: " << idx << ", pa: " << pa << ", pb: " << pb;
+			//qDebug() << "V: i: " << i << ", idx: " << idx << ", pa: " << pa << ", pb: " << pb;
 			if (idx >= newLines.size() || idx < 0)
 			{
 				qDebug() << "error: invalid index from points! idx: " << idx << ", pa: " << pa << ", pb: " << pb;

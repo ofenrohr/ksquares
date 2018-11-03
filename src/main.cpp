@@ -96,6 +96,7 @@ int main(int argc, char **argv)
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("hp-mcts-tau"), i18n("Hyperparameter: temperature in in AlphaZero MCTS probabilistic final move selection, default: 1.0"), i18n("hp-mcts-tau")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("hp-mcts-no-move-sequences"), i18n("Hyperparameter: set this flag to not use move sequences in AlphaZero MCTS")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("hp-mcts-use-probabilistic-final-move-selection"), i18n("Hyperparameter: set this flag to use probabilistic final move selection in AlphaZero MCTS")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("hp-mcts-use-think-time"), i18n("Hyperparameter: Limit runtime of mcts according to --think-time")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("board-sizes"), i18n("Board sizes available in self-play mode. Format AxB,CxD e.g. 5x4,4x4. Minimum: 2, Maximum 20"), i18n("board-sizes")));
     //parser.addOption(QCommandLineOption(QStringList() <<  i18n("wait-for-training"), i18n("Do not generate new training data while training is running.")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("no-evaluation"), i18n("Disable model evaluation in self-play mode.")));
@@ -104,6 +105,7 @@ int main(int argc, char **argv)
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("no-augmentation"), i18n("Disable augmentation in self-play model training")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("analyse-double-dealing"), i18n("Enable the Double Dealing analysis in (fast) model evaluation")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("cumulative-training"), i18n("Enable cumulative training in self-play")));
+    parser.addOption(QCommandLineOption(QStringList() <<  i18n("think-time"), i18n("Maximum time in milliseconds an AI may take to calculate its move during evaluation. Default: 5000"), i18n("think-time")));
 
     about.setupCommandLine(&parser);
     parser.process(app);
@@ -423,6 +425,22 @@ int main(int argc, char **argv)
         AlphaDots::aiAlphaZeroMCTS::use_probabilistic_final_move_selection = true;
     }
 
+    // hp-no-move-sequences - hyperparameter for alphazero mcts
+    if (parser.isSet(i18n("hp-mcts-use-think-time"))) {
+        AlphaDots::aiAlphaZeroMCTS::use_think_time = true;
+    }
+
+    int thinkTime = 5000;
+    if (parser.isSet(i18n("think-time"))) {
+        bool ok = false;
+        int tmp = parser.value(i18n("think-time")).toInt(&ok);
+        if (ok) {
+            thinkTime = tmp;
+        } else {
+            QMessageBox::warning(nullptr, i18n("KSquares error"), i18n("Invalid think-time argument"));
+        }
+    }
+
     // board sizes
     QPoint evaluationBoardSize(5,5);
     QList<QPoint> boardSizes;
@@ -527,11 +545,11 @@ int main(int argc, char **argv)
         dataGenerator->show();
     } else if (parser.isSet(i18n("model-evaluation"))) {
         auto *modelEvaluation = new AlphaDots::ModelEvaluation(evalModels, opponentModels, false,
-                threads, gamesPerAi_slow, evaluationBoardSize, quickStart, reportDir, analyseDoubleDealing);
+                threads, gamesPerAi_slow, evaluationBoardSize, quickStart, reportDir, analyseDoubleDealing, thinkTime);
         modelEvaluation->show();
     } else if (parser.isSet(i18n("fast-model-evaluation"))) {
         auto *modelEvaluation = new AlphaDots::ModelEvaluation(evalModels, opponentModels, true,
-                threads, gamesPerAi_fast, evaluationBoardSize, quickStart, reportDir, analyseDoubleDealing);
+                threads, gamesPerAi_fast, evaluationBoardSize, quickStart, reportDir, analyseDoubleDealing, thinkTime);
         modelEvaluation->show();
     } else if (parser.isSet(i18n("model-list"))) {
         AlphaDots::ModelEvaluation::printModelList();

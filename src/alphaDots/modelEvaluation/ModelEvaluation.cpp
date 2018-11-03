@@ -20,7 +20,7 @@
 using namespace AlphaDots;
 
 ModelEvaluation::ModelEvaluation(QString &models, QString &opponentModels, bool fast, int threadCnt, int games,
-        QPoint boardSize, bool doQuickStart, QString reportDirectory, bool analyseDoubleDealing) :
+        QPoint boardSize, bool doQuickStart, QString reportDirectory, bool analyseDoubleDealing, int aiThinkTime) :
         KXmlGuiWindow(), m_view(new QWidget()) {
     qDebug() << "ModelEvaluation" << models << fast;
     modelList = getModelList(models);
@@ -32,6 +32,7 @@ ModelEvaluation::ModelEvaluation(QString &models, QString &opponentModels, bool 
     evaluationRunning = false;
     quickStart = doQuickStart;
     reportDir = reportDirectory;
+    thinkTime = aiThinkTime;
 
     QDir rDir(reportDir);
     rDir.mkpath(reportDir);
@@ -151,7 +152,7 @@ void ModelEvaluation::printModelList() {
 }
 
 void ModelEvaluation::createTestSetups(QPoint boardSize) {
-    createTestSetups(testSetups, boardSize, 5000, modelList, opponentModelList, gamesPerAi);
+    createTestSetups(testSetups, boardSize, thinkTime, modelList, opponentModelList, gamesPerAi);
 }
 
 void ModelEvaluation::createTestSetups(QList<AITestSetup> &testSetups, QPoint boardSize, int timeout,

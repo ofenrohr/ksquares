@@ -26,6 +26,7 @@ int aiAlphaZeroMCTS::mcts_iterations = 1500; // overwritten in main.cpp
 double aiAlphaZeroMCTS::tau = 1.0; // overwritten in main.cpp
 bool aiAlphaZeroMCTS::use_move_sequences = true; // overwritten in main.cpp
 bool aiAlphaZeroMCTS::use_probabilistic_final_move_selection = false; // overwritten in main.cpp
+bool aiAlphaZeroMCTS::use_think_time = false; // overwritten in main.cpp
 
 aiAlphaZeroMCTS::aiAlphaZeroMCTS(int newPlayerId, int newMaxPlayerId, int newWidth, int newHeight,
                                  int thinkTime, ModelInfo model, bool gpu) :
@@ -187,7 +188,7 @@ QList<int> aiAlphaZeroMCTS::mcts() {
     int finishedIterations = 0;
     // fill mcts tree
     //while (!mctsTimer.hasExpired(mctsTimeout))
-    while (finishedIterations < mcts_iterations)
+    while (finishedIterations < mcts_iterations && (!aiAlphaZeroMCTS::use_think_time || mctsTimer.elapsed() < mctsTimeout))
     {
         // reset priors, then apply dirichlet noise
         if (finishedIterations > 0) {
@@ -232,6 +233,7 @@ QList<int> aiAlphaZeroMCTS::mcts() {
         finishedIterations++;
         QCoreApplication::processEvents();
     }
+    //qDebug() << "iterations: " << finishedIterations << ", elapsed time: " << mctsTimer.elapsed() << ", use think time: " << aiAlphaZeroMCTS::use_think_time << ", allocated think time: " << mctsTimeout;
 
     // select most promising move
     QList<int> returnSequence;
