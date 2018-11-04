@@ -56,6 +56,11 @@ class QDab : public QObject, public KSquaresAi
 		bool qdabServerListening;
 		
 		long lastTurnTime;
+		
+		QList<int> moveQueue;
+		int getMoveFromQueue(const QList<bool> lines);
+		
+		int turn;
 };
 
 #endif

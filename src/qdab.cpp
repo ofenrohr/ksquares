@@ -26,6 +26,7 @@ QDab::QDab(int newPlayerId, int /*newMaxPlayerId*/, int newWidth, int newHeight,
 {
 	timeout = thinkTime;
 	playerId = newPlayerId;
+	turn = playerId;
 	isTainted = false;
 	qdabServerListening = false;
 	qdabStdOutStream.setString(&qdabStdOut);
@@ -115,8 +116,63 @@ int QDab::randomMove(const QList<bool> &lines)
 	return freeLines.at(qrand() % freeLines.size());
 }
 
+// def num2move(self, value, who, step=-1):
+//         ty, x, y = 1, -1, -1
+//         if (value&(1<<31)) != 0:
+//             ty = 0 # horizon
+//         for i in range(5)[::step]:
+//             for j in range(6)[::step]:
+//                 if (value&1) == 1:
+//                     if ty == 0: x, y = j, i
+//                     else: x, y = i, j
+//                     break
+//                 value >>= 1
+//             if x != -1:
+//                 break
+//         return (ty, x, y, who)
 
-int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &/*newSquareOwners*/, const QList<Board::Move> &lineHistory)
+
+
+
+int QDab::getMoveFromQueue(const QList<bool> linesList)
+{
+	qDebug() << "Current move queue: " << moveQueue;
+	if (moveQueue.size() <= 0)
+	{
+		qDebug() << "ERROR: move queue is empty!";
+		return -1;
+	}
+	for (int i = 0; i < moveQueue.size(); i++)
+	{
+		int line = moveQueue[i];
+		QList<int> adjacentSquares = squaresFromLine(line);
+		for (int j = 0; j < adjacentSquares.size(); j++)
+		{
+			int adjacentSquareLines[4];
+			linesFromSquare(adjacentSquareLines, adjacentSquares[j]);
+			int cnt = 0;
+			for (int k = 0; k < 4; k++)
+			{
+				if (linesList[adjacentSquareLines[k]])
+					cnt++;
+			}
+			if (cnt == 3)
+			{
+				qDebug() << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
+				qDebug() << "returning move from queue: " << line;
+				qDebug() << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
+				
+				moveQueue.removeAt(i);
+				return line;
+			}
+		}
+	}
+	qDebug() << "returning last move from queue";
+	return moveQueue.takeLast();
+}
+
+
+int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &newSquareOwners, const QList<Board::Move> &/*lineHistory*/)
 {
 	QCoreApplication::processEvents();
 	if (qdabServer->state() != QProcess::Running)
@@ -131,8 +187,14 @@ int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &/*newSquareO
 		qdabServer->waitForReadyRead();
 	}
 	
+	if (moveQueue.size() > 0)
+	{
+		return getMoveFromQueue(newLines);
+	}
+	
 	uint h = 0;
 	uint v = 0;
+	// send all moves from history
 	for (int i = 0; i < newLines.size(); i++)
 	{
 		if (!newLines[i])
@@ -147,16 +209,15 @@ int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &/*newSquareO
 		else
 			h |= (1<<(p1.y()*6+p1.x()));
 	}
-	
-	int turn = 1;
-	int tmpPlr = 0;
-	for (int i = 0; i < lineHistory.size(); i++)
+
+	int s0 = 0;
+	int s1 = 0;
+	for (int i = 0; i < newSquareOwners.size(); i++)
 	{
-		if (tmpPlr != lineHistory[i].player)
-		{
-			tmpPlr = lineHistory[i].player;
-			turn++;
-		}
+		if (newSquareOwners[i] == 0)
+			s0++;
+		if (newSquareOwners[i] == 1)
+			s1++;
 	}
 	
 	// send stuff to qdab server
@@ -174,26 +235,32 @@ int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &/*newSquareO
 	uint id = QDateTime::currentDateTime().toTime_t();
 	
 	QString request =
-			QStringLiteral("{\"params\": [{\"Timeout\": ") +
-			QString::number(timeout) +
-			QStringLiteral(", \"Board\": {\"H\": ") +
-            QString::number(h)+
-            QStringLiteral(", \"S\": [0, 0], \"Now\": ") +
-            QString::number(playerId)+
-            QStringLiteral(", \"Turn\": ") +
-            QString::number(turn)+
-            QStringLiteral(", \"V\": ") +
-            QString::number(v)+
-            QStringLiteral("}, \"Algorithm\": \"quctann\"}], \"id\": ") +
-            QString::number(id)+
-            QStringLiteral(", \"method\": \"Server.MakeMove\"}");
-	QByteArray sendBA = request.toLatin1(); // was: toAscii()
+			"{\"params\": [{\"Timeout\": "+
+			QString::number(timeout)+
+			", \"Board\": {\"H\": "+
+			QString::number(h)+
+			", \"S\": ["+
+			QString::number(s0)+
+			", "+
+			QString::number(s1)+
+			"], \"Now\": "+
+			QString::number(playerId)+
+			", \"Turn\": "+
+			QString::number(turn)+
+			", \"V\": "+
+			QString::number(v)+
+			"}, \"Algorithm\": \"quctann\"}], \"id\": "+
+			QString::number(id)+
+			", \"method\": \"Server.MakeMove\"}";
+	QByteArray sendBA = request.toLatin1();
 	socket.write(sendBA);
 	//qDebug() << "request: " << sendBA;
 	socket.waitForBytesWritten();
 	
 	QElapsedTimer turnTimer;
 	turnTimer.start();
+	
+	turn += 2;
 	
 	// get response from qdab server
 	QByteArray responseBA;
@@ -250,7 +317,7 @@ int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &/*newSquareO
 	unsigned long long rv = resultHV[QStringLiteral("V")].toULongLong();
 	//qDebug() << "result hv: " << rh << ", " << rv;
 	
-	for (int i = 0; i <= 30; i++)
+	for (int i = 0; i < 30; i++)
 	{
 		if ( (1<<i) & rh )
 		{
@@ -261,12 +328,15 @@ int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &/*newSquareO
 			if (idx >= newLines.size() || idx < 0)
 			{
 				qDebug() << "error: invalid index from points! idx: " << idx << ", pa: " << pa << ", pb: " << pb;
-				continue;
+				//continue;
 			}
-			if (!newLines[idx])
-				return idx;
 			else
-				qDebug() << "old line: " << idx << ", pa: " << pa << ", pb: " << pb;
+			{
+				if (!newLines[idx])
+					moveQueue.append(idx);
+				else
+					qDebug() << "old line: " << idx << ", pa: " << pa << ", pb: " << pb;
+			}
 		}
 		
 		if ( (1<<i) & rv )
@@ -278,16 +348,19 @@ int QDab::chooseLine(const QList<bool> &newLines, const QList<int> &/*newSquareO
 			if (idx >= newLines.size() || idx < 0)
 			{
 				qDebug() << "error: invalid index from points! idx: " << idx << ", pa: " << pa << ", pb: " << pb;
-				continue;
+				//continue;
 			}
-			if (!newLines[idx])
-				return idx;
 			else
-				qDebug() << "old line: " << idx << ", pa: " << pa << ", pb: " << pb;
+			{
+				if (!newLines[idx])
+					moveQueue.append(idx);
+				else
+					qDebug() << "old line: " << idx << ", pa: " << pa << ", pb: " << pb;
+			}
 		}
 	}
 
-	return -1;
+	return getMoveFromQueue(newLines);
 }
 
 void QDab::processError(const QProcess::ProcessError &error)
