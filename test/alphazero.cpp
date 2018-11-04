@@ -394,3 +394,12 @@ void alphazero::testAlphaZero014() {
     AlphaDots::ModelManager::getInstance().allowGPU(true);
     runTest(KSquares::AI_MCTS_ALPHAZERO, tr("early-preemtive-sacrifice"), modelName, allNames, boardPaths, allExpectedLines, true);
 }
+
+void alphazero::testAlphaZero015() {
+    QString modelName = tr("AlphaZeroV14");
+    QList<QString> allNames;
+    QList<QString> boardPaths;
+    QList<QList<int>> allExpectedLines;
+
+    boardPaths << tr(TESTBOARDPATH) + tr("/3x3-easy-fail-theory.dbl");
+}
