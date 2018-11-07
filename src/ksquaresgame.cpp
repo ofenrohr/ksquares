@@ -51,7 +51,11 @@ QVector<KSquaresPlayer> KSquaresGame::createPlayers(int cnt, QList<int> isHuman)
       default:
         qCritical() << "KSquaresGame::playerSquareComplete(); currentPlayerId() != 0|1|2|3";
     }
-    playerList.append(KSquaresPlayer(Settings::playerNames().at(i), color, isHuman.at(i)));
+    QString name = "Player " + QString::number(i+1);
+    if (Settings::playerNames().size() > i) {
+        name = Settings::playerNames().at(i);
+    }
+    playerList.append(KSquaresPlayer(name, color, isHuman.at(i)));
   }
   
   return playerList;
