@@ -82,7 +82,7 @@ void alphazero::runTest(KSquares::AILevel ai, QString testName, QString modelNam
     QString id = QString::number(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count());
     QString C = QString::number(AlphaDots::aiAlphaZeroMCTS::C_puct, 'g', 1);
     QString dir = QString::number(AlphaDots::aiAlphaZeroMCTS::dirichlet_alpha, 'g', 2);
-    QString path = tr("alphazero-") + modelName + tr("-C_") + C + tr("-dir_") + dir + tr("-") + testName + tr("-") + id + tr(".csv");
+    QString path = testName + "-" + modelName + "-C_" + C + "-dir_" + dir + "-" + testName + "-" + id + ".csv";
     QFile resultFile(path);
     QVERIFY(resultFile.open(QIODevice::ReadWrite | QIODevice::Truncate | QIODevice::Text));
     QTextStream stream(&resultFile);
@@ -153,7 +153,7 @@ void alphazero::runTest(KSquares::AILevel ai, QString testName, QString modelNam
 
 // execute all berlekamp tests
 void alphazero::testAlphaZero004() {
-    QString modelName = tr("AlphaZeroV12_INIT");
+    QList<QString> modelNames = QList<QString>() << "AlphaZeroV7" << "AlphaZero-Competition-2018-10-28-23-44-19-SP_MCTS";
     QList<QString> allNames;
     QList<QString> boardPaths;
     QList<QList<int>> allExpectedLines;
@@ -178,9 +178,10 @@ void alphazero::testAlphaZero004() {
     allExpectedLines << (QList<int>() << 17);
 
     AlphaDots::ModelManager::getInstance().setDebug(false);
-    AlphaDots::ModelManager::getInstance().allowGPU(true);
     //AlphaDots::aiAlphaZeroMCTS::C_puct = 400;
-    runTest(KSquares::AI_MCTS_ALPHAZERO, tr("berlekamp"), modelName, allNames, boardPaths, allExpectedLines, true);
+    for (QString &modelName : modelNames) {
+        runTest(KSquares::AI_MCTS_ALPHAZERO, "berlekamp.mcts", modelName, allNames, boardPaths, allExpectedLines, true);
+    }
 }
 
 
@@ -397,9 +398,168 @@ void alphazero::testAlphaZero014() {
 
 void alphazero::testAlphaZero015() {
     QString modelName = tr("AlphaZeroV14");
+    QString boardPath;
+
+    boardPath = tr(TESTBOARDPATH) + "/3x3-easy-fail-theory.dbl";
+
+    // load board
+    QList<int> lines;
+    QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+    QVERIFY(KSquaresIO::loadGame(boardPath, sGame.data(), &lines));
+    bool nextPlayer, boardFilled;
+    QList<int> completedSquares;
+    for (int line : lines) {
+        sGame->board()->addLine(line, &nextPlayer, &boardFilled, &completedSquares);
+    }
+    // execute ai
+    aiController aic(sGame->board()->currentPlayer(), 1, sGame->board()->width(), sGame->board()->height(),
+                     KSquares::AI_CONVNET, 5000, modelName);
+    int aiLine = aic.chooseLine(sGame->board()->lines(), sGame->board()->squares(),
+                                sGame->board()->getLineHistory());
+    sGame->board()->addLine(aiLine, &nextPlayer, &boardFilled, &completedSquares);
+    qDebug() << aiLine;
+    qDebug().noquote() << sGame->board()->toString();
+    aiLine = aic.chooseLine(sGame->board()->lines(), sGame->board()->squares(),
+                                sGame->board()->getLineHistory());
+    sGame->board()->addLine(aiLine, &nextPlayer, &boardFilled, &completedSquares);
+    qDebug() << aiLine;
+    qDebug().noquote() << sGame->board()->toString();
+    aiLine = aic.chooseLine(sGame->board()->lines(), sGame->board()->squares(),
+                                sGame->board()->getLineHistory());
+    sGame->board()->addLine(aiLine, &nextPlayer, &boardFilled, &completedSquares);
+    qDebug() << aiLine;
+    qDebug().noquote() << sGame->board()->toString();
+    aiLine = aic.chooseLine(sGame->board()->lines(), sGame->board()->squares(),
+                            sGame->board()->getLineHistory());
+    sGame->board()->addLine(aiLine, &nextPlayer, &boardFilled, &completedSquares);
+    qDebug() << aiLine;
+    qDebug().noquote() << sGame->board()->toString();
+}
+
+
+void alphazero::testAlphaZero016() {
+    QString modelName = tr("AlphaZero-Competition-2018-10-28-23-44-19-SP");
+    QString boardPath;
+
+    boardPath = tr(TESTBOARDPATH) + "/3x3-easy-fail-theory.dbl";
+
+    // load board
+    QList<int> lines;
+    QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+    QVERIFY(KSquaresIO::loadGame(boardPath, sGame.data(), &lines));
+    bool nextPlayer, boardFilled;
+    QList<int> completedSquares;
+    for (int line : lines) {
+        sGame->board()->addLine(line, &nextPlayer, &boardFilled, &completedSquares);
+    }
+    // execute ai
+    aiController aic(sGame->board()->currentPlayer(), 1, sGame->board()->width(), sGame->board()->height(),
+                     KSquares::AI_CONVNET, 5000, modelName);
+    int aiLine = aic.chooseLine(sGame->board()->lines(), sGame->board()->squares(),
+                                sGame->board()->getLineHistory());
+    sGame->board()->addLine(aiLine, &nextPlayer, &boardFilled, &completedSquares);
+    qDebug() << aiLine;
+    qDebug().noquote() << sGame->board()->toString();
+    aiLine = aic.chooseLine(sGame->board()->lines(), sGame->board()->squares(),
+                            sGame->board()->getLineHistory());
+    sGame->board()->addLine(aiLine, &nextPlayer, &boardFilled, &completedSquares);
+    qDebug() << aiLine;
+    qDebug().noquote() << sGame->board()->toString();
+    aiLine = aic.chooseLine(sGame->board()->lines(), sGame->board()->squares(),
+                            sGame->board()->getLineHistory());
+    sGame->board()->addLine(aiLine, &nextPlayer, &boardFilled, &completedSquares);
+    qDebug() << aiLine;
+    qDebug().noquote() << sGame->board()->toString();
+    aiLine = aic.chooseLine(sGame->board()->lines(), sGame->board()->squares(),
+                            sGame->board()->getLineHistory());
+    sGame->board()->addLine(aiLine, &nextPlayer, &boardFilled, &completedSquares);
+    qDebug() << aiLine;
+    qDebug().noquote() << sGame->board()->toString();
+}
+
+
+// execute all berlekamp tests
+void alphazero::testAlphaZero017() {
+    QList<QString> modelNames = QList<QString>() << "AlphaZeroV7" << "AlphaZero-Competition-2018-10-28-23-44-19-SP_MCTS";
     QList<QString> allNames;
     QList<QString> boardPaths;
     QList<QList<int>> allExpectedLines;
 
-    boardPaths << tr(TESTBOARDPATH) + tr("/3x3-easy-fail-theory.dbl");
+    for (int i = 1; i <= 13; i++) {
+        boardPaths << tr(TESTBOARDPATH) + tr("/berlekamp-3.") + QString::number(i) + tr(".dbl");
+        allNames << tr("berlekamp-") + QString::number(i);
+    }
+
+    allExpectedLines << (QList<int>() << 16);
+    allExpectedLines << (QList<int>() << 17 << 21);
+    allExpectedLines << (QList<int>() << 7);
+    allExpectedLines << (QList<int>() << 12 << 22 << 23);
+    allExpectedLines << (QList<int>() << 0);
+    allExpectedLines << (QList<int>() << 7 << 10 << 19 << 22);
+    allExpectedLines << (QList<int>() << 9);
+    allExpectedLines << (QList<int>() << 0);
+    allExpectedLines << (QList<int>() << 0);
+    allExpectedLines << (QList<int>() << 11);
+    allExpectedLines << (QList<int>() << 2 << 20 << 21);
+    allExpectedLines << (QList<int>() << 15);
+    allExpectedLines << (QList<int>() << 17);
+
+    AlphaDots::ModelManager::getInstance().setDebug(false);
+    //AlphaDots::aiAlphaZeroMCTS::C_puct = 400;
+    for (QString &modelName : modelNames) {
+        runTest(KSquares::AI_CONVNET, "berlekamp.conv", modelName, allNames, boardPaths, allExpectedLines, true);
+    }
+}
+
+
+// execute all berlekamp tests
+void alphazero::testAlphaZero018() {
+    QList<QString> allNames;
+    QList<QString> boardPaths;
+    QList<QList<int>> allExpectedLines;
+
+    for (int i = 1; i <= 13; i++) {
+        boardPaths << tr(TESTBOARDPATH) + tr("/berlekamp-3.") + QString::number(i) + tr(".dbl");
+        allNames << tr("berlekamp-") + QString::number(i);
+    }
+
+    allExpectedLines << (QList<int>() << 16);
+    allExpectedLines << (QList<int>() << 17 << 21);
+    allExpectedLines << (QList<int>() << 7);
+    allExpectedLines << (QList<int>() << 12 << 22 << 23);
+    allExpectedLines << (QList<int>() << 0);
+    allExpectedLines << (QList<int>() << 7 << 10 << 19 << 22);
+    allExpectedLines << (QList<int>() << 9);
+    allExpectedLines << (QList<int>() << 0);
+    allExpectedLines << (QList<int>() << 0);
+    allExpectedLines << (QList<int>() << 11);
+    allExpectedLines << (QList<int>() << 2 << 20 << 21);
+    allExpectedLines << (QList<int>() << 15);
+    allExpectedLines << (QList<int>() << 17);
+
+    AlphaDots::ModelManager::getInstance().setDebug(false);
+    //AlphaDots::aiAlphaZeroMCTS::C_puct = 400;
+    for (int i = 0; i < boardPaths.size(); i++) {
+        QString boardPath = boardPaths[i];
+        QString name = allNames[i];
+        QList<int> expectedLines = allExpectedLines[i];
+        //runTest(KSquares::AI_CONVNET, "berlekamp.conv", modelName, allNames, boardPaths, allExpectedLines, true);
+        // load board
+        QList<int> lines;
+        QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+        QVERIFY(KSquaresIO::loadGame(boardPath, sGame.data(), &lines));
+        for (int line : lines) {
+            bool nextPlayer, boardFilled;
+            QList<int> completedSquares;
+            sGame->board()->addLine(line, &nextPlayer, &boardFilled, &completedSquares);
+        }
+
+        KSquaresIO::saveGame(boardPath + ".tex", sGame.data());
+        for (int line : expectedLines) {
+            bool nextPlayer, boardFilled;
+            QList<int> completedSquares;
+            sGame->board()->addLine(line, &nextPlayer, &boardFilled, &completedSquares);
+        }
+        KSquaresIO::saveGame(boardPath + ".solution.tex", sGame.data());
+    }
 }
