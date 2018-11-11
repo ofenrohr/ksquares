@@ -41,8 +41,8 @@ for the simulation step.
 
 ### ConvNet
 
-Interface for direct play of various neural networks. You can select the 
-network with the `AlphaDots model` drop down list. 
+Interface for direct play against various neural networks. In the AI configuration
+dialog, you can select the network with the `AlphaDots model` drop down list. 
 
 ### MCTS ConvNet
 
@@ -64,7 +64,7 @@ src/AlphaZeroMCTSNode.[h|cpp]
 There is a test suite called `alphazero` that tests if the MCTS actually finds
 new smart moves that the network would not have made.
 
-This AI offers the following hyperparameters:
+This AI offers the following hyperparameters and configuration options:
 
 * `--hp-mcts-iterations INT` number of MCTS iterations. The default value is 1500
 * `--hp-mcts-cpuct FLOAT` the C_puct value which controls exploration vs. 
@@ -91,8 +91,11 @@ This AI offers the following hyperparameters:
   moves with higher probability while for values greater than 1.0 the probabilities
   equalize. Tau is only used when `--hp-mcts-use-probabilistic-final-move-selection`
   is active.
+* `--hp-mcts-use-think-time` configures the algorithm to honor the think time. By
+  default, the MCTS algorithm is only limited by the number of iterations. When set
+  to use think times, it will still be limited by the number of iterations.
   
-You can also set the hyperparameters in the GUI:
+You can also set most hyperparameters in the GUI:
 
 ![AI MCTS AlphaZero configuration dialog](ksquares-ai-config.png)
 

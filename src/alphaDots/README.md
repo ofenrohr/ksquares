@@ -260,6 +260,15 @@ Both evaluation modes support the following optional arguments:
 * `--dataset-width WIDTH` Board width measured in boxes.
 * `--dataset-height HEIGHT` Board height measured in boxes.
 * `--gpu` Allow the model server to use the GPU.
+* `--report-dir DIRECTORY` Output directory for the report. If this option is present, the model evaluation
+  will save a report and quit immediately afterwards.
+* `--analyse-double-dealing` By setting this flag, the Double Dealing analysis module will count the
+  instances of Double dealing that were executed by the models. Double Dealing moves by opponent models will
+  not be counted.
+* `--no-quick-start` Disables the quick start functionality. By default the model evaluation initializes the
+  board with a few random lines to save time.
+* `--think-time` Sets the time in milliseconds that an AI has to find a move. The AlphaZero AI will only
+  honor think times if `--hp-mcts-use-think-time` is set.
 
 ### Example results
 
@@ -289,23 +298,37 @@ markdown file.
 
 KSquares can operate a self-play loop which works as follows:
 
-* KSquares generates a chunk of training data with the StageFour dataset generator
+* KSquares generates a [chunk of training data](ViewSelfPlayData.html) with the StageFour dataset generator
 * KSquares then trains a neural network on that data
+* KSquares compares the abilities of the new network in N games against the generator network. 
+  If the contending network wins at least half of the games, it becomes the generator network.
 
-Each iteration uses the network that was trained in the previous iteration. By
-default, self-play starts with `AlphaZeroV7` and then trains `AlphaZeroV10`. 
-The self-play mode will start with a pre-trained network and then improve the weights
-by training on data generated with the latest version of the network. During self-play
-each version of the model will be saved separately with a `.#iteration` suffix, while
-the normal model name references the latest version.
+Each iteration uses the best network to generate new training data. 
+By default, self-play starts with `AlphaZeroV7` as the best network. 
+The self-play mode supports two settings for the `--data-generator` option: `StageFour`, which is the default
+and `StageFourNoMCTS`, which is useful for generating data with rule based AIs.
+After it generated the data, KSquares trains the target model on the generated data.
+
+In the first iteration, KSquares creates the target model if it does not exist. 
 Every training process is logged separately. To train the next iteration of a network,
 KSquares calls [AlphaZeroV10.py](AlphaZeroV10.html) with appropriate arguments. Training
-is done on the CPU, because the GPU is already used to generate more data.
+can be done on the CPU or GPU, depending on if `--gpu-training` is set.
+If the `--cumulative-training` flag is set, KSquares will use the network from the previous iteration as 
+the starting point for training, even if it did not win in the evaluation.
+Without cumulative training, KSquares will base the training on the best network, that was also used to 
+generate data.
+During self-play each version of the model will be saved separately with a `_#iteration` suffix, while
+the normal model name references the best version.
+
+After training, KSquares will evaluate the new model against the best model, that was used to generate
+data. If the new model wins at least half of the games, it becomes the best model and as a result it will
+be used to generate data in the next iteration. Depending on the AI configuration in the `models.yaml` file,
+the evaluation will either use direct play (`ConvNet`) or MCTS.
 
 Self-Play in KSquares can be started as follows:
 
 ```
-ksquares --self-play
+ksquares --self-play --initial-model AlphaZeroV7 --target-model MyNewModelV1
 ```
 
 ### Self-Play arguments
@@ -314,36 +337,34 @@ The following optional arguments will be considered by self-play:
 
 * `--gpu` enables GPU acceleration of the data generator. Training the network will
   not use GPU acceleration, because it only takes a fraction of the overall time.
+* `--gpu-training` enable GPU acceleration for the training python script.
 * `--threads N` number of thread to use when generating data with the MCTS AI 
   (StageFour dataset). Default: 4
 * `--iterations N` number of self-play iterations to run. Default: 50
 * `--iteration-size N` number of samples to generate per iteration
-* `--initial-model` the name of the model to start generating training data with. Default: `alphaZeroV7`
-* `--target-model` the name of the model to improve in self-play. Model name must be present in the 
-  `models.yaml` list in `alphaDots/modelServer/models`. 
+* `--initial-model MODEL` the name of the model to start generating training data with. Default: `alphaZeroV7`
+* `--target-model MODEL` the name of the model to improve in self-play. If the model does not exist, 
+  it will be created.
 * `--debug` print debug information for individual prediction requests. Settings this flag
   will slow things down considerably.
 * `--debug-mcts` print debug output about the AlphaZeroMCTS algorithm.
-* `--gpu-training` enable GPU acceleration for the training python script.
-* `--dataset-generator` select the dataset generator. Supported generators are:
+* `--dataset-generator GENERATOR` select the dataset generator. Supported generators are:
     * `StageFour` the StageFour dataset generator
     * `StageFourNoMCTS` the StageFour dataset generator Hard AI instead of MCTS
-* `--epochs` number of epochs in training.
-* `--board-sizes` sets the board sizes in boxes on which the self-play mode will operate.
+* `--dataset-ai NAME` sets the AI used by the `StageFourNoMCTS` generator. Can be set to `easy`, `medium` 
+  or `hard`. Default: `hard`
+* `--epochs N` number of epochs in training.
+* `--board-sizes SIZES` sets the board sizes in boxes on which the self-play mode will operate.
   Default value: 4x3,5x4,6x5,7x5,8x8,14x7,14x14,10x9.
   Board lengths must be at least 2 and at most 20.
 * `--no-evaluation` disables the evaluation step.
+* `--games N` number of games in the evaluation step.
+* `--report-dir DIRECTORY` Destination directory for the evaluation reports. If this option is set, 
+  KSquares will quit immediately after it finished the last iteration.
+* `--cumulative-training` Do not discard networks if they did not win the evaluation.
 
 Please be aware that the self-play mode honors hyperparameters for the StageFour
 dataset generator and the AlphaZero MCTS AI.
-
-### Fast Self-Play
-
-To execute fast self-play with gpu acceleration, execute the following command:
-
-```
-ksquares --self-play --gpu --batch-prediction --threads 16
-```
 
 ### Using the self-play mode for training
 
@@ -353,7 +374,7 @@ StageFourNoMCTS data is generated purely with the Hard AI. So there is no
 improvement loop, just data generation and training with this setup.
 
 ```
-ksquares --self-play --iteration-size 10000 --threads 8 --gpu-training --dataset-generator StageFourNoMCTS --initial-model AlphaZeroV11 --target-model AlphaZeroV11 --epochs 3 
+ksquares --self-play --iteration-size 10000 --threads 8 --gpu-training --dataset-generator StageFourNoMCTS --initial-model AlphaZeroV11 --target-model AlphaZeroV11 --epochs 3 --no-evaluation
 ```
 
 AlphaZeroV11 was trained for 38 iterations with a iteration size of 10,000

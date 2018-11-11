@@ -6,7 +6,9 @@
 #include <QtTest/QtTest>
 #include <aifunctions.h>
 #include <alphaDots/ModelManager.h>
+#include <alphaDots/MLImageGenerator.h>
 #include <aiAlphaZeroMCTS.h>
+#include <aiEasyMediumHard.h>
 #include "alphazero.h"
 #include "testutils.h"
 
@@ -562,4 +564,21 @@ void alphazero::testAlphaZero018() {
         }
         KSquaresIO::saveGame(boardPath + ".solution.tex", sGame.data());
     }
+}
+
+// generate some images for the thesis
+void alphazero::testAlphaZero019() {
+    QList<int> lines;
+    QScopedPointer<KSquaresGame> sGame(new KSquaresGame());
+    QVERIFY(KSquaresIO::loadGame(tr(TESTBOARDPATH) + tr("/5x4-first-try-example.dbl") , sGame.data(), &lines));
+    aiBoard::Ptr board = aiBoard::Ptr(new aiBoard(sGame->board()));
+    for (int line : lines) {
+        board->doMove(line);
+    }
+    QImage input = AlphaDots::MLImageGenerator::generateInputImage(board);
+    input.save("firstTryInput.png");
+    KSquaresAi::Ptr fastAi = KSquaresAi::Ptr(
+            new aiEasyMediumHard(board->playerId, board->width, board->height, KSquares::AI_HARD));
+    QImage output = AlphaDots::MLImageGenerator::generateOutputImage(board, fastAi);
+    output.save("firstTryTarget.png");
 }
