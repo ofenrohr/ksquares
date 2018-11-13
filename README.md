@@ -1,3 +1,7 @@
+# Associated thesis
+
+This repository is part of a Master's thesis with full documentation available at [https://tom.vincent-peters.de/master/](https://tom.vincent-peters.de/master/).
+
 # KSquares
 KSquares is an implementation of the game [squares](http://en.wikipedia.org/wiki/Dots_and_Boxes)
 
