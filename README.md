@@ -39,7 +39,7 @@ Alpha-Beta serach algorithm. Slightly unstable. Executed with wine.
 Monte-Carlo Tree Search algorithm which uses Easy (A), Medium (B) or Hard (C) AI 
 for the simulation step.
 
-### ConvNet
+### [ConvNet](src/alphaDots)
 
 Interface for direct play against various neural networks. In the AI configuration
 dialog, you can select the network with the `AlphaDots model` drop down list. 
@@ -50,7 +50,7 @@ Like MCTS A,B,C but uses ConvNet for simulation.
 
 You can find the code in `src/aiConvNet.[h|cpp]`.
 
-### AlphaZero
+### [AlphaZero](src/alphaDots)
 
 MCTS as described in the paper about [AlphaZero](https://arxiv.org/abs/1712.01815)
 

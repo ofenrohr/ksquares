@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8" />
+<title>Tests</title>
+
+<link rel="stylesheet" href="pygments.css" />
+<link rel="stylesheet" href="style.css" />
+<link rel="stylesheet" href="custom.css">
+
+</head>
+<body>
+  <div tabindex="-1" id="notebook" class="border-box-sizing">
+    <div class="container" id="notebook-container">
+
+<h1 id="tests">Tests</h1>
+<p>This part describes the test suites in KSquares. The point of entry for all tests is <code>ksquarestest</code> which incorporates various test suites. Each test suite is a full QTest. You can pass command line arguments to the individual QTest suites by putting them after a <code>--</code> argument. For example: <code>ksquarestest berlekamp -- -functions</code> will list all test functions in the <code>berlekamp</code> test suite.</p>
+<p>By default all test suites are executed.</p>
+<h2 id="berlekamp">Berlekamp</h2>
+<p>These tests are based on Elwin Berlekamp’s book on Dots and Boxes. You can run the tests by executing the following command in the cmake <code>build</code> directory:</p>
+<pre><code>ksquarestest berlekamp</code></pre>
+<h3 id="berlekamp-001">Berlekamp 001</h3>
+<p>The correct move is to create a long chain and not a cyclic chain so that the current player can gain control of the game.</p>
+<pre><code>Input:               Expected output:
++--+--+  +           +  +  +  +
+|                              
++  +--+--+           +  +  +  +
+|  |                           
++  +  +  +           +  +  +--+
+   |     |                     
++  +--+  +           +  +  +  +</code></pre>
+<h3 id="berlekamp-002">Berlekamp 002</h3>
+<p>Either line of the two lines in expected output is fine, because in both cases there will be two long chains. That is good for the current player because the opponent will be forced to open one chain or the other.</p>
+<pre><code>Input:               Expected output:
++--+--+--+           +  +  +  +
+   |     |                     
++  +  +  +           +  +  +  +
+|  |  |  |                     
++  +  +  +           +  +  +  +
+   |  |  |           |         
++  +  +  +           +--+  +  +</code></pre>
+<h3 id="berlekamp-003">Berlekamp 003</h3>
+<p>This test is almost identical to the previous test, but in this case the situation calls for a preemtive sacrifice to win the game. By forfeiting two boxex when there are still save lines left, the current player can win the game. In the next move, the opponent captures the two sacrificed boxes and ends the turn by drawing the bottom right line. After leaving a third box on the bottom left to the opponent, there will be no other choice but to open the long chain with six boxes.</p>
+<pre><code>Input:               Expected output:
++--+--+--+           +  +  +  +
+   |     |                     
++  +  +  +           +--+  +  +
+|  |  |  |                     
++  +  +  +           +  +  +  +
+   |  |                        
++  +  +  +           +  +  +  +</code></pre>
+<h3 id="berlekamp-004">Berlekamp 004</h3>
+<pre><code>Input:               Expected output:
++--+--+--+           +  +  +  +
+|                              
++  +--+--+           +  +  +  +
+   |     |                 |   
++  +  +  +           +  +  +  +
+   |     |                     
++--+  +  +           +  +--+--+</code></pre>
+<h3 id="berlekamp-005">Berlekamp 005</h3>
+<pre><code>Input:               Expected output:
++  +--+--+           +--+  +  +
+|     |                        
++--+--+  +           +  +  +  +
+|        |                     
++  +--+--+           +  +  +  +
+|                              
++--+  +  +           +  +  +  +</code></pre>
+<h3 id="berlekamp-006">Berlekamp 006</h3>
+<pre><code>Input:               Expected output:
++  +  +  +           +  +  +  +
+   |  |                        
++  +  +--+           +--+  +  +
+   |                 |         
++  +--+--+           +  +  +  +
+|                          |   
++--+  +  +           +  +--+  +</code></pre>
+<h3 id="berlekamp-007">Berlekamp 007</h3>
+<pre><code>Input:               Expected output:
++--+  +  +           +  +  +  +
+|     |  |                     
++  +--+  +           +  +  +--+
+|     |  |                     
++  +  +  +           +  +  +  +
+      |                        
++  +  +  +           +  +  +  +</code></pre>
+<h3 id="berlekamp-008">Berlekamp 008</h3>
+<pre><code>Input:                   Expected output:
++  +  +  +--+--+         +--+  +  +  +  +
+|  |  |  |     |                         
++  +  +  +  +  +         +  +  +  +  +  +
+|  |  |  |  |  |                         
++--+  +  +  +  +         +  +  +  +  +  +
+|  |  |  |  |  |                         
++--+  +  +  +  +         +  +  +  +  +  +</code></pre>
+<h3 id="berlekamp-009">Berlekamp 009</h3>
+<pre><code>Input:                   Expected output:
++  +  +  +--+--+         +--+  +  +  +  +
+|  |  |        |                         
++  +  +--+--+  +         +  +  +  +  +  +
+|  |  |        |                         
++--+  +  +--+--+         +  +  +  +  +  +
+|  |  |                                  
++--+  +--+--+--+         +  +  +  +  +  +</code></pre>
+<h3 id="berlekamp-010">Berlekamp 010</h3>
+<pre><code>Input:                   Expected output:
++  +  +  +--+--+         +  +  +  +  +  +
+|  |  |        |                         
++  +  +--+--+  +         +--+  +  +  +  +
+|  |  |        |                         
++--+  +  +--+--+         +  +  +  +  +  +
+|  |  |                                  
++--+  +--+--+  +         +  +  +  +  +  +</code></pre>
+<h3 id="berlekamp-011">Berlekamp 011</h3>
+<pre><code>Input:                   Expected output:
++--+--+  +--+  +         +  +  +--+  +  +
+   |        |                            
++  +  +--+  +--+         +  +  +  +  +  +
+|  |                                 |  |
++  +--+--+--+--+         +  +  +  +  +  +
+|        |                               
++--+--+  +  +--+         +  +  +  +  +  +
+|        |                               
++  +--+--+--+--+         +  +  +  +  +  +
+|              |                         
++--+--+--+--+  +         +  +  +  +  +  +</code></pre>
+<h3 id="berlekamp-012">Berlekamp 012</h3>
+<pre><code>Input:                   Expected output:
++--+--+--+--+--+         +  +  +  +  +  +
+         |                               
++--+  +  +  +  +         +  +  +  +  +--+
+|     |  |                               
++  +--+  +--+--+         +  +  +  +  +  +
+   |     |     |                         
++--+  +--+  +  +         +  +  +  +  +  +
+   |        |  |                         
++  +  +--+--+  +         +  +  +  +  +  +
+   |  |        |                         
++  +  +  +--+--+         +  +  +  +  +  +</code></pre>
+<h3 id="berlekamp-013">Berlekamp 013</h3>
+<pre><code>Input:                   Expected output:
++--+  +--+  +  +         +  +  +  +  +  +
+      |     |                            
++--+  +  +--+  +         +  +  +  +  +  +
+      |                     |            
++--+--+--+--+--+         +  +  +  +  +  +
+   |           |                         
++  +  +--+--+  +         +  +  +  +  +  +
+   |     |                               
++--+--+  +  +  +         +  +  +  +  +  +
+         |     |                         
++  +  +  +  +  +         +  +  +  +  +  +</code></pre>
+<h2 id="alphazero">AlphaZero</h2>
+<p>Execute the AlphaZero test suite by running the following command:</p>
+<pre><code>ksquarestest alphazero</code></pre>
+<h3 id="alphazero-001">AlphaZero 001</h3>
+<p>This tests executes AlphaZero MCTS on Berlekamp 003. It was used to debug the MCTS algorithm. The Monte-Carlo Tree will be printed in dot-format to <code>/tmp/AlphaZeroMCTS.dot</code>. It was then converted to <a href="AlphaZeroMCTS.pdf">PDF</a> with graphviz. Meaning of the numbers in each node:</p>
+<ul>
+<li><code>V</code> is the value of the node. It represents the merit of making that move where 1 is a certain win and -1 is a certain loss.</li>
+<li><code>N</code> is the number of times that this node was selected in the MCTS selection step.</li>
+<li><code>P</code> is the prior asserted to that move by the neural network</li>
+<li><code>U</code> is the PUCT algorithm’s value <code>U(s,a)</code> as described in the <a href="https://deepmind.com/documents/119/agz_unformatted_nature.pdf">AlphaGo Zero paper</a> in the methods section on page 26 in the linked document.</li>
+</ul>
+<p>The first number in each node is the line number that this node represents. All line numbers are displayed in the following image.</p>
+<figure>
+<img src="berlekamp-003-debug.png" alt="Berlekamp 003 with line numbers" /><figcaption>Berlekamp 003 with line numbers</figcaption>
+</figure>
+<p>This test requires the MCTS algorithm to make a move that the underlying neural network would not do, because the training data didn’t cover preemtive sacrifices.</p>
+<h2 id="gsltest">GSLTest</h2>
+<p>These tests try out methods from the <a href="https://www.gnu.org/software/gsl/">GNU Scientific Library</a>.</p>
+<h3 id="gsltest-001">GSLTest 001</h3>
+<p>This test tries to use the <a href="https://www.gnu.org/software/gsl/manual/html_node/The-Dirichlet-Distribution.html">dirichlet noise</a> method, that is used in KSquare’s version of AlphaZero MCTS.</p>
+<h3 id="gsltest-002">GSLTest 002</h3>
+<p>This test uses GSL’s gaussian distribution to repeatedly calculate the number of moves left in a sample game. The result is put into a histogram. This was later used in the StageFour dataset.</p>
+<h3 id="gsltest-003">GSLTest 003</h3>
+<p>This test is almost identical to the GSLTest 002, but generates 1.000.000 samples and produces output that is suitable for plotting with gnuplot.</p>
+<figure>
+<img src="movesLeftDist.png" alt="moves left plot for 1.000.000 samples" /><figcaption>moves left plot for 1.000.000 samples</figcaption>
+</figure>
+
+</div>
+</div>
+</body>
+</html>
