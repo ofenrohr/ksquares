@@ -103,6 +103,8 @@ ki18n_wrap_ui(ksquares_SRCS
 		mctsalphazeroaisettings.ui
 )
 
+qt5_add_resources(ksquares_SRCS ksquares.qrc)
+
 kconfig_add_kcfg_files(ksquares_SRCS GENERATE_MOC settings.kcfgc)
 
 set(CMAKE_AUTOMOC ON)
@@ -137,7 +139,6 @@ include_directories( ${CMAKE_CURRENT_BINARY_DIR}/generated/ )
 install(PROGRAMS org.kde.ksquares.desktop  DESTINATION  ${KDE_INSTALL_APPDIR})
 install(FILES org.kde.ksquares.appdata.xml DESTINATION  ${KDE_INSTALL_METAINFODIR})
 install(FILES ksquares.kcfg  DESTINATION  ${KDE_INSTALL_KCFGDIR})
-install(FILES ksquaresui.rc  DESTINATION  ${KXMLGUI_INSTALL_DIR}/ksquares)
 
 ecm_install_icons(ICONS
     128-apps-ksquares.png

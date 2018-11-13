@@ -54,9 +54,7 @@ int main(int argc, char **argv)
     QCommandLineParser parser;
     KAboutData::setApplicationData(about);
     KCrash::initialize();
-    parser.addVersionOption();
-    parser.addHelpOption();
-    parser.addOption(QCommandLineOption(QStringList() <<  i18n("demo"), i18n("Run game in demo (autoplay) mode")));
+    parser.addOption(QCommandLineOption(QStringList() <<  QStringLiteral("demo"), i18n("Run game in demo (autoplay) mode")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("test"), i18n("Run AI tests")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("full-test"), i18n("Start over all AI tests")));
     parser.addOption(QCommandLineOption(QStringList() <<  i18n("generate"), i18n("Generate training data"), i18n("generate")));

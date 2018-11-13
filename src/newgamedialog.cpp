@@ -40,7 +40,6 @@ NewGameDialog::NewGameDialog(QWidget *parent) : QDialog(parent)
     okButton->setShortcut(Qt::CTRL | Qt::Key_Return);
     connect(buttonBox, &QDialogButtonBox::accepted, this, &NewGameDialog::accept);
     connect(buttonBox, &QDialogButtonBox::rejected, this, &NewGameDialog::reject);
-    //PORTING SCRIPT: WARNING mainLayout->addWidget(buttonBox) must be last item in layout. Please move it.
     mainLayout->addWidget(buttonBox);
     setWindowTitle(tr("New Game"));
     connect(spinNumOfPlayers, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &NewGameDialog::adjustEnabledUsers);
@@ -60,6 +59,7 @@ void NewGameDialog::adjustEnabledUsers(int numOfPlayers)
         playerThreeName->setEnabled(false);
         playerThreeHuman->setEnabled(false);
     // no break!
+        Q_FALLTHROUGH();
     case 3:
         labelPlayer4Name->setEnabled(false);
         playerFourName->setEnabled(false);
@@ -75,6 +75,7 @@ void NewGameDialog::adjustEnabledUsers(int numOfPlayers)
         labelPlayer4Name->setEnabled(true);
         playerFourName->setEnabled(true);
         playerFourHuman->setEnabled(true);
+        Q_FALLTHROUGH();
     case 3:
         labelPlayer3Name->setEnabled(true);
         playerThreeName->setEnabled(true);

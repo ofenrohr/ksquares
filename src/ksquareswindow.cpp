@@ -445,6 +445,10 @@ int KSquaresWindow::getAiLevel(int playerId)
 // testing only
 void KSquaresWindow::aiChooseLine()
 {
+    // This can happen when we start a new game and the ai was playing, since we have a
+    // 200 ms singleShot timer just above, the game may have changed since the timer was shot
+    if (sGame->currentPlayer()->isHuman())
+        return;
 	qDebug() << "choosing line...";
 
 	// https://mayaposch.wordpress.com/2011/11/01/how-to-really-truly-use-qthreads-the-full-explanation/
