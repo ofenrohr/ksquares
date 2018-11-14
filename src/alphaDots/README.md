@@ -16,7 +16,7 @@ Alpha Dots directory in KSquares -> Settings -> Configure KSquares -> Computer P
 Clone this git repository to get Alpha Dots:
 
 ```
-git clone https://gitlab.informatik.uni-bremen.de/ofenrohr/alphaDots.git
+git clone https://github.com/ofenrohr/alphaDots.git
 ```
 
 You might also want to install `tensorflow-gpu` in python for GPU acceleration.
